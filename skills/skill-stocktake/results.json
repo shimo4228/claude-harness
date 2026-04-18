@@ -1,0 +1,689 @@
+{
+  "evaluated_at": "2026-04-12T11:27:58Z",
+  "mode": "quick",
+  "batch_progress": {
+    "total": 103,
+    "evaluated": 103,
+    "status": "completed"
+  },
+  "skills": {
+    "backend-patterns": {
+      "path": "~/.claude/skills/backend-patterns/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin: Improve提案あり（重複セクション圧縮等）だが、ECC編集不可ルールにより現状維持。",
+      "mtime": "2026-02-28T05:22:51Z"
+    },
+    "coding-standards": {
+      "path": "~/.claude/skills/coding-standards/SKILL.md",
+      "verdict": "Retired",
+      "reason": "前回処理済み。rules/と全面重複。disable-model-invocation: true設定済み。",
+      "mtime": "2026-03-08T11:07:42Z"
+    },
+    "configure-ecc": {
+      "path": "~/.claude/skills/configure-ecc/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC interactive installer。step-by-step wizard with AskUserQuestion統合。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "continuous-learning": {
+      "path": "~/.claude/skills/continuous-learning/SKILL.md",
+      "verdict": "Retire",
+      "reason": "v2 (instinct-based) が正式後継。v1のStop hook方式はv2のobservation hooksに完全包含。",
+      "mtime": "2026-03-08T11:04:51Z"
+    },
+    "continuous-learning-v2": {
+      "path": "~/.claude/skills/continuous-learning-v2/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Instinct-based learning system v2.1。project scoping, confidence scoring, hook setup。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "eval-harness": {
+      "path": "~/.claude/skills/eval-harness/SKILL.md",
+      "verdict": "Keep",
+      "reason": "EDD framework。eval types, grader types, pass@k metrics。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "frontend-patterns": {
+      "path": "~/.claude/skills/frontend-patterns/SKILL.md",
+      "verdict": "Keep",
+      "reason": "643行。React/Next.js深掘り。唯一のfrontendリファレンス。",
+      "mtime": "2026-02-28T05:22:51Z"
+    },
+    "iterative-retrieval": {
+      "path": "~/.claude/skills/iterative-retrieval/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。progressive context retrieval pattern。",
+      "mtime": "2026-02-28T05:22:51Z"
+    },
+    "postgres-patterns": {
+      "path": "~/.claude/skills/postgres-patterns/SKILL.md",
+      "verdict": "Keep",
+      "reason": "148行。Index cheat sheet, RLS optimization, SKIP LOCKED queue processing。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "python-patterns": {
+      "path": "~/.claude/skills/python-patterns/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。decorators, concurrency, package orgは固有。",
+      "mtime": "2026-02-17T22:45:22Z"
+    },
+    "python-testing": {
+      "path": "~/.claude/skills/python-testing/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。fixtures, parametrizationは固有の強み。",
+      "mtime": "2026-02-17T22:45:23Z"
+    },
+    "search-first": {
+      "path": "~/.claude/skills/search-first/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Original skill (4/11更新)。AKC Research phase実装。planning.md Phase 0から直接参照。worked examplesが具体的。",
+      "mtime": "2026-04-11T12:04:49Z"
+    },
+    "security-review": {
+      "path": "~/.claude/skills/security-review/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。pre-deployment checklistは固有。",
+      "mtime": "2026-02-28T05:22:51Z"
+    },
+    "skill-stocktake": {
+      "path": "~/.claude/skills/skill-stocktake/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Original（ECC contributed）。Quick/Full scan modes, results caching。メタスキル。",
+      "mtime": "2026-03-08T11:28:44Z"
+    },
+    "strategic-compact": {
+      "path": "~/.claude/skills/strategic-compact/SKILL.md",
+      "verdict": "Keep",
+      "reason": "104行。Compaction decision guide。unique topic。",
+      "mtime": "2026-02-28T05:22:51Z"
+    },
+    "verification-loop": {
+      "path": "~/.claude/skills/verification-loop/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。comprehensive verification system。",
+      "mtime": "2026-02-28T05:22:51Z"
+    },
+    "cloud-infrastructure-security": {
+      "path": "~/.claude/skills/security-review/cloud-infrastructure-security.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。Terraform/GitHub Actions OIDC/Cloudflare Workersは固有。disable-model-invocation: true設定済み。",
+      "mtime": "2026-03-08T11:07:45Z"
+    },
+    "cl-v2/observer": {
+      "path": "~/.claude/skills/continuous-learning-v2/agents/observer.md",
+      "verdict": "Keep",
+      "reason": "CL-v2のobserver agent仕様。pattern detection rules, confidence calculation。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "cl-v2/evolve": {
+      "path": "~/.claude/skills/continuous-learning-v2/commands/evolve.md",
+      "verdict": "Keep",
+      "reason": "CL-v2 sub-component。Instinct clustering spec。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "cl-v2/instinct-export": {
+      "path": "~/.claude/skills/continuous-learning-v2/commands/instinct-export.md",
+      "verdict": "Keep",
+      "reason": "CL-v2 sub-component。Privacy filtering rules, output format。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "cl-v2/instinct-import": {
+      "path": "~/.claude/skills/continuous-learning-v2/commands/instinct-import.md",
+      "verdict": "Keep",
+      "reason": "CL-v2 sub-component。Merge strategies, source tracking。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "cl-v2/instinct-status": {
+      "path": "~/.claude/skills/continuous-learning-v2/commands/instinct-status.md",
+      "verdict": "Keep",
+      "reason": "CL-v2 sub-component。Status dashboard。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "agent-harness-construction": {
+      "path": "~/.claude/skills/agent-harness-construction/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Agent action/observation space設計。74行。agentic-engineeringと補完。",
+      "mtime": "2026-03-08T08:29:32Z"
+    },
+    "agentic-engineering": {
+      "path": "~/.claude/skills/agentic-engineering/SKILL.md",
+      "verdict": "Keep",
+      "reason": "eval-first methodology, 15-minute unit decomposition, model routing。",
+      "mtime": "2026-03-08T11:53:21Z"
+    },
+    "ai-first-engineering": {
+      "path": "~/.claude/skills/ai-first-engineering/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。agentic-engineering merge後も残存。現状維持。",
+      "mtime": "2026-03-08T08:29:32Z"
+    },
+    "article-writing": {
+      "path": "~/.claude/skills/article-writing/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Voice-capture workflow、banned patterns list。content-engineと補完。",
+      "mtime": "2026-03-04T11:01:59Z"
+    },
+    "autonomous-loops": {
+      "path": "~/.claude/skills/autonomous-loops/SKILL.md",
+      "verdict": "Retired",
+      "reason": "deprecation notice付き。continuous-agent-loopが正式後継。disable-model-invocation設定済み。",
+      "mtime": "2026-03-08T11:04:54Z"
+    },
+    "content-engine": {
+      "path": "~/.claude/skills/content-engine/SKILL.md",
+      "verdict": "Keep",
+      "reason": "89行。Platform-native repurposing。article-writingと補完。",
+      "mtime": "2026-03-04T11:01:59Z"
+    },
+    "continuous-agent-loop": {
+      "path": "~/.claude/skills/continuous-agent-loop/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC origin。autonomous-loops retire後のcanonical reference。",
+      "mtime": "2026-03-08T08:29:32Z"
+    },
+    "cpp-testing": {
+      "path": "~/.claude/skills/cpp-testing/SKILL.md",
+      "verdict": "Keep",
+      "reason": "GoogleTest/GMock/CTest patterns。C++専用で重複なし。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "frontend-slides": {
+      "path": "~/.claude/skills/frontend-slides/SKILL.md",
+      "verdict": "Keep",
+      "reason": "HTMLプレゼン作成workflow。zero-dependency。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "frontend-slides/STYLE_PRESETS": {
+      "path": "~/.claude/skills/frontend-slides/STYLE_PRESETS.md",
+      "verdict": "Keep",
+      "reason": "frontend-slidesの必須依存。12 style presets。",
+      "mtime": "2026-03-08T08:29:46Z"
+    },
+    "plankton-code-quality": {
+      "path": "~/.claude/skills/plankton-code-quality/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Plankton integration reference。Three-phase architecture。",
+      "mtime": "2026-03-08T08:29:32Z"
+    },
+    "security-scan": {
+      "path": "~/.claude/skills/security-scan/SKILL.md",
+      "verdict": "Keep",
+      "reason": "AgentShield CLI guide。config security scan。security-reviewと補完。",
+      "mtime": "2026-03-03T14:40:50Z"
+    },
+    "kimi-dispatch": {
+      "path": "~/.claude/skills/kimi-dispatch/SKILL.md",
+      "verdict": "Keep",
+      "reason": "4フェーズ Kimi 委任ワークフロー。タイムアウト・マージ手順つき。唯一の Kimi 委任オーケストレーション。",
+      "mtime": "2026-03-31T23:33:46Z"
+    },
+    "kimi-spec": {
+      "path": "~/.claude/skills/kimi-spec/SKILL.md",
+      "verdict": "Keep",
+      "reason": "spec.md テンプレート + INDEPENDENT/DEPENDS-ON タスク分解 + Checkpoint Rule。kimi-dispatch の補完。",
+      "mtime": "2026-03-31T23:34:16Z"
+    },
+    "learn-eval": {
+      "path": "~/.claude/skills/learn-eval/SKILL.md",
+      "verdict": "Keep",
+      "reason": "抽出→評価→保存サイクル。4段階品質ゲート（Save/Improve/Absorb/Drop）。知識管理のメタスキル。",
+      "mtime": "2026-03-31T07:12:48Z"
+    },
+    "orchestrate": {
+      "path": "~/.claude/skills/orchestrate/SKILL.md",
+      "verdict": "Improved",
+      "reason": "本文が空だったため、4ステップのエージェントチェーン手順（planner→tdd-guide→code-reviewer→security-reviewer）を追加。",
+      "mtime": "2026-04-07T12:07:50Z"
+    },
+    "plan": {
+      "path": "~/.claude/skills/plan/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC。要件再述→フェーズ分解→confirm-before-code ゲート。planning.md rule と補完関係。",
+      "mtime": "2026-04-07T12:07:07Z"
+    },
+    "product-lens": {
+      "path": "~/.claude/skills/product-lens/SKILL.md",
+      "verdict": "Improved",
+      "reason": "Integration セクションの存在しないコマンド参照（/browser-qa, /design-system, /canary-watch）を既存スキル（/e2e, /verify, /code-review）に差し替え。",
+      "mtime": "2026-04-07T11:06:18Z"
+    },
+    "ai-regression-testing": {
+      "path": "~/.claude/skills/ai-regression-testing/SKILL.md",
+      "verdict": "Keep",
+      "reason": "回帰パターンカタログ + Vitest セットアップ。テスト系スキルと直交。",
+      "mtime": "2026-03-28T23:47:31Z"
+    },
+    "python-review": {
+      "path": "~/.claude/skills/python-review/SKILL.md",
+      "verdict": "Keep",
+      "reason": "python-reviewer エージェント呼び出し + mypy/ruff/bandit/pip-audit 自動チェック。",
+      "mtime": "2026-04-07T12:07:07Z"
+    },
+    "refactor-clean": {
+      "path": "~/.claude/skills/refactor-clean/SKILL.md",
+      "verdict": "Keep",
+      "reason": "6ステップ死コード除去ループ。5言語ツール表。",
+      "mtime": "2026-03-31T23:35:17Z"
+    },
+    "rules-distill": {
+      "path": "~/.claude/skills/rules-distill/SKILL.md",
+      "verdict": "Keep",
+      "reason": "3フェーズ蒸留パイプライン。ルール最新化のメタスキル。",
+      "mtime": "2026-04-07T10:54:52Z"
+    },
+    "skill-comply": {
+      "path": "~/.claude/skills/skill-comply/SKILL.md",
+      "verdict": "Keep",
+      "reason": "3段階シナリオ生成→実行→行動分類。ルール遵守の計測ツール。",
+      "mtime": "2026-03-20T05:14:35Z"
+    },
+    "skill-create": {
+      "path": "~/.claude/skills/skill-create/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC。git 履歴からパターン抽出→SKILL.md 生成。learn-eval と補完（session vs repo level）。",
+      "mtime": "2026-04-07T12:07:07Z"
+    },
+    "tdd": {
+      "path": "~/.claude/skills/tdd/SKILL.md",
+      "verdict": "Improve",
+      "reason": "ECC（編集不可）。情報フラグ: tdd-workflow への死参照あり、PMXドメイン例混入。",
+      "mtime": "2026-04-07T12:07:07Z"
+    },
+    "test-coverage": {
+      "path": "~/.claude/skills/test-coverage/SKILL.md",
+      "verdict": "Keep",
+      "reason": "多言語カバレッジギャップ分析ループ。フレームワーク検出テーブル付き。",
+      "mtime": "2026-03-31T23:36:08Z"
+    },
+    "update-codemaps": {
+      "path": "~/.claude/skills/update-codemaps/SKILL.md",
+      "verdict": "Keep",
+      "reason": "トークン効率のアーキテクチャドキュメント生成。context-sync と補完（生成 vs 監査）。",
+      "mtime": "2026-03-31T23:36:24Z"
+    },
+    "build-fix": {
+      "path": "~/.claude/skills/build-fix/SKILL.md",
+      "verdict": "Keep",
+      "reason": "インクリメンタル修正ループ + エラー種別リカバリ表。verify→build-fix パイプライン。",
+      "mtime": "2026-03-31T23:32:04Z"
+    },
+    "update-docs": {
+      "path": "~/.claude/skills/update-docs/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ソースオブトゥルースからドキュメント生成。AUTO-GENERATED マーカー + 手動セクション保護。",
+      "mtime": "2026-03-31T23:36:37Z"
+    },
+    "verify": {
+      "path": "~/.claude/skills/verify/SKILL.md",
+      "verdict": "Keep",
+      "reason": "順序付き検証チェックリスト。quick/full/pre-commit/pre-pr モード。",
+      "mtime": "2026-04-07T12:13:21Z"
+    },
+    "write-prompt": {
+      "path": "~/.claude/skills/write-prompt/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Haiku エージェントでの軽量プロンプト生成。唯一の手段。",
+      "mtime": "2026-03-19T03:17:47Z"
+    },
+    "auto-fix": {
+      "path": "~/.claude/skills/auto-fix/SKILL.md",
+      "verdict": "Keep",
+      "reason": "自律テスト修正ループ。max 10回、3-strike STUCK.md。",
+      "mtime": "2026-03-31T23:31:55Z"
+    },
+    "code-review": {
+      "path": "~/.claude/skills/code-review/SKILL.md",
+      "verdict": "Keep",
+      "reason": "3段階重大度チェックリスト。CRITICAL/HIGH でコミットブロック。",
+      "mtime": "2026-03-31T23:32:11Z"
+    },
+    "collect-context": {
+      "path": "~/.claude/skills/collect-context/SKILL.md",
+      "verdict": "Improved",
+      "reason": "Phase 2 の claude-mem MCP 参照を git log + sessions/snapshots/ フォールバックに差し替え。",
+      "mtime": "2026-03-31T23:32:47Z"
+    },
+    "context-sync": {
+      "path": "~/.claude/skills/context-sync/SKILL.md",
+      "verdict": "Keep",
+      "reason": "5フェーズドキュメント衛生ワークフロー。4役割分類の原則。",
+      "mtime": "2026-03-29T00:42:13Z"
+    },
+    "e2e": {
+      "path": "~/.claude/skills/e2e/SKILL.md",
+      "verdict": "Improve",
+      "reason": "ECC（編集不可）。情報フラグ: PMX固有テストフロー混入。",
+      "mtime": "2026-04-07T12:07:07Z"
+    },
+    "ecc-contribute": {
+      "path": "~/.claude/skills/ecc-contribute/SKILL.md",
+      "verdict": "Keep",
+      "reason": "ECC 貢献の再現可能ワークフロー。CI 検証スクリプト付き。",
+      "mtime": "2026-04-07T12:13:16Z"
+    },
+    "learned/agent-self-modification-gates": {
+      "path": "~/.claude/skills/learned/agent-self-modification-gates.md",
+      "verdict": "Keep",
+      "reason": "可逆性×強制力の2軸マトリクス。自律パイプライン承認判断用。",
+      "mtime": "2026-03-25T11:09:08Z"
+    },
+    "learned/docker-local-llm-tradeoff": {
+      "path": "~/.claude/skills/learned/docker-local-llm-tradeoff.md",
+      "verdict": "Keep",
+      "reason": "macOS Docker + Metal GPU 19x 低下の実証データ。",
+      "mtime": "2026-03-15T03:51:50Z"
+    },
+    "learned/llm-pipeline-layering": {
+      "path": "~/.claude/skills/learned/llm-pipeline-layering.md",
+      "verdict": "Keep",
+      "reason": "小規模LLMパイプライン。50エピソードベンチマーク裏付き。",
+      "mtime": "2026-03-31T07:23:19Z"
+    },
+    "learned/md040-code-fence-fix": {
+      "path": "~/.claude/skills/learned/md040-code-fence-fix.md",
+      "verdict": "Keep",
+      "reason": "sed フェンス開閉曖昧性トラップ + Python state-tracking fix。",
+      "mtime": "2026-03-21T11:09:10Z"
+    },
+    "learned/ai-debugging-recency-bias": {
+      "path": "~/.claude/skills/learned/ai-debugging-recency-bias.md",
+      "verdict": "Merge into [rules/common/debugging.md]",
+      "reason": "前回verdict継続。rules/common/debugging.mdに'AI デバッグの注意点'として統合対象。",
+      "mtime": "2026-02-21T02:02:26Z"
+    },
+    "learned/ai-era-architecture-principles": {
+      "path": "~/.claude/skills/learned/ai-era-architecture-principles.md",
+      "verdict": "Keep",
+      "reason": "Micro-Dependencies Principle、'Can Claude Code implement in <1 day?' decision rule。",
+      "mtime": "2026-02-21T10:12:45Z"
+    },
+    "learned/bash-macos-mapfile-workaround": {
+      "path": "~/.claude/skills/learned/bash-macos-mapfile-workaround.md",
+      "verdict": "Keep",
+      "reason": "55行。macOS bash 3.2 gotcha。while-read workaround。",
+      "mtime": "2026-02-21T01:59:11Z"
+    },
+    "learned/brainstorming-communication": {
+      "path": "~/.claude/skills/learned/brainstorming-communication.md",
+      "verdict": "Retire",
+      "reason": "前回verdict継続。34行、rules/common/planning.mdと重複。",
+      "mtime": "2026-02-21T01:55:59Z"
+    },
+    "learned/cjk-aware-text-metrics": {
+      "path": "~/.claude/skills/learned/cjk-aware-text-metrics.md",
+      "verdict": "Keep",
+      "reason": "CJK Unicode range detection、weighted token estimation。",
+      "mtime": "2026-02-21T01:58:18Z"
+    },
+    "learned/claude-code-headless-automation": {
+      "path": "~/.claude/skills/learned/claude-code-headless-automation.md",
+      "verdict": "Keep",
+      "reason": "258行。verified CLI flags, MCP stdin fix, OAuth, launchd pitfalls。battle-tested。",
+      "mtime": "2026-02-23T08:14:42Z"
+    },
+    "learned/claude-code-self-generation-over-api": {
+      "path": "~/.claude/skills/learned/claude-code-self-generation-over-api.md",
+      "verdict": "Keep",
+      "reason": "Claude Code直接生成 vs APIスクリプトのdecision framework。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "learned/claude-code-tool-patterns": {
+      "path": "~/.claude/skills/learned/claude-code-tool-patterns.md",
+      "verdict": "Keep",
+      "reason": "Hook JSON escape trap。小さいが高価値。",
+      "mtime": "2026-03-08T12:00:05Z"
+    },
+    "learned/claude-command-shadow-pattern": {
+      "path": "~/.claude/skills/learned/claude-command-shadow-pattern.md",
+      "verdict": "Merge into [MEMORY.md]",
+      "reason": "前回verdict継続。45行、MEMORY.mdの2-3行拡張で代替可。",
+      "mtime": "2026-02-21T01:51:22Z"
+    },
+    "learned/content-topic-3axis-evaluation": {
+      "path": "~/.claude/skills/learned/content-topic-3axis-evaluation.md",
+      "verdict": "Merge into [idea-validation-3axis]",
+      "reason": "前回verdict継続。同構造の3軸評価。Content Variantとして統合。",
+      "mtime": "2026-02-21T01:58:25Z"
+    },
+    "learned/cross-source-fact-verification": {
+      "path": "~/.claude/skills/learned/cross-source-fact-verification.md",
+      "verdict": "Keep",
+      "reason": "5-step fact-checking methodology。trust hierarchy。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "learned/data-generation-quality-metrics-loop": {
+      "path": "~/.claude/skills/learned/data-generation-quality-metrics-loop.md",
+      "verdict": "Merge into parallel-subagent-batch-merge",
+      "reason": "前回verdict継続。品質ループをbatch-mergeの品質検証フェーズに統合。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "learned/idea-validation-3axis": {
+      "path": "~/.claude/skills/learned/idea-validation-3axis.md",
+      "verdict": "Keep",
+      "reason": "3-axis validation framework。content-topic統合後の単一参照。",
+      "mtime": "2026-03-03T14:28:38Z"
+    },
+    "learned/json-data-validation-test-design": {
+      "path": "~/.claude/skills/learned/json-data-validation-test-design.md",
+      "verdict": "Merge into parallel-subagent-batch-merge",
+      "reason": "前回verdict継続。5-layer pytest validationをbatch-mergeのTesting sectionに統合。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "learned/kimi-peer-review-for-strategy": {
+      "path": "~/.claude/skills/learned/kimi-peer-review-for-strategy.md",
+      "verdict": "Keep",
+      "reason": "Kimi K2.5 strategic peer review。4-persona framework。",
+      "mtime": "2026-02-25T12:03:34Z"
+    },
+    "learned/knowledge-placement-decision": {
+      "path": "~/.claude/skills/learned/knowledge-placement-decision.md",
+      "verdict": "Keep",
+      "reason": "Meta-skill。3-question decision tree。/learn-evalで使用。",
+      "mtime": "2026-02-25T11:02:32Z"
+    },
+    "learned/parallel-subagent-batch-merge": {
+      "path": "~/.claude/skills/learned/parallel-subagent-batch-merge.md",
+      "verdict": "Keep",
+      "reason": "145行。batch splitting, parallel execution, 3-format normalization。data-gen/json-validation のmerge target。",
+      "mtime": "2026-03-08T11:54:10Z"
+    },
+    "learned/python-immutable-accumulator": {
+      "path": "~/.claude/skills/learned/python-immutable-accumulator.md",
+      "verdict": "Keep",
+      "reason": "Frozen dataclass + tuple accumulation。slots gotcha。",
+      "mtime": "2026-03-03T14:30:24Z"
+    },
+    "learned/python-module-to-package-refactor": {
+      "path": "~/.claude/skills/learned/python-module-to-package-refactor.md",
+      "verdict": "Keep",
+      "reason": "mock.patch() target resolution。'patch where LOOKED UP' rule。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "learned/python-optional-dependencies": {
+      "path": "~/.claude/skills/learned/python-optional-dependencies.md",
+      "verdict": "Keep",
+      "reason": "Optional dependency packaging。TYPE_CHECKING guard gotcha。",
+      "mtime": "2026-03-08T12:00:22Z"
+    },
+    "learned/root-cause-challenge-pattern": {
+      "path": "~/.claude/skills/learned/root-cause-challenge-pattern.md",
+      "verdict": "Keep",
+      "reason": "5-step methodology。YAGNI/sunk-cost trigger checklist。",
+      "mtime": "2026-03-08T12:00:38Z"
+    },
+    "learned/service-layer-extraction": {
+      "path": "~/.claude/skills/learned/service-layer-extraction.md",
+      "verdict": "Keep",
+      "reason": "47行。CLI-to-service translation table。",
+      "mtime": "2026-02-17T22:46:20Z"
+    },
+    "learned/skill-stocktaking-process": {
+      "path": "~/.claude/skills/learned/skill-stocktaking-process.md",
+      "verdict": "Merge into [skill-stocktake]",
+      "reason": "前回verdict継続。179行がskill-stocktake SKILL.mdと重複。固有コンテンツ統合対象。",
+      "mtime": "2026-02-20T06:46:30Z"
+    },
+    "learned/xcodebuildmcp-ui-verification": {
+      "path": "~/.claude/skills/learned/xcodebuildmcp-ui-verification.md",
+      "verdict": "Keep",
+      "reason": "XcodeBuildMCP gotchas。g-kentei-ios向け。",
+      "mtime": "2026-03-01T10:27:20Z"
+    },
+    "learned/claude-code-history-jsonl-analysis": {
+      "path": "~/.claude/skills/learned/claude-code-history-jsonl-analysis.md",
+      "verdict": "Retire",
+      "reason": "前回verdict継続。trivial Python。MEMORY.md 1行で代替可。",
+      "mtime": "2026-03-04T11:05:04Z"
+    },
+    "learned/llm-memory-trust-boundary": {
+      "path": "~/.claude/skills/learned/llm-memory-trust-boundary.md",
+      "verdict": "Keep",
+      "reason": "蓄積型prompt injection trust boundary。LLM固有セキュリティ。",
+      "mtime": "2026-03-07T22:03:59Z"
+    },
+    "learned/llm-social-agent-anti-pattern": {
+      "path": "~/.claude/skills/learned/llm-social-agent-anti-pattern.md",
+      "verdict": "Keep",
+      "reason": "3 anti-patterns: filter over-blocking, output parsing, session memory。",
+      "mtime": "2026-03-05T21:02:32Z"
+    },
+    "learned/python-http-client-security": {
+      "path": "~/.claude/skills/learned/python-http-client-security.md",
+      "verdict": "Merge into rules/python/security.md",
+      "reason": "前回verdict継続。42行。rules/python/security.mdに統合済み（Bearer token redirect, sanitizer bypass）。",
+      "mtime": "2026-03-05T13:31:06Z"
+    },
+    "proj/catchify": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/catchify/SKILL.md",
+      "verdict": "Keep",
+      "reason": "冒頭事件化・見出し感情化の変換パターン。zenn-writer と補完。",
+      "mtime": "2026-03-04T11:15:19Z"
+    },
+    "proj/chatlog-to-article": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/chatlog-to-article/SKILL.md",
+      "verdict": "Improved",
+      "reason": "Step 5 の pdf2anki docs/architecture 死参照と TODO.md 参照を TodoWrite ベースに差し替え。",
+      "mtime": "2026-02-21T10:12:42Z"
+    },
+    "proj/content-research-writer": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/content-research-writer/SKILL.md",
+      "verdict": "Merged",
+      "reason": "Zenn Article Workflow (Phase 1-4) を zenn-writer に統合。disable-model-invocation: true で無効化。",
+      "mtime": "2026-02-21T10:12:54Z"
+    },
+    "proj/publish-article": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/publish-article/SKILL.md",
+      "verdict": "Updated",
+      "reason": "Step 7-12 を published_at 予約投稿方式に全面書き換え。Qiita/Hashnode/zenn_publish.py/depends_on 参照を削除。",
+      "mtime": "2026-03-03T14:12:52Z"
+    },
+    "proj/schedule-publish": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/schedule-publish/SKILL.md",
+      "verdict": "Updated",
+      "reason": "Output Format から qiita/hashnode/zenn_published/depends_on 削除。Cross-Post Timing を published_at + Dev.to only に書き換え。",
+      "mtime": "2026-03-03T11:18:17Z"
+    },
+    "proj/seo-optimizer": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/seo-optimizer/SKILL.md",
+      "verdict": "Improved",
+      "reason": "Step 2 タイトル最適化を zenn-writer 改訂方針（概念の誠実な呼びかけ）と整合。問題解決型/比較型テンプレートを削除。",
+      "mtime": "2026-02-17T22:35:06Z"
+    },
+    "proj/translate-article": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/translate-article/SKILL.md",
+      "verdict": "Updated",
+      "reason": "Hashnode 参照全削除。canonical URL /shimomoto/ → 削除（EN記事にはcanonical不要）。devto-translator エージェントとの関係を冒頭に明記。",
+      "mtime": "2026-02-17T22:35:07Z"
+    },
+    "proj/zenn-format": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/zenn-format/SKILL.md",
+      "verdict": "Keep",
+      "reason": "Zenn Markdown 構文のカノニカルリファレンス。安定・現役。",
+      "mtime": "2026-02-27T14:10:59Z"
+    },
+    "proj/zenn-writer": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/zenn-writer/SKILL.md",
+      "verdict": "Keep",
+      "reason": "タイトル方針（概念の誠実な呼びかけ）・文体の権威的ガイド。Tone Calibration + Research-Driven Writing セクション統合済み。",
+      "mtime": "2026-03-24T11:58:48Z"
+    },
+    "proj/learned/article-anonymization-pattern": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/article-anonymization-pattern.md",
+      "verdict": "Keep",
+      "reason": "セキュリティ記事の3段階匿名化プロセス。grep 検証スクリプト付き。",
+      "mtime": "2026-04-12T08:48:01Z"
+    },
+    "proj/learned/concept-before-use-rule": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/concept-before-use-rule.md",
+      "verdict": "Keep",
+      "reason": "未知ツール先行説明テンプレート。reader-first-article-review から参照。",
+      "mtime": "2026-02-24T11:14:02Z"
+    },
+    "proj/learned/reader-first-article-review": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/reader-first-article-review.md",
+      "verdict": "Keep",
+      "reason": "5カテゴリ公開前チェックリスト。editor と直交。",
+      "mtime": "2026-04-12T08:48:01Z"
+    },
+    "proj/learned/security-article-credibility": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/security-article-credibility.md",
+      "verdict": "Keep",
+      "reason": "セキュリティ主張の VERIFIED/OVERSTATED/GAP 分類。実例付き。",
+      "mtime": "2026-04-12T08:48:01Z"
+    },
+    "proj/learned/exploratory-tone-over-assertion": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/exploratory-tone-over-assertion.md",
+      "verdict": "Merged",
+      "reason": "変換テーブルを zenn-writer Tone Calibration セクションに統合。ファイル削除。",
+      "mtime": "2026-04-12T08:48:01Z"
+    },
+    "proj/learned/unresolved-narrative-over-resolution": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/unresolved-narrative-over-resolution.md",
+      "verdict": "Merged",
+      "reason": "5つの解決パターンを zenn-writer Tone Calibration セクションに統合。ファイル削除。",
+      "mtime": "2026-04-12T08:48:01Z"
+    },
+    "proj/learned/same-session-making-of": {
+      "path": "~/MyAI_Lab/zenn-content/.claude/skills/learned/same-session-making-of.md",
+      "verdict": "Retired",
+      "reason": "35行・実行コマンドなし。chatlog-to-article Step 1 で代替可。ファイル削除。",
+      "mtime": "2026-04-12T08:48:01Z"
+    },
+    "_swarm-backup/kimi-dispatch": {
+      "path": "~/.claude/skills/_swarm-backup/kimi-dispatch.md",
+      "verdict": "Retired",
+      "reason": "旧バージョンのバックアップ。kimi-dispatch/SKILL.md が正本。ファイル削除。",
+      "mtime": "2026-02-24T08:37:37Z"
+    },
+    "_swarm-backup/kimi-spec": {
+      "path": "~/.claude/skills/_swarm-backup/kimi-spec.md",
+      "verdict": "Retired",
+      "reason": "旧バージョンのバックアップ。kimi-spec/SKILL.md が正本。ファイル削除。",
+      "mtime": "2026-02-24T08:37:37Z"
+    },
+    "contemplative-agent-patterns": {
+      "path": "~/MyAI_Lab/contemplative-moltbook/.claude/skills/contemplative-agent-patterns.md",
+      "verdict": "Keep",
+      "reason": "前回verdict継続。v1.1 gotchas only。Core/Adapter separation ordering, requests redirect leak。",
+      "mtime": "2026-03-11T20:36:54Z"
+    },
+    "moltbook-adapter-patterns": {
+      "path": "~/MyAI_Lab/contemplative-moltbook/.claude/skills/moltbook-adapter-patterns.md",
+      "verdict": "Keep",
+      "reason": "前回verdict継続。2 patterns remaining (Framework Evangelist, self-reply loop)。",
+      "mtime": "2026-03-13T23:25:12Z"
+    },
+    "moltbook-api": {
+      "path": "~/MyAI_Lab/contemplative-moltbook/.claude/skills/moltbook-api.md",
+      "verdict": "Keep",
+      "reason": "前回verdict継続。30-line pointer to docs/moltbook-api.md。",
+      "mtime": "2026-03-13T23:25:12Z"
+    },
+    "moltbook-report": {
+      "path": "~/MyAI_Lab/contemplative-moltbook/.claude/skills/moltbook-report.md",
+      "verdict": "Keep",
+      "reason": "前回verdict継続。Obsidian report generation skill。",
+      "mtime": "2026-03-12T09:02:32Z"
+    }
+  }
+}

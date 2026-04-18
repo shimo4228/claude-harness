@@ -1,0 +1,98 @@
+{
+  "distilled_at": "2026-03-18T14:30:00Z",
+  "skills_scanned": 56,
+  "rules_scanned": 22,
+  "candidates": {
+    "iteration-bounds": {
+      "principle": "All loops and iterative processes MUST have explicit stop conditions",
+      "verdict": "New Section",
+      "target": "rules/common/coding-style.md",
+      "evidence": ["autonomous-loops", "continuous-agent-loop", "agent-harness-construction", "iterative-retrieval"],
+      "status": "applied"
+    },
+    "compaction-timing": {
+      "principle": "Compact context at phase boundaries, not arbitrary token thresholds",
+      "verdict": "Append",
+      "target": "rules/common/performance.md",
+      "evidence": ["strategic-compact", "agent-harness-construction"],
+      "status": "applied"
+    },
+    "author-reviewer-separation": {
+      "principle": "Run reviews in a separate agent process from the implementer",
+      "verdict": "Append",
+      "target": "rules/common/agents.md",
+      "evidence": ["autonomous-loops", "kimi-peer-review-for-strategy", "ai-first-engineering"],
+      "status": "applied"
+    },
+    "retry-with-context": {
+      "principle": "Never blindly retry — capture error context and feed it forward",
+      "verdict": "Append",
+      "target": "rules/common/debugging.md",
+      "evidence": ["autonomous-loops", "continuous-agent-loop", "agent-harness-construction", "backend-patterns"],
+      "status": "applied"
+    },
+    "deterministic-over-probabilistic": {
+      "principle": "Prefer deterministic verification over LLM-as-judge for quality gates",
+      "verdict": "Append",
+      "target": "rules/common/testing.md",
+      "evidence": ["eval-harness", "verification-loop", "plankton-code-quality", "ai-first-engineering"],
+      "status": "applied"
+    },
+    "hooks-vs-skills-enforcement": {
+      "principle": "Use hooks (100% reliable) not skills (~50-80%) for behaviors that must execute every time",
+      "verdict": "Append",
+      "target": "rules/common/hooks.md",
+      "evidence": ["continuous-learning-v2", "continuous-learning", "plankton-code-quality"],
+      "status": "applied"
+    },
+    "hook-implementation": {
+      "principle": "Extract hook logic into external shell scripts to avoid JSON escape errors",
+      "verdict": "Append",
+      "target": "rules/common/hooks.md",
+      "evidence": ["claude-code-tool-patterns", "plankton-code-quality", "continuous-learning-v2"],
+      "status": "applied"
+    },
+    "llm-output-parsing": {
+      "principle": "Use multi-format regex + fail-closed defaults for LLM output parsing",
+      "verdict": "New File",
+      "target": "rules/common/llm-integration.md",
+      "evidence": ["small-llm-rubric-evaluation", "llm-social-agent-anti-pattern", "parallel-subagent-batch-merge"],
+      "status": "applied"
+    },
+    "llm-trust-boundaries": {
+      "principle": "Treat accumulated LLM memory as untrusted, same as external input",
+      "verdict": "New Section",
+      "target": "rules/common/security.md",
+      "evidence": ["llm-memory-trust-boundary", "llm-social-agent-anti-pattern", "security-scan"],
+      "status": "applied"
+    },
+    "test-behavior-not-implementation": {
+      "principle": "Test behavior and observable outputs, not implementation internals",
+      "verdict": "Append",
+      "target": "rules/common/testing.md",
+      "evidence": ["python-testing", "cpp-testing"],
+      "status": "applied"
+    },
+    "n-plus-1-prevention": {
+      "principle": "Batch-fetch related data, never query inside loops",
+      "verdict": "Append",
+      "target": "rules/common/coding-style.md",
+      "evidence": ["backend-patterns", "postgres-patterns"],
+      "status": "applied"
+    },
+    "knowledge-placement": {
+      "principle": "Append to existing skills over creating new files",
+      "verdict": "Append",
+      "target": "rules/common/skills.md",
+      "evidence": ["knowledge-placement-decision", "skill-stocktake", "rules-distill"],
+      "status": "applied"
+    },
+    "prototype-before-scale": {
+      "principle": "Run small-scale trial before full execution to establish quality baselines",
+      "verdict": "Append",
+      "target": "rules/common/planning.md",
+      "evidence": ["claude-code-self-generation-over-api", "eval-harness"],
+      "status": "applied"
+    }
+  }
+}
