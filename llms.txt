@@ -1,0 +1,68 @@
+# claude-harness
+
+> Public snapshot of the Claude Code harness (skills, agents, rules) used
+> day-to-day by shimo4228. Mechanically aggregated from `~/.claude/` for
+> assets tagged `origin: shimo4228`. Excludes ECC-derived material
+> (`origin: ECC` / `ECC-customized`) and auto-extracted artifacts.
+>
+> Bundles skills covering research-before-coding, knowledge extraction,
+> skill auditing, AI-facing documentation, human-facing writing review,
+> JSON-LD knowledge graph design, authorship strategy, and DOI release;
+> agents for prompt generation and editorial review; rules covering
+> planning, the AKC cycle, authorship strategy, and skill origin tracking.
+> The first six skills (search-first, learn-eval, skill-stocktake,
+> rules-distill, skill-comply, context-sync) are the building blocks of
+> the Agent Knowledge Cycle (AKC) and are also published as standalone
+> repos.
+
+## Core documentation
+
+- [Full AI Reference](llms-full.txt): self-contained AI-facing reference — Project Facts, Prior Research References, and 18+ Q&A covering AKC, origin tracking, skills vs rules, agent orchestration, contemplative axioms, and Python-implemented skills. Optimized for AI search engine citation (ChatGPT, Perplexity, Gemini). English-only by design.
+- [README](README.md): project overview, positioning, install instructions (English, human-facing, canonical)
+- [README (Japanese)](README.ja.md): same content in Japanese
+
+## Skills
+
+Each skill defines a workflow that Claude can invoke via slash command (`/<skill-name>`) or naturally trigger from its description.
+
+- [search-first](skills/search-first/SKILL.md): research-before-coding workflow — invokes the scout agent to discover existing libraries, MCP servers, or GitHub solutions before writing custom code
+- [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
+- [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — Quick Scan (changed only) and Full Stocktake modes with parallel subagent evaluation
+- [rules-distill](skills/rules-distill/SKILL.md): scans skills to extract cross-cutting principles and promotes them to deterministic rules
+- [skill-comply](skills/skill-comply/SKILL.md): measures actual compliance of skills, rules, and agents — generates scenarios at 3 prompt strictness levels and classifies behavioral sequences
+- [context-sync](skills/context-sync/SKILL.md): audits and fixes project documentation — detects role overlap between context files (CLAUDE.md, CODEMAPS, ADR, README), checks freshness against code, creates missing docs
+- [llms-txt-writer](skills/llms-txt-writer/SKILL.md): writes AI-facing documentation (llms.txt, llms-full.txt, FAQ pages, glossaries) with Answer.AI llms.txt standard compliance and GEO/AEO static analysis (GEO-SFE 5 checks)
+- [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md): designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt for projects with stable concept-level structure — encodes domain entities and relationships as schema.org triples for LLM citation
+- [writing-ecosystem](skills/writing-ecosystem/SKILL.md): orchestrator for human-facing writing and review — coordinates article-writing, editor, essay-reviewer, and fact-checker agents; enforces AI slop bans and voice conventions
+- [write-prompt](skills/write-prompt/SKILL.md): generates concise LLM prompts via the Haiku-powered prompt-writer agent (avoids Opus overthinking)
+- [collect-context](skills/collect-context/SKILL.md): gathers in-session and external context into source material files for article writing
+- [authorship-strategy](skills/authorship-strategy/SKILL.md): 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos
+- [release-doi](skills/release-doi/SKILL.md): cuts a versioned release of a DOI-registered research repo — Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging
+
+## Agents
+
+Specialized agents in `agents/`, each with its own tool allowlist.
+
+- [scout](agents/scout.md): pre-implementation solution discovery — searches npm, PyPI, MCP registries, GitHub, and the web for battle-tested alternatives before writing custom code
+- [prompt-writer](agents/prompt-writer.md): generates concise, focused prompts using a lightweight model (Haiku)
+- [editor](agents/editor.md): strict technical article editor — reviews tutorials, implementation guides, and debugging stories for code accuracy, AI slop, narrative flow, and terminology consistency
+- [essay-reviewer](agents/essay-reviewer.md): strict essay editor for idea/opinion articles mixing social theory, organizational analysis, design philosophy, historical perspective, and personal narrative
+- [fact-checker](agents/fact-checker.md): fact verification specialist — extracts verifiable factual claims from articles, searches web sources to verify them, reports per-claim verdicts (accurate, inaccurate, unverifiable)
+
+## Rules
+
+Behavioral principles auto-loaded every session from `rules/common/`. Rules fire deterministically; skills fire probabilistically.
+
+- [agents](rules/common/agents.md): agent orchestration conventions — when to use which agent, parallel execution patterns, author-reviewer separation
+- [akc-cycle](rules/common/akc-cycle.md): six-phase behavioral conventions of the Agent Knowledge Cycle (Research, Extract, Curate, Promote, Measure, Maintain) plus the scaffold-dissolution principle
+- [authorship-strategy](rules/common/authorship-strategy.md): pointer rule activating the 4-layer authorship-strategy framework when working in DOI-registered idea-rescue research repos
+- [planning](rules/common/planning.md): planning standards — required What / Why / Alternatives, Phase 0 external research mandate, evidence-based decision-making, prototype-before-scale
+- [skills](rules/common/skills.md): skill origin tracking spec, knowledge placement decision (existing skill vs new skill vs MEMORY.md), skill portability guidelines
+- [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
+
+## Related repositories
+
+- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200727) — the framework that the first six skills here implement
+- [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules): rule-only implementation of the four Contemplative AI axioms with adapters for Cursor, Copilot, and the Iterated Prisoner's Dilemma benchmark
+- [contemplative-moltbook](https://github.com/shimo4228/contemplative-moltbook): autonomous agent built on the AKC + Contemplative AI foundations — reference application of these patterns in a long-running runtime
+- `claude-skill-*` standalone repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync)

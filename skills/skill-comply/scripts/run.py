@@ -35,6 +35,11 @@ def main() -> None:
         help="Model for spec/scenario generation (default: haiku)",
     )
     parser.add_argument(
+        "--classifier-model",
+        default="sonnet",
+        help="Model for grading/classifying tool-call traces (default: sonnet)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Generate spec and scenarios without executing",
@@ -89,7 +94,7 @@ def main() -> None:
     for scenario in scenarios:
         print(f"       Running {scenario.level_name}...", end="", flush=True)
         run = run_scenario(scenario, model=args.model)
-        result = grade(spec, list(run.observations))
+        result = grade(spec, list(run.observations), classifier_model=args.classifier_model)
         graded_results.append((scenario.level_name, result, list(run.observations)))
         print(f" {result.compliance_rate:.0%}")
 

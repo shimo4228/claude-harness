@@ -10,11 +10,15 @@ from scripts.parser import ComplianceSpec, ObservationEvent
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
+# Sonnet handles long traces (50+ events × multi-step specs) within budget;
+# haiku times out on contemplative-style abstract specs whose prompts balloon.
+CLASSIFIER_TIMEOUT_SECONDS = 300
+
 
 def classify_events(
     spec: ComplianceSpec,
     trace: list[ObservationEvent],
-    model: str = "haiku",
+    model: str = "sonnet",
 ) -> dict[str, list[int]]:
     """Classify which tool calls match which compliance steps.
 
@@ -44,7 +48,7 @@ def classify_events(
         ["claude", "-p", prompt, "--model", model, "--output-format", "text"],
         capture_output=True,
         text=True,
-        timeout=60,
+        timeout=CLASSIFIER_TIMEOUT_SECONDS,
     )
 
     if result.returncode != 0:

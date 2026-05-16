@@ -232,6 +232,24 @@ contemplative-moltbook プロジェクト（2026-04-19）:
 
 ---
 
+## Companion JSON-LD Graph (Optional)
+
+Project が安定した concept-level 構造（matrix / hierarchy / phase-binding 等）を持ち、prose だけでは LLM に triple として伝えにくい場合、`graph.jsonld` を companion file として置ける。
+
+llms.txt / llms-full.txt 側でやること:
+
+- `llms.txt` 冒頭に Graph-first reading order block 追加（`> AI agents should read graph.jsonld first` blockquote + numbered "Recommended reading order" section）
+- `## Core documentation` の **最上位** に navigator entry を追加（"Read first" qualifier 推奨）
+- `llms-full.txt` 末尾に question-form H2（"How do X and Y relate as a graph?"）を追加し graph.jsonld を参照（question-form は 2.8x citation boost）
+- README.md（人間向け）冒頭に `<details><summary>AI-facing reading order</summary>` 折りたたみ block。追加の language mirror がある場合は summary tag と intro 行のみ localize、bullet list は paths なので en 共通でよい。ja を超える mirror を維持するかは traffic data に基づき判断（human viewers が統計的にゼロなら performative になりがち）
+- hub-and-spoke topology の場合、line 側 README から hub graph への reverse-link を上記 block 内に追加
+
+graph 自体の設計、schema vocabulary、cross-graph @id 規約、CODEMAPS との役割境界、verification workflow は別 skill が正本を持つ。
+
+See skill: [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md)
+
+---
+
 ## Verification
 
 ```bash

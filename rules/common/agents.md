@@ -21,12 +21,9 @@ Located in `~/.claude/agents/`:
 
 ## Immediate Agent Usage
 
-No user prompt needed:
-1. New module or non-trivial utility - Use **scout** agent (or inline search per coding-style rule)
-2. Complex feature requests - Use **planner** agent
-3. Code just written/modified - Use **code-reviewer** agent
-4. Bug fix or new feature - Use **tdd-guide** agent
-5. Architectural decision - Use **architect** agent
+各 agent をどの順序で起動するかは [`common/planning.md`](planning.md) の
+**Implementation Chain Specification** で定義する Chain Matrix に従う。
+このファイルは agent カタログ（上記）と並列実行原則（下記）の正本。
 
 ## Parallel Task Execution
 

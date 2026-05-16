@@ -1,111 +1,118 @@
+Language: English | [日本語](README.ja.md)
+
 # claude-harness
 
-shimo4228 が日常的に使っている Claude Code ハーネス (skills / agents / rules) の公開版。
+Public snapshot of the Claude Code harness (skills / agents / rules) that shimo4228 uses day-to-day.
 
-`~/.claude/` 配下から `origin: shimo4228` タグを持つ資産を機械的に集約したもの。ECC 由来 (origin: ECC / ECC-customized) や自動抽出物 (origin: auto-extracted) は含まない。
+A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`. ECC-derived material (`origin: ECC` / `ECC-customized`) and auto-extracted artifacts (`origin: auto-extracted`) are excluded.
 
-## 位置付け
+## Positioning
 
-- **対象**: Claude Code (CLI + IDE extensions) のユーザー、および agent skill / rule エコシステムを研究する開発者
-- **運用方針**: `~/.claude/` が source of truth、この repo は artifact として手動で同期。頻度が上がれば収集スクリプトで自動化する
-- **ライセンス**: MIT。自由にコピー・改変・再配布可能。fork して自分用にカスタマイズする使い方を歓迎
+- **Audience**: Claude Code (CLI + IDE extensions) users, and developers researching agent skill / rule ecosystems
+- **Source of truth**: `~/.claude/` is canonical; this repo is an artifact synced manually. If sync frequency grows, a collection script will automate it
+- **License**: MIT. Free to copy, modify, and redistribute. Forking and customizing for personal use is encouraged
 
-## 中身 (20 components)
+## Contents
 
-### Skills (10)
+### Skills
 
 | Skill | Purpose |
 |-------|---------|
-| [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow。scout agent を呼び出して既存ツールを探索 |
-| [learn-eval](skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
-| [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査。Quick Scan / Full Stocktake モードで並列評価 |
-| [rules-distill](skills/rules-distill/SKILL.md) | Skill 群から共通原則を抽出し、rule として昇格させる |
-| [skill-comply](skills/skill-comply/SKILL.md) | Skill / rule / agent の実際の遵守率を計測。3 段階 prompt で行動シーケンスを分類 |
-| [context-sync](skills/context-sync/SKILL.md) | プロジェクト documentation を監査・修正。役割重複検出、鮮度チェック、欠損作成 |
-| [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | llms.txt / llms-full.txt 等の AI 向けドキュメントを書く。Answer.AI 標準 + GEO/AEO 静的解析 |
-| [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | 人間向け執筆・レビューの orchestrator。editor / essay-reviewer / fact-checker の使い分け |
-| [write-prompt](skills/write-prompt/SKILL.md) | Haiku-powered prompt-writer agent で簡潔な prompt を生成 |
-| [collect-context](skills/collect-context/SKILL.md) | セッション内外のコンテキストを集めて記事執筆用の素材を作る |
+| [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow. Invokes the scout agent to discover existing tools |
+| [learn-eval](skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
+| [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill quality audit. Quick Scan / Full Stocktake modes with parallel evaluation |
+| [rules-distill](skills/rules-distill/SKILL.md) | Extracts cross-cutting principles from skills and promotes them to rules |
+| [skill-comply](skills/skill-comply/SKILL.md) | Measures actual compliance of skills / rules / agents. Classifies behavioral sequences across 3 prompt strictness levels |
+| [context-sync](skills/context-sync/SKILL.md) | Audits and fixes project documentation. Detects role overlap, checks freshness, creates missing docs |
+| [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | Writes AI-facing docs (llms.txt / llms-full.txt). Answer.AI standard + GEO/AEO static analysis |
+| [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | Designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt. Encodes domain entities and relationships as schema.org triples for LLM citation |
+| [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | Orchestrator for human-facing writing & review. Coordinates editor / essay-reviewer / fact-checker |
+| [write-prompt](skills/write-prompt/SKILL.md) | Generates concise prompts via the Haiku-powered prompt-writer agent |
+| [collect-context](skills/collect-context/SKILL.md) | Gathers in-session and external context into source material for article writing |
+| [authorship-strategy](skills/authorship-strategy/SKILL.md) | 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos |
+| [release-doi](skills/release-doi/SKILL.md) | Cuts a versioned release of a DOI-registered research repo (Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging) |
 
-> 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
+> The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
 
-### Agents (5)
+### Agents
 
 | Agent | Purpose |
 |-------|---------|
-| [scout](agents/scout.md) | Pre-implementation solution discovery。npm / PyPI / MCP registry / GitHub から既存解を検索 |
-| [prompt-writer](agents/prompt-writer.md) | 軽量モデルで簡潔な prompt を生成。LLM prompt template の作成・書き換え |
-| [editor](agents/editor.md) | Strict technical article editor。コード正確性、AI slop、narrative flow、用語一貫性を厳格にレビュー |
-| [essay-reviewer](agents/essay-reviewer.md) | Strict essay editor。社会理論 / 組織論 / デザイン哲学 / 個人ナラティブが混ざる idea 記事を対象 |
-| [fact-checker](agents/fact-checker.md) | 事実検証スペシャリスト。記事から検証可能な claim を抽出し web で verify |
+| [scout](agents/scout.md) | Pre-implementation solution discovery. Searches npm / PyPI / MCP registries / GitHub for existing solutions |
+| [prompt-writer](agents/prompt-writer.md) | Generates concise prompts using a lightweight model. Creates and rewrites LLM prompt templates |
+| [editor](agents/editor.md) | Strict technical article editor. Rigorously reviews code accuracy, AI slop, narrative flow, and terminology consistency |
+| [essay-reviewer](agents/essay-reviewer.md) | Strict essay editor. Targets idea pieces mixing social theory / organizational analysis / design philosophy / personal narrative |
+| [fact-checker](agents/fact-checker.md) | Fact verification specialist. Extracts verifiable claims from articles and verifies them via web sources |
 
-### Rules (5)
+### Rules
 
-毎セッション自動ロードされる行動原則 (rule/common/ 配下):
+Behavioral principles auto-loaded every session (under `rules/common/`):
 
 | Rule | Purpose |
 |------|---------|
-| [agents](rules/common/agents.md) | Agent orchestration 規約。いつどの agent を使うか、並列実行のパターン |
-| [akc-cycle](rules/common/akc-cycle.md) | Agent Knowledge Cycle の 6 フェーズ行動規約 (Research / Extract / Curate / Promote / Measure / Maintain) |
-| [planning](rules/common/planning.md) | 計画時の必須項目 (What / Why / Alternatives)。Phase 0 外部調査の義務化 |
-| [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
-| [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
+| [agents](rules/common/agents.md) | Agent orchestration conventions. When to use which agent, parallel execution patterns |
+| [akc-cycle](rules/common/akc-cycle.md) | Six-phase behavioral conventions of the Agent Knowledge Cycle (Research / Extract / Curate / Promote / Measure / Maintain) |
+| [authorship-strategy](rules/common/authorship-strategy.md) | Pointer rule activating the 4-layer authorship-strategy framework when working in DOI-registered idea-rescue research repos |
+| [planning](rules/common/planning.md) | Required items for planning (What / Why / Alternatives). Mandates Phase 0 external research |
+| [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
+| [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
 
-## 使い方
+## Usage
 
-### 全部入り
+### Full install
 
 ```bash
 git clone https://github.com/shimo4228/claude-harness.git ~/.claude-harness
-# skills / agents / rules を ~/.claude/ にコピー
+# Copy skills / agents / rules into ~/.claude/
 cp -r ~/.claude-harness/skills/* ~/.claude/skills/
 cp -r ~/.claude-harness/agents/* ~/.claude/agents/
 cp -r ~/.claude-harness/rules/common/* ~/.claude/rules/common/
 ```
 
-### つまみ食い
+### Cherry-pick
 
-個別に欲しいものだけコピー:
+Copy only what you want:
 
 ```bash
 cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/
 ```
 
-### Python 実装付き skill のセットアップ
+### Setup for skills with Python implementations
 
-`llms-txt-writer`, `skill-comply`, `rules-distill`, `skill-stocktake` は Python 実装を含む。各 skill dir で:
+`llms-txt-writer`, `skill-comply`, `rules-distill`, and `skill-stocktake` ship with Python code. In each skill directory:
 
 ```bash
 cd ~/.claude/skills/<skill-name>
 uv sync  # or: pip install -e .
 ```
 
-## origin タグ
+## Origin tags
 
-各ファイルの frontmatter (YAML または HTML コメント) に `origin` フィールドが付いている:
+Each file's frontmatter (YAML or HTML comment) carries an `origin` field:
 
-| origin | 意味 |
-|--------|------|
-| `shimo4228` | shimo4228 作。この repo の対象 |
-| `ECC` | Everything Claude Code 由来。この repo には含めない |
-| `ECC-customized` | ECC 派生 + shimo4228 改良。含めない |
-| `auto-extracted` | `learn-eval` が自動抽出した learned skill。含めない |
+| origin | Meaning |
+|--------|---------|
+| `shimo4228` | Authored by shimo4228. The scope of this repo |
+| `ECC` | From Everything Claude Code. Not included here |
+| `ECC-customized` | ECC derivative + shimo4228 modifications. Not included |
+| `auto-extracted` | Learned skill auto-extracted by `learn-eval`. Not included |
 
-この repo は `origin: shimo4228` のみを機械収集した結果物。
+This repo is the result of a mechanical collection limited to `origin: shimo4228`.
 
-## 関連 repo
+## Related repos
 
-- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle) — AKC の概念と DOI 付きリリース (Zenodo: 10.5281/zenodo.19200727)
-- [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules) — Contemplative Constitutional AI の rule 実装
-- `claude-skill-*` 個別 repo 群 — AKC 各 skill の独立版 (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync)
+- [shimo4228](https://github.com/shimo4228/shimo4228) — Hub repo aggregating the three research lines (AKC / Contemplative Agent / AAP) and the supporting ecosystem
+- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle) — AKC concept and DOI release (Zenodo: 10.5281/zenodo.19200726)
+- [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules) — Rule implementation of Contemplative Constitutional AI
+- `claude-skill-*` standalone repos — Individual versions of each AKC skill (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) plus the adjacent skills (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem)
 
 ## Contributing
 
-この repo は shimo4228 個人の harness artifact なので、外部からの PR は受け付けない。代わりに:
-- Fork してご自由にカスタマイズ
-- Issue で質問・提案は歓迎
+This repo is shimo4228's personal harness artifact, so external PRs are not accepted. Instead:
+- Fork it and customize freely
+- Issues for questions or suggestions are welcome
 
-バグ修正の upstream 反映は `~/.claude/` 側に shimo4228 自身が取り込む。
+Bug fixes flow upstream into `~/.claude/` when shimo4228 incorporates them.
 
 ## License
 

@@ -28,9 +28,11 @@ Every project document should serve exactly one of these four roles. Overlap cau
 | Role | Purpose | What belongs here | Examples |
 |------|---------|-------------------|---------|
 | **Context** | How to work in this project | Conventions, build/test commands, policies | CLAUDE.md, .cursorrules, AGENTS.md |
-| **Architecture** | What the code looks like now | Module structure, data flow, dependencies | docs/CODEMAPS/, docs/architecture/ |
+| **Architecture** | What the code looks like now (file-level) AND what concepts it defines (concept-level) | Module structure / data flow / dependencies (file-level prose); domain entities / relationships (concept-level triples) | docs/CODEMAPS/, docs/architecture/, graph.jsonld |
 | **Decisions** | Why the code is this way | Trade-offs, rejected alternatives, rationale | docs/adr/ |
 | **External** | What this project is | Purpose, quickstart, API overview | README.md |
+
+**Architecture role には 2 surface が共存しうる**: prose（CODEMAPS — 「どのファイルに X が住むか」）と JSON-LD triples（graph.jsonld — 「X とは何か / X と Y はどう関係するか」）。両者は重複せず相補的。役割境界の詳細は `jsonld-knowledge-graph` skill が正本を持つ。
 
 ### Common Anti-Patterns
 
@@ -57,7 +59,8 @@ Context files:
 - AGENTS.md, .github/copilot-instructions.md
 
 Architecture docs:
-- docs/CODEMAPS/, docs/architecture/, docs/design/
+- docs/CODEMAPS/, docs/architecture/, docs/design/ (file-level prose)
+- graph.jsonld (concept-level architecture, schema.org JSON-LD; sibling of CODEMAPS, not a replacement)
 
 Decision records:
 - docs/adr/, docs/decisions/
@@ -103,9 +106,23 @@ Architecture docs contain...      → Should move to...
 "We decided to..."                → Decision record (ADR)
 Build/test commands               → Context file
 ─────────────────────────────────────────────────────
+
+graph.jsonld contains...           → Should move to...
+─────────────────────────────────────────────────────
+File path lists (>5 paths)         → CODEMAPS (file-level prose)
+Build / install commands           → CLAUDE.md (Context)
+Decision rationale                 → ADR (Decisions)
+Version numbers / counts           → REMOVE (volatile state forbidden)
+─────────────────────────────────────────────────────
+
+CODEMAPS contains...               → Should also exist in graph.jsonld
+─────────────────────────────────────────────────────
+Named concepts with definitions    → graph.jsonld Concept node (drift if missing)
+Inter-concept relationships        → graph.jsonld edges (drift if missing)
+─────────────────────────────────────────────────────
 ```
 
-Also check for contradictions between files (e.g., different module counts in context file vs architecture docs).
+Also check for contradictions between files (e.g., different module counts in context file vs architecture docs, or graph.jsonld Concept node whose `name` no longer matches CODEMAPS prose definition).
 
 **Actions:**
 1. List each overlap with: source file, line range, target role, reason
@@ -183,6 +200,13 @@ git log -1 --format="%ci" -- <doc-file>
 - [ ] No documentation files untouched for 90+ days (flag as potentially stale)
 - [ ] ADR index matches actual ADR files on disk
 
+If `graph.jsonld` exists in the repo, also check:
+- [ ] `ResearchLine` `@id` uses concept DOI (parent record), not latest versioned DOI
+- [ ] `EcosystemRepo` URLs resolve (not 404; `curl -sI <url> | head -1`)
+- [ ] Each `Concept` node has corresponding mention in CODEMAPS prose (bidirectional reference)
+- [ ] `grep -E '"version"|"versionNumber"|"adrCount"|"testCount"|v[0-9]+\.[0-9]+' graph.jsonld` returns empty (no volatile state)
+- [ ] `python3 -m json.tool < graph.jsonld > /dev/null` succeeds (valid JSON)
+
 **Actions:**
 1. Report each mismatch with current value vs documented value
 2. Propose specific edits
@@ -216,6 +240,7 @@ Status: All documentation roles covered, no overlaps remaining.
 
 ## What This Skill Does NOT Do
 
-- Code quality checks (linting, testing, building) — use `verification-loop`
+- Code quality checks (linting, testing, building) — use `verify`
 - Token/context window analysis — use `context-budget`
 - Agent-specific memory management (e.g., auto-memory systems)
+- `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`

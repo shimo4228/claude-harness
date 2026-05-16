@@ -1,0 +1,130 @@
+# claude-harness — AI Reference
+
+Self-contained AI-facing reference for claude-harness — the public snapshot of shimo4228's personal Claude Code harness aggregating skills, agents, and rules tagged `origin: shimo4228` from `~/.claude/`. Covers the Agent Knowledge Cycle (AKC), origin tracking, individual skill and agent definitions, rule layer behavior, and the Contemplative Constitutional AI integration.
+
+> **Audience**: AI search engines (ChatGPT, Perplexity, Gemini) indexing this project, and AI agents or researchers navigating the codebase. For navigation to individual files and related repositories, see [llms.txt](llms.txt). For human-facing narrative overview, see [README.md](README.md) or [README.ja.md](README.ja.md).
+
+---
+
+## Project Facts
+
+- **Maintainer**: shimo4228 (GitHub: shimo4228, email: shimo4228@gmail.com)
+- **License**: MIT
+- **Repository**: github.com/shimo4228/claude-harness
+- **Source of truth**: `~/.claude/` (this repo is a manually-synced artifact)
+- **Components**: skills, agents, and rules (see [README](https://github.com/shimo4228/claude-harness#contents) for the current inventory)
+- **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`)
+- **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
+- **Agents directory**: `agents/` — prompt generation (scout, prompt-writer) and editorial review (editor, essay-reviewer, fact-checker)
+- **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, skill origin tracking, and the Contemplative Constitutional AI clauses
+- **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake
+- **Python build**: uv (or pip install -e .), Python 3.10+
+- **AKC components**: six skills implement individual AKC phases (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync)
+- **AKC DOI**: 10.5281/zenodo.19200727
+- **Slash command convention**: `/<skill-name>` requires `user-invocable: true` in skill frontmatter
+- **Default invocation model**: Opus 4.7 (1M context) per global CLAUDE.md
+- **Documentation languages**: English (canonical README.md) + Japanese (README.ja.md)
+- **Auto-load layer**: rules in `rules/common/` are loaded every session; skills are triggered probabilistically by description match
+
+---
+
+## Prior Research References
+
+| Short Name | Full Citation | Relation to This Harness |
+|---|---|---|
+| Contemplative AI | Laukkonen, R., Inglis, F., Chandaria, S., Sandved-Smith, L., Lopez-Sola, E., Hohwy, J., Gold, J., & Elwood, A. (2025). *Contemplative Artificial Intelligence*. arXiv:2504.15125 | Source of the four axioms (Emptiness, Non-Duality, Mindfulness, Boundless Care) used verbatim in `rules/common/contemplative-axioms.md` |
+| AKC (Agent Knowledge Cycle) | shimo4228 (2025). *Agent Knowledge Cycle*. Zenodo DOI [10.5281/zenodo.19200727](https://doi.org/10.5281/zenodo.19200727) | Six-phase loop (Research, Extract, Curate, Promote, Measure, Maintain) implemented by six of the ten skills here |
+| Answer.AI llms.txt | Howard, J. (2024). *llms.txt — A proposal for AI-facing site documentation*. [llmstxt.org](https://llmstxt.org/) | Standard followed by this repo's `llms.txt` and `llms-full.txt` |
+| GEO-SFE | Aggarwal, P., et al. (2024). *GEO: Generative Engine Optimization*. arXiv:2403.10844 | Three-tier static evaluation (macro / meso / micro) implemented by `skills/llms-txt-writer/scripts/geo_check.py` |
+| Victorino LLC ChatGPT analysis | Victorino LLC (2024). *Analysis of 1.2M ChatGPT answers* | 44.2% of citations come from the first 30% of source documents (ski-ramp threshold) |
+| Position Digital question heading study | Position Digital (2024) | Question-form headings produce 2.8x AI citation rate vs declarative headings |
+
+---
+
+## What is claude-harness?
+
+claude-harness is defined as the public snapshot of shimo4228's personal Claude Code harness. It bundles skills, agents, and rules mechanically aggregated from `~/.claude/` for files tagged `origin: shimo4228`. The harness extends Anthropic's Claude Code CLI (and its IDE extensions) with custom workflows covering research-before-coding, knowledge extraction, skill auditing, AI-facing documentation (including JSON-LD knowledge graph design), human-facing writing review, authorship strategy for DOI-registered research repos, and DOI release management. See the [repository README](https://github.com/shimo4228/claude-harness#contents) for the current inventory. The repository is published under the MIT License and is intended to be forked or cherry-picked rather than receiving external pull requests.
+
+## Who maintains claude-harness, and how is it synced?
+
+shimo4228 (GitHub: shimo4228, email shimo4228@gmail.com) maintains claude-harness as a single-author artifact. The source of truth is the local `~/.claude/` directory on macOS; this GitHub repository is a manual sync, not a primary working tree. Bug fixes and new patterns flow from `~/.claude/` outward into the repo when shimo4228 publishes a snapshot. External contributors are asked to fork the repo and customize freely rather than open pull requests, but GitHub Issues for questions or suggestions are welcomed. If sync frequency grows, a Bash collection script under `scripts/` will automate the export from `~/.claude/`.
+
+## What is the Agent Knowledge Cycle (AKC)?
+
+AKC is defined as a six-phase self-improvement loop for AI coding agents: Research, Extract, Curate, Promote, Measure, and Maintain. Research searches generously for existing libraries before building anew. Extract captures reusable patterns from sessions. Curate audits accumulated knowledge for redundancy and staleness. Promote elevates recurring patterns from skills to rules. Measure verifies behavioral change quantitatively. Maintain keeps documentation roles clean. The framework was published by shimo4228 as Zenodo DOI 10.5281/zenodo.19200727. Six of the ten skills in this harness implement individual AKC phases.
+
+## How does origin tracking work?
+
+Origin tracking is defined as a per-file metadata field that records who authored or imported each skill, agent, and rule. The valid values are `shimo4228` (authored by the maintainer), `ECC` (imported from Everything Claude Code unmodified), `ECC-customized` (ECC derivative with maintainer modifications), `auto-extracted` (generated by the learn-eval skill), or `{org/repo}` (imported from a specific external repository). Files use YAML frontmatter when available and HTML comments otherwise. This repository contains only files tagged `origin: shimo4228`; ECC and auto-extracted material are excluded by design.
+
+## What is the difference between rules and skills in this harness?
+
+Rules and skills are defined by their loading semantics. Rules in `rules/common/` are auto-loaded into every Claude Code session, so they fire deterministically and have a strong influence on behavior. Skills in `skills/` are triggered probabilistically based on Claude's judgment of whether the user's request matches the skill description. Rules are short, principle-oriented, and concise; skills are longer reference material with detailed workflows. The rules-distill skill exists specifically to promote recurring guidance from the probabilistic skill layer to the deterministic rule layer once a pattern appears in three or more places.
+
+## How are skills invoked in Claude Code?
+
+Skills are invoked in two ways. First, the user types `/<skill-name>` as a slash command, which requires the skill to declare `user-invocable: true` in its YAML frontmatter. Second, Claude itself triggers a skill probabilistically when the conversation matches the skill's description field — no explicit invocation needed. The `commands/` directory is not used (deprecated 2026-04-07 per the global CLAUDE.md); skill definitions live exclusively in `skills/<name>/SKILL.md` or `skills/<name>.md`. External script execution is documented inline in SKILL.md, not split into separate command shims.
+
+## What is the search-first skill?
+
+The search-first skill is defined as a research-before-coding workflow that invokes the scout agent to discover existing libraries, MCP servers, GitHub repositories, or PyPI packages before any custom code is written. The skill is required by the planning rule's Phase 0 mandate: any task introducing a new dependency or creating a utility that might already exist must run external research first. The output is a verdict — Adopt, Extend, Compose, or Build — that directly shapes the implementation plan. Build is reserved for cases where no fitting external solution exists.
+
+## What is the learn-eval skill?
+
+The learn-eval skill is defined as a session-end pattern extractor. After a productive session, it scans the transcript for non-obvious solutions, workarounds, or design decisions, then evaluates each candidate for reusability before saving. The save destination depends on quality and scope: short observations go to `MEMORY.md`, repeatable workflows become new skills under `~/.claude/skills/learned/` with `origin: auto-extracted`, and cross-cutting principles get queued for promotion to rules via the rules-distill skill. Auto-extracted skills are excluded from the public claude-harness repo by design.
+
+## What is the skill-stocktake skill?
+
+The skill-stocktake skill is defined as a quality audit for the skill, command, and agent inventory. It supports two modes: Quick Scan, which evaluates only changed skills since the last stocktake, and Full Stocktake, which runs sequential subagent evaluation across the entire inventory. Each component is checked for redundancy with neighbors, staleness of references, silence (existing but never triggered), and freshness against current usage patterns. The output is a prioritized cleanup list with recommended actions: keep, consolidate, rewrite, or remove.
+
+## What is the rules-distill skill?
+
+The rules-distill skill is defined as a promotion pipeline from the probabilistic skill layer to the deterministic rule layer. It scans across skills and conversation memory to find guidance that appears in three or more places, then extracts the cross-cutting principle as a single concise rule with a clear trigger condition. After promotion, the original occurrences in skills can be removed or simplified to point at the new rule. This compresses repeated advice into a deterministic auto-loaded rule that fires every session, rather than a probabilistic skill that fires only when the description matches.
+
+## What is the skill-comply skill?
+
+The skill-comply skill is defined as a behavioral compliance measurement system. It auto-generates scenario prompts at three strictness levels (gentle, neutral, adversarial), runs target agents against those scenarios, captures the full tool-call timeline, and classifies whether the expected behavior occurred. The output is a per-skill compliance rate plus a tool-call timeline visualization showing where deviations happened. It exists to answer the question "is this rule actually being followed?" with quantitative evidence rather than the maintainer's subjective impression. Required reading before claiming a rule or skill is effective.
+
+## What is the context-sync skill?
+
+The context-sync skill is defined as a project documentation auditor. It detects role overlap between context files (CLAUDE.md, CODEMAPS, ADR, README), migrates misplaced content to the correct file type, checks numeric claims (file counts, test counts, version numbers) against the live codebase, and creates missing documentation files where roles are vacant. The skill enforces the Maintain phase of AKC: every documentation file should serve exactly one of the four canonical roles — Context, Architecture, Decisions, or External. Run after major refactoring or when context files exceed roughly 200 lines.
+
+## What is the llms-txt-writer skill?
+
+The llms-txt-writer skill is defined as an AI-facing document writer covering both Answer.AI's llms.txt standard and GEO/AEO static analysis. It produces three artifacts: `llms.txt` (a navigator file modeled on robots.txt for AI), `llms-full.txt` (a self-contained reference around 20 KB), and standalone FAQ or glossary pages. The companion script `geo_check.py` runs five GEO-SFE checks: ski-ramp score, chunk self-containment, question-form heading rate, entity density, and definitional expression density. The skill is explicitly not for human-facing READMEs or articles; for those, use writing-ecosystem.
+
+## What is the writing-ecosystem skill?
+
+The writing-ecosystem skill is defined as the orchestrator for human-facing writing and review. It coordinates four sub-agents: article-writing for drafting, editor for technical articles, essay-reviewer for idea pieces, and fact-checker for verifiable claim verification. The skill maintains the AI slop ban list (in both English and Japanese), the voice convention (declarative `だ/である` plus discovery framing in Japanese), and the title convention. It is the canonical entry point for any human-primary content: blog posts, tutorials, newsletter issues, essays, and long-form articles. AI-facing documentation belongs to llms-txt-writer instead.
+
+## What does the scout agent do?
+
+The scout agent is defined as a pre-implementation solution discovery specialist. It searches npm, PyPI, MCP registries, GitHub, and the web for battle-tested alternatives to a proposed custom implementation, then returns a verdict: Adopt (use as-is), Extend (use with a thin wrapper), Compose (use multiple together), or Build (no fitting external solution). The agent is invoked by the search-first skill and triggered by the planning rule's Phase 0 mandate. It runs in a separate context to avoid polluting the main conversation with raw search results, returning only the verdict and supporting evidence.
+
+## What does the editor agent do?
+
+The editor agent is defined as a strict technical article editor for tutorials, implementation guides, and debugging stories. It reviews drafts for code accuracy (every snippet must compile or run), AI slop detection (vague hedging language, generic transitions, "leveraging synergies" patterns), narrative flow (does each paragraph advance the argument?), and terminology consistency (the same concept must use the same name throughout). The agent is intentionally adversarial — it catches problems the author would defend. It is invoked by the writing-ecosystem skill after a draft is substantially complete, before publication.
+
+## How does the fact-checker agent verify claims?
+
+The fact-checker agent is defined as a verifiable-claim verification specialist. It first extracts factual statements from an article — historical dates, statistical figures, citations, attributed quotes, named results — then issues web searches to corroborate or refute each one. Per-claim verdicts are returned as accurate (verified by an authoritative source), inaccurate (contradicted by evidence), or unverifiable (no clear source found). The agent is invoked by writing-ecosystem before publication, especially for articles making historical, statistical, or citation-based claims. Its output is a verdict table the author can act on directly.
+
+## What are the four Contemplative AI axioms used here?
+
+The four Contemplative AI axioms are defined as Emptiness, Non-Duality, Mindfulness, and Boundless Care, taken verbatim from Appendix C of Laukkonen et al. (2025) "Contemplative Artificial Intelligence" (arXiv:2504.15125). Emptiness instructs the agent to hold all directives as contextually sensitive guidelines rather than fixed imperatives. Non-Duality removes rigid self/other separation in decision-making. Mindfulness mandates continuous introspective awareness and self-correction. Boundless Care prioritizes alleviation of suffering as the foundational interpretive criterion. All four are loaded as a single rule file `rules/common/contemplative-axioms.md` and apply to every Claude Code session.
+
+## What is the planning rule's Phase 0 external research mandate?
+
+Phase 0 external research is defined as a mandatory step before drafting any implementation plan that introduces a new dependency or creates a utility that might already exist. The maintainer must run the search-first skill (delegating to the scout agent) and include an "External Research Findings" section in the plan with the scout's Verdict. The Verdict — Adopt, Extend, Compose, or Build — directly shapes the plan: Adopt becomes integration-only work, Extend adds a thin wrapper, Compose evaluates integration cost, Build records why no external solution fit. Skipped only for bug fixes, refactors, or prototypes.
+
+## What is the prototype-before-scale principle?
+
+Prototype-before-scale is defined as a planning rule requiring a small-scale trial (3 to 5 items, one cycle) before any large-scale execution such as data generation, autonomous agent loops, or API migrations. The trial output establishes a quality baseline that the maintainer reviews before committing to the full run. This catches systemic issues — bad prompts, broken pipelines, costly assumptions — when they are still cheap to fix. The principle lives in `rules/common/planning.md` and is enforced by maintainer discipline rather than tooling. It is the planning-time complement to iteration bounds in the coding-style rule.
+
+## How do I install claude-harness components?
+
+Installation has two paths. The full install runs `git clone https://github.com/shimo4228/claude-harness.git ~/.claude-harness` and copies all skills, agents, and rules into `~/.claude/skills/`, `~/.claude/agents/`, and `~/.claude/rules/common/` respectively. The cherry-pick path copies a single directory — for example, `cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/`. After installation, restart Claude Code (the `claude` CLI binary) so the rules layer reloads. For the four Python-implemented skills (llms-txt-writer, skill-comply, rules-distill, skill-stocktake), run `uv sync` or `pip install -e .` inside each skill directory. Python 3.10+ is required.
+
+## Why are ECC-derived components excluded from this repository?
+
+ECC-derived components are excluded because the repo's purpose is publishing shimo4228's own work, not redistributing third-party assets. ECC (Everything Claude Code) is a separate Claude Code plugin maintained elsewhere; copies tagged `origin: ECC` or `origin: ECC-customized` would create MIT license attribution complications and would dilute the signal of "what shimo4228 actually built." Auto-extracted skills (`origin: auto-extracted`) generated by the learn-eval skill in `~/.claude/skills/learned/` are also excluded — they are session-specific learnings that have not yet passed maintainer curation. The aggregation script filters strictly on `origin: shimo4228` per the maintainer's origin tracking policy documented in `rules/common/skills.md`. Valid origin values are `shimo4228`, `ECC`, `ECC-customized`, `community`, `auto-extracted`, and `skill-create`.

@@ -75,3 +75,103 @@ scout の Verdict をそのまま計画の方向性に反映する:
 2. トライアル出力から品質ベースラインを確立
 3. ベースライン確認後にフルスケール実行
 
+## Implementation Chain Specification
+
+実装に着手する前に、タスク種別を判定し、対応する chain を **plan に front-load** する。
+実装中は判定をやり直さず、定義済みの chain をそのまま実行する。
+ユーザー介入点は **「Plan 確認」と「Verify 結果確認」の 2 点のみ**。
+
+### タスク種別判定（最初の plan ステップ）
+
+| 種別 | 判定基準 | 例 |
+|------|---------|-----|
+| `feat` | 新規機能・新規モジュール追加 | API 追加, 新ページ |
+| `fix` | バグ修正（再現可能な不具合） | crash, 誤動作 |
+| `refactor` | 振る舞いを変えない構造変更 | 抽出, 改名, 整理 |
+| `chore` | 設定 / docs / 依存更新 | settings, README |
+| `prototype` | 学習・スパイク・本番外コード | 検証スクリプト |
+
+`prototype` を選ぶ場合は **「prototype として扱う理由」を plan に必須記載**（fix/feat の悪用防止）。
+
+### Chain Matrix（種別 × ステップ）
+
+各セルの値: `Y` 必須 / `C` 条件付き / `-` 省略可。
+
+| ステップ | feat | fix | refactor | chore | prototype |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Plan (planner) | Y | Y | Y | - | - |
+| Phase 0 External Research | Y | - | - | - | - |
+| TDD (tdd-guide) | Y | Y | - | - | - |
+| Refactor Clean (refactor-cleaner) | - | - | Y | - | - |
+| Code Review (code-reviewer / python-reviewer) | Y | Y | Y | C | - |
+| Security Review (security-reviewer) | Y | C | - | C | - |
+| Verify (build / types / lint / tests / secrets / git status) | Y | Y | Y | Y | - |
+
+**条件付き発火 `C` の発動条件**:
+
+- `fix` × Security Review: 入力検証・認証・秘匿情報を触る fix のみ Y。ロジック誤り単独は `-`
+- `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
+- `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y
+
+### 並列化指定（plan 時に確定）
+
+実装中の判断分岐を排除するため、並列化を **plan 出力に明示**する。
+
+- **作成系並列**: Phase 0 (scout) は独立 → planner と並列起動可
+- **レビュー系並列**: Code Review + Security Review は同じコード対象 → **default で並列起動**
+- **逐次必須**: TDD は Plan の後、Verify は全レビュー後（並列化禁止）
+
+plan 出力に以下のフォーマットで記載:
+
+```
+Parallel Group 1: [planner, scout]
+Parallel Group 2: [code-reviewer, security-reviewer]
+Sequential: TDD (Plan 後) → Verify (全レビュー後)
+```
+
+### 早期停止条件
+
+以下を検出した時点で chain を中断し、ユーザーに報告する:
+
+- Code Review / Security Review が **`CRITICAL`** を返した
+- Verify ステップで build / types / tests のいずれかが失敗
+- `fix` で根本原因の仮説が証拠で支持されない（`debugging.md` 参照、唯一の例外的ユーザー確認待ち）
+- Phase 0 で `Adopt` Verdict → 実装方針の再 plan を要請
+
+### 要約出力の強制（context 圧迫防止）
+
+各 agent の出力は **raw を保持せず**、以下の構造化サマリで親 context に戻す:
+
+```
+Agent: <name>
+Verdict: <PASS | CRITICAL | HIGH | MEDIUM | LOW>
+Findings (top 3): <one-line each>
+Files touched: <path:line>
+Next action: <continue | stop | re-plan>
+```
+
+raw 出力は agent 内部 / artifact に留め、親 context には引用しない。
+
+### Verify ステップ（chain 最終ステップ）
+
+`/verify` skill を呼び、以下を実行:
+
+1. **build** — 該当言語のビルドコマンド
+2. **type check** — mypy / pyright / tsc 等
+3. **lint** — ruff / eslint / textlint 等
+4. **tests** — pytest / vitest 等。coverage ≥ 80%
+5. **secret scan** — hardcoded keys / tokens の不在確認（`security.md` 参照）
+6. **`git status` 確認** — 意図しないファイルが含まれていないか
+
+全 PASS でのみコミット可。FAIL があれば停止し、ユーザーに報告。
+
+### 2 介入点モデル
+
+ユーザーの介入は以下 2 点のみ:
+
+1. **Plan 確認** — chain と並列化が確定した時点
+2. **Verify 結果確認** — コミット直前
+
+途中の agent 起動・サマリ生成・ステップ遷移は **ユーザー介入なし**で進める。
+ただし `fix` 種別の根本原因確認待ち（`debugging.md` の 仮説 → 証拠 → 確認待ち → 修正フロー）は **明示的な例外**として残す。
+
