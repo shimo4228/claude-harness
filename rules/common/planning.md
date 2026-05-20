@@ -16,7 +16,8 @@
 ## Phase 0: External Research (Plan Mode)
 
 計画のステップを書き出す**前に**、既存ソリューションを調査する。
-手順の詳細は `/search-first` スキル → scout エージェントに委任。
+
+**エントリポイントは `/search-first` skill の呼び出しに固定する**。WebSearch / scout を直接呼んで Phase 0 を済ませてはいけない — skill body が定める Step 0 (要件の text 出力) を skip すると、ユーザーに対する course-correct ウィンドウが閉じ、後段の Decide / Implement に必要な articulation が記録に残らない。scout は search-first の **Full Mode 内部** で起動される実装詳細であり、Phase 0 と等価ではない。
 
 ### トリガー条件
 
@@ -37,11 +38,11 @@
 ### 出力要件
 
 計画に **External Research Findings** セクションを必ず含める。
-内容: scout の Verdict 結果、または `/search-first` Quick Mode チェックリスト結果。
+内容: `/search-first` skill が返した Verdict (Quick Mode チェックリスト結果、または Full Mode で起動した scout の結果)。Verdict は skill 内部で確定するため、planning.md レイヤーでは "search-first を呼んだ" ことと "Verdict を受け取った" ことだけを保証する。
 
 ### Verdict に基づく判断
 
-scout の Verdict をそのまま計画の方向性に反映する:
+search-first skill が返した Verdict をそのまま計画の方向性に反映する:
 
 | Verdict | 計画への影響 |
 |---------|-------------|
@@ -117,7 +118,7 @@ scout の Verdict をそのまま計画の方向性に反映する:
 
 実装中の判断分岐を排除するため、並列化を **plan 出力に明示**する。
 
-- **作成系並列**: Phase 0 (scout) は独立 → planner と並列起動可
+- **作成系並列**: Phase 0 (`/search-first` 呼び出し) は独立 → planner と並列起動可。scout は search-first 内部で fan-out されるので、planning.md レイヤーでは並列単位として扱わない
 - **レビュー系並列**: Code Review + Security Review は同じコード対象 → **default で並列起動**
 - **逐次必須**: TDD は Plan の後、Verify は全レビュー後（並列化禁止）
 
@@ -136,7 +137,7 @@ Sequential: TDD (Plan 後) → Verify (全レビュー後)
 - Code Review / Security Review が **`CRITICAL`** を返した
 - Verify ステップで build / types / tests のいずれかが失敗
 - `fix` で根本原因の仮説が証拠で支持されない（`debugging.md` 参照、唯一の例外的ユーザー確認待ち）
-- Phase 0 で `Adopt` Verdict → 実装方針の再 plan を要請
+- Phase 0 (`/search-first`) で `Adopt` Verdict → 実装方針の再 plan を要請
 
 ### 要約出力の強制（context 圧迫防止）
 
