@@ -17,7 +17,6 @@ Located in `~/.claude/agents/`:
 | refactor-cleaner | Dead code cleanup | Code maintenance |
 | scout | Pre-implementation solution discovery | New module/utility creation |
 | prompt-writer | LLM prompt generation | Creating/rewriting prompts |
-| doc-updater | Documentation | Updating docs |
 
 ## Immediate Agent Usage
 
