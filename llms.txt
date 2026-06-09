@@ -7,9 +7,11 @@
 >
 > Bundles skills covering research-before-coding, knowledge extraction,
 > skill auditing, AI-facing documentation, human-facing writing review,
-> JSON-LD knowledge graph design, authorship strategy, and DOI release;
-> agents for prompt generation and editorial review; rules covering
-> planning, the AKC cycle, authorship strategy, and skill origin tracking.
+> JSON-LD knowledge graph design, academic paper writing / review / deposit,
+> JA→EN translation, Wikidata identifier federation, authorship strategy,
+> and DOI release; agents for prompt generation, editorial review, and
+> academic paper review; rules covering planning, the AKC cycle,
+> authorship strategy, and skill origin tracking.
 > The first six skills (search-first, learn-eval, skill-stocktake,
 > rules-distill, skill-comply, context-sync) are the building blocks of
 > the Agent Knowledge Cycle (AKC) and are also published as standalone
@@ -34,10 +36,22 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [llms-txt-writer](skills/llms-txt-writer/SKILL.md): writes AI-facing documentation (llms.txt, llms-full.txt, FAQ pages, glossaries) with Answer.AI llms.txt standard compliance and GEO/AEO static analysis (GEO-SFE 5 checks)
 - [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md): designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt for projects with stable concept-level structure — encodes domain entities and relationships as schema.org triples for LLM citation
 - [writing-ecosystem](skills/writing-ecosystem/SKILL.md): orchestrator for human-facing writing and review — coordinates article-writing, editor, essay-reviewer, and fact-checker agents; enforces AI slop bans and voice conventions
-- [write-prompt](skills/write-prompt/SKILL.md): generates concise LLM prompts via the Haiku-powered prompt-writer agent (avoids Opus overthinking)
+- [write-prompt](skills/write-prompt/SKILL.md): generates concise LLM prompts via the lightweight prompt-writer agent (avoids main-model overthinking)
 - [collect-context](skills/collect-context/SKILL.md): gathers in-session and external context into source material files for article writing
 - [authorship-strategy](skills/authorship-strategy/SKILL.md): 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos
 - [release-doi](skills/release-doi/SKILL.md): cuts a versioned release of a DOI-registered research repo — Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging
+- [adr-writer](skills/adr-writer/SKILL.md): records design decisions as numbered ADRs — directory detection, sequence numbering, index update; prose generation delegated to the adr-writer agent
+- [paper-ecosystem](skills/paper-ecosystem/SKILL.md): orchestrator for academic paper writing and review — role boundaries for paper-writing plus five reviewer agents; canonical home of Source Fidelity, Vocabulary Consistency, Academic Voice, Reader Clarity, and Citation Format rules
+- [paper-writing](skills/paper-writing/SKILL.md): drafting procedure for academic papers — title, outline, section drafting, abstract, references with claim-cite 1:1 mapping and direct primary-source access
+- [paper-deposit](skills/paper-deposit/SKILL.md): deposits a finished, reviewed paper to Zenodo as a standalone DOI record, optionally cross-posts to SSRN, and cross-links the minted DOI back into the research-program repository
+- [readme-writer](skills/readme-writer/SKILL.md): writes human-facing READMEs — deterministic structural lint plus holistic LLM review without scores
+- [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md): voice-preserving JA→EN translation for essays, research docs, and READMEs — term-lock, 2-pass self-revision, back-translation QA
+- [substack-publishing](skills/substack-publishing/SKILL.md): publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery
+- [hf-sync](skills/hf-sync/SKILL.md): mirrors graph.jsonld-bearing research repos to Hugging Face Datasets — flattens the graph and uploads alongside graph.jsonl
+- [wikidata-federation](skills/wikidata-federation/SKILL.md): creates Wikidata items for researchers, papers, and research repositories and cross-links QIDs with ORCID, DOI, and graph.jsonld
+- [when-code-when-llm](skills/when-code-when-llm/SKILL.md): decision framework for choosing deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test, worked examples in both directions
+- [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list
+- [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
 
 ## Agents
 
@@ -48,6 +62,13 @@ Specialized agents in `agents/`, each with its own tool allowlist.
 - [editor](agents/editor.md): strict technical article editor — reviews tutorials, implementation guides, and debugging stories for code accuracy, AI slop, narrative flow, and terminology consistency
 - [essay-reviewer](agents/essay-reviewer.md): strict essay editor for idea/opinion articles mixing social theory, organizational analysis, design philosophy, historical perspective, and personal narrative
 - [fact-checker](agents/fact-checker.md): fact verification specialist — extracts verifiable factual claims from articles, searches web sources to verify them, reports per-claim verdicts (accurate, inaccurate, unverifiable)
+- [adr-writer](agents/adr-writer.md): generates the 6-section ADR body (Status / Date / Context / Decision / Alternatives / Consequences) from supplied input only — never invents content
+- [codemap-writer](agents/codemap-writer.md): generates and refreshes docs/CODEMAPS/ — token-lean architecture documentation capped at ~1000 tokens per map
+- [paper-reviewer](agents/paper-reviewer.md): academic paper structure review — argument flow, section transitions, claim sharpness, evidence-claim alignment
+- [source-fidelity-checker](agents/source-fidelity-checker.md): reads each cited primary source directly and flags drift between paper claims and source content
+- [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md): verifies that terms carry consistent definitions throughout a paper and that sub-classifications are explicit at introduction
+- [clarity-reviewer](agents/clarity-reviewer.md): first-contact reader clarity review — coined-term budget, title-axis alignment, meta-commentary, insider-context dependency
+- [citation-formatter](agents/citation-formatter.md): verifies in-text citations against the reference list — format consistency, DOI and arXiv ID validity
 
 ## Rules
 
@@ -64,5 +85,5 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 
 - [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200727) — the framework that the first six skills here implement
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules): rule-only implementation of the four Contemplative AI axioms with adapters for Cursor, Copilot, and the Iterated Prisoner's Dilemma benchmark
-- [contemplative-moltbook](https://github.com/shimo4228/contemplative-moltbook): autonomous agent built on the AKC + Contemplative AI foundations — reference application of these patterns in a long-running runtime
+- [contemplative-agent](https://github.com/shimo4228/contemplative-agent): autonomous agent built on the AKC + Contemplative AI foundations — reference application of these patterns in a long-running runtime
 - `claude-skill-*` standalone repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync)

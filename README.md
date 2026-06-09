@@ -9,7 +9,7 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 ## Positioning
 
 - **Audience**: Claude Code (CLI + IDE extensions) users, and developers researching agent skill / rule ecosystems
-- **Source of truth**: `~/.claude/` is canonical; this repo is an artifact synced manually. If sync frequency grows, a collection script will automate it
+- **Source of truth**: `~/.claude/` is canonical; this repo is a one-way export produced by [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) (origin filter → secret scan → subtree replacement)
 - **License**: MIT. Free to copy, modify, and redistribute. Forking and customizing for personal use is encouraged
 
 ## Contents
@@ -27,10 +27,22 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | Writes AI-facing docs (llms.txt / llms-full.txt). Answer.AI standard + GEO/AEO static analysis |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | Designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt. Encodes domain entities and relationships as schema.org triples for LLM citation |
 | [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | Orchestrator for human-facing writing & review. Coordinates editor / essay-reviewer / fact-checker |
-| [write-prompt](skills/write-prompt/SKILL.md) | Generates concise prompts via the Haiku-powered prompt-writer agent |
+| [write-prompt](skills/write-prompt/SKILL.md) | Generates concise prompts via the lightweight prompt-writer agent |
 | [collect-context](skills/collect-context/SKILL.md) | Gathers in-session and external context into source material for article writing |
 | [authorship-strategy](skills/authorship-strategy/SKILL.md) | 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos |
 | [release-doi](skills/release-doi/SKILL.md) | Cuts a versioned release of a DOI-registered research repo (Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging) |
+| [adr-writer](skills/adr-writer/SKILL.md) | Records design decisions as numbered ADRs — directory detection, sequence numbering, index update; prose delegated to the adr-writer agent |
+| [paper-ecosystem](skills/paper-ecosystem/SKILL.md) | Orchestrator for academic paper writing & review — role boundaries for paper-writing plus five reviewer agents; holds Source Fidelity / Vocabulary / Voice / Clarity / Citation rules |
+| [paper-writing](skills/paper-writing/SKILL.md) | Drafting procedure for academic papers — title, outline, section drafting, abstract, references with claim-cite 1:1 mapping |
+| [paper-deposit](skills/paper-deposit/SKILL.md) | Deposits a finished, reviewed paper to Zenodo as a standalone DOI record, optionally cross-posts to SSRN, cross-links the DOI back into the research repo |
+| [readme-writer](skills/readme-writer/SKILL.md) | Writes human-facing READMEs — deterministic structural lint plus holistic LLM review (no scores) |
+| [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | Voice-preserving JA→EN translation for essays, research docs, and READMEs — term-lock, 2-pass, back-translation QA |
+| [substack-publishing](skills/substack-publishing/SKILL.md) | Publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery |
+| [hf-sync](skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
+| [wikidata-federation](skills/wikidata-federation/SKILL.md) | Creates Wikidata items for researchers / papers / repos and cross-links QIDs with ORCID, DOI, and graph.jsonld |
+| [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | Decision framework for deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test |
+| [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list |
+| [harness-sync](skills/harness-sync/SKILL.md) | One-way export of origin-filtered components from the live harness into this repo — collection, secret scan, subtree replacement |
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
 
@@ -43,6 +55,13 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [editor](agents/editor.md) | Strict technical article editor. Rigorously reviews code accuracy, AI slop, narrative flow, and terminology consistency |
 | [essay-reviewer](agents/essay-reviewer.md) | Strict essay editor. Targets idea pieces mixing social theory / organizational analysis / design philosophy / personal narrative |
 | [fact-checker](agents/fact-checker.md) | Fact verification specialist. Extracts verifiable claims from articles and verifies them via web sources |
+| [adr-writer](agents/adr-writer.md) | Generates the 6-section ADR body from supplied input only — never invents context or alternatives |
+| [codemap-writer](agents/codemap-writer.md) | Generates / refreshes `docs/CODEMAPS/` — token-lean architecture documentation, ~1000 tokens per map |
+| [paper-reviewer](agents/paper-reviewer.md) | Academic paper structure review — argument flow, section transitions, claim sharpness, evidence-claim alignment |
+| [source-fidelity-checker](agents/source-fidelity-checker.md) | Reads each cited primary source directly and flags drift between paper claims and source content |
+| [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md) | Verifies term definitions stay consistent and sub-classifications are explicit at introduction |
+| [clarity-reviewer](agents/clarity-reviewer.md) | First-contact reader clarity review — coined-term budget, title-axis alignment, meta-commentary, insider-context dependency |
+| [citation-formatter](agents/citation-formatter.md) | Verifies in-text citations against the reference list — format consistency, DOI / arXiv ID validity |
 
 ### Rules
 

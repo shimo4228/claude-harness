@@ -1,7 +1,7 @@
 <!-- origin: shimo4228 -->
 # AKC Rules
 
-Behavioral principles for AI coding agents implementing the Agent Knowledge Cycle. These rules distill the six AKC phases into actionable guidance that works without installing individual AKC skills.
+Behavioral principles for AI agents implementing the Agent Knowledge Cycle. These rules distill the AKC phases into actionable guidance that works without installing individual AKC skills.
 
 Copy this file to your agent's rules directory (e.g., `~/.claude/rules/`) and the cycle will run through natural conversation.
 
@@ -41,7 +41,7 @@ Skills, rules, and learned patterns accumulate over time. Periodically:
 
 ## Promote — Elevate recurring patterns to rules
 
-When the same guidance appears in three or more places (skills, memory, conversation):
+When the same guidance keeps resurfacing across skills, memory, and conversation — when the repetition itself has become the signal:
 
 1. Extract the cross-cutting principle
 2. Write it as a rule (concise, actionable, with a trigger condition)
@@ -56,7 +56,7 @@ Rules are loaded every session and shape behavior reliably. Skills are triggered
 Subjective assessment ("I think it's following the rule") is insufficient:
 
 1. Define what compliance looks like in observable terms
-2. Check whether the behavior actually occurs (tool call sequences, outputs, test results)
+2. Check whether the behavior actually occurs — in tool calls, outputs, test results, *and* the agent's stated reasoning and verdicts (judgment-phase compliance lives in text, not tool calls)
 3. If compliance is low, investigate whether the rule is unclear, the trigger is wrong, or the rule conflicts with another
 
 **Trigger**: After adding or modifying a rule, or when the user questions whether a rule is being followed.
@@ -79,5 +79,3 @@ These rules are scaffolding. As the user and agent internalize the cycle through
 - The rules become implicit in how work is approached
 - Individual rules may be simplified or removed as their principles are absorbed into conversation patterns
 - Success is measured not by rule count, but by whether the cycle runs naturally without explicit invocation
-
-See [scaffold-dissolution.md](scaffold-dissolution.md) for the full concept.

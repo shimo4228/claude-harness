@@ -86,8 +86,6 @@ uv run python -m scripts.run $ARGUMENTS
 
 既存スキルには確立された発見経路がある。新規ファイルは発見されないリスクがある。
 
-See skill: knowledge-placement-decision
-
 ## Skill Portability（内容ガイドライン）
 
 スキルは複数の文脈で再利用されることを前提とする。作成時に以下を守る。
@@ -102,3 +100,28 @@ See skill: knowledge-placement-decision
 - **Portability test**: 他人が install して、著者の個人文脈を一切知らずに使えるか？「この skill を理解するには `claude-skill-foo` を読む必要がある」状態なら、skill が原則違反している
 
 この rule は cycle skill（外部 repo）と design-pattern skill（in-repo `docs/skills/` 等）の両方に適用する。Origin Tracking は *誰が作ったか* を記録するが、Portability は *誰が使えるか* を決める。
+
+## Skill Repo Packaging（subagent 同梱と命名）
+
+skill repo を GitHub 公開する際、その skill が呼ぶ **subagent も同梱**する。同梱しないと installer が agent を別途探す羽目になり、canonical rules を agent が SKILL.md から参照する orchestrator skill は両方入れるまで壊れる。
+
+### 非対称（命名・compatibility の根拠）
+
+- **skill（SKILL.md）= オープンな cross-tool 標準**（Agent Skills / agentskills.io）。同じ skill が Codex / Gemini CLI / Cursor 等でも動く。
+- **subagent（`agents/*.md`）= Claude Code 固有**（標準は subagent を扱わない）。
+- → **agent を同梱する repo は Claude 固有**。repo 名は `claude-skill-` prefix を維持し `compatibility` frontmatter に Claude Code 向けと明記する。**pure-skill repo は cross-tool** なので prefix を外す（`<owner>/<skill-name>`）。awesome-list 掲載は `owner/skill-name` で並び repo prefix を見ないので、prefix は掲載可否に影響しない（命名は意味の正確さで決める）。
+
+### レイアウトと installer
+
+```
+repo/
+├── install.sh              # skills/* → ~/.claude/skills/、agents/*.md → ~/.claude/agents/
+├── skills/<name>/SKILL.md
+└── agents/<agent>.md       # top-level フラット（~/.claude/agents/ の peer）。nest しない
+```
+
+`install.sh` は **冪等**にする: 同一なら skip、異なれば `*.bak-<ts>` に退避してから上書き（`--force` / `--dry-run`）。全 repo で byte-identical に保つ（script 実体は各 repo に vendor、この rule では原則のみ）。README install 節は Option A（`./install.sh`）/ Option B（手動 `cp`）/ SkillsMP の 3 つを書く。
+
+### SkillsMP の caveat
+
+`/skills add <owner/repo>` は **`skills/` のみ install し `agents/` は入れない**。README に必ず注記する: SkillsMP 利用者は `cp agents/*.md ~/.claude/agents/`（または `install.sh`）を実行する。さもないと orchestrator が委譲先 agent を持たない。

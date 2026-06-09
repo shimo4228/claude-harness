@@ -1,12 +1,12 @@
 ---
 name: write-prompt
-description: Generate concise LLM prompts using the Haiku-powered prompt-writer agent. Avoids Opus overthinking.
+description: Generate concise LLM prompts using the lightweight prompt-writer agent. Avoids main-model overthinking.
 origin: shimo4228
 ---
 
 # /write-prompt — Lightweight Prompt Generation
 
-Haiku agent でプロンプトを生成する。Opus の「考えすぎ」を回避し、シンプルなプロンプトを得る。
+軽量モデル設定の `prompt-writer` agent でプロンプトを生成する。メインモデルの「考えすぎ」を回避し、シンプルなプロンプトを得る。
 
 ## Trigger
 
@@ -16,7 +16,7 @@ Haiku agent でプロンプトを生成する。Opus の「考えすぎ」を回
 ## Workflow
 
 1. ユーザーの入力を整理する（タスク説明、対象モデル、既存プロンプト、言語）
-2. `prompt-writer` agent (Haiku) を起動
+2. `prompt-writer` agent (軽量モデル設定) を起動
 3. 生成結果をユーザーに提示
 4. フィードバックがあれば指示を添えて再生成
 

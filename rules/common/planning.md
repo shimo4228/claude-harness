@@ -155,7 +155,7 @@ raw 出力は agent 内部 / artifact に留め、親 context には引用しな
 
 ### Verify ステップ（chain 最終ステップ）
 
-`/verify` skill を呼び、以下を実行:
+以下を実行:
 
 1. **build** — 該当言語のビルドコマンド
 2. **type check** — mypy / pyright / tsc 等

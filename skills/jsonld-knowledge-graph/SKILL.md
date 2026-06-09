@@ -277,6 +277,37 @@ head -30 llms.txt | grep -c "Recommended reading order\|graph.jsonld"
 - **schema.org validator**: https://validator.schema.org/ で `Dataset` / `ScholarlyArticle` 等の type が認識されることを確認
 - **LLM citation probe**: graph push 後 1-2 週間（crawler refresh 待ち）、ChatGPT / Perplexity に「<project> の X と Y はどう関係しますか？graph.jsonld を参照してください」と質問し、graph が citation されるか確認
 
+## Mirror Sync to Hugging Face Datasets
+
+graph.jsonld を更新したら、Hugging Face Datasets 上の mirror にも同期する。HF は LLM training pipeline / knowledge-graph crawler の primary ingest source として機能する（HF dataset は Auto-converted to Parquet が走り、`pandas` / `Polars` / `Datasets` ライブラリから直接 load 可能になる）。
+
+**正本は [`hf-sync`](../hf-sync/SKILL.md) skill にある**。`/hf-sync <Owner/dataset>` または `bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>` を project root で実行すれば、`graph.jsonld` の structural check → `graph.jsonl` flatten → `hf upload` 2 ファイルが 1 コマンドで走る。Local の `hf login` token を使うので CI auth setup は不要。
+
+`release-doi` skill の Phase 5 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
+
+**Wikidata QID の sameAs 編入は [`wikidata-federation`](../wikidata-federation/SKILL.md) skill が担う**（Wikidata item 作成 → graph ノードへの QID アンカー。フォーマット保存編集と意味的検証つき）。graph 設計の正本は本 skill、Wikidata 連邦の operational layer は wikidata-federation、という役割分離。
+
+HF 側の `README.md` (dataset card) は graph 更新では同期しない。Dataset card は HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えたい場合は手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
+
+### Repo mapping (project-specific)
+
+GitHub repo ↔ HF dataset の mapping は project ごとに違うので、skill invoke 時に参照できる場所（project の `CLAUDE.md`、または skill 同一 dir の `inspiration.md`）に記録する。`hf-sync` 本文には embed しない（portability 確保）。
+
+Mapping の記録 format 例:
+
+```markdown
+| GitHub repo | HF dataset |
+|---|---|
+| `owner/project-a` | `Owner/project-a` |
+| `owner/hub` | `Owner/research-program-hub` |
+```
+
+### When NOT to use this sync
+
+- HF dataset がまだ存在しない project（先に `hf repo create <Owner/dataset> --repo-type dataset` で repo 作成、README.md を draft してから initial upload）
+- そもそも graph.jsonld を持たない project（HF mirror は graph を持つ project のみ）
+- Token が write scope を持たない（HF settings で Fine-grained / Write token を発行し直す）
+
 ## Maintenance Contract
 
 graph.jsonld を **編集する trigger**:

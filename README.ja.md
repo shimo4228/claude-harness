@@ -9,7 +9,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 ## 位置付け
 
 - **対象**: Claude Code (CLI + IDE extensions) のユーザー、および agent skill / rule エコシステムを研究する開発者
-- **運用方針**: `~/.claude/` が source of truth、この repo は artifact として手動で同期。頻度が上がれば収集スクリプトで自動化する
+- **運用方針**: `~/.claude/` が source of truth、この repo は [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) による一方向エクスポート (origin filter → secret scan → subtree 置換)
 - **ライセンス**: MIT。自由にコピー・改変・再配布可能。fork して自分用にカスタマイズする使い方を歓迎
 
 ## 中身
@@ -27,10 +27,22 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | llms.txt / llms-full.txt 等の AI 向けドキュメントを書く。Answer.AI 標準 + GEO/AEO 静的解析 |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | `llms.txt` の companion となる JSON-LD ナレッジグラフ (`graph.jsonld`) を設計・出荷。ドメインエンティティと関係を schema.org triple として encode して LLM 引用を最適化 |
 | [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | 人間向け執筆・レビューの orchestrator。editor / essay-reviewer / fact-checker の使い分け |
-| [write-prompt](skills/write-prompt/SKILL.md) | Haiku-powered prompt-writer agent で簡潔な prompt を生成 |
+| [write-prompt](skills/write-prompt/SKILL.md) | 軽量モデル設定の prompt-writer agent で簡潔な prompt を生成 |
 | [collect-context](skills/collect-context/SKILL.md) | セッション内外のコンテキストを集めて記事執筆用の素材を作る |
 | [authorship-strategy](skills/authorship-strategy/SKILL.md) | DOI 登録された idea-rescue 研究 repo 向けの 4 層 framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) |
 | [release-doi](skills/release-doi/SKILL.md) | DOI 登録された研究 repo のバージョン release を切る (Zenodo concept DOI 意味論、CHANGELOG / tag / asset packaging) |
+| [adr-writer](skills/adr-writer/SKILL.md) | 設計判断を連番 ADR として記録 — ディレクトリ検出・採番・index 更新。本文生成は adr-writer agent に委譲 |
+| [paper-ecosystem](skills/paper-ecosystem/SKILL.md) | 学術論文の執筆・レビュー orchestrator — paper-writing + 5 reviewer agent の役割境界と Source Fidelity / Vocabulary / Voice / Clarity / Citation 規約の正本 |
+| [paper-writing](skills/paper-writing/SKILL.md) | 学術論文の draft 手順 — title / outline / section / abstract / references。claim と cite の 1:1 mapping を強制 |
+| [paper-deposit](skills/paper-deposit/SKILL.md) | レビュー済み論文を Zenodo に単独 DOI record として登録、SSRN cross-post と研究 repo への DOI 編入まで |
+| [readme-writer](skills/readme-writer/SKILL.md) | 人間向け README を書く — 決定論的な構造 lint + スコアなしのホリスティック LLM review |
+| [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | voice 保持の日英翻訳 — term-lock + 2-pass + back-translation QA |
+| [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |
+| [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
+| [wikidata-federation](skills/wikidata-federation/SKILL.md) | 研究者・論文・repo の Wikidata item 作成と ORCID / DOI / graph.jsonld への QID 連邦 |
+| [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | 決定論的 code vs LLM 処理の判断 framework — 構造/意味軸と false-positive テスト |
+| [spawn-session](skills/spawn-session/SKILL.md) | tmux で detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
+| [harness-sync](skills/harness-sync/SKILL.md) | 生きた harness から本 repo への origin filter 付き一方向エクスポート — 収集・secret scan・subtree 置換 |
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
 
@@ -43,6 +55,13 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [editor](agents/editor.md) | Strict technical article editor。コード正確性、AI slop、narrative flow、用語一貫性を厳格にレビュー |
 | [essay-reviewer](agents/essay-reviewer.md) | Strict essay editor。社会理論 / 組織論 / デザイン哲学 / 個人ナラティブが混ざる idea 記事を対象 |
 | [fact-checker](agents/fact-checker.md) | 事実検証スペシャリスト。記事から検証可能な claim を抽出し web で verify |
+| [adr-writer](agents/adr-writer.md) | ADR 6 セクション本文を入力のみから生成 — context や代替案の invention 禁止 |
+| [codemap-writer](agents/codemap-writer.md) | `docs/CODEMAPS/` の生成・refresh — 各 map ~1000 token の token-lean アーキテクチャ文書 |
+| [paper-reviewer](agents/paper-reviewer.md) | 学術論文の構造 review — argument flow / section transition / claim sharpness / evidence-claim alignment |
+| [source-fidelity-checker](agents/source-fidelity-checker.md) | 引用された一次ソースを直接読み、論文 claim との drift を検出 |
+| [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md) | 導入 term の定義一貫性と sub-classification の明示性を検証 |
+| [clarity-reviewer](agents/clarity-reviewer.md) | 初見読者目線の明瞭性 review — 新語予算 / タイトル軸 / メタ語り / 内部文脈依存 |
+| [citation-formatter](agents/citation-formatter.md) | In-text citation と reference list の整合・format・DOI / arXiv ID 検証 |
 
 ### Rules
 

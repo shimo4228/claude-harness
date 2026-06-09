@@ -1,0 +1,88 @@
+{
+  "skill_name": "adr-writer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "new-adr-happy-path",
+      "prompt": "Record an ADR for our team. We decided to adopt PostgreSQL as the primary datastore. Context: we were on SQLite and hit concurrency limits during the last load test (450 concurrent writes, lock contention killed throughput). Decision: migrate to PostgreSQL 16 on managed RDS. Alternatives: MySQL 8 (team has no operational experience), CockroachDB (overkill for our scale, +40% cost), stay on SQLite (already proven to fail). Consequences: positive — concurrency headroom, mature tooling; negative — ops complexity, monthly bill +$120; neutral — supersedes our 'SQLite forever' decision in ADR-0003.",
+      "expected_output": "A new ADR file at <repo>/docs/adr/NNNN-postgresql-primary-datastore.md (or similar slug) with all 6 sections filled. The ADR README.md index gets a new row. ADR-0003 should NOT be modified by this run (supersede chain is a separate step per skill boundaries).",
+      "assertions": [
+        {
+          "text": "File exists at docs/adr/NNNN-*.md with NNNN matching the next sequence number",
+          "kind": "file_exists_glob"
+        },
+        {
+          "text": "File contains all 6 section headings (## Status / ## Date / ## Context / ## Decision / ## Alternatives Considered / ## Consequences)",
+          "kind": "all_headings_present"
+        },
+        {
+          "text": "Decision section uses imperative voice (contains 'Adopt' or 'Migrate' or 'Replace', not 'We should')",
+          "kind": "voice_check"
+        },
+        {
+          "text": "Alternatives Considered has at least 3 labeled blocks (MySQL, CockroachDB, SQLite)",
+          "kind": "alternatives_count"
+        },
+        {
+          "text": "Consequences has Positive / Negative / Neutral subsections",
+          "kind": "consequences_split"
+        },
+        {
+          "text": "ADR README.md index gained exactly 1 new row",
+          "kind": "index_row_delta"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "missing-adr-directory",
+      "prompt": "Let's ADR this: we're going to use Tailwind for styling because our designer wants utility classes. Alternatives: CSS modules (too much boilerplate). Consequences: positive — faster iteration; negative — purge config maintenance.",
+      "expected_output": "Repo has no docs/adr/ directory. The skill should ASK once before creating it. If the user confirms, create docs/adr/ with a README.md index template, then write ADR-0001. If declined, stop with a clear message.",
+      "assertions": [
+        {
+          "text": "Skill asks user before creating docs/adr/",
+          "kind": "prompts_before_creating"
+        },
+        {
+          "text": "If created, docs/adr/README.md contains the index table header and template note",
+          "kind": "index_template_present"
+        },
+        {
+          "text": "The first ADR written is numbered 0001 (zero-padded)",
+          "kind": "first_adr_is_0001"
+        },
+        {
+          "text": "If user declined creation, no files are written and a clear refusal message is shown",
+          "kind": "honors_decline"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "sequence-collision-and-incomplete-input",
+      "prompt": "Write ADR-0010 about our decision to switch from npm to pnpm.",
+      "expected_output": "Two distinct concerns to test: (a) the user only supplied a Decision (no Context, no Alternatives, no Consequences) — the agent must refuse with a 'needs more input' block and not write a partial ADR. (b) If we pre-populate the directory with 0010-*.md before running, the skill must detect the collision and refuse to overwrite — it should suggest the next available number instead.",
+      "assertions": [
+        {
+          "text": "Skill identifies missing sections (Context, Alternatives, Consequences) and asks for them before any file write",
+          "kind": "missing_sections_detected"
+        },
+        {
+          "text": "No file is created when sections are missing",
+          "kind": "no_partial_write"
+        },
+        {
+          "text": "When ADR-0010 already exists, skill detects collision and proposes next available number (e.g., 0011)",
+          "kind": "collision_detection"
+        },
+        {
+          "text": "Existing ADR-0010 is never overwritten",
+          "kind": "no_overwrite"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

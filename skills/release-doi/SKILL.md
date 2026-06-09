@@ -27,11 +27,30 @@ Zenodo に DOI 登録された research repo のリリース手順。`/release-d
 # CITATION.cff があるか (= Zenodo 連携している repo か)
 test -f CITATION.cff && echo "DOI repo" || echo "skip /release-doi"
 
-# 直近 tag 以降の commit が空でないか
-git log "$(git describe --tags --abbrev=0)..HEAD" --oneline | head
+# 直近 tag 以降の commit が空でないか (新規 repo なら tag なしで OK)
+git log "$(git describe --tags --abbrev=0 2>/dev/null)..HEAD" --oneline | head
+
+# Zenodo webhook が GitHub repo に登録されているか
+gh api repos/<owner>/<repo>/hooks --jq '[.[] | select(.config.url | contains("zenodo"))] | length'
+# → 0 が返ったら Zenodo opt-in 未実施。先に user に依頼する (下の "Zenodo opt-in" 参照)
+# → 1 以上なら OK。webhook の active 状態も確認:
+gh api repos/<owner>/<repo>/hooks --jq '.[] | select(.config.url | contains("zenodo")) | {active, url: .config.url[:50]}'
 ```
 
-空なら release 不要。user に報告して終了。
+空なら release 不要。webhook 未登録なら opt-in 依頼後に再開。
+
+### Zenodo opt-in (新規 DOI repo の最初の release で必須)
+
+Zenodo は GitHub repo ごとに **opt-in 連携** が必要。toggle ON 前に作成された GitHub Release は Zenodo に届かず、後から ON にしても遡及的には拾われない (公式仕様)。新規 repo で初回 release を切る場合、必ず Phase 0 で opt-in を確認する。
+
+ユーザー対応手順 (user が browser でやる):
+
+1. `! open https://zenodo.org/account/settings/github/` — Zenodo の GitHub settings を開く
+2. (必要なら) "Sync now" で repo 一覧を refresh
+3. 対象 repo を find → toggle を **ON**
+4. 完了確認
+
+確認後、`gh api repos/<owner>/<repo>/hooks` で Zenodo webhook が登録されていることを再チェックしてから Phase 1 へ進む。
 
 ## Phase 1: Verification baseline (read-only)
 
@@ -170,6 +189,8 @@ gh release create vX.Y.Z \
 
 **Branch 切らない・PR 作らない** (memory `push-workflow`: 個人研究 repo は main 直 push、`gh pr create` 自動実行禁止)。`gh release create` は別物 — Zenodo DOI 連鎖の起点なので、user 明示依頼下では実行する。
 
+**HF dataset sync** (`graph.jsonld` を持つ repo のみ): `gh release create` の後、project root で `/hf-sync <Owner/dataset>` を起動して HF mirror を反映する。Local の `hf login` token を使うので CI / token secret 管理は不要。詳細は `hf-sync` skill 参照。
+
 ## Post-release: DOI 反映
 
 Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 5 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
@@ -196,6 +217,23 @@ git add CITATION.cff README.md README.<langs>.md
 git commit -m "chore: update DOI to vX.Y.Z"
 git push origin main
 ```
+
+**Wikidata 連邦** (optional、新規 repo の初回 release 時): `wikidata-federation` skill で Wikidata item（P356=concept DOI, P50=著者 QID）を作成し、graph.jsonld に QID を sameAs 編入する。2回目以降の release では既存 item が concept DOI で解決し続けるため作業不要。
+
+**HF dataset 反映** (`graph.jsonld` を持つ repo のみ): project root で `hf-sync` skill を起動して mirror を更新する。
+
+```bash
+# Project root の cwd で実行 (graph.jsonld が存在することが前提)
+/hf-sync <Owner/dataset>
+# または同等:
+bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>
+
+# 反映確認
+# https://huggingface.co/datasets/<Owner/dataset>/commits/main を開いて
+# 最新 commit が直前 release より新しいことを目視
+```
+
+失敗時 (`hf upload` の 401 / 403、HF dataset 404 等) は `hf-sync` skill の "Failure modes" section に従う。
 
 **Concept DOI vs Version DOI — 役割分離 policy**:
 
@@ -236,12 +274,45 @@ curl -s https://zenodo.org/api/records/<any_version_id> \
 
 ## Early stop conditions
 
+- **Pre-flight で Zenodo webhook 未登録** → user に opt-in 依頼で停止 (上の "Zenodo opt-in" 参照)。新規 DOI repo の最初の release で頻発する漏れ
 - Phase 1 で `LAST_TAG..HEAD` の commit が空 → release 不要、user に報告
 - Phase 2 で CODEMAPS の構造変化が >50% → user 承認待ち (大規模架構変更の可能性)
 - Phase 4 で test FAIL / secret detection HIT / lint error → 停止して報告
 - Phase 5 で `git status` に意図しない modified file → user 承認待ち
 - Phase 5 で `gh release create` を忘れて tag だけ push してしまった → 後追いで `gh release create vX.Y.Z --notes-file ... --latest` を実行 (tag が既にあれば release object のみ追加される)
-- Post-release で `gh release create` 実行後 1 時間以内に Zenodo が DOI 採番しない → Zenodo dashboard の webhook delivery ログを user に確認依頼 (GitHub-Zenodo 連携が外れている / 認証切れの可能性)
+- **Post-release で webhook delivery が 4xx** (`gh api repos/<owner>/<repo>/hooks/<hook_id>/deliveries` で `status_code: 403` 等) → opt-in 漏れの可能性が高い。webhook event 自体は届いているが Zenodo が受理していない。下の "復旧手順" 参照
+- Post-release で `gh release create` 実行後 30 分以内に Zenodo が DOI 採番しない → Zenodo dashboard の webhook delivery ログを user に確認依頼 (GitHub-Zenodo 連携が外れている / 認証切れの可能性)
+
+### 復旧手順: opt-in 漏れで初回 release が Zenodo に届かなかった場合
+
+GitHub commit はそのまま残し、tag + Release object のみ作り直す:
+
+```bash
+# 1. Release object 削除
+gh release delete vX.Y.Z --yes --repo <owner>/<repo>
+
+# 2. remote tag 削除
+git push origin --delete vX.Y.Z
+
+# 3. local tag 削除
+git tag --delete vX.Y.Z
+
+# 4. user に Zenodo opt-in を依頼 (上の "Zenodo opt-in" 参照)
+#    完了後、webhook 登録を再確認:
+gh api repos/<owner>/<repo>/hooks --jq '.[] | select(.config.url | contains("zenodo")) | {active}'
+# → {"active": true} が返ることを確認
+
+# 5. tag + Release object を再作成
+git tag -a vX.Y.Z -m "..."
+git push origin vX.Y.Z
+gh release create vX.Y.Z --title "..." --notes-file <(awk ... CHANGELOG.md) --latest --repo <owner>/<repo>
+
+# 6. webhook delivery の status_code を確認 (今度は 202 OK が出るはず)
+HOOK_ID=$(gh api repos/<owner>/<repo>/hooks --jq '.[0].id')
+gh api "repos/<owner>/<repo>/hooks/$HOOK_ID/deliveries" --jq '.[0:3] | .[] | {event, action, status_code}'
+```
+
+GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/release のみ作り直すので blast radius は小さい。
 
 ## Notes — 設計判断の根拠
 
@@ -252,6 +323,7 @@ curl -s https://zenodo.org/api/records/<any_version_id> \
 - **Numeric cap を quality filter にしない**: memory `no-numeric-caps` — `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う (memory `single-responsibility-per-artifact`)
 - **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し (memory `substrate-migration-sweep`)
+- **新規 DOI repo は Zenodo opt-in が事前必須**: Zenodo の GitHub 連携は repo ごとの opt-in 設計。toggle ON 前に作成された release は遡及的に拾われない (公式仕様)。Pre-flight で `gh api repos/<owner>/<repo>/hooks` を確認しないと、Phase 5 まで進めて Zenodo に何も届いていないことを Post-release で初めて発見してリカバリーすることになる。**新規 repo のたびに必要だが忘れがち** — sibling repo (AKC / AAP / contemplative-agent / authorship-strategy) では既に opt-in 済みのため、慣れていると新規 repo で初回 release を切る時の盲点になる。doctrine-corpus v0.1.0 (2026-05-22) でこの漏れが発生し、tag/release 再作成でリカバリーした事例あり
 
 ## Worked example (abstracted)
 

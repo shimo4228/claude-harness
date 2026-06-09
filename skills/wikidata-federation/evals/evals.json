@@ -1,0 +1,17 @@
+{
+  "skill_name": "wikidata-federation",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "架空の論文を Wikidata に登録する準備をしたい。データ: タイトル 'Recursive Provenance Chains in Distributed Annotation Systems' / concept DOI 10.5281/ZENODO.99999001 (version DOI は 10.5281/zenodo.99999002) / 初版公開日 2026-04-10 / license CC BY 4.0 / 著者アイテムは Q99999999 として既存と仮定、著者順 1。やること: (1) Wikidata 上の重複チェック、(2) wbeditentity 用の作成ペイロード JSON を保存、(3) 送信手順を plan.md に保存。書き込み API は絶対に呼ばないこと。",
+      "expected_output": "重複チェック (haswbstatement P356) を先に実行。payload.json: P31=Q13442814, P356 大文字 concept DOI, P1476, P577=+2026-04-10 (初版日), P275=Q20007257, P50=Q99999999 + P1545 qualifier, P356/P577/P275/P50 に P854+P813 references。plan.md にドライラン・人間承認手順。",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "graph.jsonld に Wikidata QID を sameAs として編入して。QID 対応表は qid_map.json にある。フォーマットを保って diff を最小に。graph.jsonld を直接編集し、変更内容の説明を report.md に保存して。",
+      "expected_output": "4ノード中3ノードに正しい QID が追加（near-miss ノードは非対象）。Person は ORCID 一致で著者 QID。既存 sameAs は配列拡張、無い場合は新設。ファイル全体の再整形なし（diff 最小）。",
+      "files": ["fixture_graph.jsonld", "qid_map_input.json"]
+    }
+  ]
+}

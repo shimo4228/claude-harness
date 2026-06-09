@@ -131,7 +131,7 @@ ECC 的な大規模 harness が自分の idea を absorb する現象は、threa
 Creative reuse を誘発するには、両方が必要:
 
 - **Abstract doctrine repo** (例: AKC) — 概念を abstract に articulate、コピペ可能な rules
-- **Worked implementation repo** (例: contemplative-moltbook) — 概念がどう実装されるかを示す reference
+- **Worked implementation repo** (例: contemplative-agent) — 概念がどう実装されるかを示す reference
 
 Doctrine 単独だと「概念はわかるが実装イメージできない」。Implementation 単独だと「コードはあるが原理が読み取れない」。両立で初めて他者の creative reuse が起きる。
 
