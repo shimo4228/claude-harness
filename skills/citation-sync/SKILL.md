@@ -1,6 +1,6 @@
 ---
 name: citation-sync
-description: 研究 repo の引用 4 層 (docs 実引用 → .zenodo.json references → graph.jsonld ExternalReference → Wikidata P2860) を監査し、下層から順に同期する orchestrator。Use when the user says 「参考文献が少ない/足りない」「引用がずれてる」「citation を同期して」「引用文献を Wikidata/graph に反映して」, when new external papers were cited in ADR/glossary/empirical docs, before a release of a DOI-registered repo, or when a repo's Wikidata item shows fewer cited works than its docs. 単層の実装は release-doi (.zenodo.json) / jsonld-knowledge-graph (graph) / wikidata-federation (Wikidata) に defer し、本 skill は層間の divergence 検出・curation 基準・同期順序だけを持つ。NOT for: 論文 (paper item) 自体の reference list 整備 (paper-deposit / wikidata-federation が担当)、引用を含まない repo。
+description: "研究 repo の引用 4 層 (docs 実引用 → .zenodo.json references → graph.jsonld ExternalReference → Wikidata P2860) を監査し、下層から順に同期する orchestrator。Use when the user says 「参考文献が少ない/足りない」「引用がずれてる」「citation を同期して」「引用文献を Wikidata/graph に反映して」, when new external papers were cited in ADR/glossary/empirical docs, before a release of a DOI-registered repo, or when a repo's Wikidata item shows fewer cited works than its docs. 単層の実装は release-doi (.zenodo.json) / jsonld-knowledge-graph (graph) / wikidata-federation (Wikidata) に defer し、本 skill は層間の divergence 検出・curation 基準・同期順序だけを持つ。NOT for: 論文 (paper item) 自体の reference list 整備 (paper-deposit / wikidata-federation が担当)、引用を含まない repo。"
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228

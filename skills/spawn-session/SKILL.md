@@ -1,6 +1,6 @@
 ---
 name: spawn-session
-description: 新しい detached な Claude Code Remote Control セッションを tmux で起動し、Claude モバイルアプリのセッション一覧に出す。生きている任意のセッションから（多くは iPhone の Remote Control 越しに）呼んで、別プロジェクトの新規セッションを Mac に触れず立ち上げる。Use when the user says 「新しいセッション立てて」「AAP のセッション開いて／立ち上げて」「contemplative のセッション作って」「spawn a (new) session」「launch a remote control session」「start a session for X」, or invokes `/spawn-session [project]`. NOT for: 既存会話の resume（`--continue`/`--resume`）、同一セッション内の文脈リセット（`/clear`）、現セッションの model 切替。
+description: "新しい detached な Claude Code Remote Control セッションを tmux で起動し、Claude モバイルアプリのセッション一覧に出す。生きている任意のセッションから（多くは iPhone の Remote Control 越しに）呼んで、別プロジェクトの新規セッションを Mac に触れず立ち上げる。Use when the user says 「新しいセッション立てて」「AAP のセッション開いて／立ち上げて」「contemplative のセッション作って」「spawn a (new) session」「launch a remote control session」「start a session for X」, or invokes `/spawn-session [project]`. NOT for: 既存会話の resume（`--continue`/`--resume`）、同一セッション内の文脈リセット（`/clear`）、現セッションの model 切替。"
 user-invocable: true
 origin: shimo4228
 ---
