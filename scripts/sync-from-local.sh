@@ -72,6 +72,32 @@ find "$STAGING" \( -name __pycache__ -o -name .pytest_cache -o -name .venv \
   -o -name node_modules -o -name .mypy_cache -o -name .ruff_cache \
   -o -name htmlcov \) -type d -prune -exec rm -rf {} + 2>/dev/null || true
 
+# --- frontmatter YAML validation (GitHub / SkillsMP parse strictly; abort on invalid) ---
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import yaml' >/dev/null 2>&1; then
+  python3 - "$STAGING" <<'PYEOF' || exit 1
+import glob, re, sys
+import yaml
+bad = []
+for path in sorted(glob.glob(f"{sys.argv[1]}/**/*.md", recursive=True)):
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read()
+    m = re.match(r"^---\n(.*?)\n---(\n|$)", text, re.S)
+    if not m:
+        continue
+    try:
+        yaml.safe_load(m.group(1))
+    except yaml.YAMLError as exc:
+        bad.append(f"  {path}: {str(exc).splitlines()[0]}")
+if bad:
+    print("ABORT: invalid YAML frontmatter in staged payload"
+          " (strict parsers like GitHub's will fail to render):", file=sys.stderr)
+    print("\n".join(bad), file=sys.stderr)
+    sys.exit(1)
+PYEOF
+else
+  echo "WARN: python3 + PyYAML not available — skipping frontmatter YAML validation" >&2
+fi
+
 # --- secret scan (high-confidence patterns; abort on any hit) ---
 SECRET_RE='sk-ant-api[0-9A-Za-z_-]+|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{20,}|AKIA[0-9A-Z]{16}|xox[bporas]-[0-9A-Za-z-]{10,}|AIza[0-9A-Za-z_-]{35}|hf_[A-Za-z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY'
 if hits="$(grep -rEl "$SECRET_RE" "$STAGING" 2>/dev/null)"; then
