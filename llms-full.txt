@@ -33,7 +33,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 | Short Name | Full Citation | Relation to This Harness |
 |---|---|---|
 | Contemplative AI | Laukkonen, R., Inglis, F., Chandaria, S., Sandved-Smith, L., Lopez-Sola, E., Hohwy, J., Gold, J., & Elwood, A. (2025). *Contemplative Artificial Intelligence*. arXiv:2504.15125 | Source of the four axioms (Emptiness, Non-Duality, Mindfulness, Boundless Care) used verbatim in `rules/common/contemplative-axioms.md` |
-| AKC (Agent Knowledge Cycle) | shimo4228 (2025). *Agent Knowledge Cycle*. Zenodo DOI [10.5281/zenodo.19200727](https://doi.org/10.5281/zenodo.19200727) | Six-phase loop (Research, Extract, Curate, Promote, Measure, Maintain) implemented by six of the ten skills here |
+| AKC (Agent Knowledge Cycle) | shimo4228 (2025). *Agent Knowledge Cycle*. Zenodo DOI [10.5281/zenodo.19200727](https://doi.org/10.5281/zenodo.19200727) | Six-phase loop (Research, Extract, Curate, Promote, Measure, Maintain) implemented by six of the skills here |
 | Answer.AI llms.txt | Howard, J. (2024). *llms.txt — A proposal for AI-facing site documentation*. [llmstxt.org](https://llmstxt.org/) | Standard followed by this repo's `llms.txt` and `llms-full.txt` |
 | GEO-SFE | Aggarwal, P., et al. (2024). *GEO: Generative Engine Optimization*. arXiv:2403.10844 | Three-tier static evaluation (macro / meso / micro) implemented by `skills/llms-txt-writer/scripts/geo_check.py` |
 | Victorino LLC ChatGPT analysis | Victorino LLC (2024). *Analysis of 1.2M ChatGPT answers* | 44.2% of citations come from the first 30% of source documents (ski-ramp threshold) |
@@ -51,7 +51,7 @@ shimo4228 (GitHub: shimo4228, email shimo4228@gmail.com) maintains claude-harnes
 
 ## What is the Agent Knowledge Cycle (AKC)?
 
-AKC is defined as a six-phase self-improvement loop for AI coding agents: Research, Extract, Curate, Promote, Measure, and Maintain. Research searches generously for existing libraries before building anew. Extract captures reusable patterns from sessions. Curate audits accumulated knowledge for redundancy and staleness. Promote elevates recurring patterns from skills to rules. Measure verifies behavioral change quantitatively. Maintain keeps documentation roles clean. The framework was published by shimo4228 as Zenodo DOI 10.5281/zenodo.19200727. Six of the ten skills in this harness implement individual AKC phases.
+AKC is defined as a six-phase self-improvement loop for AI coding agents: Research, Extract, Curate, Promote, Measure, and Maintain. Research searches generously for existing libraries before building anew. Extract captures reusable patterns from sessions. Curate audits accumulated knowledge for redundancy and staleness. Promote elevates recurring patterns from skills to rules. Measure verifies behavioral change quantitatively. Maintain keeps documentation roles clean. The framework was published by shimo4228 as Zenodo DOI 10.5281/zenodo.19200727. Six of the skills in this harness implement individual AKC phases.
 
 ## How does origin tracking work?
 

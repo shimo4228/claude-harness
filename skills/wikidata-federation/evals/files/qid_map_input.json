@@ -1,0 +1,21 @@
+{
+  "person": {
+    "qid": "https://www.wikidata.org/wiki/Q99999901",
+    "orcid": "https://orcid.org/0000-0002-9999-0001"
+  },
+  "entities": [
+    {
+      "qid": "https://www.wikidata.org/wiki/Q99999902",
+      "keys": [
+        "https://github.com/hmizuno-lab/provenance-chains",
+        "https://doi.org/10.5281/zenodo.99999101"
+      ]
+    },
+    {
+      "qid": "https://www.wikidata.org/wiki/Q99999903",
+      "keys": [
+        "https://doi.org/10.5281/zenodo.99999201"
+      ]
+    }
+  ]
+}

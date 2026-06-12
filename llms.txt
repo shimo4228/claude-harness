@@ -28,6 +28,7 @@
 Each skill defines a workflow that Claude can invoke via slash command (`/<skill-name>`) or naturally trigger from its description.
 
 - [search-first](skills/search-first/SKILL.md): research-before-coding workflow — invokes the scout agent to discover existing libraries, MCP servers, or GitHub solutions before writing custom code
+- [signal-first-research](skills/signal-first-research/SKILL.md): design guide for a research intake filter that admits only information likely to change your next action — define the signal before the search
 - [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
 - [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — Quick Scan (changed only) and Full Stocktake modes with parallel subagent evaluation
 - [rules-distill](skills/rules-distill/SKILL.md): scans skills to extract cross-cutting principles and promotes them to deterministic rules
@@ -49,6 +50,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [substack-publishing](skills/substack-publishing/SKILL.md): publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery
 - [hf-sync](skills/hf-sync/SKILL.md): mirrors graph.jsonld-bearing research repos to Hugging Face Datasets — flattens the graph and uploads alongside graph.jsonl
 - [wikidata-federation](skills/wikidata-federation/SKILL.md): creates Wikidata items for researchers, papers, and research repositories and cross-links QIDs with ORCID, DOI, and graph.jsonld
+- [citation-sync](skills/citation-sync/SKILL.md): audits the four citation layers of a research repo (docs, .zenodo.json, graph.jsonld, Wikidata P2860) and syncs them bottom-up
 - [when-code-when-llm](skills/when-code-when-llm/SKILL.md): decision framework for choosing deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test, worked examples in both directions
 - [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list
 - [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
@@ -86,4 +88,4 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200727) — the framework that the first six skills here implement
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules): rule-only implementation of the four Contemplative AI axioms with adapters for Cursor, Copilot, and the Iterated Prisoner's Dilemma benchmark
 - [contemplative-agent](https://github.com/shimo4228/contemplative-agent): autonomous agent built on the AKC + Contemplative AI foundations — reference application of these patterns in a long-running runtime
-- `claude-skill-*` standalone repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync)
+- standalone skill repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) and design-pattern skills (when-code-when-llm, signal-first-research, code-and-llm-collaboration, llm-agent-security-principles)

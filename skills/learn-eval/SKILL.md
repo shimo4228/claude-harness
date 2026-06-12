@@ -91,6 +91,13 @@ origin: auto-extracted
 
 7. Save / Absorb to the determined location
 
+8. **昇格確認（Save 保存後のみ）**
+
+   `learned/` 配下はフラットな `.md` ファイル置き場であり、`skills/<name>/SKILL.md` 形式の discovery に乗らない。つまり description ベースの自動トリガーは効かず、参照ノートとして grep される受動的な存在に留まる。Save 完了後、ユーザーに 1 回だけ確認する:
+
+   - **learned のまま置く**（default）— 参照資料・grep 対象として十分な場合。確認に応答がなければこちら
+   - **アクティブ skill に昇格** — 今後のセッションで description トリガーによる自動適用を効かせたい場合。Claude Code では Anthropic 公式の **skill-creator** skill を learned ドラフトに対して実行し、`~/.claude/skills/<name>/SKILL.md` として構造化・description 最適化・eval まで行うのがベストプラクティス（learn-eval = 抽出と品質ゲート / skill-creator = 構造化と eval、で役割が分かれる）。昇格完了後は `learned/` 側のファイルを削除し、二重管理を残さない
+
 ## Output Format for Step 5
 
 ```

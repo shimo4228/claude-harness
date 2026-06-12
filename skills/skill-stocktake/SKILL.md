@@ -65,7 +65,8 @@ Re-evaluate only skills that have changed since the last run (5–10 min).
 
 Run: `bash ~/.claude/skills/skill-stocktake/scripts/scan.sh`
 
-The script enumerates skill files, extracts frontmatter, and collects UTC mtimes.
+The script enumerates skill files, extracts frontmatter, collects UTC mtimes, and
+joins usage counts from the usage log.
 Project dir is auto-detected from `$PWD/.claude/skills`; pass it explicitly only if needed.
 Present the scan summary and inventory table from the script output:
 
@@ -75,8 +76,15 @@ Scanning:
   ✗ {cwd}/.claude/skills/    (not found — global skills only)
 ```
 
-| Skill | 7d use | 30d use | Description |
-|-------|--------|---------|-------------|
+| Skill | 7d use | 30d use | 90d use | Description |
+|-------|--------|---------|---------|-------------|
+
+**Usage data source:** `~/.claude/metrics/skill-usage.jsonl`, appended by the
+`~/.claude/hooks/log-skill-usage.sh` PostToolUse hook (a measurement layer
+independent of this skill — it keeps recording even if stocktake changes).
+If `scan_summary.usage_log.available` is `false`, render every usage column as
+`—` (unmeasured) and state "usage is currently unmeasured" in the summary.
+**Never render unmeasured as 0** — unmeasured and unused are different facts.
 
 ### Phase 2 — Quality Evaluation
 
@@ -97,8 +105,14 @@ Each skill is evaluated against this checklist:
 - [ ] Content overlap with other skills checked
 - [ ] Overlap with MEMORY.md / CLAUDE.md checked
 - [ ] Freshness of technical references verified (use WebSearch if tool names / CLI flags / APIs are present)
-- [ ] Usage frequency considered
+- [ ] Usage frequency considered (use_7d / use_30d / use_90d; treat as unmeasured when usage_log.available is false)
 ```
+
+**Zero-usage rule:** when the usage log spans ≥90 days (`usage_log.since` is at
+least 90 days before the scan) and a skill has `use_90d == 0`, it MUST be
+surfaced as a Retire candidate in Phase 4 — the final decision stays with the
+user. While the log is younger than 90 days, this rule does not apply and
+verdicts fall back to holistic judgment alone.
 
 Verdict criteria:
 
@@ -133,8 +147,8 @@ Evaluation is **holistic AI judgment** — not a numeric rubric. Guiding dimensi
 
 ### Phase 3 — Summary Table
 
-| Skill | 7d use | Verdict | Reason |
-|-------|--------|---------|--------|
+| Skill | 7d use | 90d use | Verdict | Reason |
+|-------|--------|---------|---------|--------|
 
 ### Phase 4 — Consolidation
 

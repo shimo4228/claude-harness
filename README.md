@@ -19,6 +19,7 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | Skill | Purpose |
 |-------|---------|
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow. Invokes the scout agent to discover existing tools |
+| [signal-first-research](skills/signal-first-research/SKILL.md) | Design guide for a research intake filter that admits only information likely to change your next action |
 | [learn-eval](skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill quality audit. Quick Scan / Full Stocktake modes with parallel evaluation |
 | [rules-distill](skills/rules-distill/SKILL.md) | Extracts cross-cutting principles from skills and promotes them to rules |
@@ -40,6 +41,7 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [substack-publishing](skills/substack-publishing/SKILL.md) | Publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery |
 | [hf-sync](skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
 | [wikidata-federation](skills/wikidata-federation/SKILL.md) | Creates Wikidata items for researchers / papers / repos and cross-links QIDs with ORCID, DOI, and graph.jsonld |
+| [citation-sync](skills/citation-sync/SKILL.md) | Audits the four citation layers of a research repo (docs / .zenodo.json / graph.jsonld / Wikidata P2860) and syncs them bottom-up |
 | [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | Decision framework for deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test |
 | [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list |
 | [harness-sync](skills/harness-sync/SKILL.md) | One-way export of origin-filtered components from the live harness into this repo — collection, secret scan, subtree replacement |

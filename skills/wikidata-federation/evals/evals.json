@@ -4,14 +4,85 @@
     {
       "id": 0,
       "prompt": "架空の論文を Wikidata に登録する準備をしたい。データ: タイトル 'Recursive Provenance Chains in Distributed Annotation Systems' / concept DOI 10.5281/ZENODO.99999001 (version DOI は 10.5281/zenodo.99999002) / 初版公開日 2026-04-10 / license CC BY 4.0 / 著者アイテムは Q99999999 として既存と仮定、著者順 1。やること: (1) Wikidata 上の重複チェック、(2) wbeditentity 用の作成ペイロード JSON を保存、(3) 送信手順を plan.md に保存。書き込み API は絶対に呼ばないこと。",
-      "expected_output": "重複チェック (haswbstatement P356) を先に実行。payload.json: P31=Q13442814, P356 大文字 concept DOI, P1476, P577=+2026-04-10 (初版日), P275=Q20007257, P50=Q99999999 + P1545 qualifier, P356/P577/P275/P50 に P854+P813 references。plan.md にドライラン・人間承認手順。",
-      "files": []
+      "expected_output": "重複チェック (haswbstatement P356) を先に実行。payload.json: P31=Q13442814, P356 大文字 concept DOI (ちょうど1件), P1476, P577=+2026-04-10 (初版日), P275=Q20007257 + P6216=Q50423863, P50=Q99999999 + P1545=\"1\" qualifier, P356/P577/P275/P50 に P854+P813 references。plan.md にドライラン・人間承認手順。",
+      "files": [],
+      "expectations": [
+        "A duplicate check (haswbstatement P356 search) is performed or documented before payload generation",
+        "payload.json contains P31=Q13442814, P356 with the UPPERCASE concept DOI 10.5281/ZENODO.99999001 (not the version DOI), P1476, and P577 with +2026-04-10",
+        "payload.json contains exactly ONE P356 statement (the version DOI must not appear as a second P356)",
+        "payload.json contains P275=Q20007257 paired with a P6216 statement whose value is Q50423863",
+        "payload.json contains P50=Q99999999 with a P1545 series-ordinal qualifier whose value is exactly \"1\"",
+        "P356, P577, P275 and P50 statements each carry a P854+P813 reference",
+        "plan.md documents dry-run and human-approval steps before any send",
+        "No Wikidata write API (wbeditentity via wd_api.py or curl POST) is invoked in the transcript"
+      ]
     },
     {
       "id": 1,
-      "prompt": "graph.jsonld に Wikidata QID を sameAs として編入して。QID 対応表は qid_map.json にある。フォーマットを保って diff を最小に。graph.jsonld を直接編集し、変更内容の説明を report.md に保存して。",
-      "expected_output": "4ノード中3ノードに正しい QID が追加（near-miss ノードは非対象）。Person は ORCID 一致で著者 QID。既存 sameAs は配列拡張、無い場合は新設。ファイル全体の再整形なし（diff 最小）。",
-      "files": ["fixture_graph.jsonld", "qid_map_input.json"]
+      "prompt": "graph.jsonld に Wikidata QID を sameAs として編入して。QID 対応表は qid_map_input.json にある。フォーマットを保って diff を最小に。fixture_graph.jsonld を直接編集し、変更内容の説明を report.md に保存して。",
+      "expected_output": "4ノード中3ノードに正しい QID が追加（near-miss ノードは非対象）。Person は ORCID 一致で著者 QID。既存 sameAs は配列拡張、無い場合は新設。skill の add_qid_sameas.py を dry-run → --apply の順で使用。ファイル全体の再整形なし（diff 最小）。",
+      "files": ["evals/files/fixture_graph.jsonld", "evals/files/qid_map_input.json"],
+      "expectations": [
+        "Exactly 3 of the 4 nodes receive a QID: the Person node gets Q99999901 (ORCID match), the provenance-chains software node gets Q99999902, the dataset node gets Q99999903",
+        "The near-miss node skill-provenance-chains receives NO QID",
+        "The dataset node's existing sameAs string is extended to an array containing both the original value and the QID URL",
+        "The transcript shows the skill's add_qid_sameas.py script was used (dry-run first, then --apply), not manual text editing",
+        "No fields other than sameAs were changed anywhere in the file (verify by semantic diff of the JSON trees)",
+        "The file is not wholly re-serialized: original formatting outside the edited lines is preserved (diff is a few lines)",
+        "report.md explains which nodes changed and why the near-miss was excluded"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "架空の論文を richness 基準で Wikidata に登録する準備をしたい。データ: タイトル 'Gradient Echo Networks for Sparse Acoustic Inversion' (コミュニティでは 'GEN-SAI' と略される) / concept DOI 10.5281/ZENODO.99999301 / 初版公開日 2026-03-02 / license CC BY 4.0 / 言語は英語 / 著者 Hana Mizuno のアイテムは Q99999901 として既存と仮定、著者順 1、論文中の著者表記は 'Hana Mizuno' / main subject は音響信号処理 (Q99999310 として既存と仮定) と sparse approximation (Q99999311 として既存と仮定) / 全文は https://zenodo.org/records/99999301 で公開。やること: (1) 重複チェック、(2) showcase 品質の wbeditentity 作成ペイロードを payload.json に保存、(3) 残作業を plan.md に保存。書き込み API は絶対に呼ばないこと。",
+      "expected_output": "Lean な bibliographic セットに加えて richness rubric 準拠: mul label (言語非依存タイトル)、en+ja descriptions (WikiCite 形式)、genuine な略称 alias 'GEN-SAI'、P921×2 (与えられた既存 QID のみ)、P407=Q1860、P953=全文 URL、P50 に P1932 qualifier。タイトルの日本語訳 label を捏造しない。P356/P577/P275/P50/P921/P407/P953 に references。",
+      "files": [],
+      "expectations": [
+        "A duplicate check (haswbstatement P356 search) is performed or documented before payload generation",
+        "payload.json labels include 'en' and 'mul' both set to the exact title 'Gradient Echo Networks for Sparse Acoustic Inversion'",
+        "payload.json has NO 'ja' label (a translated title must not be fabricated)",
+        "payload.json descriptions include 'en' (WikiCite form mentioning Mizuno and 2026) and 'ja' (Japanese description such as containing 学術論文 or 論文)",
+        "payload.json aliases include 'GEN-SAI' under en (and optionally mul)",
+        "payload.json contains two P921 statements pointing at Q99999310 and Q99999311",
+        "payload.json contains P407=Q1860 and P953=https://zenodo.org/records/99999301",
+        "Each of the P356, P577, P275, P50, P921 (both), P407 and P953 statements carries a P854+P813 reference",
+        "The P50 statement carries both a P1545 ordinal qualifier and a P1932 'object named as' qualifier with value 'Hana Mizuno'",
+        "Baseline conventions hold: P356 uppercase DOI, P275=Q20007257 paired with P6216, P31=Q13442814",
+        "No Wikidata write API call is made in the transcript"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "架空の研究者の author item を richness 基準で Wikidata に登録する準備をしたい。データ: 名前 Hana Mizuno (日本語表記: 水野花, よみ: みずの はな) / ORCID 0000-0002-9999-0001 / 独立研究者で分野は音響信号処理 (Q99999310 として既存と仮定) と機械学習 (Q2539 として既存と仮定) / 代表作は論文 item Q99999800 (既存と仮定)。やること: (1) ORCID で重複チェック、(2) showcase 品質の wbeditentity 作成ペイロードを payload.json に保存、(3) 残作業 (Scholia URL 等) を plan.md に保存。書き込み API は絶対に呼ばないこと。",
+      "expected_output": "P31=Q5/P106/P496+ref の基本セットに加えて richness rubric 準拠: en label + ja label (水野花)、en+ja descriptions、en alias 'Mizuno, Hana' + ja alias (みずの はな)、P800=Q99999800、P101×2 (与えられた既存 QID)。reference の P854 は ORCID profile URL。P921 は author item に禁止 (MANDATORY conflicts-with P31=Q5) なので含めない。P569 等の個人情報も含めない。plan.md に Scholia URL と架空 QID の実在検証を記載。",
+      "files": [],
+      "expectations": [
+        "An ORCID duplicate check (haswbstatement P496 search) is performed or documented before payload generation",
+        "payload.json labels include en='Hana Mizuno' and ja='水野花'",
+        "payload.json descriptions include both en and ja",
+        "payload.json aliases include 'Mizuno, Hana' under en and a Japanese reading under ja",
+        "payload.json contains P31=Q5, P106=Q1650915, and P496 with a P854+P813 reference",
+        "payload.json contains P800=Q99999800 and two P101 statements (Q99999310, Q2539)",
+        "The references on P496, P800 and P101 include P854 pointing at the ORCID profile URL https://orcid.org/0000-0002-9999-0001",
+        "payload.json contains NO P921 statement (mandatory conflicts-with P31=Q5) and NO personal-data properties such as P569",
+        "plan.md includes the Scholia author URL and flags the fictional QIDs (Q99999310, Q99999800) for existence verification before any real send",
+        "No Wikidata write API call is made in the transcript"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "既存の lean な Wikidata item を richness 基準に引き上げる enrichment の準備をしたい。fixture_lean_item.json は既存 item Q99999800 の Special:EntityData ダンプ (既存と仮定)。論文の追加情報: 著者 Hana Mizuno (Q99999901)、main subject は分散アノテーション (Q99999312 として既存と仮定)、言語は英語、全文 URL https://zenodo.org/records/99999001、コミュニティ略称 'RPC-DAS'。やること: (1) 現状と richness rubric の gap 分析を gap_report.md に保存、(2) 不足分だけを含む wbeditentity 編集ペイロードを enrich_payload.json に保存。既存 statement を重複生成しないこと。書き込み API は絶対に呼ばないこと。",
+      "expected_output": "gap_report.md: descriptions 欠落 (en/ja)、mul label 欠落、alias 欠落、P921/P407/P953 欠落、P50 の P1932 qualifier 欠落を列挙。enrich_payload.json: 不足分のみ — GUID 無しの claim は fixture に無い property のみ、既存 statement の修正 (reference 後付け等) は fixture の statement GUID を key にした in-place 差し替え。新規追加 reference の P813 は実行日 (2026-06-12)。",
+      "files": ["evals/files/fixture_lean_item.json"],
+      "expectations": [
+        "gap_report.md identifies at minimum: missing en+ja descriptions, missing mul label, missing aliases, missing P921, missing P407, missing P953",
+        "enrich_payload.json adds descriptions (en and ja), a mul label, and an 'RPC-DAS' alias",
+        "enrich_payload.json contains P921=Q99999312, P407=Q1860, and P953=https://zenodo.org/records/99999001, each new statement with a P854+P813 reference",
+        "Every claim in enrich_payload.json WITHOUT a GUID ('id' field) targets a property absent from the fixture; every GUID-bearing claim matches an existing fixture statement id exactly (in-place update, not duplication)",
+        "All P813 retrieval dates in newly added references use the run date 2026-06-12, not the fixture's stale 2026-04-15",
+        "No fabricated ja label (translated title) is added",
+        "No Wikidata write API call is made in the transcript"
+      ]
     }
   ]
 }

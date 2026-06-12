@@ -271,6 +271,50 @@ head -30 llms.txt | grep -c "Recommended reading order\|graph.jsonld"
 # (manual: 各 ResearchLine @id を Zenodo で開いて parent record であることを確認)
 ```
 
+### Context pitfalls — edge が静かに消える 2 パターン
+
+production graph 6 本の監査 (2026-06) で実際に発生した。いずれも JSON は valid のまま、
+triple count も変わらないため、上記 step 1-2 では検出できない:
+
+1. **IRI 文字列の literal 化**: `@vocab` があっても、context で `@type: "@id"` 強制の
+   ない property（schema.org の `author` / `creator` 等）に IRI を文字列で渡すと literal
+   になり、node への edge にならない。Person node が graph に居ても誰からも参照されない。
+   - 対策: IRI 参照は常に `{"@id": "https://..."}` オブジェクト形式で書く
+2. **未定義 key の無言ドロップ**: `@vocab` なしの明示マッピング型 context では、context に
+   無い key（`sameAs` 等）が expansion で警告なく消える。
+   - 対策: graph に新しい property を導入する前に context マッピングの存在を確認する
+
+検出は同梱の lint script が決定論的に行う（上記 step 1-3 の機械チェックも包含するので、編集後はこれ 1 コマンドでよい）:
+
+```bash
+# 6. graph lint — JSON validity / expansion / DROPPED-KEY / URL-LITERAL / VOLATILE を一括検査
+#    exit 0 = clean, 1 = findings, 2 = fatal。複数ファイル可
+uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph_lint.py graph.jsonld
+
+# locator 系 property（url / license / contentUrl）は literal URL を許容。変更する場合:
+#   --allow-literal-url url,license,contentUrl,codeRepository
+
+# 複数 graph を渡すと cross-file の NAME-DRIFT も検査する
+# （同一 IRI に複数の異なる en name → 検出は構造的・決定論的。どれを正とするかの
+#   解決だけが judgment なので、lint は報告のみ。表記揺れの正解は alternateName に置く）
+uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph_lint.py hub/graph.jsonld line1/graph.jsonld line2/graph.jsonld
+#   --skip-name-drift で省略可
+```
+
+修正の定石: 値の書き換えではなく **@context への coercion 追加** で直す（`"sameAs": {"@id": "https://schema.org/sameAs", "@type": "@id"}` を足せば既存の文字列値がそのまま IRI として解釈される。diff が context の数行で済む）。
+
+#### なぜ自作 lint か（external research, 2026-06）
+
+標準ツールを調査した上での Build 判定。再調査不要:
+
+- **[pySHACL](https://github.com/RDFLib/pySHACL)** (RDFLib): 活発に維持されている W3C 標準の RDF 検証器。ただし**展開後の RDF graph に対して動く**ため、DROPPED-KEY は原理的に検出できない（落ちた key は SHACL が見る前に消えている）。URL-LITERAL は `sh:nodeKind sh:IRI` で書けるが、predicate ごとの shapes ファイル維持が必要
+- **[jsonld-lint](https://github.com/mattrglobal/jsonld-lint)** (Mattr): un-mapped term 検出（= DROPPED-KEY）を持つ唯一の専用 linter だったが **2024-12 にアーカイブ済み**。採用不可
+- **jsonld.js の safe mode**: 展開時に未定義 term をエラー化できるが JS 専用。Python 側の pyld に相当機能なし
+
+つまり最も危険な DROPPED-KEY が標準ツールの死角にあり、VOLATILE はプロジェクト固有ポリシーなので、薄い自作 lint が正当。
+
+**pySHACL への移行条件**: 「すべての ResearchLine ノードは author と sameAs を持つ」のような**クラス単位の必須制約**を宣言的に強制したくなった時点で、URL-LITERAL 検査を shapes.ttl + pyshacl に置き換え、DROPPED-KEY / VOLATILE のみ graph_lint.py に残す構成に移行する。
+
 ### Manual checks
 
 - **JSON-LD playground**: https://json-ld.org/playground/ に paste して `@context` が解決し triple として展開されることを確認

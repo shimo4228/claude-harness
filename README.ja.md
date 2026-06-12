@@ -19,6 +19,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | Skill | Purpose |
 |-------|---------|
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow。scout agent を呼び出して既存ツールを探索 |
+| [signal-first-research](skills/signal-first-research/SKILL.md) | 次の行動を変えうる情報だけを取り込む research intake filter の設計ガイド |
 | [learn-eval](skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査。Quick Scan / Full Stocktake モードで並列評価 |
 | [rules-distill](skills/rules-distill/SKILL.md) | Skill 群から共通原則を抽出し、rule として昇格させる |
@@ -40,6 +41,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |
 | [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
 | [wikidata-federation](skills/wikidata-federation/SKILL.md) | 研究者・論文・repo の Wikidata item 作成と ORCID / DOI / graph.jsonld への QID 連邦 |
+| [citation-sync](skills/citation-sync/SKILL.md) | 研究 repo の引用 4 層 (docs / .zenodo.json / graph.jsonld / Wikidata P2860) を監査し下層から同期 |
 | [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | 決定論的 code vs LLM 処理の判断 framework — 構造/意味軸と false-positive テスト |
 | [spawn-session](skills/spawn-session/SKILL.md) | tmux で detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
 | [harness-sync](skills/harness-sync/SKILL.md) | 生きた harness から本 repo への origin filter 付き一方向エクスポート — 収集・secret scan・subtree 置換 |
@@ -123,7 +125,7 @@ uv sync  # or: pip install -e .
 - [shimo4228](https://github.com/shimo4228/shimo4228) — 3 研究ライン (AKC / Contemplative Agent / AAP) とエコシステムを集約するハブ repo
 - [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle) — AKC の概念と DOI 付きリリース (Zenodo: 10.5281/zenodo.19200726)
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules) — Contemplative Constitutional AI の rule 実装
-- `claude-skill-*` 個別 repo 群 — AKC 各 skill の独立版 (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) + 隣接スキル (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem)
+- 個別 skill repo 群 — AKC 各 skill の独立版 (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) + 隣接スキル (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem / when-code-when-llm / signal-first-research)
 
 ## Contributing
 

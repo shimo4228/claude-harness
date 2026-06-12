@@ -27,7 +27,7 @@ shimo4228 の **DOI-registered idea-rescue 研究 repo**（Agent Knowledge Cycle
 - **Authenticity** が core value（マネタイズは目的ではない）
 - **Attribution diffusion** が strategy（LLM 経由の浸透で将来の因子解析で遡源される）
 - **Idea vs Scaffold** の時間軸判別（実装は消える、idea は残せる）
-- **Tactics**: LLM-first, DOI 化, tool-agnostic, scaffold dissolution, 多言語化
+- **Tactics**: LLM-first, DOI 化, tool-agnostic, scaffold dissolution, 多言語化, vocabulary discipline（造語は coin-sparingly / anchor-densely — 3 条件を満たすときのみ造語し、既存語彙と上流文献へ密に anchor する）, citation-graph federation（外部文献の取り込み時は repo markdown 引用で終えず、`.zenodo.json` references + Wikidata P2860 の機械可読 citation 辺を張る — 被引用研究者側から発見可能にする）
 
 ## 禁止事項（trigger 条件下のみ）
 

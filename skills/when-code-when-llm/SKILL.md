@@ -1,6 +1,7 @@
 ---
 name: when-code-when-llm
-description: Decision framework for choosing between deterministic code (regex, keyword match, AST parse, schema validation) and LLM-based processing (classification, semantic similarity, judge) for a single task. Use when you catch yourself writing a regex for a task that keeps producing false positives or negatives, or when you are about to call an LLM for something a three-line code check would handle. Covers the structural-vs-semantic axis, the false-positive test, and worked examples of both directions.
+description: Decision framework for choosing between deterministic code (regex, keyword match, AST parse, schema validation) and LLM-based processing (classification, semantic similarity, judge) for a single task. Use when you catch yourself writing a regex for a task that keeps producing false positives or negatives, or when you are about to call an LLM for something a three-line code check would handle. Covers the structural-vs-semantic axis, the false-positive test, worked examples of both directions, and the enumerate/decide split for tasks where detection is structural but resolution needs judgment.
+compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---
@@ -145,6 +146,31 @@ Yes, people write this. `n % 2 == 0`.
 ### "Check that a URL is under `example.com`"
 
 Parse with `urllib.parse.urlparse`, compare the host. Do not ask the LLM "is this URL safe" — the answer is nondeterministic and the check is trivial.
+
+---
+
+## Worked examples — splitting one task between both
+
+The axis does not always cut between tasks. Sometimes it cuts **through the middle of a single task**: one stage is structural, the next is semantic. The failure mode here is treating the task as a unit — either building a heuristic that tries to *resolve* what only judgment can resolve, or asking an LLM to *enumerate* what code enumerates exactly.
+
+### Canonical-label drift across data files
+
+Several data files describe the same entity (same ID), and over time their display labels diverge — one file says `six-phase loop`, another says `AKC six-phase loop`.
+
+- **Detection is structural**: "the same ID carries ≥2 distinct label values across files" is decidable from the bytes. A linter enumerates every case, deterministically, with zero false negatives. Put it in CI.
+- **Resolution is semantic**: *which* label is canonical requires judgment — majority usage? the file with definitional authority? the more precise wording? No regex answers that.
+
+The working split: **the linter reports, never auto-fixes; the review conversation decides; variants demoted to an alias field.** A lint that auto-picked (say) the longest label would be code-where-LLM-belongs; an LLM asked to re-scan all files for duplicates every time would be LLM-where-code-belongs. Each tool does exactly half.
+
+### The same split, generalized
+
+The pattern recurs wherever a check has an *enumerate* stage and a *decide* stage:
+
+- **Duplicate candidate detection** (exact/near-exact match → code) vs **merge decision** (same underlying thing? → judgment)
+- **Broken-link enumeration** (HTTP status → code) vs **replacement target** (what should it point to now? → judgment)
+- **Style violation flagging** (line length, naming pattern → code) vs **rename choice** (what is a *better* name? → judgment)
+
+Checklist addition for this shape: when a task resists classification, ask **"is there an enumerate/decide seam inside it?"** If yes, split at the seam instead of forcing the whole task to one side.
 
 ---
 

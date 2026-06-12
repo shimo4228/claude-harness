@@ -1,6 +1,6 @@
 ---
 name: harness-sync
-description: ローカル harness (~/.claude) の origin-filtered コンポーネントを公開 repo (claude-harness) へ一方向同期する。Use when the user says 「ハーネスを公開 repo に同期して」「claude-harness を更新して」「スキルを公開して」 or invokes /harness-sync. 収集 → secret scan → subtree 置換は決定論的 script が行い、diff レビュー・README/llms.txt の整合・コミットは会話で行う。NOT for: 公開 repo から ~/.claude への逆方向取り込み、ECC 等外部 origin の公開判断。
+description: ローカル harness (~/.claude) の origin-filtered コンポーネントを公開 repo (claude-harness 集約 repo + 単独 skill repo 群) へ一方向同期する。Use when the user says 「ハーネスを公開 repo に同期して」「claude-harness を更新して」「スキルを公開して」「skill repo を同期して」 or invokes /harness-sync. 収集 → secret scan → subtree 置換は決定論的 script が行い、diff レビュー・README/llms.txt の整合・コミットは会話で行う。NOT for: 公開 repo から ~/.claude への逆方向取り込み、ECC 等外部 origin の公開判断、汎用化 fork を持つ curated skill repo (script 同期は汎用化を壊すため手動 curation)。
 user-invocable: true
 origin: shimo4228
 ---
@@ -62,15 +62,36 @@ git -C <公開repo> add -A && git commit
 
 ## 削除の伝播
 
-script は subtree を丸ごと置換するため、ローカルで退役した skill や origin が
-変わったファイルは公開側からも消える。退役理由は ~/.claude 側の ADR にあるので、
+claude-harness の script は subtree を丸ごと置換するため、ローカルで退役した skill や
+origin が変わったファイルは公開側からも消える。退役理由は ~/.claude 側の ADR にあるので、
 公開側 commit message から参照する。
+
+skill repo の script は逆に**削除を伝播しない**: 対象 skill を repo 自身の `skills/`
+配下から導出するため、harness 側に skill が無い・origin が一致しない場合は skip ではなく
+**abort** する(公開済み skill が静かに消えるのを防ぐ)。skill を退役させる場合は
+repo 側で明示的に削除する。
+
+## Skill repo sync モード
+
+単独 skill repo (1 repo = 1 skill) も同じ workflow (dry-run → 公開ゲート → apply →
+docs 整合 → commit) で同期する。違いは script だけ:
+
+- 対象 skill は **repo 自身の `skills/` 配下ディレクトリ名から導出**(これにより script は
+  全 skill repo で byte-identical に vendor できる)
+- 置換対象は `skills/<name>/` のみ。agents/ rules/ は扱わない
+- root files (README / llms.txt / CHANGELOG / LICENSE) 不可侵、commit しない、は共通
+
+**対象は harness が正本の skill のみ**。CA 等 project 運用版から汎用化 fork した
+curated skill repo (code-and-llm-collaboration, llm-agent-security-principles) には
+script を置かない — 丸ごと置換が汎用化リライトを上書きしてしまうため、手動 curation で
+更新する。
 
 ## Repo mapping (project-specific)
 
-| 項目 | 値 |
-|---|---|
-| 公開 repo | `~/MyAI_Lab/claude-harness` (github.com/shimo4228/claude-harness) |
-| script | `~/MyAI_Lab/claude-harness/scripts/sync-from-local.sh` |
-| origin filter | `shimo4228` (env `HARNESS_SYNC_ORIGIN` で変更可) |
-| source | `~/.claude` (env `HARNESS_SYNC_SOURCE` で変更可) |
+| target | 種別 | script | 正本 |
+|---|---|---|---|
+| `~/MyAI_Lab/claude-harness` ([repo](https://github.com/shimo4228/claude-harness)) | 集約 (skills + agents + rules) | `scripts/sync-from-local.sh` (集約版) | `~/.claude` |
+| `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/when-code-when-llm` |
+| `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/signal-first-research` |
+
+共通 env: origin filter `shimo4228` (`HARNESS_SYNC_ORIGIN`)、source `~/.claude` (`HARNESS_SYNC_SOURCE`)。

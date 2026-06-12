@@ -15,7 +15,11 @@ set -euo pipefail
 
 GLOBAL_DIR="${SKILL_STOCKTAKE_GLOBAL_DIR:-$HOME/.claude/skills}"
 CWD_SKILLS_DIR="${SKILL_STOCKTAKE_PROJECT_DIR:-${1:-$PWD/.claude/skills}}"
-OBSERVATIONS="$HOME/.claude/homunculus/observations.jsonl"
+# Usage log written by ~/.claude/hooks/log-skill-usage.sh (consumer-independent
+# measurement layer). When absent, scan_summary.usage_log.available is false and
+# consumers must render usage as "—" (unmeasured), never as 0.
+# SKILL_USAGE_LOG is shared with log-skill-usage.sh; set it in tests only.
+OBSERVATIONS="${SKILL_USAGE_LOG:-$HOME/.claude/metrics/skill-usage.jsonl}"
 
 # Validate CWD_SKILLS_DIR looks like a .claude/skills path (defense-in-depth).
 # Only warn when the path exists — a nonexistent path poses no traversal risk.
@@ -51,24 +55,13 @@ date_ago() {
   date -u -d "${n} days ago" +%Y-%m-%dT%H:%M:%SZ
 }
 
-# Count observations matching a file path since a cutoff timestamp
-count_obs() {
-  local file="$1" cutoff="$2"
-  if [[ ! -f "$OBSERVATIONS" ]]; then
-    echo 0
-    return
-  fi
-  jq -r --arg p "$file" --arg c "$cutoff" \
-    'select(.tool=="Read" and .path==$p and .timestamp>=$c) | 1' \
-    "$OBSERVATIONS" 2>/dev/null | wc -l | tr -d ' '
-}
-
 # Scan a directory and produce a JSON array of skill objects
 scan_dir_to_json() {
   local dir="$1"
-  local c7 c30
+  local c7 c30 c90
   c7=$(date_ago 7)
   c30=$(date_ago 30)
+  c90=$(date_ago 90)
 
   local tmpdir
   tmpdir=$(mktemp -d)
@@ -78,32 +71,39 @@ scan_dir_to_json() {
   _scan_cleanup() { rm -rf "$_scan_tmpdir"; }
   trap _scan_cleanup RETURN
 
-  # Pre-aggregate observation counts in two passes (one per window) instead of
+  # Pre-aggregate observation counts in one pass per window instead of
   # calling jq per-file — reduces from O(n*m) to O(n+m) jq invocations.
-  local obs_7d_counts obs_30d_counts
+  # Counts both "invoke" and "read" events (any event with a matching path).
+  local obs_7d_counts obs_30d_counts obs_90d_counts
   obs_7d_counts=""
   obs_30d_counts=""
+  obs_90d_counts=""
   if [[ -f "$OBSERVATIONS" ]]; then
     obs_7d_counts=$(jq -r --arg c "$c7" \
-      'select(.tool=="Read" and .timestamp>=$c) | .path' \
+      'select(.ts>=$c) | .path | select(. != "")' \
       "$OBSERVATIONS" 2>/dev/null | sort | uniq -c)
     obs_30d_counts=$(jq -r --arg c "$c30" \
-      'select(.tool=="Read" and .timestamp>=$c) | .path' \
+      'select(.ts>=$c) | .path | select(. != "")' \
+      "$OBSERVATIONS" 2>/dev/null | sort | uniq -c)
+    obs_90d_counts=$(jq -r --arg c "$c90" \
+      'select(.ts>=$c) | .path | select(. != "")' \
       "$OBSERVATIONS" 2>/dev/null | sort | uniq -c)
   fi
 
   local i=0
   while IFS= read -r file; do
-    local name desc mtime u7 u30 dp
+    local name desc mtime u7 u30 u90 dp
     name=$(extract_field "$file" "name")
     desc=$(extract_field "$file" "description")
     mtime=$(date -u -r "$file" +%Y-%m-%dT%H:%M:%SZ)
-    # Use awk exact field match to avoid substring false-positives from grep -F.
-    # uniq -c output format: "   N /path/to/file" — path is always field 2.
-    u7=$(echo "$obs_7d_counts" | awk -v f="$file" '$2 == f {print $1}' | head -1)
+    # uniq -c output format: "   N /path/to/file". Strip the count field and
+    # compare the full remainder so paths containing spaces still match exactly.
+    u7=$(echo "$obs_7d_counts" | awk -v f="$file" '{c=$1; $1=""; sub(/^ /,""); if ($0==f) print c}' | head -1)
     u7="${u7:-0}"
-    u30=$(echo "$obs_30d_counts" | awk -v f="$file" '$2 == f {print $1}' | head -1)
+    u30=$(echo "$obs_30d_counts" | awk -v f="$file" '{c=$1; $1=""; sub(/^ /,""); if ($0==f) print c}' | head -1)
     u30="${u30:-0}"
+    u90=$(echo "$obs_90d_counts" | awk -v f="$file" '{c=$1; $1=""; sub(/^ /,""); if ($0==f) print c}' | head -1)
+    u90="${u90:-0}"
     dp="${file/#$HOME/~}"
 
     jq -n \
@@ -113,7 +113,8 @@ scan_dir_to_json() {
       --arg mtime "$mtime" \
       --argjson use_7d "$u7" \
       --argjson use_30d "$u30" \
-      '{path:$path,name:$name,description:$description,use_7d:$use_7d,use_30d:$use_30d,mtime:$mtime}' \
+      --argjson use_90d "$u90" \
+      '{path:$path,name:$name,description:$description,use_7d:$use_7d,use_30d:$use_30d,use_90d:$use_90d,mtime:$mtime}' \
       > "$tmpdir/$i.json"
     i=$((i+1))
   done < <(find "$dir" -name "*.md" -type f 2>/dev/null | sort)
@@ -152,17 +153,33 @@ fi
 # Merge global + project skills into one array
 all_skills=$(jq -s 'add' <(echo "$global_skills") <(echo "$project_skills"))
 
+# Usage log availability: consumers must distinguish "unmeasured" from 0.
+usage_available="false"
+usage_since=""
+if [[ -f "$OBSERVATIONS" ]]; then
+  usage_available="true"
+  usage_since=$(head -1 "$OBSERVATIONS" | jq -r '.ts // empty' 2>/dev/null) || usage_since=""
+fi
+
 jq -n \
   --arg global_found "$global_found" \
   --argjson global_count "$global_count" \
   --arg project_found "$project_found" \
   --arg project_path "$project_path" \
   --argjson project_count "$project_count" \
+  --arg usage_available "$usage_available" \
+  --arg usage_since "$usage_since" \
+  --arg usage_path "${OBSERVATIONS/#$HOME/~}" \
   --argjson skills "$all_skills" \
   '{
     scan_summary: {
       global: { found: ($global_found == "true"), count: $global_count },
-      project: { found: ($project_found == "true"), path: $project_path, count: $project_count }
+      project: { found: ($project_found == "true"), path: $project_path, count: $project_count },
+      usage_log: {
+        available: ($usage_available == "true"),
+        since: (if $usage_since == "" then null else $usage_since end),
+        path: $usage_path
+      }
     },
     skills: $skills
   }'

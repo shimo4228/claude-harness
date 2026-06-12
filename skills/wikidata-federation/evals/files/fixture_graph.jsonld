@@ -1,0 +1,35 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@id": "https://orcid.org/0000-0002-9999-0001",
+      "@type": "Person",
+      "name": "Hana Mizuno",
+      "identifier": "https://orcid.org/0000-0002-9999-0001",
+      "url": "https://github.com/hmizuno-lab"
+    },
+    {
+      "@id": "https://github.com/hmizuno-lab/provenance-chains",
+      "@type": "SoftwareSourceCode",
+      "name": "provenance-chains",
+      "codeRepository": "https://github.com/hmizuno-lab/provenance-chains",
+      "identifier": "https://doi.org/10.5281/zenodo.99999101",
+      "author": { "@id": "https://orcid.org/0000-0002-9999-0001" }
+    },
+    {
+      "@id": "https://doi.org/10.5281/zenodo.99999201",
+      "@type": "Dataset",
+      "name": "Annotation Drift Corpus",
+      "sameAs": "https://huggingface.co/datasets/hmizuno-lab/annotation-drift-corpus",
+      "author": { "@id": "https://orcid.org/0000-0002-9999-0001" }
+    },
+    {
+      "@id": "https://github.com/hmizuno-lab/skill-provenance-chains",
+      "@type": "SoftwareSourceCode",
+      "name": "skill-provenance-chains",
+      "description": "Companion skill repo. Near-miss of provenance-chains — must NOT receive its QID.",
+      "codeRepository": "https://github.com/hmizuno-lab/skill-provenance-chains",
+      "author": { "@id": "https://orcid.org/0000-0002-9999-0001" }
+    }
+  ]
+}

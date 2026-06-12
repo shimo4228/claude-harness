@@ -1,0 +1,23 @@
+{
+  "skill_name": "citation-sync",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "agent-knowledge-cycle の参考文献、Wikidata で見ると 2 件しかないんだけど docs にはもっと引用あるよね？ずれてない？確認して",
+      "expected_output": "citation_audit.py を実行して 4 層マトリクスを提示し、docs-only の識別子を curation 候補として列挙する。推測で層の状態を語らない。同期は下層 (.zenodo.json) から順に提案する",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "ADR-0010 に NEO-BENCH の引用を足したから、citation を全層に反映しておいて",
+      "expected_output": "audit で当該識別子の層別状態を確認 → .zenodo.json related_identifiers (DataCite arXiv DOI 形式) → graph ExternalReference (description に引用理由) → Wikidata P2860 (重複チェック → skeleton → 辺 → lint --items) の順に同期。Phase 5 で audit 再実行して CONVERGED を確認",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "リリース前チェックをしたい。contemplative-agent の引用まわりが整合してるか見て",
+      "expected_output": "audit を実行し、divergence があれば curation 基準 (.notes 除外 / 引用文脈 / external のみ) を適用した昇格候補表を出す。sibling Zenodo DOI を external citation と混同しない。意図的に残す divergence は明記する",
+      "files": []
+    }
+  ]
+}
