@@ -30,7 +30,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [search-first](skills/search-first/SKILL.md): research-before-coding workflow — invokes the scout agent to discover existing libraries, MCP servers, or GitHub solutions before writing custom code
 - [signal-first-research](skills/signal-first-research/SKILL.md): design guide for a research intake filter that admits only information likely to change your next action — define the signal before the search
 - [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
-- [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — Quick Scan (changed only) and Full Stocktake modes with parallel subagent evaluation
+- [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — inline Glob inventory + single-context holistic evaluation (full / changed modes), Keep/Improve/Update/Retire/Merge verdicts
 - [rules-distill](skills/rules-distill/SKILL.md): scans skills to extract cross-cutting principles and promotes them to deterministic rules
 - [skill-comply](skills/skill-comply/SKILL.md): measures actual compliance of skills, rules, and agents — generates scenarios at 3 prompt strictness levels and classifies behavioral sequences
 - [context-sync](skills/context-sync/SKILL.md): audits and fixes project documentation — detects role overlap between context files (CLAUDE.md, CODEMAPS, ADR, README), checks freshness against code, creates missing docs
@@ -54,6 +54,9 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [when-code-when-llm](skills/when-code-when-llm/SKILL.md): decision framework for choosing deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test, worked examples in both directions
 - [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list
 - [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
+- [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md): verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact (paper, knowledge graph, DOI repo)
+- [gap-review](skills/gap-review/SKILL.md): generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against your action catalog, open questions, and the latest literature
+- [wiki-query](skills/wiki-query/SKILL.md): read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis
 
 ## Agents
 

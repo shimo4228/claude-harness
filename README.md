@@ -21,7 +21,7 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow. Invokes the scout agent to discover existing tools |
 | [signal-first-research](skills/signal-first-research/SKILL.md) | Design guide for a research intake filter that admits only information likely to change your next action |
 | [learn-eval](skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
-| [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill quality audit. Quick Scan / Full Stocktake modes with parallel evaluation |
+| [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill quality audit — inline Glob inventory + single-context holistic evaluation, Keep/Improve/Update/Retire/Merge verdicts |
 | [rules-distill](skills/rules-distill/SKILL.md) | Extracts cross-cutting principles from skills and promotes them to rules |
 | [skill-comply](skills/skill-comply/SKILL.md) | Measures actual compliance of skills / rules / agents. Classifies behavioral sequences across 3 prompt strictness levels |
 | [context-sync](skills/context-sync/SKILL.md) | Audits and fixes project documentation. Detects role overlap, checks freshness, creates missing docs |
@@ -45,6 +45,9 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | Decision framework for deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test |
 | [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list |
 | [harness-sync](skills/harness-sync/SKILL.md) | One-way export of origin-filtered components from the live harness into this repo — collection, secret scan, subtree replacement |
+| [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | Verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact |
+| [gap-review](skills/gap-review/SKILL.md) | Generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against catalog, open questions, and latest literature |
+| [wiki-query](skills/wiki-query/SKILL.md) | Read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis |
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
 

@@ -21,7 +21,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow。scout agent を呼び出して既存ツールを探索 |
 | [signal-first-research](skills/signal-first-research/SKILL.md) | 次の行動を変えうる情報だけを取り込む research intake filter の設計ガイド |
 | [learn-eval](skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
-| [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査。Quick Scan / Full Stocktake モードで並列評価 |
+| [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査 — Glob インベントリ + 単一コンテキスト holistic 評価、Keep/Improve/Update/Retire/Merge 判定 |
 | [rules-distill](skills/rules-distill/SKILL.md) | Skill 群から共通原則を抽出し、rule として昇格させる |
 | [skill-comply](skills/skill-comply/SKILL.md) | Skill / rule / agent の実際の遵守率を計測。3 段階 prompt で行動シーケンスを分類 |
 | [context-sync](skills/context-sync/SKILL.md) | プロジェクト documentation を監査・修正。役割重複検出、鮮度チェック、欠損作成 |
@@ -45,6 +45,9 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | 決定論的 code vs LLM 処理の判断 framework — 構造/意味軸と false-positive テスト |
 | [spawn-session](skills/spawn-session/SKILL.md) | tmux で detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
 | [harness-sync](skills/harness-sync/SKILL.md) | 生きた harness から本 repo への origin filter 付き一方向エクスポート — 収集・secret scan・subtree 置換 |
+| [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | access-blocked / digest 由来の数値主張を、durable な引用の前にオープンミラーで検証する guardrail |
+| [gap-review](skills/gap-review/SKILL.md) | 継続運用する戦略の「次の一手」候補をランク付き生成 — deployed tactics × catalog × open questions × 最新文献の差分 |
+| [wiki-query](skills/wiki-query/SKILL.md) | Obsidian LLM wiki (wiki/concept/) への read-only クエリ。`[[ ]]` 出典付きで合成回答 |
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
 

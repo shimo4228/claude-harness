@@ -18,6 +18,17 @@ Signal-first is the default. Search widely, intake narrowly. Information that do
 
 **Trigger**: Any task that introduces a new dependency or creates a utility that might already exist.
 
+### Output discipline — emit only what changes an action
+
+Signal-first applies to output as well as intake. Do not emit a score, grade, or
+recommendation unless something downstream (a code gate, a human decision, the next
+step) actually consumes it. A number that changes no action is scaffolding — replace
+it with the concrete observation that *does* change one ("the lead doesn't say who
+it's for"), not "Lead: 6/10". LLM scoring is justified only as input to a code-owned
+decision (judge + enforce).
+
+See skills: readme-writer, when-code-when-llm
+
 ## Extract — Capture reusable patterns from sessions
 
 When a session produces a non-obvious solution, workaround, or decision:
@@ -69,8 +80,11 @@ Every documentation file serves one of four roles: Context (how to work here), A
 2. Check for content that belongs in a different role (e.g., design rationale in a context file → should be an ADR)
 3. Check numeric claims against reality (file counts, test counts, version numbers)
 4. Remove or update stale content rather than letting it accumulate
+5. Keep each fact in one place — never write the same numeric claim (module count, test count, version) in two files. Make one canonical and have others point to it. When verifying a documented number, trust live command output (`find … | wc -l`, `pytest --collect-only`), not the existing doc's value — docs drift, the command does not.
 
 **Trigger**: After major refactoring, when context files exceed ~200 lines, or when documentation claims feel wrong.
+
+See skills: context-sync, release-doi
 
 ## Scaffold Dissolution
 

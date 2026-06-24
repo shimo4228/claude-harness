@@ -75,7 +75,7 @@ The learn-eval skill is defined as a session-end pattern extractor. After a prod
 
 ## What is the skill-stocktake skill?
 
-The skill-stocktake skill is defined as a quality audit for the skill, command, and agent inventory. It supports two modes: Quick Scan, which evaluates only changed skills since the last stocktake, and Full Stocktake, which runs sequential subagent evaluation across the entire inventory. Each component is checked for redundancy with neighbors, staleness of references, silence (existing but never triggered), and freshness against current usage patterns. The output is a prioritized cleanup list with recommended actions: keep, consolidate, rewrite, or remove.
+The skill-stocktake skill is defined as a quality audit for the installed skill inventory. It enumerates skills with Glob and reads every skill into one context for a single-context holistic evaluation — no scan scripts and no subagent batching, which makes cross-skill overlap detection accurate. It supports two modes: full (evaluate every skill, the default) and changed (re-evaluate only skills changed since the last run, carrying the rest forward from a lean verdict ledger). Each skill is checked for redundancy with neighbors (a documented orchestrator/sub-skill split is not redundancy), staleness of references, and usage frequency. The output is a per-skill verdict — Keep / Improve / Update / Retire / Merge — with self-contained reasons; Improve/Update verdicts are offered as a hand-off to skill-creator.
 
 ## What is the rules-distill skill?
 
