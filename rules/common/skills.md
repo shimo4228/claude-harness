@@ -11,6 +11,7 @@
 | `shimo4228` | shimo4228 が作成 (旧 `original`) |
 | `ECC` | ECC から導入 (未改変) |
 | `ECC-customized` | ECC 由来で shimo4228 がカスタマイズ |
+| `{origin}-customized` | 任意の外部 origin 由来で shimo4228 が内容を編集（例: `ECC-customized`, `oh-my-agent-check-customized`）。base 名は上流値を保持 |
 | `{org/repo}` | 特定外部リポジトリから導入 |
 | `auto-extracted` | learn-eval が自動抽出 |
 | `skill-create` | skill-create が git 履歴から生成 |
@@ -39,6 +40,7 @@ origin: shimo4228
 - **新規スキル作成時**: 必ず origin を付与する
 - **外部スキル導入時**: 導入元のリポジトリ URL またはプロジェクト名を記録する
 - **auto-extracted**: learn-eval が生成する learned/ スキルに自動付与する
+- **外部 origin 由来スキルの内容を編集したら**: origin に `-customized` サフィックスを付す（`ECC`→`ECC-customized`、`oh-my-agent-check`→`oh-my-agent-check-customized`、`{org/repo}`→`{org/repo}-customized`）。参照の repoint・本文修正を含む。**frontmatter の name 修正のみは対象外**。**自作 origin（`shimo4228` / `auto-extracted` / `skill-create`）は対象外** — 上流ベースラインを持たないため customized 概念が不要。目的は「無改変の外部資産から乖離したか」を origin で表し、ECC/外部のアップデート取り込み時の diff 判断を可能にすること
 - **棚卸し時**: origin を基準に、アップデート確認（ECC/外部）や削除判断（不要な auto-extracted）を行う
 
 ## Skills as Canonical（commands/ は使わない）

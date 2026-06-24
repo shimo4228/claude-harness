@@ -199,6 +199,27 @@ P50 = author QID) and anchor the QID back into `graph.jsonld` via the
 `wikidata-federation` skill — this extends the federation beyond the repo's
 own files into the global knowledge graph (Scholia, SPARQL, CC0 dumps).
 
+## Step 6 — Reduce paper content back into the repo (post-deposit follow-up)
+
+Cross-linking federates the DOI, not the content. A paper extracted from a
+repo's judgment lineage usually advances *beyond* the ADRs it cites — new
+structural arguments, definition labels, pre-deposit audit findings. After
+deposit, run a gap analysis between the paper and the repo's doc surfaces and
+write the deltas back:
+
+- **Reduction targets, in order**: glossary → `llms-full.txt` (add one
+  self-contained Q that answers "what does the paper claim?") → README →
+  `graph.jsonld` (paper node gains `definesConcept`; each defined concept node
+  gains `subjectOf` pointing at the paper DOI).
+- **ADRs stay unchanged**: the argument layer lives in the paper; the ADR
+  remains the canonical definition record. Additional evidence that does not
+  change an ADR's judgment needs no addendum.
+- If the reduction introduces new named citations into the docs, run a
+  `citation-sync` pass afterwards.
+- **Finish before the repo's next release** — in the reverse order, the new
+  version DOI snapshot freezes the pre-reduction state, and the paper ↔ repo
+  cross-references stay one generation apart on Zenodo.
+
 ## Quick checklist
 
 - [ ] Review gate passed (paper-ecosystem); placeholders filled; filename neutral
@@ -207,6 +228,7 @@ own files into the global knowledge graph (Scholia, SPARQL, CC0 dumps).
 - [ ] DOI stamped on title page; PDF regenerated for downstream channels
 - [ ] (optional) SSRN: Preprint, Crossref-DOI field empty, title/abstract artifacts fixed
 - [ ] Federation cross-links updated, JSON validated, committed; push/hf-sync per cadence
+- [ ] Paper content reduced into repo surfaces (glossary / llms-full Q / README / graph) before the repo's next release; ADRs untouched
 
 See `references/inspiration.md` for the worked example this skill was distilled
 from.

@@ -93,7 +93,7 @@ If 3-6 are missing, request them — do not proceed. ADRs without these sections
 
 ### Step 4: Delegate body generation to the adr-writer agent
 
-Invoke the `adr-writer` agent via the Task tool with:
+Invoke the `adr-writer` agent via the Agent tool with:
 
 - ADR number (`$NEXT_NUM`)
 - Repo root (`$REPO_ROOT`)

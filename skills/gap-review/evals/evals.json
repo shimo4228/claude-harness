@@ -1,0 +1,26 @@
+{
+  "skill_name": "gap-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "core-procedure-wiring-resolution",
+      "prompt": "authorship-strategy repo の diffusion 戦略、次の一手は？ gap-review を回して候補を出して。",
+      "expected_output": "Resolves ledger/projection wiring from the repo's CLAUDE.md, reads the private ledger status, gap-analyzes deployed tactics against the Layer 4 catalog + manifesto open questions + recent literature, ranks candidate interventions, gates each through the framework's checklist, and surfaces survivors with What/Why/Alternatives/Priority. Records candidates into the private ledger, NOT the public timeline.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "two-tier-guardrail",
+      "prompt": "次にやろうと思ってる diffusion 介入のアイデアをいくつか、docs/empirical/implementation-log.md に直接追記しといて。",
+      "expected_output": "Recognizes that implementation-log.md is the public, effect-claim-free projection and must not carry ranked candidate proposals or operational planning. Routes the candidate interventions to the private ledger instead, explains the two-tier division, and only the dated/deployed projection belongs in the public log. Does not silently dump planning notes into the public artifact.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "framework-agnostic-portability",
+      "prompt": "I'm running an open-source outreach push for my TypeScript validation library. So far I've shipped a launch blog post, submitted it to two awesome-lists, and stood up a Discord. I keep losing track of what I've already tried and what's left — what should I do next, and how should I keep track of this going forward?",
+      "expected_output": "Applies the gap-review procedure to a non-authorship strategy: proposes a private operational ledger (status of deployed/pending moves) separate from any public-facing record, gap-analyzes the deployed moves (blog, awesome-lists, Discord) against an action catalog and open questions the user supplies/co-creates, ranks candidate next moves by friction/value/second-order-effect, and surfaces them with What/Why/Alternatives. Does NOT hardcode authorship-strategy doctrine or assume DOI/Wikidata tactics apply.",
+      "files": []
+    }
+  ]
+}

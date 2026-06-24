@@ -112,6 +112,29 @@ When sources conflict, prefer in this order:
 4. Blog posts from domain experts
 5. Community discussions (LessWrong, HN, Reddit)
 
+## Local-Source Verification (personal-history claims)
+
+Some claims are about the author's *own* history — "I ran the stocktake 3 times",
+"on Jan 31 I did X", "there are N skills". Web search cannot verify these; local
+machine records can. Memory-based drafts routinely get the date wrong, drop a
+count, or misstate a number, and only **cross-referencing independent local
+sources** surfaces it.
+
+Map each claim to independent local sources and search them **in parallel**
+(debug logs, MEMORY across all projects, git history + file timestamps, existing
+articles/drafts each get their own sub-agent). When local sources conflict, prefer
+in this order — machine records beat memory:
+
+1. Debug logs (`~/.claude/projects/*/`) / git history — machine records, hard to alter
+2. File timestamps (`ls -la`, `stat`) — OS-level record
+3. MEMORY.md (`~/.claude/projects/*/memory/`) — written at session end, memory bias
+4. Published articles — public but carry writing-time bias
+5. Drafts / dictation — largest memory bias
+
+Reconstruct a verified timeline from confirmed facts only, and show the diff
+against the original draft. Never settle a date/count from a single memory-based
+source, and never leave a source-to-source contradiction unresolved.
+
 ## Guidelines
 
 - **Do NOT edit the article.** Only report findings.

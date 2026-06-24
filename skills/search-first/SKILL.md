@@ -84,7 +84,7 @@ Why: this externalizes the search query so the user can redirect early, and make
 For non-trivial functionality, **first complete Step 0 above (articulate the requirement as text)**, then launch the scout agent — the agent's prompt should mirror the articulation, not replace it:
 
 ```
-Task(subagent_type="general-purpose", prompt="
+Agent(subagent_type="general-purpose", prompt="
   Research existing tools for: [DESCRIPTION]
   Language/framework: [LANG]
   Constraints: [ANY]

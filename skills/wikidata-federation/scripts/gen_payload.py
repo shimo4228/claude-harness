@@ -45,7 +45,28 @@ Spec format (work — paper / software / dataset):
   "retrieved": "2026-06-07"
 }
 
+Spec format (citation — third-party work the author's own work CITES):
+This is a bibliographic SKELETON, not a showcase item. The richness rubric does
+NOT apply (SKILL.md Phase 4.5): no license/P275/P6216, no P50/P921, no rubric
+WARNs. Use it for Phase 4.5 P2860 cited-work targets; "work" stays for own items.
+{
+  "kind": "citation",
+  "title": "Cessations of consciousness in meditation: ...",  // en + mul labels + P1476
+  "description_en": "scholarly article by Laukkonen et al., 2023",
+  "description_ja": "Laukkonen らによる2023年の学術論文",   // optional
+  "instance_of": "Q13442814",                // optional, default Q13442814 (scholarly article)
+  "doi": "10.1016/BS.PBR.2022.12.007",       // optional (UPPERCASE) -> P356; need doi OR arxiv_id
+  "arxiv_id": "2504.15125",                  // optional -> P818
+  "publication_date": "2023",                // year ("2023") / month / full date; precision auto
+  "authors": ["R. E. Laukkonen", "M. D. Sacchet"],  // external -> P2093 + P1545 ordinals (no P50)
+  "language_of_work": "Q1860",               // optional, default Q1860
+  "full_work_url": "https://doi.org/10.1016/bs.pbr.2022.12.007",  // optional -> P953
+  "retrieved": "2026-06-17"
+}
+
 Conventions enforced here (see SKILL.md and references/richness-rubric.md for why):
+- publication_date precision is derived from granularity: "2023" -> year
+  (precision 9), "2023-05" -> month (10), "2023-05-23" -> day (11)
 - P356 DOI uppercase
 - author property by type: articles/datasets use P50 (author) with a P1545
   series-ordinal qualifier; software uses P178 (developer). P50 has a
@@ -86,8 +107,18 @@ def warn(msg: str) -> None:
 
 
 def time_value(date: str) -> dict:
-    return {"time": f"+{date}T00:00:00Z", "timezone": 0, "before": 0,
-            "after": 0, "precision": 11, "calendarmodel": CALENDAR}
+    # Derive Wikidata precision from input granularity, zero-padding the missing
+    # components: "2023" -> precision 9 (+2023-00-00), "2023-05" -> 10, full
+    # "2023-05-23" -> 11. Retrieval dates (P813) are always full -> precision 11.
+    parts = date.split("-")
+    if not 1 <= len(parts) <= 3:
+        sys.exit(f"ERROR: invalid date (expected YYYY, YYYY-MM, or YYYY-MM-DD): {date!r}")
+    year = parts[0]
+    month = parts[1].zfill(2) if len(parts) >= 2 else "00"
+    day = parts[2].zfill(2) if len(parts) == 3 else "00"
+    precision = 8 + len(parts)  # YYYY -> 9, YYYY-MM -> 10, YYYY-MM-DD -> 11
+    return {"time": f"+{year}-{month}-{day}T00:00:00Z", "timezone": 0, "before": 0,
+            "after": 0, "precision": precision, "calendarmodel": CALENDAR}
 
 
 def item_snak(prop: str, qid: str) -> dict:
@@ -268,11 +299,67 @@ def build_work(spec: dict) -> dict:
     return payload
 
 
+def build_citation(spec: dict) -> dict:
+    """Third-party bibliographic skeleton — a work the author's own work cites.
+
+    Unlike build_work this is NOT a showcase item: no license (P275/P6216), no
+    author item (P50) and no main subject (P921), and the richness rubric does
+    not apply (SKILL.md Phase 4.5), so no rubric WARNs fire. External authors go
+    in as P2093 name strings with P1545 ordinals — no author item is created for
+    third parties. Needs at least one of doi / arxiv_id.
+    """
+    for required in ("title", "publication_date", "retrieved"):
+        if not spec.get(required):
+            sys.exit(f"ERROR: citation spec missing required field '{required}'")
+    doi = spec.get("doi")
+    arxiv_id = spec.get("arxiv_id")
+    if doi and doi != doi.upper():
+        sys.exit(f"ERROR: DOI must be uppercase for P356 (got: {doi})")
+    if not (doi or arxiv_id):
+        sys.exit("ERROR: citation needs at least one of 'doi' / 'arxiv_id'")
+    # Reference URL: explicit full_work_url, else DOI resolver, else arXiv abstract
+    ref_url = (spec.get("full_work_url")
+               or (f"https://doi.org/{doi.lower()}" if doi else None)
+               or f"https://arxiv.org/abs/{arxiv_id}")
+    ref = make_ref(ref_url, spec["retrieved"])
+    instance_of = spec.get("instance_of", "Q13442814")
+
+    labels, descriptions, aliases = collect_terms(spec)
+    # Title is language-independent: en + mul labels (same pattern as build_work)
+    labels.setdefault("en", spec["title"][:250])
+    labels.setdefault("mul", spec["title"][:250])
+
+    claims = [statement(item_snak("P31", instance_of))]
+    if doi:
+        claims.append(statement(string_snak("P356", doi), references=ref))
+    if arxiv_id:
+        claims.append(statement(string_snak("P818", arxiv_id), references=ref))
+    claims.append(statement({"snaktype": "value", "property": "P1476",
+                             "datavalue": {"value": {"text": spec["title"], "language": "en"},
+                                           "type": "monolingualtext"}}))
+    claims.append(statement({"snaktype": "value", "property": "P577",
+                             "datavalue": {"value": time_value(spec["publication_date"]),
+                                           "type": "time"}}, references=ref))
+    claims.append(statement(item_snak("P407", spec.get("language_of_work", ENGLISH)),
+                            references=ref))
+    if spec.get("full_work_url"):
+        claims.append(statement(url_snak("P953", spec["full_work_url"]), references=ref))
+    # External authors -> P2093 (name string) with P1545 series ordinal.
+    # No references= here: third parties have no citable ORCID profile (unlike P50).
+    for i, name in enumerate(spec.get("authors") or [], start=1):
+        claims.append(statement(string_snak("P2093", name),
+                                qualifiers={"P1545": [string_snak("P1545", str(i))]}))
+    payload = terms_payload(labels, descriptions, aliases)
+    payload["claims"] = claims
+    return payload
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         sys.exit(__doc__)
     spec = json.loads(open(sys.argv[1]).read())
-    builders = {"author": build_author, "work": build_work}
+    builders = {"author": build_author, "work": build_work,
+                "citation": build_citation}
     kind = spec.get("kind")
     if kind not in builders:
         sys.exit(f"ERROR: spec.kind must be one of {list(builders)} (got: {kind})")

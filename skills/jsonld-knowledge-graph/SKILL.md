@@ -155,6 +155,19 @@ https://github.com/<owner>/<hub>/blob/main/graph.jsonld
 
 LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
 
+**散文リンクだけでは不十分** — README 逆リンクは人間/プレーンテキスト向け。グラフ層でも各 spoke の **self-node に機械可読な上向き edge** を張る:
+
+```json
+// 各 line / supporting repo の self-node (ResearchLine or Dataset) に:
+"isPartOf": "https://github.com/<owner>/<hub>"   // hub の canonical @id (bare-repo URL に統一)
+```
+
+- hub→spoke は `mainEntity` / `siblingOf`、spoke→hub は `isPartOf` で双方向化 (`isPartOf` の厳密な逆は `hasPart` だが、独立 triple として有効)
+- target @id は **全 repo で同一の canonical hub node** に揃える (bare-repo `github.com/<owner>/<hub>` 推奨)。揃わないと merge 時に hub が複数ノードに割れて join 不能
+- `isPartOf` は context に `{"@id":"https://schema.org/isPartOf","@type":"@id"}` を宣言 (無いと「IRI 文字列の literal 化」と同じく literal になる)。context を触れない content graph では inline `{"@id":"..."}` で node 参照を強制
+- self-node を持たない content-only graph (Article 列挙のみ等) には最小 Dataset self-node を1個新設し、そこに `isPartOf` を張る
+- **監査**: 新 repo 追加時、全 spoke の self-node が `isPartOf→hub` を持つか確認。実地では下向き (hub→spoke) だけ張られ、上向きが大半の spoke で抜けていた
+
 ## Schema Vocabulary 設計
 
 新規 type / edge を導入する判断基準:

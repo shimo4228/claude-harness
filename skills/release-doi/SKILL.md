@@ -1,6 +1,6 @@
 ---
 name: release-doi
-description: DOI-registered research repo (Zenodo) のリリース手順。CODEMAPS / README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映する 5 phase + post-release ワークフロー。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
+description: DOI-registered research repo (Zenodo) のリリース手順。CODEMAPS / README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映し、Software Heritage archive + SWHID 記録 (intrinsic identifier 層) まで行う 5 phase + post-release ワークフロー。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
 user-invocable: true
 origin: shimo4228
 ---
@@ -192,6 +192,17 @@ gh release create vX.Y.Z \
 
 **HF dataset sync** (`graph.jsonld` を持つ repo のみ): `gh release create` の後、project root で `/hf-sync <Owner/dataset>` を起動して HF mirror を反映する。Local の `hf login` token を使うので CI / token secret 管理は不要。詳細は `hf-sync` skill 参照。
 
+**Software Heritage archive request** (全 DOI repo、authorship-strategy ADR-0013): tag push / release 作成後、Save Code Now API に明示的な archival request を投げる。periodic crawl 任せでは snapshot が release 状態をカバーする保証がないため、release ごとに明示 request する:
+
+```bash
+curl -s -X POST "https://archive.softwareheritage.org/api/1/origin/save/git/url/https://github.com/<owner>/<repo>/" \
+  -H "Accept: application/json"
+# → {"save_request_status": "accepted", "save_task_status": "pending"} を確認
+```
+
+- 匿名 rate limit は **save request 10 件/時** (`X-Ratelimit-Limit: 10`)。429 `Throttled` が返ったら `reason` 内の秒数だけ待って再試行するか、Post-release に回す
+- この step は **非同期** (ADR-0013)。archive 完了を release の block 要因にしない。SWHID の取得・記録は Post-release で行う
+
 ## Post-release: DOI 反映
 
 Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 5 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
@@ -218,6 +229,31 @@ git add CITATION.cff README.md README.<langs>.md
 git commit -m "chore: update DOI to vX.Y.Z"
 git push origin main
 ```
+
+**SWHID 取得・記録** (authorship-strategy ADR-0013 の intrinsic identifier 層): Phase 5 で投げた Save Code Now request の完了を確認し、snapshot SWHID を CITATION.cff に記録する。DOI 反映 commit と同じ commit にまとめてよい (ただし snapshot は DOI 反映 push **前** の状態を指す点は許容 — SWHID は release tag 時点の content 証明が目的):
+
+```bash
+# archive 完了確認 + snapshot SWHID 取得 (visit endpoint は save とは別の rate limit)
+curl -s "https://archive.softwareheritage.org/api/1/origin/https://github.com/<owner>/<repo>/visit/latest/" \
+  | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("status"), "swh:1:snp:%s" % d.get("snapshot"))'
+# status が "full" になってから snapshot を使う。"created"/"ongoing" なら後で取り直す
+# (匿名 save の処理は通常数分。翌日まで pending なら save request を再送)
+```
+
+CITATION.cff には CFF 1.2.0 の `identifiers` field で記録する (`type: swh` は CFF 標準サポート):
+
+```yaml
+identifiers:
+  - type: swh
+    value: "swh:1:snp:<snapshot_hash>"
+    description: "Software Heritage snapshot of vX.Y.Z"
+```
+
+- 既存の swh entry があれば **置き換えず追記** (各 release の snapshot が独立した priority claim)
+- SWHID は content の存在証明であって authorship 証明ではない (ADR-0013 Consequences)。authorship は DOI / ORCID 層が担う — README 等で SWHID を authorship の根拠として書かない
+- Archive 内の閲覧 URL: `https://archive.softwareheritage.org/swh:1:snp:<hash>;origin=https://github.com/<owner>/<repo>`
+
+**Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は `~/.config/zenodo/credentials.env`)。
 
 **Wikidata 連邦** (optional、新規 repo の初回 release 時): `wikidata-federation` skill で Wikidata item（P356=concept DOI, P50=著者 QID）を作成し、graph.jsonld に QID を sameAs 編入する。2回目以降の release では既存 item が concept DOI で解決し続けるため作業不要。
 
@@ -325,6 +361,7 @@ GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/rel
 - **Numeric cap を quality filter にしない**: memory `no-numeric-caps` — `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う (memory `single-responsibility-per-artifact`)
 - **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し (memory `substrate-migration-sweep`)
+- **SWHID は DOI の補完であって代替ではない** (authorship-strategy ADR-0013): DOI は extrinsic (registry 依存、metadata record を指す)、SWHID は intrinsic (content hash 由来、registry なしで検証可能)。各層が他方の failure mode をカバーする。DOI 登録が impractical な genre (blog 等) では SWHID が substitute priority-claim mechanism。Software Heritage は code 系 LLM training corpus (The Stack v2 系) の直接 ingest source でもあり、archive は parametric channel への第二の ingest surface を兼ねる
 - **新規 DOI repo は Zenodo opt-in が事前必須**: Zenodo の GitHub 連携は repo ごとの opt-in 設計。toggle ON 前に作成された release は遡及的に拾われない (公式仕様)。Pre-flight で `gh api repos/<owner>/<repo>/hooks` を確認しないと、Phase 5 まで進めて Zenodo に何も届いていないことを Post-release で初めて発見してリカバリーすることになる。**新規 repo のたびに必要だが忘れがち** — sibling repo (AKC / AAP / contemplative-agent / authorship-strategy) では既に opt-in 済みのため、慣れていると新規 repo で初回 release を切る時の盲点になる。doctrine-corpus v0.1.0 (2026-05-22) でこの漏れが発生し、tag/release 再作成でリカバリーした事例あり
 
 ## Worked example (abstracted)

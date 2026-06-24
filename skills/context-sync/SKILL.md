@@ -77,7 +77,7 @@ If `docs/CODEMAPS/` does not exist at all and the project is small (< 30 source 
    Signal C (missing):        all required files present, no hit
    ```
 
-2. **If any signal hits AND `docs/CODEMAPS/` already exists** (edits to existing files): invoke the `codemap-writer` agent via the Task tool, passing repo root, source dirs, and existing CODEMAPS state. The agent regenerates the affected codemaps in place. **No confirmation prompt** — these are edits to existing files, covered by git diff.
+2. **If any signal hits AND `docs/CODEMAPS/` already exists** (edits to existing files): invoke the `codemap-writer` agent via the Agent tool, passing repo root, source dirs, and existing CODEMAPS state. The agent regenerates the affected codemaps in place. **No confirmation prompt** — these are edits to existing files, covered by git diff.
 
 3. **If Signal C hits and `docs/CODEMAPS/` does not exist** (new directory + new files): this is creation, so confirm once with the user:
 

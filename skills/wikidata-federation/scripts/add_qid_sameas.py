@@ -238,9 +238,17 @@ def process_file(path: str, mapping: dict, apply: bool) -> None:
             text = text[:vs] + json.dumps(new_val, ensure_ascii=False) + text[ve:]
         else:
             after = id_pos + len(anchor)
-            line_start = text.rfind("\n", 0, id_pos) + 1
-            indent = text[line_start:id_pos]
-            insertion = f',\n{indent}"sameAs": "{qid}"'
+            if "\n" in text[s:e]:
+                # Multi-line node (each field on its own line): match sibling
+                # indent. text[line_start:id_pos] is pure whitespace here.
+                line_start = text.rfind("\n", 0, id_pos) + 1
+                indent = text[line_start:id_pos]
+                insertion = f',\n{indent}"sameAs": "{qid}"'
+            else:
+                # Single-line node ({"@id": ...} all on one line): insert inline
+                # to keep the node on one line. Using the line indent here would
+                # capture the leading "{" and inject a stray brace -> broken JSON.
+                insertion = f', "sameAs": "{qid}"'
             text = text[:after] + insertion + text[after:]
 
     new_tree = json.loads(text)
