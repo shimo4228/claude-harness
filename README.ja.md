@@ -22,6 +22,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [signal-first-research](skills/signal-first-research/SKILL.md) | 次の行動を変えうる情報だけを取り込む research intake filter の設計ガイド |
 | [learn-eval](skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査 — Glob インベントリ + 単一コンテキスト holistic 評価、Keep/Improve/Update/Retire/Merge 判定 |
+| [skill-health](skills/skill-health/SKILL.md) | Skill ライブラリの構造的 debt スキャン — "missing artifacts"（SKILL.md が参照する script / agent / sibling skill がディスク上に存在しない）を検出。決定論的で、品質 / risk / validation は skill-stocktake / security-scan / skill-comply に委譲 |
 | [rules-distill](skills/rules-distill/SKILL.md) | Skill 群から共通原則を抽出し、rule として昇格させる |
 | [skill-comply](skills/skill-comply/SKILL.md) | Skill / rule / agent の実際の遵守率を計測。3 段階 prompt で行動シーケンスを分類 |
 | [context-sync](skills/context-sync/SKILL.md) | プロジェクト documentation を監査・修正。役割重複検出、鮮度チェック、欠損作成 |
@@ -104,7 +105,7 @@ cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/
 
 ### Python 実装付き skill のセットアップ
 
-`llms-txt-writer`, `skill-comply`, `rules-distill`, `skill-stocktake` は Python 実装を含む。各 skill dir で:
+`llms-txt-writer`, `skill-comply`, `rules-distill`, `skill-stocktake`, `skill-health` は Python 実装を含む。各 skill dir で:
 
 ```bash
 cd ~/.claude/skills/<skill-name>

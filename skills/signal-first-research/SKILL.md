@@ -135,5 +135,5 @@ This is not a preference. It is a decision about which resource you are optimizi
 
 ## Related AKC decisions
 
-- [ADR-0010 Human Cognitive Resource as Central Constraint](../adr/0010-human-cognitive-resource-as-central-constraint.md) — the principle this skill is the "how" counterpart to. ADR-0010 states *why* signal-first intake matters (attention is the scarce resource); this skill shows *how* to build a filter that honors that principle.
-- [`docs/inspiration.md`](../inspiration.md) — for one lived instance of the pattern and the causal chain it produced.
+- [ADR-0010 Human Cognitive Resource as Central Constraint](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0010-human-cognitive-resource-as-central-constraint.md) — the principle this skill is the "how" counterpart to. ADR-0010 states *why* signal-first intake matters (attention is the scarce resource); this skill shows *how* to build a filter that honors that principle.
+- [`docs/inspiration.md`](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/inspiration.md) — for one lived instance of the pattern and the causal chain it produced.

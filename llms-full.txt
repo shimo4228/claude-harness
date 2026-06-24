@@ -17,7 +17,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
 - **Agents directory**: `agents/` — prompt generation (scout, prompt-writer) and editorial review (editor, essay-reviewer, fact-checker)
 - **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, root-cause-first debugging, skill origin tracking, and the Contemplative Constitutional AI clauses
-- **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake
+- **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health
 - **Python build**: uv (or pip install -e .), Python 3.10+
 - **AKC components**: six skills implement individual AKC phases (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync)
 - **AKC DOI**: 10.5281/zenodo.19200727

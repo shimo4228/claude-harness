@@ -31,6 +31,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [signal-first-research](skills/signal-first-research/SKILL.md): design guide for a research intake filter that admits only information likely to change your next action — define the signal before the search
 - [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
 - [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — inline Glob inventory + single-context holistic evaluation (full / changed modes), Keep/Improve/Update/Retire/Merge verdicts
+- [skill-health](skills/skill-health/SKILL.md): structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts, agents, or sibling skills that don't resolve on disk); deterministic, delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply
 - [rules-distill](skills/rules-distill/SKILL.md): scans skills to extract cross-cutting principles and promotes them to deterministic rules
 - [skill-comply](skills/skill-comply/SKILL.md): measures actual compliance of skills, rules, and agents — generates scenarios at 3 prompt strictness levels and classifies behavioral sequences
 - [context-sync](skills/context-sync/SKILL.md): audits and fixes project documentation — detects role overlap between context files (CLAUDE.md, CODEMAPS, ADR, README), checks freshness against code, creates missing docs

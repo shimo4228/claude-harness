@@ -22,6 +22,7 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [signal-first-research](skills/signal-first-research/SKILL.md) | Design guide for a research intake filter that admits only information likely to change your next action |
 | [learn-eval](skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill quality audit — inline Glob inventory + single-context holistic evaluation, Keep/Improve/Update/Retire/Merge verdicts |
+| [skill-health](skills/skill-health/SKILL.md) | Structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts / agents / sibling skills that don't resolve on disk). Deterministic; delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply |
 | [rules-distill](skills/rules-distill/SKILL.md) | Extracts cross-cutting principles from skills and promotes them to rules |
 | [skill-comply](skills/skill-comply/SKILL.md) | Measures actual compliance of skills / rules / agents. Classifies behavioral sequences across 3 prompt strictness levels |
 | [context-sync](skills/context-sync/SKILL.md) | Audits and fixes project documentation. Detects role overlap, checks freshness, creates missing docs |
@@ -104,7 +105,7 @@ cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/
 
 ### Setup for skills with Python implementations
 
-`llms-txt-writer`, `skill-comply`, `rules-distill`, and `skill-stocktake` ship with Python code. In each skill directory:
+`llms-txt-writer`, `skill-comply`, `rules-distill`, `skill-stocktake`, and `skill-health` ship with Python code. In each skill directory:
 
 ```bash
 cd ~/.claude/skills/<skill-name>
