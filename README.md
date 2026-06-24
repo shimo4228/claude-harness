@@ -77,6 +77,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [agents](rules/common/agents.md) | Agent orchestration conventions. When to use which agent, parallel execution patterns |
 | [akc-cycle](rules/common/akc-cycle.md) | Six-phase behavioral conventions of the Agent Knowledge Cycle (Research / Extract / Curate / Promote / Measure / Maintain) |
 | [authorship-strategy](rules/common/authorship-strategy.md) | Pointer rule activating the 4-layer authorship-strategy framework when working in DOI-registered idea-rescue research repos |
+| [debugging](rules/common/debugging.md) | Root-cause-first debugging flow (hypothesis → evidence → confirm → fix), AI recency-bias guards, retry-with-context |
 | [planning](rules/common/planning.md) | Required items for planning (What / Why / Alternatives). Mandates Phase 0 external research |
 | [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |

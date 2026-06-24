@@ -77,6 +77,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [agents](rules/common/agents.md) | Agent orchestration 規約。いつどの agent を使うか、並列実行のパターン |
 | [akc-cycle](rules/common/akc-cycle.md) | Agent Knowledge Cycle の 6 フェーズ行動規約 (Research / Extract / Curate / Promote / Measure / Maintain) |
 | [authorship-strategy](rules/common/authorship-strategy.md) | DOI 登録された idea-rescue 研究 repo で作業する際に authorship-strategy framework を起動するポインタ rule |
+| [debugging](rules/common/debugging.md) | 根本原因優先のデバッグフロー (仮説 → 証拠 → 確認 → 修正)、AI のリーセンシーバイアス対策、retry-with-context |
 | [planning](rules/common/planning.md) | 計画時の必須項目 (What / Why / Alternatives)。Phase 0 外部調査の義務化 |
 | [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
