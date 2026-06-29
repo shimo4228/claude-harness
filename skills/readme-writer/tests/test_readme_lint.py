@@ -21,8 +21,13 @@ from scripts.readme_lint import (
     Link,
     LintReport,
     check_alt_text,
+    check_badge_budget,
+    check_details_floor_leak,
+    check_doi_citation_pairing,
     check_heading_levels,
+    check_identity_lead,
     check_local_links,
+    check_raster_diagram_hint,
     check_single_h1,
     lint_file,
     main,
@@ -404,3 +409,241 @@ class TestCli:
         broken = [i for i in report.issues if i.check == "local_link"]
         assert len(broken) == 1
         assert "missing.md" in broken[0].message
+
+
+# --------------------------------------------------------------------------- #
+# Advisory (warning-severity) checks. These surface dual-audience / visual-first
+# considerations for the human + LLM-grounding-path README. They are structural
+# (decidable from the literal markdown), but where the "is this actually a
+# problem?" call is a judgment, severity is "warning" so they NEVER fail the
+# code-owned gate (exit 1) — only the four hard-structural checks do that. The
+# semantic verdict stays with the holistic LLM review (no score).
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.unit
+class TestSeverity:
+    def test_issue_defaults_to_error_severity(self) -> None:
+        # Back-compat: existing 3-arg construction must remain an error.
+        assert Issue("single_h1", "msg", 1).severity == "error"
+
+    def test_hard_structural_checks_are_errors(self) -> None:
+        assert check_single_h1([Heading(2, "S", 1)])[0].severity == "error"
+        assert check_alt_text([Image("", "x.png", 2)])[0].severity == "error"
+
+    def test_exit_code_ignores_warning_only_reports(self, tmp_path: Path) -> None:
+        # A doc whose ONLY issues are advisory warnings must still exit 0.
+        report = LintReport(
+            path="r", issues=(Issue("badge_budget", "many badges", 3, "warning"),)
+        )
+        # render must not crash and must not claim "no issues" when warnings exist
+        text = render_report(report).lower()
+        assert "warning" in text
+
+
+@pytest.mark.unit
+class TestCheckRasterDiagramHint:
+    def test_raster_diagram_filename_flagged(self) -> None:
+        issues = check_raster_diagram_hint([Image("arch", "docs/architecture.png", 5)])
+        assert len(issues) == 1
+        assert issues[0].check == "raster_diagram_hint"
+        assert issues[0].severity == "warning"
+        assert issues[0].line == 5
+
+    def test_flow_and_pipeline_and_sequence_flagged(self) -> None:
+        imgs = [
+            Image("a", "flow.png", 1),
+            Image("b", "the-pipeline.jpg", 2),
+            Image("c", "seq-diagram.webp", 3),
+        ]
+        assert len(check_raster_diagram_hint(imgs)) == 3
+
+    def test_svg_diagram_not_flagged(self) -> None:
+        # SVG is vector + GitHub-rendered + text-ish; only opaque rasters are hinted.
+        assert check_raster_diagram_hint([Image("arch", "architecture.svg", 1)]) == []
+
+    def test_non_diagram_raster_not_flagged(self) -> None:
+        imgs = [Image("logo", "assets/logo.png", 1), Image("shot", "screenshot.png", 2)]
+        assert check_raster_diagram_hint(imgs) == []
+
+
+@pytest.mark.unit
+class TestCheckBadgeBudget:
+    def test_badge_wall_flagged(self) -> None:
+        imgs = [
+            Image(f"b{i}", f"https://img.shields.io/badge/x{i}.svg", 3) for i in range(7)
+        ]
+        issues = check_badge_budget(imgs)
+        assert len(issues) == 1
+        assert issues[0].check == "badge_budget"
+        assert issues[0].severity == "warning"
+
+    def test_few_badges_clean(self) -> None:
+        imgs = [
+            Image("doi", "https://zenodo.org/badge/DOI/10.5281/zenodo.1.svg", 3),
+            Image("wiki", "https://deepwiki.com/badge.svg", 3),
+            Image("mcp", "https://img.shields.io/endpoint?url=gitmcp", 3),
+        ]
+        assert check_badge_budget(imgs) == []
+
+    def test_non_badge_images_not_counted(self) -> None:
+        imgs = [Image(f"fig{i}", f"figure-{i}.png", i) for i in range(8)]
+        assert check_badge_budget(imgs) == []
+
+
+@pytest.mark.unit
+class TestCheckDetailsFloorLeak:
+    def test_doi_inside_details_flagged(self) -> None:
+        md = "# T\n\n<details>\n<summary>cite</summary>\n\nDOI 10.5281/zenodo.123456\n\n</details>\n"
+        issues = check_details_floor_leak(md)
+        assert len(issues) == 1
+        assert issues[0].check == "details_floor_leak"
+        assert issues[0].severity == "warning"
+
+    def test_bibtex_inside_details_flagged(self) -> None:
+        md = "# T\n\n<details>\n\n@misc{me2026, title={X}}\n\n</details>\n"
+        assert len(check_details_floor_leak(md)) == 1
+
+    def test_doi_outside_details_clean(self) -> None:
+        md = "# T\n\nDOI 10.5281/zenodo.123456 is our citation.\n"
+        assert check_details_floor_leak(md) == []
+
+    def test_no_details_clean(self) -> None:
+        assert check_details_floor_leak("# T\n\nplain.\n") == []
+
+    def test_doi_in_visible_summary_not_flagged(self) -> None:
+        # <summary> is the VISIBLE collapsed header — a DOI there is not hidden.
+        md = "# T\n\n<details>\n<summary>Cite as 10.5281/zenodo.123456</summary>\n\nbody\n</details>\n"
+        assert check_details_floor_leak(md) == []
+
+    def test_doi_in_details_body_still_flagged(self) -> None:
+        md = "# T\n\n<details>\n<summary>refs</summary>\n\nDOI 10.5281/zenodo.123456\n\n</details>\n"
+        assert len(check_details_floor_leak(md)) == 1
+
+
+@pytest.mark.unit
+class TestCheckIdentityLead:
+    def test_h1_then_prose_clean(self) -> None:
+        headings = parse_headings("# T\n\nA real one-line identity sentence.\n\n## S\n")
+        md = "# T\n\nA real one-line identity sentence.\n\n## S\n"
+        assert check_identity_lead(md, headings) == []
+
+    def test_h1_immediately_followed_by_h2_flagged(self) -> None:
+        md = "# T\n\n## Section\n"
+        issues = check_identity_lead(md, parse_headings(md))
+        assert len(issues) == 1
+        assert issues[0].check == "identity_lead"
+        assert issues[0].severity == "warning"
+
+    def test_h1_then_only_badges_flagged(self) -> None:
+        md = "# T\n\n[![b](https://img.shields.io/x.svg)](https://y)\n\n## S\n"
+        assert len(check_identity_lead(md, parse_headings(md))) == 1
+
+    def test_no_h1_is_skipped(self) -> None:
+        # single_h1 already owns the missing-H1 case; identity_lead stays quiet.
+        md = "## Section\n\ntext\n"
+        assert check_identity_lead(md, parse_headings(md)) == []
+
+    def test_prose_after_hero_image_clean(self) -> None:
+        md = '# T\n\n![hero](assets/hero.png)\n\nReal identity sentence here.\n\n## S\n'
+        assert check_identity_lead(md, parse_headings(md)) == []
+
+    def test_bare_nav_link_only_is_not_a_lead(self) -> None:
+        # A standalone nav link is not an identity sentence.
+        md = "# T\n\n[Jump to Installation](#install)\n\n## S\n"
+        assert len(check_identity_lead(md, parse_headings(md))) == 1
+
+    def test_reference_link_definition_only_is_not_a_lead(self) -> None:
+        md = "# T\n\n[1]: https://doi.org/10.5281/zenodo.123456\n\n## S\n"
+        assert len(check_identity_lead(md, parse_headings(md))) == 1
+
+    def test_sentence_containing_a_link_is_a_lead(self) -> None:
+        md = "# T\n\nA tool, see [docs](d.md), for parsing logs.\n\n## S\n"
+        assert check_identity_lead(md, parse_headings(md)) == []
+
+
+@pytest.mark.unit
+class TestCheckDoiCitationPairing:
+    def test_doi_without_citation_flagged(self) -> None:
+        md = "# T\n\nResearch repo. DOI 10.5281/zenodo.123456.\n\n## Usage\n\nrun it\n"
+        issues = check_doi_citation_pairing(md)
+        assert len(issues) == 1
+        assert issues[0].check == "doi_citation_pairing"
+        assert issues[0].severity == "warning"
+
+    def test_doi_with_citation_heading_clean(self) -> None:
+        md = "# T\n\nDOI 10.5281/zenodo.123456.\n\n## Citation\n\ncite us\n"
+        assert check_doi_citation_pairing(md) == []
+
+    def test_doi_with_bibtex_clean(self) -> None:
+        md = "# T\n\nDOI 10.5281/zenodo.123456.\n\n@misc{me, title={X}}\n"
+        assert check_doi_citation_pairing(md) == []
+
+    def test_no_doi_clean(self) -> None:
+        assert check_doi_citation_pairing("# T\n\nno doi here.\n") == []
+
+    def test_doi_only_in_code_fence_no_issue(self) -> None:
+        # A DOI that appears ONLY inside a fenced example is not the document DOI.
+        md = "# T\n\nLead.\n\n```\nhttps://doi.org/10.5281/zenodo.123456\n```\n"
+        assert check_doi_citation_pairing(md) == []
+
+    def test_verb_cite_in_prose_still_warns(self) -> None:
+        # "cite" as a prose verb is NOT a how-to-cite affordance.
+        md = "# T\n\nThe authors cite many sources. DOI 10.5281/zenodo.123456.\n\n## Usage\n\nrun\n"
+        issues = check_doi_citation_pairing(md)
+        assert len(issues) == 1
+        assert issues[0].line is not None  # never line=None now
+
+    def test_cite_in_heading_is_affordance(self) -> None:
+        md = "# T\n\nDOI 10.5281/zenodo.123456.\n\n## How to cite\n\nuse this\n"
+        assert check_doi_citation_pairing(md) == []
+
+    def test_fenced_bibtex_is_affordance(self) -> None:
+        md = "# T\n\nDOI 10.5281/zenodo.123456.\n\n```bibtex\n@misc{me, title={X}}\n```\n"
+        assert check_doi_citation_pairing(md) == []
+
+
+@pytest.mark.integration
+class TestNewChecksExitCode:
+    def test_warning_only_doc_returns_zero(self, tmp_path: Path) -> None:
+        # An architecture raster (warning) but no hard-structural error → exit 0.
+        md = tmp_path / "README.md"
+        (tmp_path / "architecture.png").write_text("x", encoding="utf-8")
+        md.write_text(
+            "# Tool\n\nIdentity sentence.\n\n![arch](architecture.png)\n", encoding="utf-8"
+        )
+        report = lint_file(md)
+        checks = {i.check for i in report.issues}
+        assert "raster_diagram_hint" in checks
+        assert all(i.severity == "warning" for i in report.issues)
+        assert main([str(md)]) == 0
+
+    def test_error_doc_still_returns_one(self, tmp_path: Path) -> None:
+        md = tmp_path / "README.md"
+        md.write_text("## No H1\n\n![](x.png)\n", encoding="utf-8")
+        assert main([str(md)]) == 1
+
+
+@pytest.mark.unit
+class TestSecurityHardening:
+    def test_percent_encoded_absolute_path_is_not_probed(self, tmp_path: Path) -> None:
+        # `%2Fetc%2Fpasswd` decodes to `/etc/passwd`; the absolute-path guard must
+        # run AFTER unquote so it cannot become a filesystem existence oracle.
+        links = [Link("x", "%2Fetc%2Fpasswd", 1)]
+        assert check_local_links(links, [], tmp_path) == []
+
+    def test_all_whitespace_heading_line_is_not_a_heading(self) -> None:
+        # `## ` followed by only spaces must not parse as a heading — and must not
+        # trigger O(n^2) backtracking. A generous length keeps the test fast.
+        md = "# Real\n\n## " + " " * 50_000 + "\n"
+        headings = parse_headings(md)
+        assert [h.text for h in headings] == ["Real"]
+
+    def test_overlong_line_is_truncated_not_hung(self) -> None:
+        # A single pathological line beyond _MAX_LINE must be bounded, not fed
+        # whole to every per-line regex.
+        from scripts import readme_lint
+
+        md = "# T\n\nlead.\n\n" + "x" * (readme_lint._MAX_LINE + 5000) + "\n"
+        report = run_lint("r", md, Path("."))  # must complete quickly
+        assert isinstance(report, LintReport)

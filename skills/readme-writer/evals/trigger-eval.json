@@ -1,0 +1,22 @@
+[
+  {"query": "うちの contemplative-agent の repo、トップの README が文字びっしりで誰も読まない感じ。もっと短くして Mermaid で構成図入れて、パッと何のプロジェクトか分かるようにしたい", "should_trigger": true},
+  {"query": "my pdf2anki CLI's readme is a wall of text. can you trim the rationale into docs/ and add a diagram so it's scannable?", "should_trigger": true},
+  {"query": "新しく作った g-kentei-tool の README をゼロから書きたい。最初の画面に何を置くべき？", "should_trigger": true},
+  {"query": "repo の入口ドキュメントが中途半端で、人間には冗長だし、ChatGPT に URL 貼っても要点を拾えてない気がする。直したい", "should_trigger": true},
+  {"query": "README のてっぺんにバッジ貼りすぎた。DOI と DeepWiki と CI と version と license と… 整理したい", "should_trigger": true},
+  {"query": "GitHub プロジェクトのトップページ、開いて30秒で『自分向けか』が分かるようにしたい。今は説明が長すぎる", "should_trigger": true},
+  {"query": "DOI 付きの研究 repo の README、引用ブロック入れつつ人間が読みやすい長さにまとめたい", "should_trigger": true},
+  {"query": "この README だけ読んで LLM がプロジェクトを理解できるか確認して、足りてない情報を指摘してほしい", "should_trigger": true},
+  {"query": "README.md の見出しレベルとか alt text とかリンク切れとか、構造的なチェックをかけて直したい", "should_trigger": true},
+  {"query": "search-first スキルの repo、READMEに架空のアーキ図 png を貼ってるんだけど、これ Mermaid にした方がいい？全体的に入口を良くしたい", "should_trigger": true},
+  {"query": "llms.txt と llms-full.txt を新規作成して、ChatGPT や Perplexity に引用されやすいよう GEO 最適化したい", "should_trigger": false},
+  {"query": "Zenn に出す『context-sync の仕組み』チュートリアル記事を書きたい。読み物として丁寧に", "should_trigger": false},
+  {"query": "AKC repo の graph.jsonld、6フェーズと skill binding の概念マトリクスを schema.org で設計したい", "should_trigger": false},
+  {"query": "このプロジェクトの CLAUDE.md を整理して、エージェント向けの作業ルールとビルド手順を書きたい", "should_trigger": false},
+  {"query": "README と llms.txt と graph.jsonld の事実がズレてないか cross-surface で同期チェックしたい", "should_trigger": false},
+  {"query": "contemplative-agent を新バージョンで Zenodo にリリースして DOI 採番して CHANGELOG も更新したい", "should_trigger": false},
+  {"query": "scripts/readme_lint.py の関数に docstring と type hint を足して PEP8 整えたい", "should_trigger": false},
+  {"query": "先週の設計 MTG の議事録 markdown、見出しを整えて読みやすくして", "should_trigger": false},
+  {"query": "API リファレンスのドキュメントサイトを Docusaurus で立てたい", "should_trigger": false},
+  {"query": "essay-reviewer に渡す前に、社会論エッセイのドラフトのトーンと論理構造を見てほしい", "should_trigger": false}
+]

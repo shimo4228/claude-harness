@@ -93,3 +93,8 @@ These rules are scaffolding. As the user and agent internalize the cycle through
 - The rules become implicit in how work is approached
 - Individual rules may be simplified or removed as their principles are absorbed into conversation patterns
 - Success is measured not by rule count, but by whether the cycle runs naturally without explicit invocation
+
+Dissolution has **two vectors**, not one:
+
+- **Inward** — a principle is absorbed into the agent's and user's conversation patterns, so the rule that taught it is no longer needed.
+- **Downward (into the substrate)** — the official harness evolves to handle a domain natively, so the custom rule that scaffolded it has nothing left to add. Harness guidance is **always loaded** (tool descriptions live in the system prompt) and keeps evolving; a hand-written rule over the same domain (e.g. multi-agent orchestration, fan-out, tool-use defaults) becomes a static, drifting copy that can *override and degrade* the newer defaults. When the substrate absorbs the capability, **retire the rule** — don't let it linger as a stale shadow. Keep only what the harness structurally can't do (e.g. cross-model decorrelation); record the *why* in an ADR, not a standing rule.

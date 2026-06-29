@@ -35,6 +35,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [rules-distill](skills/rules-distill/SKILL.md): scans skills to extract cross-cutting principles and promotes them to deterministic rules
 - [skill-comply](skills/skill-comply/SKILL.md): measures actual compliance of skills, rules, and agents — generates scenarios at 3 prompt strictness levels and classifies behavioral sequences
 - [context-sync](skills/context-sync/SKILL.md): audits and fixes project documentation — detects role overlap between context files (CLAUDE.md, CODEMAPS, ADR, README), checks freshness against code, creates missing docs
+- [codex-review](skills/codex-review/SKILL.md): cross-model code review — a read-only second opinion from the OpenAI Codex CLI (a different model family) on the current diff, folded into the Claude Code review chain alongside code-reviewer and security-reviewer
 - [llms-txt-writer](skills/llms-txt-writer/SKILL.md): writes AI-facing documentation (llms.txt, llms-full.txt, FAQ pages, glossaries) with Answer.AI llms.txt standard compliance and GEO/AEO static analysis (GEO-SFE 5 checks)
 - [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md): designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt for projects with stable concept-level structure — encodes domain entities and relationships as schema.org triples for LLM citation
 - [writing-ecosystem](skills/writing-ecosystem/SKILL.md): orchestrator for human-facing writing and review — coordinates article-writing, editor, essay-reviewer, and fact-checker agents; enforces AI slop bans and voice conventions
@@ -57,6 +58,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
 - [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md): verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact (paper, knowledge graph, DOI repo)
 - [gap-review](skills/gap-review/SKILL.md): generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against your action catalog, open questions, and the latest literature
+- [wiki-harvest](skills/wiki-harvest/SKILL.md): read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/`
 - [wiki-query](skills/wiki-query/SKILL.md): read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis
 
 ## Agents

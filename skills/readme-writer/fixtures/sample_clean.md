@@ -4,7 +4,12 @@ Acme Parser is a Python library **for backend engineers** who need to turn
 unstructured application logs into typed, queryable events. It exists because
 grep-and-regret does not scale past a few services.
 
-![Acme Parser pipeline diagram](https://example.com/acme/pipeline.png)
+```mermaid
+flowchart LR
+    raw[Raw log line] --> parse[Acme Parser]
+    parse --> event[Typed event]
+    event --> query[(Queryable store)]
+```
 
 ## What problem does it solve?
 
