@@ -1,6 +1,6 @@
 ---
 name: substack-publishing
-description: 完成・レビュー済みの human essay を Substack に公開し、LLM 発見のために corpus へミラーするワークフロー。Substack が raw Markdown 非対応なための MD→HTML rich-text paste、Title/Subtitle/body のフィールド分け、タグ戦略（archive 用 ≠ 拡散用）、カバー画像プロンプトの作り方、公開後の content repo `substack/` フォルダへのミラー + research repo からの cross-link を扱う。Voice / AI-slop / Title / 出典は writing-ecosystem、翻訳は ja-to-en-translation に defer。essay を Substack に出すとき使う。
+description: 完成・レビュー済みの human essay を Substack に公開し、LLM 発見のために corpus へミラーするワークフロー。Substack が raw Markdown 非対応なための MD→HTML rich-text paste、Title/Subtitle/body のフィールド分け、タグ戦略（archive 用 ≠ 拡散用）、カバー画像プロンプトの作り方、Claude in Chrome によるエディタ自動操作（OS クリップボードへの HTML flavor 直接セット + cmd+V）、公開後の content repo `substack/` フォルダへのミラー + research repo からの cross-link を扱う。Voice / AI-slop / Title / 出典は writing-ecosystem、翻訳は ja-to-en-translation に defer。essay を Substack に出すとき使う。
 user-invocable: true
 origin: shimo4228
 ---
@@ -57,7 +57,48 @@ essay の **core metaphor** を1つ視覚化する。プロンプト規約:
 - **16:9 横長**、編集イラスト / conceptual 調など essay のトーンに合わせる
 - 2-3 個の concept 案を出してユーザーに選ばせる（収束図 / 二項対比図 / メタファー直写し 等）。要素が少ない案ほど画像モデルが破綻しにくい
 
-## 5. 公開後: LLM corpus へミラー
+## 5. ブラウザ自動化（Claude in Chrome）での投稿
+
+エディタ操作をエージェントに任せる場合の実証済み手順（2026-07 実走で確立）。公開ゲートは維持する: **下書き構築まで自動、Publish はプレビューを人間が確認して OK した後のみ**。
+
+### 本文投入 — OS クリップボードに HTML flavor を直接セットする
+
+Substack エディタ（ProseMirror 系）への構造保持貼り付けは、**macOS システムクリップボードへ HTML flavor を直接書いて cmd+V** が最も確実:
+
+```bash
+pandoc -f gfm body.md -o body.html   # -f gfm 必須（下記）
+hex=$(xxd -p body.html | tr -d '\n')
+osascript -e "set the clipboard to «data HTML${hex}»"
+# → エディタ本文をクリックして cmd+V
+```
+
+- **pandoc は `-f gfm` を指定**する。デフォルト方言は「blank line なしで段落直後に始まるリスト」を段落に潰す（GitHub 上のレンダリングと乖離する）。貼り付け後に `<ul>` の数などで構造を照合する
+- **動かない経路（試行済みの落とし穴）**:
+  - ページ内 JS の `navigator.clipboard.write()` → `Runtime.evaluate` がタイムアウト
+  - ページ内 JS から `fetch("http://127.0.0.1:…")` → https ページからの localhost fetch は Chrome の Private Network Access に塞がれハング
+  - 素の Markdown 貼り付け → §1 の通り変換されない
+
+### 画像も同じ経路
+
+```bash
+osascript -e 'set the clipboard to (read (POSIX file "/path/cover.png") as «class PNGf»)'
+# → 本文カーソル位置で cmd+V（アップロードは自動）
+```
+
+本文冒頭に挿入した画像はソーシャルプレビュー（カバー）に自動反映される。`file_upload` tool は本文画像には使いにくい（対応する `input[type=file]` が動的生成のため）。チャット添付画像はディスクに存在しないので、ユーザーにファイルとして保存してもらいセッション共有パスへコピーする。
+
+### フィールド・タグ・公開フロー
+
+- Title / Subtitle は座標クリック + type で直接入力
+- タグは右下「設定」→ ポスト設定 → タグを追加。**1 個ずつ** type して「"x" を作成」をクリックする（type + Enter の連打はドロップダウンの遅延で取りこぼす）。設定後にチップ数を照合
+- 「登録ボタンを追加」ダイアログ（公開時に出る）は widget を**カーソル位置に**挿入することがある。末尾に置きたければ挿入後に配置を確認し、ずれていたら node 選択（前の段落末尾で forward-delete 1 回目が node 選択、2 回目が削除）で移動する
+- 長編はメール文字数上限の警告が出る — メール版が途中で "Read online" になるだけで Web 記事は全文。公開を妨げない
+
+### 検証
+
+貼り付け後、`get_page_text` で全文を取得し、原稿と (a) セクション数 (b) 末尾の一致 (c) リスト・引用の構造を照合してからプレビューへ進む。
+
+## 6. 公開後: LLM corpus へミラー
 
 Substack を canonical にしつつ、LLM クローラーに読ませるため content / corpus repo にミラーする。
 

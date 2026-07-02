@@ -98,6 +98,7 @@ CODEMAPS のない repo (AKC / AAP は ADR 中心) はこの phase をスキッ�
 | `CHANGELOG.md` | `## vX.Y.Z — <title> (YYYY-MM-DD)` を Unreleased セクションから繰り出す。**3 カテゴリ最低限**: Sunset (削除/withdraw)、Added (新規 ADR / module / feature)、Changed (動作/設定の変化)。Notes に migration 影響を記述 |
 | `pyproject.toml` | `version = "X.Y.Z"` |
 | `CITATION.cff` | `version: "X.Y.Z"`、`date-released: "YYYY-MM-DD"`。**DOI 欄は前 release の値を据え置き** (Post-release で新 version DOI に差し替え) |
+| `codemeta.json` (存在する repo のみ) | **CITATION.cff の派生物、手編集しない**。`version` / `datePublished` / `identifier` を CITATION.cff から引くので、CITATION.cff を更新したら `uvx cffconvert -f codemeta -o codemeta.json` で**再生成**する (Phase 5 / Post-release の git add 直前で実行)。SWH の metadata indexer が直接読む層で、`CITATION.cff` は読まない (ADR-0013 の intrinsic identifier 層の補完) |
 | `.zenodo.json` | **citation surface 同期**: 前回 release 以降に repo docs (policy-mapping / glossary / papers 等) が新たに引用した外部文献 (arXiv / DOI 付き論文) を `related_identifiers` に追加 — `{"identifier": "10.48550/arXiv.<id>", "relation": "references", "resource_type": "publication-article", "scheme": "doi"}` (arXiv は DataCite DOI 形式 `10.48550/arXiv.NNNN.NNNNN`)。既存 entry との重複を排除。description 内の framework 列挙等も実態に揃える |
 | `README.md` + 多言語版 | BibTeX `version = {X.Y.Z}`、badge tests 数、prompts/module count、sunset 文 sentence-level の削除。glossary 規約準拠。**BibTeX `doi` / `url` および "How to cite" 引用文の DOI は Post-release で新 version DOI に差し替え。DOI badge は concept DOI で固定済みなので触らない** |
 | `llms.txt` | header version、ADR 一覧の追加、prompts count |
@@ -115,8 +116,16 @@ CODEMAPS のない repo (AKC / AAP は ADR 中心) はこの phase をスキッ�
 ## Phase 4: Verify (read-only)
 
 ```bash
+# CITATION.cff schema validation (yaml.safe_load below only checks syntax, not
+# CFF 1.2.0 schema — it will not catch a missing top-level `message` field or
+# missing `authors` on a `references[]` entry, both observed in the wild 2026-07-01)
+uvx cffconvert --validate
+
 # CITATION.cff syntax
 uv run python -c "import yaml; data = yaml.safe_load(open('CITATION.cff')); print('OK:', data.get('version'), data.get('date-released'), data.get('doi'))"
+
+# codemeta.json ↔ CITATION.cff の version 同期 (存在する repo のみ; codemeta は派生物)
+test -f codemeta.json && uv run python -c "import json,yaml; c=json.load(open('codemeta.json')); f=yaml.safe_load(open('CITATION.cff')); print('codemeta sync OK' if c.get('version')==f.get('version') else 'DRIFT — regenerate: uvx cffconvert -f codemeta -o codemeta.json')"
 
 # version triple 整合
 echo "=== pyproject.toml ==="; grep "^version" pyproject.toml
@@ -152,11 +161,15 @@ git status --short
 `git push` および `gh release create` は **user 明示依頼があれば実行**。memory `push-workflow` の default は「user に提案して止まる」だが、user が「push して」「release を切って」と言ったら実行する。**Release object 作成 = Zenodo webhook trigger** なので irreversible (DOI 採番が動き始める)。
 
 ```bash
+# codemeta.json は CITATION.cff の派生物 — stage 前に再生成 (存在する repo のみ)
+test -f codemeta.json && uvx cffconvert -f codemeta -o codemeta.json
+
 # specific files で stage (git add -A 禁止 — 意図しないファイル混入防止)
 git add CHANGELOG.md CITATION.cff pyproject.toml \
   README.md README.<langs>.md \
   docs/CODEMAPS/*.md docs/glossary.md \
   llms.txt llms-full.txt
+test -f codemeta.json && git add codemeta.json
 
 # HEREDOC で commit (attribution は global settings.json で disable 済み — 追記しない)
 git commit -m "$(cat <<'EOF'
@@ -203,6 +216,16 @@ curl -s -X POST "https://archive.softwareheritage.org/api/1/origin/save/git/url/
 - 匿名 rate limit は **save request 10 件/時** (`X-Ratelimit-Limit: 10`)。429 `Throttled` が返ったら `reason` 内の秒数だけ待って再試行するか、Post-release に回す
 - この step は **非同期** (ADR-0013)。archive 完了を release の block 要因にしない。SWHID の取得・記録は Post-release で行う
 
+**Wayback Machine snapshot** (全 DOI repo): SWH は git object (blob/tree/commit) を archive するが、GitHub の **rendered README ページ** (badge / TOC / DOI link 込みの見た目) は対象外。Wayback は rendered-HTML 層を補完する (Google C4 等の LLM 訓練 corpus に web.archive.org が実証的に含まれる)。release した repo の README ページを 1 URL 保存する:
+
+```bash
+curl -sI "https://web.archive.org/save/https://github.com/<owner>/<repo>" | grep -iE "^HTTP|^location:"
+# → HTTP/2 302 + location: https://web.archive.org/web/<timestamp>/https://github.com/<owner>/<repo> を確認
+```
+
+- 一時的な `HTTP 520` (Wayback backend 過負荷) は数秒待って再試行すれば `302` になる。archive 完了を release の block 要因にしない (SWH と同じく非同期・best-effort)
+- SWHID は intrinsic な content 証明、Wayback は extrinsic な rendered-page 証明。両者は非冗長 (どちらか一方で足りない)
+
 ## Post-release: DOI 反映
 
 Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 5 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
@@ -225,7 +248,11 @@ Zenodo は **GitHub Release object** に対して webhook が発火する。tag 
 #
 # (詳細は本 skill 末尾の "Concept DOI vs Version DOI 役割分離 policy" 表を参照)
 
+# codemeta.json は CITATION.cff の派生物 — DOI 反映後に再生成 (存在する repo のみ)
+test -f codemeta.json && uvx cffconvert -f codemeta -o codemeta.json
+
 git add CITATION.cff README.md README.<langs>.md
+test -f codemeta.json && git add codemeta.json
 git commit -m "chore: update DOI to vX.Y.Z"
 git push origin main
 ```

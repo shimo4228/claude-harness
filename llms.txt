@@ -7,7 +7,7 @@
 >
 > Bundles skills covering research-before-coding, knowledge extraction,
 > skill auditing, AI-facing documentation, human-facing writing review,
-> JSON-LD knowledge graph design, academic paper writing / review / deposit,
+> JSON-LD knowledge graph design, academic paper writing / review / deposit, AI-native preprint submission,
 > JA→EN translation, Wikidata identifier federation, authorship strategy,
 > and DOI release; agents for prompt generation, editorial review, and
 > academic paper review; rules covering planning, the AKC cycle,
@@ -47,6 +47,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [paper-ecosystem](skills/paper-ecosystem/SKILL.md): orchestrator for academic paper writing and review — role boundaries for paper-writing plus five reviewer agents; canonical home of Source Fidelity, Vocabulary Consistency, Academic Voice, Reader Clarity, and Citation Format rules
 - [paper-writing](skills/paper-writing/SKILL.md): drafting procedure for academic papers — title, outline, section drafting, abstract, references with claim-cite 1:1 mapping and direct primary-source access
 - [paper-deposit](skills/paper-deposit/SKILL.md): deposits a finished, reviewed paper to Zenodo as a standalone DOI record, optionally cross-posts to SSRN, and cross-links the minted DOI back into the research-program repository
+- [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md): submits a deposited paper to AI-native preprint platforms (aiXiv / AiraXiv) — Web UI browser automation with human gates for account/file/submit actions, or author-delegated API/MCP submission; canonical DOI stays at the registry
 - [readme-writer](skills/readme-writer/SKILL.md): writes human-facing READMEs — deterministic structural lint plus holistic LLM review without scores
 - [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md): voice-preserving JA→EN translation for essays, research docs, and READMEs — term-lock, 2-pass self-revision, back-translation QA
 - [substack-publishing](skills/substack-publishing/SKILL.md): publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery

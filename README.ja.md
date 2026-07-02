@@ -38,6 +38,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [paper-ecosystem](skills/paper-ecosystem/SKILL.md) | 学術論文の執筆・レビュー orchestrator — paper-writing + 5 reviewer agent の役割境界と Source Fidelity / Vocabulary / Voice / Clarity / Citation 規約の正本 |
 | [paper-writing](skills/paper-writing/SKILL.md) | 学術論文の draft 手順 — title / outline / section / abstract / references。claim と cite の 1:1 mapping を強制 |
 | [paper-deposit](skills/paper-deposit/SKILL.md) | レビュー済み論文を Zenodo に単独 DOI record として登録、SSRN cross-post と研究 repo への DOI 編入まで |
+| [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md) | deposit 済み論文を AI-native preprint プラットフォーム (aiXiv / AiraXiv) へ投稿 — 人間ゲート付き browser automation または著者委任の API/MCP 投稿 |
 | [readme-writer](skills/readme-writer/SKILL.md) | 人間向け README を書く — 決定論的な構造 lint + スコアなしのホリスティック LLM review |
 | [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | voice 保持の日英翻訳 — term-lock + 2-pass + back-translation QA |
 | [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |

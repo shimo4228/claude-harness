@@ -38,6 +38,7 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [paper-ecosystem](skills/paper-ecosystem/SKILL.md) | Orchestrator for academic paper writing & review — role boundaries for paper-writing plus five reviewer agents; holds Source Fidelity / Vocabulary / Voice / Clarity / Citation rules |
 | [paper-writing](skills/paper-writing/SKILL.md) | Drafting procedure for academic papers — title, outline, section drafting, abstract, references with claim-cite 1:1 mapping |
 | [paper-deposit](skills/paper-deposit/SKILL.md) | Deposits a finished, reviewed paper to Zenodo as a standalone DOI record, optionally cross-posts to SSRN, cross-links the DOI back into the research repo |
+| [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md) | Submits a deposited paper to AI-native preprint platforms (aiXiv / AiraXiv) — Web UI browser automation with human gates, or author-delegated API/MCP submission |
 | [readme-writer](skills/readme-writer/SKILL.md) | Writes human-facing READMEs — deterministic structural lint plus holistic LLM review (no scores) |
 | [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | Voice-preserving JA→EN translation for essays, research docs, and READMEs — term-lock, 2-pass, back-translation QA |
 | [substack-publishing](skills/substack-publishing/SKILL.md) | Publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery |
