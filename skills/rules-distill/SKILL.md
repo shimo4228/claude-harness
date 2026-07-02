@@ -82,9 +82,12 @@ Append to security.md: Add LLM security principle
 
 ## Phase 3 — User Review & Execution
 
-Present a summary table (`# | Principle | Verdict | Target | Confidence`) followed by
-per-candidate details (evidence, violation risk, draft text). The user approves,
-modifies, or skips each candidate by number.
+Present a summary table (`# | Principle | Verdict | Target | Confidence`) as the
+overview, then **confirm one by one** (config-gc's confirm-each design): walk the
+candidates sequentially — for each, show its evidence, violation risk, and draft text,
+then ask `[y/n/skip]`. The user can modify the draft before approving, and can stop at
+any point. Never batch the approval ("apply all 5? [y/n]" defeats the design — one
+candidate, one decision); skipped candidates go to the ledger with `status: skipped`.
 
 **Never modify rules automatically. Always require user approval.** This is the one
 hard gate — rules load every session, so a bad rule has outsized blast radius.
@@ -119,4 +122,5 @@ kebab-case derived from the principle.
 ## Related
 
 - `skill-stocktake` — audits skill *quality*; rules-distill promotes recurring *principles* to rules. Run stocktake first, then distill what survives.
+- `rules-stocktake` — audits the rules this skill produces (residency cost, staleness, absorption) and demotes back what stopped earning its always-loaded slot; the inverse direction over the same boundary.
 - `learn-eval` — extracts per-session patterns into skills/memory; rules-distill later promotes the cross-cutting ones to rules.

@@ -24,6 +24,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査 — Glob インベントリ + 単一コンテキスト holistic 評価、Keep/Improve/Update/Retire/Merge 判定 |
 | [skill-health](skills/skill-health/SKILL.md) | Skill ライブラリの構造的 debt スキャン — "missing artifacts"（SKILL.md が参照する script / agent / sibling skill がディスク上に存在しない）を検出。決定論的で、品質 / risk / validation は skill-stocktake / security-scan / skill-comply に委譲 |
 | [rules-distill](skills/rules-distill/SKILL.md) | Skill 群から共通原則を抽出し、rule として昇格させる |
+| [rules-stocktake](skills/rules-stocktake/SKILL.md) | Rules の品質監査 — residency cost（全行が毎セッションの token 税）モデル、staleness / substrate absorption 検査、Keep/Improve/Update/Merge/Demote/Dissolve/Retire 判定。rules-distill の逆方向 |
 | [skill-comply](skills/skill-comply/SKILL.md) | Skill / rule / agent の実際の遵守率を計測。3 段階 prompt で行動シーケンスを分類 |
 | [context-sync](skills/context-sync/SKILL.md) | プロジェクト documentation を監査・修正。役割重複検出、鮮度チェック、欠損作成 |
 | [codex-review](skills/codex-review/SKILL.md) | クロスモデルのコードレビュー — 現在の diff に対し OpenAI Codex CLI (別モデルファミリ) の read-only セカンドオピニオンを取り、code-reviewer / security-reviewer と並行して Claude Code review chain に統合 |
@@ -133,7 +134,7 @@ uv sync  # or: pip install -e .
 - [shimo4228](https://github.com/shimo4228/shimo4228) — 3 研究ライン (AKC / Contemplative Agent / AAP) とエコシステムを集約するハブ repo
 - [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle) — AKC の概念と DOI 付きリリース (Zenodo: 10.5281/zenodo.19200726)
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules) — Contemplative Constitutional AI の rule 実装
-- 個別 skill repo 群 — AKC 各 skill の独立版 (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) + 隣接スキル (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem / when-code-when-llm / signal-first-research)
+- 個別 skill repo 群 — AKC 各 skill の独立版 (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) + 隣接スキル (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem / when-code-when-llm / signal-first-research / rules-stocktake)
 
 ## Contributing
 

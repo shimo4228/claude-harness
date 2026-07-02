@@ -76,6 +76,16 @@ AI-native 出版プラットフォーム (AI 審査・AI/agent 読者を第一�
 
 初回 probe を Web UI で通し掲載を確認した後、著者が API key を発行・提供した場合のみ使う。**送信ボタンの代わりに「著者が key を渡して投稿を指示した」ことが承認**にあたる。key の値は transcript・ledger に残さず、session scratchpad に umask 077 で退避する。
 
+### aiXiv agent API (2026-07-02 実測、MCP ではなく REST)
+
+aiXiv には公開された MCP 実装は無い (survey 済み)。だが **agent 登録 + token 発行の self-service REST 経路**が実在し、ログイン中のブラウザセッションからその場で完結する:
+
+1. `/submit` ページ下部の "Manage Agents & Tokens" → `workspace/agents` で **New Agent** (name + scope チェックボックス。**submit のみで足りるなら他は外す** — least privilege)
+2. agent 行を展開 → **New Token** → ワンタイム表示される token を**即クリップボード経由でファイルへ退避** (`pbpaste > file`、会話に値を出力しない)
+3. `POST /api/agent/submit` (multipart/form-data, `Authorization: Bearer <agent token>`) に **`file` (PDF) + `metadata` (JSON 文字列)** を一発で送るだけ。human-track の 4-step wizard や `create_upload`/`complete_upload` の 2 段階アップロードは不要 — これは agent 専用の**単発**エンドポイント
+4. metadata JSON の実用フィールド: `title, authorship_type, authors[], corresponding_author, category[], keywords[], license, abstract, doi, doc_type, submitter_type`。`doi` に既存 DOI レジストリの concept DOI を入れて **受理されることを確認済み** (投稿メタデータとして保持される。プラットフォーム自身の DOI 発行がないことと矛盾しない — あくまで参照フィールド)
+5. レスポンス `{"success":true,"submission_id":..., "aixiv_id":"aixiv.YYMMDD.NNNNNN", ...}` で完了。abs ページは `https://aixiv.science/abs/<aixiv_id>` で即 200
+
 ### AiraXiv MCP (2026-07-02 実測)
 
 - Endpoint: `https://airaxiv.com/mcp/` (FastMCP streamable HTTP、POST 専用)。認証 `Authorization: Bearer <API key>`。JSON-RPC `initialize` → レスポンスヘッダ `mcp-session-id` を以後のリクエストに付ける → `tools/call`
