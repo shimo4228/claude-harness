@@ -97,6 +97,30 @@ publish する (source = `~/.claude/rules/common/<name>.md`)。origin marker は
 不可侵・commit しない、は共通。skill 版とは byte-identical にならない (rule repo は現状
 これ 1 つ)。
 
+## Skill repo packaging（命名と subagent 同梱）
+
+skill repo を GitHub 公開する際の規約（正本。旧 `rules/common/skills.md` §Skill Repo
+Packaging から 2026-07-03 に移動）:
+
+- **subagent 同梱**: skill が呼ぶ subagent は repo に同梱する。同梱しないと installer が
+  agent を別途探す羽目になり、canonical rules を agent が SKILL.md から参照する
+  orchestrator skill は両方入れるまで壊れる。
+- **命名の非対称**: skill（SKILL.md）はオープンな cross-tool 標準（Agent Skills /
+  agentskills.io — Codex / Gemini CLI / Cursor 等でも動く）、subagent（`agents/*.md`）は
+  Claude Code 固有。→ **agent を同梱する repo は `claude-skill-` prefix を維持**し
+  `compatibility` frontmatter に Claude Code 向けと明記。**pure-skill repo は prefix を
+  外す**（`<owner>/<skill-name>`）。awesome-list 掲載は `owner/skill-name` で並び repo
+  prefix を見ないので、命名は意味の正確さで決める。
+- **レイアウト**: `install.sh`（skills/* → ~/.claude/skills/、agents/*.md →
+  ~/.claude/agents/）+ `skills/<name>/SKILL.md` + `agents/<agent>.md`（top-level フラット。
+  nest しない）。pure-skill repo は install.sh 省略可（citation-sync 等の先例）。
+- **install.sh は冪等**: 同一なら skip、異なれば `*.bak-<ts>` に退避してから上書き
+  （`--force` / `--dry-run`）。全 repo で byte-identical に保つ。README install 節は
+  Option A（`./install.sh`）/ Option B（手動 `cp`）/ SkillsMP の 3 つを書く。
+- **SkillsMP caveat**: `/skills add <owner/repo>` は `skills/` のみ install し `agents/`
+  は入れない。agent 同梱 repo の README に必ず注記する（`cp agents/*.md
+  ~/.claude/agents/` または `install.sh` を実行）。
+
 ## Repo mapping (project-specific)
 
 | target | 種別 | script | 正本 |
@@ -105,6 +129,29 @@ publish する (source = `~/.claude/rules/common/<name>.md`)。origin marker は
 | `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/when-code-when-llm` |
 | `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/signal-first-research` |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/citation-sync` |
+| `~/MyAI_Lab/rules-stocktake` ([repo](https://github.com/shimo4228/rules-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-stocktake` |
+| `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | 単独 rule | `scripts/sync-from-local.sh` (rule repo 版) | `~/.claude/rules/common/akc-cycle.md` |
 
 共通 env: origin filter `shimo4228` (`HARNESS_SYNC_ORIGIN`)、source `~/.claude` (`HARNESS_SYNC_SOURCE`)。
+
+### 手動 curation repo（sync script なし — 同期時にここも diff 確認する）
+
+以下は **harness が正本の skill を載せているのに sync script を持たない** 単独 repo。
+script 同期の対象外なので、`/harness-sync` 実行時にこの一覧を思い出して
+`diff ~/.claude/skills/<name>/SKILL.md <repo>/skills/<name>/SKILL.md` で drift を確認する
+（怠ると黙って溜まる — 実例: skill-stocktake repo が 60 行 drift、2026-07-03 検出）。
+
+- `skill-stocktake` / `skill-comply` / `context-sync` / `learn-eval` / `llms-txt-writer` /
+  `readme-writer` / `release-doi` / `rules-distill` / `search-first` /
+  `jsonld-knowledge-graph` / `wikidata-federation` — repo 名 = skill 名
+- `authorship-strategy-skill`（skill: authorship-strategy）
+- `claude-skill-paper-ecosystem`（paper-ecosystem + paper-writing）/
+  `claude-skill-writing-ecosystem`（writing-ecosystem）— agent 同梱の Claude 固有 repo
+- skill 以外の同梱物（hook script 等。例: skill-stocktake の `hooks/log-skill-usage.sh` は
+  `~/.claude/hooks/` が正本）も同じ diff 確認の対象
+
+**この一覧に含めない repo**: 汎用化 fork の curated repo（`code-and-llm-collaboration`,
+`llm-agent-security-principles` — 意図的に乖離、diff 同期しない）と、harness に正本を
+持たない repo 単独 skill（`agent-adoption-triage` 等）。新しい単独 skill repo を作ったら、
+script を vendor するか、この一覧に追記するかの二択を必ず選ぶ。
