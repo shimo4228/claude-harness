@@ -1,6 +1,7 @@
 ---
 name: write-prompt
 description: Generate concise LLM prompts using the lightweight prompt-writer agent. Avoids main-model overthinking.
+user-invocable: true
 origin: shimo4228
 ---
 

@@ -47,15 +47,21 @@ Enumerate skill definition files with Glob (no script needed):
 > `.venv` or `.pytest_cache` is excluded structurally (no pruning required). The
 > noise the old `find -name "*.md"` pulled in cannot occur.
 
-**Usage counts**: read `~/.claude/metrics/skill-usage.jsonl` inline (the PostToolUse
-hook `log-skill-usage.sh` appends to it — an independent measurement layer) and count
-per-skill events over 7 / 30 / 90 days. Each line is JSON `{ts,event,skill,path,project}`;
-count both `invoke` and `read` events. Aggregate with a throwaway `python3`/`jq` one-liner
+**Usage counts**: read `~/.claude/metrics/skill-usage.jsonl` inline (the hook
+`log-skill-usage.sh` appends to it — an independent measurement layer, wired as
+PostToolUse `Read|Skill` + UserPromptSubmit) and count per-skill events over
+7 / 30 / 90 days. Each line is JSON `{ts,event,skill,path,project}`; count `invoke`,
+`read`, and `slash` events. Aggregate with a throwaway `python3`/`jq` one-liner
 rather than hand-counting — the log grows over time and hand-counting wastes a tool turn
 per invocation.
 
 - If the log is **missing or its first event is younger than 90 days**, render usage as
   `—` (unmeasured). **Never render it as 0** — unmeasured and unused are different facts.
+- `slash` events exist only from **2026-07-03** (before that, user-typed `/skill`
+  invocations were injected as command-messages and fired neither the Skill tool nor a
+  Read — invisible to the hook). For windows straddling that date, treat counts for
+  **user-invocable** skills as **lower bounds**, and never Retire on low usage alone
+  when the skill's primary mode is user-typed slash invocation.
 
 State the scan result up front: which paths were scanned, how many skills found, and
 whether usage is measurable.
