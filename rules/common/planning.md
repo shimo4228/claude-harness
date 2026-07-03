@@ -122,7 +122,8 @@ search-first skill が返した Verdict をそのまま計画の方向性に反�
 | Code Review (code-reviewer / python-reviewer) | Y | Y | Y | C | - |
 | Security Review (security-reviewer) | Y | C | - | C | - |
 | Cross-Model Review (codex-review) | Y | Y | C | - | - |
-| Verify (build / types / lint / tests / secrets / git status) | Y | Y | Y | Y | - |
+| Doc Sync (context files) | C | C | C | C | - |
+| Verify (build / types / lint / tests / secrets / doc sync / git status) | Y | Y | Y | Y | - |
 
 **条件付き発火 `C` の発動条件**:
 
@@ -130,6 +131,12 @@ search-first skill が返した Verdict をそのまま計画の方向性に反�
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
 - `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y
 - `refactor` × Cross-Model Review: 公開 API / 並行処理 / セキュリティ境界に触れる高リスク refactor のみ Y。純粋な内部整理は `-`
+- 全種別 × Doc Sync: 変更が以下のいずれかに該当する場合のみ Y。該当 doc を**同じ diff** で更新する（後追い PR にしない）
+  - 機構・ゲート・閾値・段構成の変更 → CODEMAPS の Data Flow / architecture（プロジェクトに鮮度規約があればそれに従う）
+  - ADR 新設・廃止 → knowledge graph（graph.jsonld 等）+ CODEMAPS 言及（両面更新）
+  - パッケージ資産（プロンプト・シード・テンプレート・サービス定義）の増減 → 設定リファレンスの canonical 節
+  - CLI / user-facing 挙動の変更 → README / llms.txt
+  - 数値クレームの規律: 集約カウントの正本は 1 箇所のみ（他はポインタ）。機械検証可能な doc↔実体対応は prose 修正でなくテストで固定する（検出は code、削除判断は人間）
 
 ### 並列化指定（plan 時に確定）
 
@@ -193,7 +200,8 @@ Code Review（python-reviewer / code-reviewer）・Security Review・Cross-Model
 3. **lint** — ruff / eslint / textlint 等
 4. **tests** — pytest / vitest 等。coverage ≥ 80%
 5. **secret scan** — hardcoded keys / tokens の不在確認（`security.md` 参照）
-6. **`git status` 確認** — 意図しないファイルが含まれていないか
+6. **doc sync 確認** — Chain Matrix の Doc Sync 発火条件に該当する変更なら、対応 doc が同じ diff に含まれているか確認。含まれていなければ commit せず Doc Sync に戻る
+7. **`git status` 確認** — 意図しないファイルが含まれていないか
 
 全 PASS でのみコミット可。FAIL があれば停止し、ユーザーに報告。
 

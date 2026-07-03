@@ -44,6 +44,13 @@ Write into `<repo-root>/docs/CODEMAPS/` (create if missing). Produce up to six f
 
 `Files scanned` counts source files (not docs / tests / generated). `Tokens` is `wc -c` divided by 4, rounded.
 
+## Numeric Claims Discipline
+
+A count written in prose is a cache with no invalidation — it starts drifting the moment it is written. Two hard rules:
+
+1. **Never carry a number forward** from the previous codemap version. Every count (modules, LOC, tests collected, file counts) is recomputed at generation time from live commands (`find ... | wc -l`, `pytest --collect-only -q`, `wc -l`). If a number cannot be recomputed, drop it — do not copy it.
+2. **Aggregate counts live in exactly one place**: a `Statistics` section in `INDEX.md`, stamped with the measurement date and listing the commands used (so the next refresh recomputes mechanically). Prose, headings, and diagram labels in every codemap stay count-free — write `core/ (platform-independent)`, not `core/ (24 modules)` — and other files point to `INDEX.md#statistics` instead of repeating values. Per-item generated listings (e.g. a per-module LOC table regenerated wholesale each refresh) are exempt; hand-synced copies of aggregates are not.
+
 ## Workflow
 
 ### 1. Scan
@@ -119,6 +126,17 @@ src/middleware/auth.ts (JWT verification, 60 lines)
 | [architecture.md](./architecture.md) | What's the overall shape? |
 | [backend.md](./backend.md) | Where does HTTP traffic land? |
 | [data.md](./data.md) | What persistence layer exists? |
+
+## Statistics
+
+As of YYYY-MM-DD — measured, never carried forward; recompute at every refresh.
+
+| Metric | Value |
+|---|---|
+| Source files | N |
+| Tests collected | M |
+
+Measured by: `find src -name '*.py' | wc -l` · `pytest --collect-only -q | tail -1`
 
 ## Maintenance
 
