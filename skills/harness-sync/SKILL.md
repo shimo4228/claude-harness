@@ -130,6 +130,9 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/signal-first-research` |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/citation-sync` |
 | `~/MyAI_Lab/rules-stocktake` ([repo](https://github.com/shimo4228/rules-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-stocktake` |
+| `~/MyAI_Lab/learn-eval` ([repo](https://github.com/shimo4228/learn-eval)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/learn-eval` |
+| `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
+| `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | 単独 rule | `scripts/sync-from-local.sh` (rule repo 版) | `~/.claude/rules/common/akc-cycle.md` |
 
@@ -142,14 +145,17 @@ script 同期の対象外なので、`/harness-sync` 実行時にこの一覧を
 `diff ~/.claude/skills/<name>/SKILL.md <repo>/skills/<name>/SKILL.md` で drift を確認する
 （怠ると黙って溜まる — 実例: skill-stocktake repo が 60 行 drift、2026-07-03 検出）。
 
-- `skill-stocktake` / `skill-comply` / `context-sync` / `learn-eval` / `llms-txt-writer` /
-  `readme-writer` / `release-doi` / `rules-distill` / `search-first` /
+- `skill-comply` / `context-sync` / `llms-txt-writer` /
+  `readme-writer` / `release-doi` / `search-first` /
   `jsonld-knowledge-graph` / `wikidata-federation` — repo 名 = skill 名
+  （`learn-eval` / `rules-distill` / `skill-stocktake` は 2026-07-03 に script を vendor
+  して mapping 表へ移動済み）
 - `authorship-strategy-skill`（skill: authorship-strategy）
 - `claude-skill-paper-ecosystem`（paper-ecosystem + paper-writing）/
   `claude-skill-writing-ecosystem`（writing-ecosystem）— agent 同梱の Claude 固有 repo
 - skill 以外の同梱物（hook script 等。例: skill-stocktake の `hooks/log-skill-usage.sh` は
-  `~/.claude/hooks/` が正本）も同じ diff 確認の対象
+  `~/.claude/hooks/` が正本）は script 同期の対象外（script は `skills/<name>/` しか
+  置換しない）ので、script 同期済み repo でも同梱物だけは同じ diff 確認の対象
 
 **この一覧に含めない repo**: 汎用化 fork の curated repo（`code-and-llm-collaboration`,
 `llm-agent-security-principles` — 意図的に乖離、diff 同期しない）と、harness に正本を
