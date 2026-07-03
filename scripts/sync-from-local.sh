@@ -156,34 +156,48 @@ for p in sorted(src.glob("agents/*.md")):
 for p in sorted(src.glob("rules/*/*.md")):
     items.append(("rules", f"{p.parent.name}/{p.stem}", origin_of(p)))
 
-ecc, ecc_mod, other = {}, {}, []
+SUFFIX = "-customized"
+rows = {}  # (base, modified) -> {kind: [names]}
 for kind, name, o in items:
     if o is None or o in SELF:
         continue
-    if o == "ECC":
-        ecc.setdefault(kind, []).append(name)
-    elif o == "ECC-customized":
-        ecc_mod.setdefault(kind, []).append(name)
-    else:
-        other.append(f"{name} ({o})")
+    base, modified = (o[: -len(SUFFIX)], True) if o.endswith(SUFFIX) else (o, False)
+    rows.setdefault((base, modified), {}).setdefault(kind, []).append(name)
 
 
-def fmt(groups):
-    return " · ".join(f"{k}: {', '.join(v)}" for k, v in groups.items() if v)
+def label(base, modified):
+    shown = f"[{base}](https://github.com/{base})" if "/" in base else base
+    if modified:
+        return f"{shown} + local modifications"
+    if (base, True) in rows:
+        return f"{shown} (unmodified)"
+    return shown
 
+
+def cell(group, kind):
+    return ", ".join(group.get(kind, [])) or "—"
+
+
+ordered = sorted(rows, key=lambda k: (k[0] != "ECC", k[0], k[1]))
+table = ["| Upstream | Skills | Agents | Rules |", "|---|---|---|---|"]
+for key in ordered:
+    group = rows[key]
+    table.append(
+        f"| {label(*key)} | {cell(group, 'skills')}"
+        f" | {cell(group, 'agents')} | {cell(group, 'rules')} |"
+    )
 
 block = "\n".join(
     [
         BEGIN,
         "### Upstream components (names only)",
         "",
-        "The live harness also runs components from external upstreams. Their"
-        " content is **not redistributed** here — names only, so the full"
+        "The live harness also runs components from external upstreams."
+        " Their content — including any local modifications to it — is"
+        " **not redistributed** here; the names alone are listed so the full"
         f" composition stays visible. ECC = [Everything Claude Code]({ECC_URL}).",
         "",
-        f"- **ECC (unmodified)** — {fmt(ecc)}",
-        f"- **ECC + local modifications** (modifications not redistributed) — {fmt(ecc_mod)}",
-        f"- **Other upstreams** — {', '.join(sorted(other))}",
+        *table,
         END,
     ]
 )

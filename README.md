@@ -132,11 +132,17 @@ This repo is the result of a mechanical collection limited to `origin: shimo4228
 <!-- BEGIN GENERATED: upstream-components -->
 ### Upstream components (names only)
 
-The live harness also runs components from external upstreams. Their content is **not redistributed** here — names only, so the full composition stays visible. ECC = [Everything Claude Code](https://github.com/affaan-m/everything-claude-code).
+The live harness also runs components from external upstreams. Their content — including any local modifications to it — is **not redistributed** here; the names alone are listed so the full composition stays visible. ECC = [Everything Claude Code](https://github.com/affaan-m/everything-claude-code).
 
-- **ECC (unmodified)** — skills: agent-harness-construction, article-writing, security-scan · agents: architect, python-reviewer, refactor-cleaner · rules: python/coding-style, python/hooks, python/patterns, python/security
-- **ECC + local modifications** (modifications not redistributed) — skills: ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps · agents: code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide · rules: common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing, python/testing
-- **Other upstreams** — agent-architecture-audit (oh-my-agent-check-customized), grill-me (mattpocock/skills), mcp-builder (anthropics/skills), scientific-thinking-literature-review (community), skill-creator (anthropics/skills-customized)
+| Upstream | Skills | Agents | Rules |
+|---|---|---|---|
+| ECC (unmodified) | agent-harness-construction, article-writing, security-scan | architect, python-reviewer, refactor-cleaner | python/coding-style, python/hooks, python/patterns, python/security |
+| ECC + local modifications | ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing, python/testing |
+| [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
+| [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
+| community | scientific-thinking-literature-review | — | — |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | grill-me | — | — |
+| oh-my-agent-check + local modifications | agent-architecture-audit | — | — |
 <!-- END GENERATED: upstream-components -->
 
 ## Related repos
