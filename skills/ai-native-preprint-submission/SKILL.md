@@ -86,6 +86,39 @@ aiXiv には公開された MCP 実装は無い (survey 済み)。だが **agent
 4. metadata JSON の実用フィールド: `title, authorship_type, authors[], corresponding_author, category[], keywords[], license, abstract, doi, doc_type, submitter_type`。`doi` に既存 DOI レジストリの concept DOI を入れて **受理されることを確認済み** (投稿メタデータとして保持される。プラットフォーム自身の DOI 発行がないことと矛盾しない — あくまで参照フィールド)
 5. レスポンス `{"success":true,"submission_id":..., "aixiv_id":"aixiv.YYMMDD.NNNNNN", ...}` で完了。abs ページは `https://aixiv.science/abs/<aixiv_id>` で即 200
 
+**再利用可能テンプレート** (token は環境変数 or 保護ファイル経由。会話・コミットに値を書かない):
+
+```bash
+TOKEN=$(cat /path/to/protected/agent-token.txt)   # umask 077 で退避したファイルから読む
+
+python3 - <<'PYEOF'
+import json
+metadata = {
+    "title": "<Paper Title>",
+    "authorship_type": "human",              # or "ai"
+    "authors": ["<Author Name>"],
+    "corresponding_author": "<Author Name>",
+    "category": ["Formal Sciences", "Computer Science", "Artificial intelligence and machine learning"],
+    "keywords": ["kw1", "kw2", "kw3"],        # 3-6 個
+    "license": "CC-BY-4.0",
+    "abstract": open("abstract.txt").read().strip(),
+    "doi": "10.5281/zenodo.XXXXXXXX",         # 既存 canonical DOI をそのまま渡せる
+    "doc_type": "paper",
+    "submitter_type": "agent",
+}
+open("metadata.json", "w").write(json.dumps(metadata, ensure_ascii=False))
+PYEOF
+
+curl -s -X POST "https://aixiv.science/api/agent/submit" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@/path/to/paper.pdf;type=application/pdf" \
+  -F "metadata=<metadata.json;type=application/json" \
+  -w "\nHTTP_CODE:%{http_code}\n"
+# -> {"success":true,"submission_id":"...","aixiv_id":"aixiv.YYMMDD.NNNNNN","version":"1.0","message":"..."}
+```
+
+この一発 multipart 呼び出しが aiXiv agent submit の全体。事前の presigned-URL 取得や 2 段階アップロードは不要 (AiraXiv の MCP パイプラインと形が違う点に注意 — 下記参照)。
+
 ### AiraXiv MCP (2026-07-02 実測)
 
 - Endpoint: `https://airaxiv.com/mcp/` (FastMCP streamable HTTP、POST 専用)。認証 `Authorization: Bearer <API key>`。JSON-RPC `initialize` → レスポンスヘッダ `mcp-session-id` を以後のリクエストに付ける → `tools/call`
@@ -95,6 +128,68 @@ aiXiv には公開された MCP 実装は無い (survey 済み)。だが **agent
 - **二重投稿ガード**: submit が切断/timeout したら、**リトライ前に必ず `list_papers(scope=user)` で着弾確認**。「切断 = 失敗」とは限らない
 - 有用な read 系: `get_api_key_info` (key の owner binding 確認)、`get_paper_reviews` (AI レビュー取得 → 語彙保持診断)、`get_paper_info`
 - 公開 URL: `https://airaxiv.com/papers/view/<paper_id>/` (paper_id は `YYMM.NNNN`、moderation approved 後に採番)
+
+**再利用可能テンプレート** (JSON-RPC over HTTP、`mcp_client.py` として scratchpad に置く最小実装):
+
+```python
+# mcp_client.py — 最小 MCP streamable-HTTP クライアント
+import json, urllib.request, urllib.error
+from pathlib import Path
+
+BASE = "https://airaxiv.com/mcp/"
+KEY = Path("agent-api-key.txt").read_text().strip()   # umask 077 で退避
+session_id = None
+
+def rpc(method, params=None, req_id=1, timeout=60):
+    global session_id
+    msg = {"jsonrpc": "2.0", "method": method}
+    if params is not None: msg["params"] = params
+    if req_id is not None: msg["id"] = req_id
+    headers = {"Content-Type": "application/json",
+               "Accept": "application/json, text/event-stream",
+               "Authorization": f"Bearer {KEY}"}
+    if session_id: headers["mcp-session-id"] = session_id
+    req = urllib.request.Request(BASE, data=json.dumps(msg).encode(), headers=headers, method="POST")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        if resp.headers.get("mcp-session-id"): session_id = resp.headers["mcp-session-id"]
+        return resp.status, resp.read().decode()
+
+status, _ = rpc("initialize", {"protocolVersion": "2025-03-26", "capabilities": {},
+                                "clientInfo": {"name": "author-client", "version": "0.1"}})
+rpc("notifications/initialized", {}, req_id=None)
+```
+
+**submit_paper だけは urllib がハングする** (§transport 罠) ので、この 1 ツール呼び出しだけ curl に切り替える:
+
+```bash
+# 1) PDF アップロード: create_upload -> curl PUT (http:// は https に書き換え必須)
+# 2) complete_upload で pdf_file_id を得る (ここまでは python urllib で通る)
+# 3) submit_paper だけ curl -N の streaming transport で叩く
+python3 - <<'PYEOF'
+import json
+payload = {"jsonrpc": "2.0", "id": 4, "method": "tools/call",
+    "params": {"name": "submit_paper", "arguments": {
+        "title": "<Paper Title>",
+        "pdf_file_id": "<pdf_file_id from complete_upload>",
+        "abstract": open("abstract.txt").read().strip(),
+        "author_list": [{"name": "<Author Name>", "type": "human",
+                          "url": "https://orcid.org/XXXX-XXXX-XXXX-XXXX"}],
+        "paper_type": "human_written",
+        "research_category": "position",
+    }}}
+open("payload.json", "w").write(json.dumps(payload))
+PYEOF
+
+curl -sS -N --max-time 300 -X POST "https://airaxiv.com/mcp/" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "mcp-session-id: $SESSION_ID" \
+  --data-binary @payload.json
+# -> SSE (data: 行) の中に {"result":{"content":[{"text":"{...moderation_status:pending...}"}]}}
+```
+
+切断/timeout が起きたら **必ず `list_papers` で着弾確認してからリトライ** (二重投稿ガード、上記参照)。
 
 ### プロフィール整備 (発見面の強化)
 

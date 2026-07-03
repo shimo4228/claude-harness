@@ -7,7 +7,7 @@ origin: shimo4228
 
 # /learn-eval - Extract, Evaluate, then Save
 
-`/learn` の全フローに、保存前の品質評価と保存先判断を追加したコマンド。
+Extends the full /learn flow with a pre-save quality evaluation and a save-location decision.
 
 ## What to Extract
 
@@ -25,16 +25,16 @@ Look for:
 
 3. **Determine save location:**
    - Ask: "Would this pattern be useful in a different project?"
-   - **Global** (`~/.claude/skills/learned/`): 2+ プロジェクトで使える汎用パターン（bash 互換性、LLM API の挙動、デバッグ技法など）
-   - **Project** (`.claude/skills/learned/` in current project): このプロジェクト固有の知見（特定の設定ファイルの癖、プロジェクト固有のアーキテクチャ判断など）
-   - 迷ったら Global（後でプロジェクトに移動する方が逆より楽）
+   - **Global** (`~/.claude/skills/learned/`): general-purpose patterns useful across 2+ projects (bash compatibility, LLM API behavior, debugging techniques, etc.)
+   - **Project** (`.claude/skills/learned/` in current project): knowledge specific to this project (quirks of a particular config file, project-specific architecture decisions, etc.)
+   - When in doubt, choose Global (moving it into a project later is easier than the reverse)
 
 4. Draft the skill file using this format:
 
 ```markdown
 ---
 name: pattern-name
-description: "130文字以内の説明"
+description: "Description in 130 characters or less"
 user-invocable: false
 origin: auto-extracted
 ---
@@ -54,87 +54,106 @@ origin: auto-extracted
 [Trigger conditions]
 ```
 
-5. **Quality gate — チェックリスト + ホリスティック判定**
+5. **Quality gate — checklist + holistic verdict**
 
-   #### 5a. 必須チェックリスト（実際にファイルを読んで確認）
+   #### 5a. Mandatory checklist (verify by actually reading the files)
 
-   以下を **すべて実行** してからドラフトを評価する:
+   Run **all** of the following before evaluating the draft:
 
-   - [ ] `~/.claude/skills/` 配下をキーワード grep し、内容重複を確認した
-   - [ ] MEMORY.md（プロジェクト + グローバル）との重複を確認した
-   - [ ] 既存スキルへの追記で済むか検討した（knowledge-placement-decision 参照）
-   - [ ] 一回限りの修正ではなく、再利用可能なパターンであることを確認した
-   - [ ] パターンを**セッションの観測記録**（実際のツール出力・エラー・ユーザーの訂正）に照合した。自分の要約・言い換えではなく「何が実際に起きたか」に基づいているか
+   - [ ] Grepped `~/.claude/skills/` for keywords and checked for content overlap
+   - [ ] Checked for overlap with MEMORY.md (project + global)
+   - [ ] Considered appending to an existing skill instead (see knowledge-placement-decision)
+   - [ ] Confirmed the pattern is reusable, not a one-off fix
+   - [ ] Checked the pattern against the **session's observational record** (actual tool output, errors, user corrections). Is it grounded in "what actually happened" rather than your own summary or paraphrase?
 
-   続けて、**ドラフト固有の原子的 yes/no 質問を 3〜5 個生成して回答する**。
-   固定チェックリストはハーネス不変の検査（重複・再利用性）であり、ドラフト自身の主張
-   （Problem / Solution / When to Use に書いたこと）は検査しないため、ここで補う:
+   Then, **generate and answer 3–5 draft-specific atomic yes/no questions**.
+   The fixed checklist covers harness-invariant checks (duplication, reusability) but
+   does not test the draft's own claims (what it states under Problem / Solution /
+   When to Use), so this step fills that gap:
 
-   - **原子性**: 各質問は単一の検証可能な主張だけを問う
-   - **反証志向**: ドラフトの記述をそのまま肯定する質問ではなく、反証を探す形にする。
-     例:「コード例は記載環境でそのまま実行可能か」「トリガー条件は将来セッションの
-     プロンプト文面から観測可能か」「Solution はセッションの観測記録のどの行に対応するか」
-   - **集約しない**: 回答は Yes/No + 一行の根拠。数値スコア（肯定率等）に変換しない。
-     消費される出力は 5b の verdict のみで、binary 回答はその evidence に徹する
+   - **Atomicity**: each question tests exactly one verifiable claim
+   - **Refutation-oriented**: phrase questions to seek disconfirmation, not to affirm
+     the draft as written. Examples: "Does the code example run as-is in the stated
+     environment?" "Is the trigger condition observable from the prompt text of a
+     future session?" "Which line of the session's observational record does the
+     Solution correspond to?"
+   - **No aggregation**: answers are Yes/No + one line of evidence. Never convert them
+     into a numeric score (e.g. a satisfaction ratio). The only consumed output is the
+     verdict in 5b; binary answers serve strictly as its evidence
 
-   #### 5b. ホリスティック判定
+   #### 5b. Holistic verdict
 
-   チェックリスト結果・binary 質問の回答・ドラフトを総合し、以下の **1つ** を選ぶ。
-   **No が付いた質問は verdict の根拠として必ず列挙する**（隠れた No は判定のブレの温床）:
+   Weigh the checklist results, the binary answers, and the draft together, then choose
+   exactly **one** of the following. **Always enumerate the No-answered questions as
+   grounds for the verdict** (hidden Nos breed verdict drift):
 
-   | Verdict | 意味 | 次のアクション |
-   |---------|------|---------------|
-   | **Save** | 独自・具体的・適切なスコープ | Step 6 へ |
-   | **Improve then Save** | 価値はあるが要改善 | No 質問 = 改善項目 → 修正 → 同一質問で再判定（1回まで） |
-   | **Absorb into [X]** | 既存スキルの一部として追記すべき | 追記先と追加内容を提示 → Step 6 へ |
-   | **Drop** | 些末・冗長・抽象的 | 理由を説明して終了 |
+   | Verdict | Meaning | Next action |
+   |---------|---------|---------------|
+   | **Save** | Unique, concrete, well-scoped | Go to Step 6 |
+   | **Improve then Save** | Valuable but needs fixes | No questions = improvement items → fix → re-judge with the same questions (once only) |
+   | **Absorb into [X]** | Should be appended to an existing skill | Present the target and the content to add → go to Step 6 |
+   | **Drop** | Trivial, redundant, or abstract | Explain why and stop |
 
-   **観点ガイドライン**（採点ではなく判定の参考）:
+   **Guiding dimensions** (reference points for judgment, not a scoring rubric):
 
-   - **具体性・行動可能性**: コード例・コマンドがあり、即座に使えるか
-   - **スコープ適切性**: 名前・トリガー・内容が一致し、1パターンに集中しているか
-   - **独自性**: チェックリスト結果を踏まえ、既存知識で代替できない価値があるか
-   - **再利用性**: 将来のセッションで現実的にトリガーされる場面があるか
-   - **接地性 (grounding)**: 抽出元が観測記録（実際に起きたこと）か、自分の解釈・要約か。自己評価だけのループは drift する（自分の言い換えが事実として再固定される）ため、観測に接地しない抽出は Drop 寄りに倒す。**接地性系の質問が No なら、他が全 Yes でも Drop 寄り**（平均化で支配的な No を薄めない）
+   - **Concreteness / actionability**: has code examples/commands, immediately usable
+   - **Scope fit**: name, trigger, and content align; focused on a single pattern
+   - **Uniqueness**: given the checklist results, provides value existing knowledge cannot
+   - **Reusability**: will realistically be triggered in future sessions
+   - **Grounding**: is the source an observational record (what actually happened) or
+     your own interpretation/summary? Self-evaluation-only loops drift (your paraphrase
+     gets re-fixed as fact), so lean toward Drop for extractions not grounded in
+     observation. **If a grounding question is No, lean Drop even when everything else
+     is Yes** (never let averaging dilute a dominant No)
 
-   **Improve then Save の改善リスト**: No だった質問がそのまま改善項目になる。各 No について「何を直せば Yes になるか」を 1 行で書き、修正後は**同じ質問セット**で再判定する（1 回まで。質問を再生成しない — 基準が動くと、修正が効いたのか基準が緩んだのか区別できない）。
+   **Improve then Save improvement list**: the No-answered questions become the
+   improvement items as-is. For each No, write one line on what to change to make it a
+   Yes; after fixing, re-judge with the **same question set** (once only — do not
+   regenerate the questions: if the bar moves, you cannot tell whether the fix worked
+   or the bar loosened).
 
-6. **Verdict 別の確認フロー（1 件ずつ、`[y/n/skip]`）**
+6. **Per-verdict confirmation flow (one at a time, `[y/n/skip]`)**
 
-   セッションから複数パターンを抽出した場合も、**まとめて承認を求めず 1 件ずつ**確認する
-   （config-gc の confirm-each 設計を踏襲。「全部保存する？ [y/n]」の一括承認は禁止）。
-   各候補につき証拠（チェックリスト結果 + 判定理由）を先に提示してから `[y/n/skip]` を聞く。
-   ユーザーはどの時点でも中断できる。`n` = 破棄、`skip` = 今回は保留（理由を 1 行残す）:
+   Even when multiple patterns were extracted from the session, confirm them
+   **one at a time — never ask for batch approval** (follows config-gc's confirm-each
+   design; a bulk "save them all? [y/n]" is banned).
+   For each candidate, present the evidence first (checklist results + verdict
+   rationale), then ask `[y/n/skip]`.
+   The user can stop at any point. `n` = discard, `skip` = defer for now (leave a
+   one-line reason):
 
-   - **Save**: 保存先パス + チェックリスト結果 + 判定理由1行 + ドラフト全文を提示 → `[y/n/skip]` 確認後に保存
-   - **Absorb into [X]**: 追記先パス + 追加内容（diff 形式）+ チェックリスト結果 + 判定理由を提示 → `[y/n/skip]` 確認後に追記
-   - **Drop**: チェックリスト結果 + 理由のみ表示（確認不要で終了）
+   - **Save**: present the save path + checklist results + one-line verdict rationale + the full draft → save after `[y/n/skip]` confirmation
+   - **Absorb into [X]**: present the target path + the content to add (as a diff) + checklist results + verdict rationale → append after `[y/n/skip]` confirmation
+   - **Drop**: show the checklist results + reason only (no confirmation needed; stop)
 
 7. Save / Absorb to the determined location
 
-8. **昇格確認（Save 保存後のみ）**
+8. **Promotion check (after a Save only)**
 
-   `learned/` 配下はフラットな `.md` ファイル置き場であり、`skills/<name>/SKILL.md` 形式の discovery に乗らない。つまり description ベースの自動トリガーは効かず、参照ノートとして grep される受動的な存在に留まる。Save 完了後、ユーザーに 1 回だけ確認する:
+   `learned/` is a flat directory of `.md` files and does not participate in
+   `skills/<name>/SKILL.md`-style discovery. That means description-based automatic
+   triggering never fires — the file remains a passive reference note found only by
+   grep. After the save completes, ask the user exactly once:
 
-   - **learned のまま置く**（default）— 参照資料・grep 対象として十分な場合。確認に応答がなければこちら
-   - **アクティブ skill に昇格** — 今後のセッションで description トリガーによる自動適用を効かせたい場合。Claude Code では Anthropic 公式の **skill-creator** skill を learned ドラフトに対して実行し、`~/.claude/skills/<name>/SKILL.md` として構造化・description 最適化・eval まで行うのがベストプラクティス（learn-eval = 抽出と品質ゲート / skill-creator = 構造化と eval、で役割が分かれる）。昇格完了後は `learned/` 側のファイルを削除し、二重管理を残さない
+   - **Leave it in learned/** (default) — sufficient as reference material / a grep target. If the confirmation gets no response, choose this
+   - **Promote to an active skill** — when description-triggered automatic application should apply in future sessions. In Claude Code, best practice is to run Anthropic's official **skill-creator** skill on the learned draft, structuring it as `~/.claude/skills/<name>/SKILL.md` with description optimization and evals (learn-eval = extraction and quality gate / skill-creator = structuring and eval — a deliberate role split). After promotion, delete the `learned/` file so nothing is managed twice
 
 ## Output Format for Step 5
 
 ```
 ### Checklist
-- [x] skills/ grep: 重複なし（or 重複あり → 詳細）
-- [x] MEMORY.md: 重複なし（or 重複あり → 詳細）
-- [x] 既存スキル追記検討: 新規が適切（or [X] に追記すべき）
-- [x] 再利用性: 確認済み（or 一回限り → Drop）
+- [x] skills/ grep: no overlap (or overlap found → details)
+- [x] MEMORY.md: no overlap (or overlap found → details)
+- [x] Append-to-existing considered: new file appropriate (or should append to [X])
+- [x] Reusability: confirmed (or one-off → Drop)
 
 ### Draft-specific questions
-- [Yes] Q1: ... — 根拠1行
-- [No]  Q2: ... — 根拠1行 →（Improve 時: 修正方針1行）
+- [Yes] Q1: ... — one-line evidence
+- [No]  Q2: ... — one-line evidence → (on Improve: one-line fix plan)
 
 ### Verdict: Save / Improve then Save / Absorb into [X] / Drop
 
-**理由:** （1-2文で判定の根拠を説明。No 質問があれば必ず言及）
+**Rationale:** (1–2 sentences explaining the verdict; always mention any No questions)
 ```
 
 ## Notes
@@ -143,12 +162,12 @@ origin: auto-extracted
 - Don't extract one-time issues (specific API outages, etc.)
 - Focus on patterns that will save time in future sessions
 - Keep skills focused — one pattern per skill
-- Absorb verdict が出た場合は新規ファイルを作らず、既存スキルへの追記を優先する
+- On an Absorb verdict, do not create a new file — append to the existing skill instead
 
 ## References
 
-Step 5 の 2 層設計（binary 質問分解 → ホリスティック判定）の設計根拠:
+Design rationale for Step 5's two-layer design (binary question decomposition → holistic verdict):
 
-- BinEval — "Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement" ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226))。評価基準を原子的 yes/no 質問に分解し、失敗質問を改善フィードバックに直結するフレームワーク。ドラフト固有質問の動的生成と「No 質問 = 改善項目」の導線はここから移植
-- 同系統のチェックリスト型評価研究ライン: CheckEval (arXiv:2403.18771)、TICK (arXiv:2410.03608)、FActScore (arXiv:2305.14251)、UniEval (arXiv:2210.07197)
-- 数値スコア（肯定率）を**採用しない**判断も BinEval 自身の limitations に基づく: 主観的・全体論的な品質次元では過剰分解が人間評価との相関を損ない、肯定質問の割合は品質に線形対応しない。N=1 のドラフト評価では消費される出力は verdict のみで、binary 回答はその evidence に徹する
+- BinEval — "Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement" ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)). A framework that decomposes evaluation criteria into atomic yes/no questions and wires failed questions directly into improvement feedback. The dynamic generation of draft-specific questions and the "No questions = improvement items" path are ported from here
+- The same checklist-style evaluation research line: CheckEval (arXiv:2403.18771), TICK (arXiv:2410.03608), FActScore (arXiv:2305.14251), UniEval (arXiv:2210.07197)
+- The decision **not** to adopt numeric scores (satisfaction ratios) also follows BinEval's own limitations: on subjective, holistic quality dimensions, over-decomposition degrades correlation with human judgment, and the proportion of affirmed questions does not map linearly to quality. For an N=1 draft evaluation the only consumed output is the verdict; binary answers serve strictly as its evidence
