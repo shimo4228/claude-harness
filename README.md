@@ -123,11 +123,21 @@ Each file's frontmatter (YAML or HTML comment) carries an `origin` field:
 | origin | Meaning |
 |--------|---------|
 | `shimo4228` | Authored by shimo4228. The scope of this repo |
-| `ECC` | From Everything Claude Code. Not included here |
-| `ECC-customized` | ECC derivative + shimo4228 modifications. Not included |
+| `ECC` | From Everything Claude Code. Content not included — named below |
+| `ECC-customized` | ECC derivative + shimo4228 modifications. Content not included — named below |
 | `auto-extracted` | Learned skill auto-extracted by `learn-eval`. Not included |
 
 This repo is the result of a mechanical collection limited to `origin: shimo4228`.
+
+<!-- BEGIN GENERATED: upstream-components -->
+### Upstream components (names only)
+
+The live harness also runs components from external upstreams. Their content is **not redistributed** here — names only, so the full composition stays visible. ECC = [Everything Claude Code](https://github.com/affaan-m/everything-claude-code).
+
+- **ECC (unmodified)** — skills: agent-harness-construction, article-writing, security-scan · agents: architect, python-reviewer, refactor-cleaner · rules: python/coding-style, python/hooks, python/patterns, python/security
+- **ECC + local modifications** (modifications not redistributed) — skills: ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps · agents: code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide · rules: common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing, python/testing
+- **Other upstreams** — agent-architecture-audit (oh-my-agent-check-customized), grill-me (mattpocock/skills), mcp-builder (anthropics/skills), scientific-thinking-literature-review (community), skill-creator (anthropics/skills-customized)
+<!-- END GENERATED: upstream-components -->
 
 ## Related repos
 

@@ -1,6 +1,7 @@
 ---
 name: readme-writer
 description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直すときに使う。こんな時に必ず呼ぶ — README が長い／文字の壁で読まれない→短く走査しやすくしたい、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、構成図・アーキ図を入れたい（PNG や架空図でなく Mermaid を勧める）、badge を貼りすぎたので整理したい、長い rationale や「なぜ」を docs/ に逃がしたい、研究・DOI repo の README を引用付きで読める長さにまとめたい。短く・視覚優先にしつつ、LLM が README 一枚で要点を復元できる情報フロアは残す。CLI でも UI でも研究 repo でも、日本語でも英語でも、新規作成でも既存改善でも対象。AI 専用ドキュメント（llms.txt / llms-full.txt 等）は対象外（→ llms-txt-writer）、記事・エッセイ等の長文 prose は → writing-ecosystem。
+compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---

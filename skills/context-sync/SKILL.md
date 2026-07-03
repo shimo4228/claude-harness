@@ -1,6 +1,7 @@
 ---
 name: context-sync
 description: Audit and fix project documentation — detect role overlaps between context files (CLAUDE.md, CODEMAPS, ADR, README), migrate misplaced content, check freshness against code, and create missing docs. One command to keep all project context healthy.
+compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---

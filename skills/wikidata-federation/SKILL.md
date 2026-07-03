@@ -1,6 +1,7 @@
 ---
 name: wikidata-federation
 description: Create Wikidata items for researchers, papers, and research repositories and cross-link them with ORCID / DOI / graph.jsonld — an identifier-federation skill. Use it after publishing a new paper or DOI-registered repo to register it on Wikidata, when standing up an author item, when injecting QIDs into graph.jsonld as sameAs, or when setting up a Scholia profile. Always trigger on requests like "register this on Wikidata", "create a QID", "put the author in the knowledge graph", "add the paper to Wikidata". Also invoked as the post-release stage of release-doi / paper-deposit.
+compatibility: Requires Python 3 and requests. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---

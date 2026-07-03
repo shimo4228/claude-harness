@@ -1,6 +1,7 @@
 ---
 name: paper-writing
 description: Academic paper / preprint / position paper の draft skill。Title + outline + section drafting + abstract + references の手順正本。Primary source への直接 access を強制し、claim と cite の 1:1 mapping を author に握らせる。SSRN / arXiv / Zenodo / journal venue 向けに使う。Voice 規約・Source Fidelity 規約・Citation 規約は orchestrator skill `paper-ecosystem` を参照する。
+compatibility: Designed for Claude Code (or similar agent products). Inherits canonical rules from the paper-ecosystem skill.
 user-invocable: true
 origin: shimo4228
 ---

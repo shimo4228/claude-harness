@@ -1,6 +1,7 @@
 ---
 name: writing-ecosystem
 description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。article-writing / editor / essay-reviewer / fact-checker の役割境界と使い分け、AI slop 禁止リスト（日英）、Voice 規約（だ/である × 発見調）、タイトル規約を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
+compatibility: Designed for Claude Code (or similar agent products). Orchestrates Claude Code subagents bundled in this repo's agents/ directory.
 user-invocable: true
 origin: shimo4228
 ---

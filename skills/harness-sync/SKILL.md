@@ -51,6 +51,8 @@ secret scan (検出時 abort) → skills/ agents/ rules/ subtree の置換、ま
 
 - `README.md` / `README.ja.md` — skill / agent / rule の一覧と数
 - `llms.txt` / `llms-full.txt` — 構成変更があれば。文面の質は `llms-txt-writer` に defer
+- 集約 repo README の「Upstream components」節は **script 生成**（marker 間を apply 時に
+  自動再生成、外部 origin の名前のみ・ECC トップリンクのみ）— 手で編集しない
 
 ### 5. コミット
 
@@ -120,6 +122,10 @@ Packaging から 2026-07-03 に移動）:
 - **SkillsMP caveat**: `/skills add <owner/repo>` は `skills/` のみ install し `agents/`
   は入れない。agent 同梱 repo の README に必ず注記する（`cp agents/*.md
   ~/.claude/agents/` または `install.sh` を実行）。
+- **公開用 packaging metadata は local 正本に持たせる**: `compatibility:` 等の公開向け
+  frontmatter を repo 側で足すと、丸ごと置換のたびに消える（= 恒常的な偽 drift 源）。
+  local SKILL.md の frontmatter に持たせる — Claude Code は未知キーを無視するので無害
+  （learn-eval が先例、2026-07-03 第二波で全 skill repo に適用済み）。
 
 ## Repo mapping (project-specific)
 
@@ -135,29 +141,34 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | 単独 rule | `scripts/sync-from-local.sh` (rule repo 版) | `~/.claude/rules/common/akc-cycle.md` |
+| `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
+| `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
+| `~/MyAI_Lab/llms-txt-writer` ([repo](https://github.com/shimo4228/llms-txt-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llms-txt-writer` |
+| `~/MyAI_Lab/readme-writer` ([repo](https://github.com/shimo4228/readme-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/readme-writer` |
+| `~/MyAI_Lab/release-doi` ([repo](https://github.com/shimo4228/release-doi)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/release-doi` |
+| `~/MyAI_Lab/search-first` ([repo](https://github.com/shimo4228/search-first)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/search-first` |
+| `~/MyAI_Lab/jsonld-knowledge-graph` ([repo](https://github.com/shimo4228/jsonld-knowledge-graph)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/jsonld-knowledge-graph` |
+| `~/MyAI_Lab/wikidata-federation` ([repo](https://github.com/shimo4228/wikidata-federation)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/wikidata-federation` |
+| `~/MyAI_Lab/authorship-strategy-skill` ([repo](https://github.com/shimo4228/authorship-strategy-skill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/authorship-strategy` |
+| `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/paper-ecosystem` + `~/.claude/skills/paper-writing` |
+| `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/writing-ecosystem` |
 
 共通 env: origin filter `shimo4228` (`HARNESS_SYNC_ORIGIN`)、source `~/.claude` (`HARNESS_SYNC_SOURCE`)。
 
-### 手動 curation repo（sync script なし — 同期時にここも diff 確認する）
+### 手動 diff 確認が残る対象（script が置換しないもの）
 
-以下は **harness が正本の skill を載せているのに sync script を持たない** 単独 repo。
-script 同期の対象外なので、`/harness-sync` 実行時にこの一覧を思い出して
-`diff ~/.claude/skills/<name>/SKILL.md <repo>/skills/<name>/SKILL.md` で drift を確認する
-（怠ると黙って溜まる — 実例: skill-stocktake repo が 60 行 drift、2026-07-03 検出）。
+harness が正本の skill repo は **2026-07-03 に全て script 同期へ移行済み**（第一波:
+learn-eval / rules-distill / skill-stocktake、第二波: 残り 11 repo — 移行時に累積 drift
+1〜164 行を解消）。skill 本体の drift は script が拾うので、手動 diff の対象は
+**script が置換しない同梱物だけ**になった:
 
-- `skill-comply` / `context-sync` / `llms-txt-writer` /
-  `readme-writer` / `release-doi` / `search-first` /
-  `jsonld-knowledge-graph` / `wikidata-federation` — repo 名 = skill 名
-  （`learn-eval` / `rules-distill` / `skill-stocktake` は 2026-07-03 に script を vendor
-  して mapping 表へ移動済み）
-- `authorship-strategy-skill`（skill: authorship-strategy）
-- `claude-skill-paper-ecosystem`（paper-ecosystem + paper-writing）/
-  `claude-skill-writing-ecosystem`（writing-ecosystem）— agent 同梱の Claude 固有 repo
-- skill 以外の同梱物（hook script 等。例: skill-stocktake の `hooks/log-skill-usage.sh` は
-  `~/.claude/hooks/` が正本）は script 同期の対象外（script は `skills/<name>/` しか
-  置換しない）ので、script 同期済み repo でも同梱物だけは同じ diff 確認の対象
+- **agents/*.md**（`claude-skill-paper-ecosystem` / `claude-skill-writing-ecosystem` の
+  同梱 subagent。正本 `~/.claude/agents/`）
+- **hook script**（例: skill-stocktake の `hooks/log-skill-usage.sh`。正本 `~/.claude/hooks/`）
+- **repo root の `inspiration.md`**（repo 固有文書。harness に正本なし — diff 対象外だが、
+  `skills/<name>/` 配下に置くと置換で消えるため root に置く。2026-07-03 に 3 repo で root へ移動済み）
 
-**この一覧に含めない repo**: 汎用化 fork の curated repo（`code-and-llm-collaboration`,
+**script を置かない repo**: 汎用化 fork の curated repo（`code-and-llm-collaboration`,
 `llm-agent-security-principles` — 意図的に乖離、diff 同期しない）と、harness に正本を
-持たない repo 単独 skill（`agent-adoption-triage` 等）。新しい単独 skill repo を作ったら、
-script を vendor するか、この一覧に追記するかの二択を必ず選ぶ。
+持たない repo 単独 skill（`agent-adoption-triage` 等）。新しい単独 skill repo を作ったら
+**script を vendor するのが default** — 例外にする場合はここに理由ごと追記する。

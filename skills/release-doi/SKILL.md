@@ -1,6 +1,7 @@
 ---
 name: release-doi
 description: DOI-registered research repo (Zenodo) のリリース手順。CODEMAPS / README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映し、Software Heritage archive + SWHID 記録 (intrinsic identifier 層) まで行う 5 phase + post-release ワークフロー。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
+compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---

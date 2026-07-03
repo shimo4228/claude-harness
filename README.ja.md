@@ -123,11 +123,11 @@ uv sync  # or: pip install -e .
 | origin | 意味 |
 |--------|------|
 | `shimo4228` | shimo4228 作。この repo の対象 |
-| `ECC` | Everything Claude Code 由来。この repo には含めない |
-| `ECC-customized` | ECC 派生 + shimo4228 改良。含めない |
+| `ECC` | Everything Claude Code 由来。内容は含めない — 名前のみ英語版 README に列挙 |
+| `ECC-customized` | ECC 派生 + shimo4228 改良。内容は含めない — 名前のみ英語版 README に列挙 |
 | `auto-extracted` | `learn-eval` が自動抽出した learned skill。含めない |
 
-この repo は `origin: shimo4228` のみを機械収集した結果物。
+この repo は `origin: shimo4228` のみを機械収集した結果物。外部 origin コンポーネントの名前一覧（内容は非再配布、script 生成）は [README.md の Upstream components 節](README.md#upstream-components-names-only) を参照。
 
 ## 関連 repo
 

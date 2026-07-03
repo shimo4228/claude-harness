@@ -120,5 +120,87 @@ for t in "${SUBTREES[@]}"; do
 done
 cp -R "$STAGING"/. "$TARGET_DIR"/
 
+# --- regenerate the upstream-components manifest in README.md ---
+# Names only, no content: external-origin components are credited, never
+# redistributed. Generated so the list cannot drift by hand-editing.
+python3 - "$SOURCE_DIR" "$TARGET_DIR/README.md" <<'PYEOF' || true
+import re
+import sys
+from pathlib import Path
+
+src, readme = Path(sys.argv[1]), Path(sys.argv[2])
+ECC_URL = "https://github.com/affaan-m/everything-claude-code"
+BEGIN = "<!-- BEGIN GENERATED: upstream-components -->"
+END = "<!-- END GENERATED: upstream-components -->"
+SELF = {"shimo4228", "auto-extracted", "skill-create"}
+
+
+def origin_of(path):
+    try:
+        head = "".join(path.read_text(encoding="utf-8").splitlines(keepends=True)[:15])
+    except OSError:
+        return None
+    m = re.search(r"^origin:\s*(\S+)", head, re.M) or re.search(
+        r"<!--\s*origin:\s*(\S+)\s*-->", head
+    )
+    return m.group(1) if m else None
+
+
+items = []
+for p in sorted(src.glob("skills/*/SKILL.md")):
+    items.append(("skills", p.parent.name, origin_of(p)))
+for p in sorted(src.glob("skills/*.md")):
+    items.append(("skills", p.stem, origin_of(p)))
+for p in sorted(src.glob("agents/*.md")):
+    items.append(("agents", p.stem, origin_of(p)))
+for p in sorted(src.glob("rules/*/*.md")):
+    items.append(("rules", f"{p.parent.name}/{p.stem}", origin_of(p)))
+
+ecc, ecc_mod, other = {}, {}, []
+for kind, name, o in items:
+    if o is None or o in SELF:
+        continue
+    if o == "ECC":
+        ecc.setdefault(kind, []).append(name)
+    elif o == "ECC-customized":
+        ecc_mod.setdefault(kind, []).append(name)
+    else:
+        other.append(f"{name} ({o})")
+
+
+def fmt(groups):
+    return " · ".join(f"{k}: {', '.join(v)}" for k, v in groups.items() if v)
+
+
+block = "\n".join(
+    [
+        BEGIN,
+        "### Upstream components (names only)",
+        "",
+        "The live harness also runs components from external upstreams. Their"
+        " content is **not redistributed** here — names only, so the full"
+        f" composition stays visible. ECC = [Everything Claude Code]({ECC_URL}).",
+        "",
+        f"- **ECC (unmodified)** — {fmt(ecc)}",
+        f"- **ECC + local modifications** (modifications not redistributed) — {fmt(ecc_mod)}",
+        f"- **Other upstreams** — {', '.join(sorted(other))}",
+        END,
+    ]
+)
+text = readme.read_text(encoding="utf-8")
+if BEGIN not in text or END not in text:
+    print(
+        "WARN: upstream-components markers missing in README.md — manifest NOT written",
+        file=sys.stderr,
+    )
+    sys.exit(0)
+new = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END), block, text, flags=re.S)
+if new != text:
+    readme.write_text(new, encoding="utf-8")
+    print("# manifest: README.md upstream-components regenerated")
+else:
+    print("# manifest: unchanged")
+PYEOF
+
 echo "# APPLIED (origin: $ORIGIN). Review before committing:"
 git -C "$TARGET_DIR" status --short

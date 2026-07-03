@@ -1,6 +1,7 @@
 ---
 name: paper-ecosystem
 description: Academic paper / preprint / position paper の執筆・レビューエコシステムの orchestrator。SSRN / arXiv / Zenodo / journal venue 向けの **harness-neutral な学術コンテンツ** を書く / レビューするときに使う。paper-writing / paper-reviewer / source-fidelity-checker / vocabulary-consistency-checker / clarity-reviewer / citation-formatter の役割境界と使い分け、Source Fidelity Rules、Vocabulary Consistency Rules、Academic Voice Rules、Reader Clarity Rules、Citation Format Rules を正本として保持する。人間向け blog / essay には `writing-ecosystem`、AI 向け doc には `llms-txt-writer` を使う。
+compatibility: Designed for Claude Code (or similar agent products). Orchestrates Claude Code subagents bundled in this repo's agents/ directory.
 user-invocable: true
 origin: shimo4228
 ---
