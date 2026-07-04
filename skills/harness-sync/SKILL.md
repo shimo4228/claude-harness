@@ -47,11 +47,17 @@ secret scan (検出時 abort) → skills/ agents/ rules/ subtree の置換、ま
 
 ### 4. ドキュメント整合 (LLM 側の責務)
 
-コンポーネント数や一覧が変わったら、公開 repo の以下を更新する:
+構成が変わったら、公開 repo の以下を確認する:
 
-- `README.md` / `README.ja.md` — skill / agent / rule の一覧と数
+- `README.md` / `README.ja.md` の skill/agent/rule テーブルは **GENERATED マーカー間で
+  apply 時に script 自動再生成**される（`skills-table` / `agents-table` / `rules-table`。
+  membership は origin filter が正、Purpose 列は既存キュレーションを保持し新規のみ seed）。
+  手で直すのは **Purpose 文面と周辺 prose のみ**。**集約カウント（"N skills" 等）はどこにも
+  書かない**（No-volatile-state。churning count は焼き込むと drift する）
+- **repo の About（description）も同様に volatile-free に保つ** — 数字を入れず、
+  価値提案（何を pick できるか）で記述する。`gh repo edit --description` で編集
 - `llms.txt` / `llms-full.txt` — 構成変更があれば。文面の質は `llms-txt-writer` に defer
-- 集約 repo README の「Upstream components」節は **script 生成**（marker 間を apply 時に
+- 集約 repo README の「Upstream components」節も **script 生成**（marker 間を apply 時に
   自動再生成、外部 origin の名前のみ・ECC トップリンクのみ）— 手で編集しない
 
 ### 5. コミット

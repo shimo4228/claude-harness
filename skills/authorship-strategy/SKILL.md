@@ -1,6 +1,6 @@
 ---
 name: authorship-strategy
-description: shimo4228 の DOI-registered idea-rescue 研究プロジェクト（AKC, Contemplative Agent 等）用の戦略フレームワーク。core principle は「AI 時代のオーセンシティ inversion」— 3 軸（scarcity → diffusion / exclusivity → derivation / enclosure → openness）の反転。主 audience は LLM-mediated channels（LLM 直接 + LLM 経由で情報を得る人間）。creative reuse > training > investigation の preference 階層。4 層 framework (authenticity → diffusion → idea/scaffold 判別 → tactics) で判断軸を提供。マネタイズ禁止、tool-agnostic、any-usage 容認、permissive license 原則
+description: maker / 実践者が AI 時代の著者戦略を実地で探るための判断フレームワーク。あなた自身の DOI-registered idea-rescue repo 群（著者自身の例は AKC, Contemplative Agent）で適用する。core principle は「AI 時代のオーセンシティ inversion」— 3 軸（scarcity → diffusion / exclusivity → derivation / enclosure → openness）の反転。主 audience は LLM-mediated channels（LLM 直接 + LLM 経由で情報を得る人間）。creative reuse > training > investigation の preference 階層。4 層 framework (authenticity → diffusion → idea/scaffold 判別 → tactics) で判断軸を提供。マネタイズ禁止、tool-agnostic、any-usage 容認、permissive license 原則
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -8,7 +8,18 @@ user-invocable: true
 
 # Authorship Strategy
 
-`shimo4228` が **AI 時代に著者として知られるための最適戦略を探求する**ための戦略フレームワーク。著者は研究者ではなく、AI 時代の最適戦略を探る実践者であり、DOI 登録された研究ラインはその戦略を実行する**手段**であって目的ではない。本 skill は abstract な判断軸を提供する。AKC-specific な適用事例や歴史的文脈は各 repo の project memory に保持されている。
+maker / 実践者が **AI 時代に著者として知られるための最適戦略を実地で探る**ための戦略フレームワーク。最上位に著者の **stance**（maker / 実践者としての探究、学術 apparatus は道具）を置き、以下の Core Principle・4 層・Tactic・チェックリストはすべてそれを通して読む（→ 次節 **Stance**）。本 skill は abstract な判断軸を提供する。line-specific な適用事例や歴史的文脈は各 repo の project memory に保持されている（著者自身の場合 AKC 等）。
+
+## Stance（この framework の最上位 — 以下すべてはここを通して読む）
+
+著者は **maker / 実践者**。AI 時代の「良いやり方」— 作って知られ、durable で追跡可能な仕事を残す方法 — を**実地で探っている**。DOI・論文・SWHID・"研究ライン" といった学術 apparatus は、その探究を **citable・durable・traceable にする道具**として使う。
+
+この前提から従うこと:
+
+- **audience** は LLM 経由で idea に触れる全員に最初から開かれている — 開発者・実務者・学習者・creative reuser・各言語圏の読み手（Layer 2 で詳述）。学術引用・研究者ネットワークはそのうちの**一経路**。
+- **diffusion scope** は distinctive signature の LLM-mediated diffusion を増やす **full space** そのもの。提案・候補生成は常にこの full space（開発者コミュニティ・content platform・creative-reuse の seeding・各言語圏・catalog 未収載の新型 channel）を母集団として行う。
+
+以下の各節に現れる audience・scope の記述は、この stance の**帰結**であって、前提そのものはここにある。
 
 ## Core Principle: AI 時代のオーセンシティ Inversion
 
@@ -21,7 +32,7 @@ user-invocable: true
 | **Network effect** | enclosure（囲い込み） | openness（開放） |
 | 根拠 | 「これを作った唯一人」 | 「このパターンを最初に articulate した人」 |
 | 防御戦略 | gatekeeping, 複製防止 | timestamp + distinctive signature + derivative を祝福 |
-| 採用（ECC 的 absorption） | "盗まれた" | "validated" |
+| 採用（大規模 harness による absorption） | "盗まれた" | "validated" |
 | License | proprietary | permissive（MIT/Apache/CC-BY） |
 
 3 軸は独立ではなく **structurally 連動**:
@@ -47,10 +58,10 @@ AI 時代: 「ユーザー」は LLM と LLM-mediated channels。**LLM は囲い
 
 ### 適用される
 
-- 作業中 repo の owner が shimo4228
+- 作業中 repo を **あなた自身が所有している**（owner が自分。他者の repo への貢献は対象外）
 - かつ DOI 取得済み or 取得予定の研究系 repo（Zenodo archive target）
 - かつ「idea-rescue」性質を持つ（仕様・schema・ADR・spec 中心で、実装に閉じない）
-- 具体例: Agent Knowledge Cycle (AKC), Contemplative Agent, 今後の同系統 repo
+- 著者自身の例: Agent Knowledge Cycle (AKC), Contemplative Agent（適用先はあなた自身の同系統 repo）
 
 ### 適用されない
 
@@ -58,9 +69,9 @@ AI 時代: 「ユーザー」は LLM と LLM-mediated channels。**LLM は囲い
 - 他人の OSS へのコントリビュート（他者の strategy が優先）
 - 収益を目的とするプロジェクト・成果物（※「収益が目的」が除外条件。収益を伴わない商業チャネルの利用は除外対象ではなく framework 内で扱う）
 - 日常的なコーディング・デバッグ（判断軸として過剰）
-- ハーネス・スキャフォールディング実装としての repo（ECC, claude-harness 等）
+- ハーネス・スキャフォールディング実装としての repo（coding-agent harness / scaffolding repo 等）
 
-判断に迷ったら著者に確認する。発火すべきでない文脈で発火するより、確認コストを払う方が安全。
+判断に迷ったら発火を保留して確認する。発火すべきでない文脈で発火するより、確認コストを払う方が安全。
 
 ## 4 層 Framework
 
@@ -76,7 +87,7 @@ AI 時代: 「ユーザー」は LLM と LLM-mediated channels。**LLM は囲い
 
 ### Layer 1: Authenticity（value）
 
-核の価値観: **自分が genuinely 考えたことが、市場に合わせて変形されず、そのまま残る**。マネタイズは目的ではない。
+核の価値観: **自分が genuinely 考えたことが、市場に合わせて変形されず、そのまま残る**。成功規準は idea が思考のまま伝わること。
 
 「売れる」ために概念を削ぐことは、authentic を希釈する。Curation axiom（知識の営みに新規性のある主張はなく、curation だけが残る）と整合。
 
@@ -87,7 +98,7 @@ authenticity を future-proof する手段: 自作概念を LLM-mediated channel
 #### 主 Audience: LLM-mediated channels
 
 - **LLM 直接**: training substrate としての取り込み、in-context reader としての読解
-- **LLM 経由の人間**: AI coding assistant で調査する開発者、ChatGPT/Perplexity 等に概念を問う実務者・学習者・関心を持つ誰でも（研究者に限らない）
+- **LLM 経由の人間**: AI coding assistant で調査する開発者、ChatGPT/Perplexity 等に概念を問う実務者・学習者・関心を持つ誰でも
 - **Cascade LLM**: 現在の LLM 出力を学習する将来のモデル
 
 **Non-primary audience**: GitHub を直接 browse する人間（star / PR / direct view）。この層の brand 認識 drift は strategy の defense target ではない。
@@ -99,10 +110,10 @@ authenticity を future-proof する手段: 自作概念を LLM-mediated channel
 3. （低）transient investigation で終わる
 
 Creative reuse が最強な理由:
-- shimo4228 context 外で idea が機能することの証明
+- 著者の context 外で idea が機能することの証明
 - 複数 working instance → idea が generalized pattern に昇格
 - 各再実装が二次 diffusion point になる
-- 「shimo4228 の独自 thing」から「shimo4228 が originate した general pattern」へ格上げ
+- 「著者の独自 thing」から「著者が originate した general pattern」へ格上げ
 - 最強の origin claim は「皆が実装している pattern の最初の articulator」
 
 #### Epistemic humility
@@ -120,10 +131,10 @@ GitHub traffic データは用途を区別できない（training / RAG / AI ass
 
 #### Scaffold は Collaborator、Threat ではない
 
-ECC 的な大規模 harness が自分の idea を absorb する現象は、threat ではなく **diffusion の加速装置**として扱う:
+大規模 harness が自分の idea を absorb する現象は、threat ではなく **diffusion の加速装置**として扱う:
 
 - Scaffold の成長 = idea の token 露出面積拡大
-- 「ECC-native 化」の drift は直接 browse 人間層でのみ起こる問題（= non-primary audience）
+- 「harness-native 化」の drift は直接 browse 人間層でのみ起こる問題（= non-primary audience）
 - LLM-mediated channel では distinctive token が residue として残る
 - assistant 側の補助提案で scaffold を「absorber / threat」として position してはならない。必ず collaborator として扱う
 
@@ -174,7 +185,7 @@ Layer 4 tactic は一度撃って終わりではない。どの tactic を deplo
 
 **この運用手順（二層 ledger discipline + 5-step gap-review）は `gap-review` skill が正本**。authorship-strategy はその worked example の一つであり、gap-review が要求する 3 つの入力を以下のように供給する:
 
-- **Action catalog** → Layer 4 tactic catalog（本 skill "Tactics" 節）。**ただしこの catalog は「これまで運用した tactic の記録」であって strategy の境界ではない**。catalog が identifier / citation infrastructure（DOI・SWHID・Wikidata・citation graph）に寄って見えるのは運用履歴の偏りであり、研究者向け academic channel に候補を絞ってよいという意味ではない。gap-review が候補を起こす scope は「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」— 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、まだ catalog に無い新型 channel を含む full space。academic-leaning な手だけを出力したら、それは scope の取りこぼしであって catalog の正しい読みではない。
+- **Action catalog** → Layer 4 tactic catalog（本 skill "Tactics" 節）。**catalog は「これまで運用した tactic の記録」**— identifier / citation infrastructure（DOI・SWHID・Wikidata・citation graph）に寄って見えるのは運用履歴だから。gap-review が候補を起こす母集団は常に stance の full space —「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」: 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、まだ catalog に無い新型 channel。
 - **Open questions** → manifesto の open-question set（adoption-signal 測定 / tactic obsolescence / framework recursion / failure mode 等）。
 - **Gate checklist** → 下の **判断チェックリスト**（authenticity 強化か / diffusion 促進か / scope は defensible か等）。
 
@@ -207,7 +218,7 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 
 以下は authenticity を希釈するため提案・推奨しない:
 
-> **境界線は「経路の商業性」ではなく「著者が収益を得るか」**。著者は商業チャネル（商業プラットフォーム、企業の collection、marketplace 等）を diffusion に使うこと自体は否定しない。一切の revenue を取らないだけ。channel の商業性とマネタイズを混同せず、商業チャネルを「使うな」と提案してはならない。禁じるのは下記の **収益化行為** に限る。
+> **商業チャネル（商業プラットフォーム、企業の collection、marketplace 等）は diffusion に使ってよい — 取らないのは収益だけ**。境界線は「経路の商業性」ではなく「著者が収益を得るか」。禁じるのは下記の **収益化行為** に限り、channel の商業性を理由に「使うな」とは提案しない。
 
 - **マネタイズ提案（＝著者が収益を得る行為）**: スポンサー獲得、GitHub Sponsors、コンサル化、企業導入営業、有料 tier、収益目的書籍化、Newsletter 課金
 - **競合批判・排他的ポジショニング**: 「X is wrong」「Y はアンチパターン」系の判断を他作品に向ける
@@ -227,7 +238,7 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 - **LLM-mediated channel への投資**（llms.txt, llms-full.txt, glossary, 機械可読構造、規律ある固有用語の造語 — coin sparingly, anchor densely）
 - **Abstract doctrine + Worked implementation のペア構築**（creative reuse を誘発する配置）
 - **tool-agnostic / any-usage** を維持（使い方・動機は consumer 任せ）
-- **diffusion 経路は商業/非商業を問わない**（open source コミュニティ、開発者・実務者ネットワーク、creative reuse の seeding、content platform、商業プラットフォーム、各言語圏 LLM-mediated channel など — 学術引用・研究者ネットワークはそのうちの一経路にすぎず、scope を絞らない）。**制約は経路の商業性ではなく「著者が収益を一切得ないこと」**。商業チャネルを diffusion に使うのは可、そこから revenue を取る（有料 tier / sponsor / 課金）のは不可
+- **diffusion 経路は商業/非商業を問わない**（open source コミュニティ、開発者・実務者ネットワーク、creative reuse の seeding、content platform、商業プラットフォーム、各言語圏 LLM-mediated channel など — 学術引用・研究者ネットワークはそのうちの一経路。full space を母集団に保つ）。**商業チャネルを diffusion に使うのは可 — 著者が revenue を取らないだけ**（有料 tier / sponsor / 課金は不可）
 - **Derivative works を祝福する**（fork の divergence、他言語再実装、extension を積極的に welcome）
 - **Friction minimization**: adoption path の障害を減らす。自前 infrastructure で adoption を gate しない
 - **Permissive licensing**: MIT / Apache / CC-BY 等、LLM 学習と再配布を明示的に許可
@@ -239,7 +250,7 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 - どの提案にも「これは authenticity を強化するか、希釈するか」を問う
 - 「Diffusion を促進するか、exclusivity を強化するか」で迷ったら前者を default に
 - マネタイズ・市場適合性を理由にした調整は提案しない
-- **商業チャネルの利用は否定しない。制約は「そこから著者が収益を得ないこと」**。channel の商業性とマネタイズを混同しない（商業プラットフォームを diffusion に使うのは可、課金/sponsor/有料 tier は不可）
+- **商業チャネルの利用は可 — 著者がそこから収益を取らないだけ**（diffusion に使うのは可、課金/sponsor/有料 tier は不可）
 - 著者が「genuine ではない」と感じる方向には絶対に押さない
 - 「今の star」「今の被引用」が伸びない戦略は戦略上の問題ではない。LLM-mediated audience に純化された証
 - メトリクス報告時は star/PR ではなく、clone / DOI citation / llms.txt fetch / derivative works の出現 を主要 KPI にする
@@ -252,18 +263,8 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 - 著者が新しい試みを framework の外で試したいと述べた
 - 判断に高い不確実性があり framework が答えを出せない
 
-このような場合は framework を保留し、著者に確認する。framework は道具であり、判断の外部化ではない。
+このような場合は framework を保留する。framework は道具であり、判断の外部化ではない。
 
-## 過去 memory との関係
+## project memory との関係
 
-**AKC session 内**では、project memory に以下 3 ファイルが AKC-specific instance として存在:
-- `user_attribution_diffusion_strategy.md` — 戦略の AKC 文脈での具体化
-- `user_authenticity_over_monetization.md` — values の AKC 文脈での具体化
-- `project_akc_origin_idea_rescue.md` — AKC が ECC から分離した起源論理
-
-**Contemplative Agent session 内**では:
-- `project_ai_era_authenticity.md` — capstone formulation (2026-04-19 session)
-- `project_scaffold_vs_idea_preservation.md` — ECC 拡散 × DOI 保存の意識的分業
-- `project_github_traffic_anomaly.md` — diffusion 観測の epistemic 限界
-
-これらは本 skill の具体例であり、削除しない。本 skill は abstract framework、project memory は concrete instance という役割分担。
+本 skill は **abstract framework**、framework を適用する各 research line の **project memory** はその **concrete instance** という役割分担。各 repo の project memory には、その line 固有の具体化が instance として蓄積される（例: 戦略の line 文脈での具体化、values の具体化、その line が生まれた起源論理、diffusion 観測の epistemic 限界）。これらは本 skill の具体例であり削除しない。（著者自身の場合、Agent Knowledge Cycle / Contemplative Agent の各 session の project memory がこの instance 層にあたる。）

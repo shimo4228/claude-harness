@@ -125,7 +125,7 @@ GitHub のメタ面（repo description / topics / social-preview / CITATION フ�
 
 ---
 
-## Workflow（Code filter → LLM review → 人間 gate）
+## Workflow（Code filter → readme-reviewer agent → 人間 gate）
 
 ### 1. Code filter — `readme_lint.py`（決定論的・structural only）
 
@@ -150,19 +150,25 @@ uv run --directory ~/.claude/skills/readme-writer python -m scripts.readme_lint 
 - `identity_lead` — H1 と最初の section の間に prose の lead 文が無い（**順序は強制しない**。H1 不在は single_h1 が担当）
 - `doi_citation_pairing` — DOI があるのに how-to-cite（Citation 節 / BibTeX / CITATION.cff）が無い（**DOI を非研究 repo に強制しない**——DOI がある時だけ発火）
 
-### 2. LLM holistic review（rubric-as-lens・**スコア無し**・signal-first）
+### 2. LLM review — `readme-reviewer` agent を起動（author-reviewer separation）
 
-lint が通ったら Claude が README を**ホリスティックに読み**、次の lens で**具体所見 + 具体 diff** を出す:
+lint が通ったら **`readme-reviewer` agent** を起動する。実装者（本 skill を回している Claude）と別 agent プロセスでレビューを回すことで author bias の盲点を避ける（`editor` / `essay-reviewer` と同型）。**レビュー基準の正本は agent 定義**（`~/.claude/agents/readme-reviewer.md`）— lens の一覧だけ挙げると:
 
-- **🚩 README-only recovery（旗艦・最高レバレッジ）** — README の**テキストだけ**を読み、(identity / 対象者 / 問題 / 差別化点 / 該当すれば DOI・引用 / 3-6 個の core concept / 例 1 つ / 次への link) を**復元できるか**を確認。**欠落を具体的に列挙**（「対象者が書かれていない」等）。スコアは付けない。これは「最小 LLM-read フロア」の運用化そのもの。
-- **Lead の What / Who / Why** — 最初の画面で「何で・誰向けで・なぜ気にすべきか」が分かるか
-- **人間フック / 価値提案** — 抽象語でなく具体で価値が言えているか
-- **物語 / scannability** — 段落・見出し・list・Mermaid が人間に追えるか
-- **短さの検証（最重要の逆方向チェック）** — フロア以外が relocate されているか。Mermaid / details / フロアに情報を温存して**偽装 llms-full.txt に肥大**していないか
-- **visual の妥当性** — 図は Mermaid か（raster なら Mermaid 化 / テキスト等価があるか）。badge は高信号か（vanity でないか）
-- **fact 一致** — 主張が機械層（llms.txt / graph.jsonld）と矛盾しないか → **`context-sync` に委譲**
+1. **README-only recovery（最重要）** — テキストだけでプロジェクトを復元できるか、フロア欠落の具体列挙
+2. Lead の What / Who / Why
+3. 人間フック / 価値提案
+4. 物語 / scannability
+5. 短さの検証（偽装 llms-full.txt 化の逆方向チェック）
+6. visual の妥当性（Mermaid / テキスト等価 / badge vanity）
+7. lint warning の意味判断（badge_budget → vanity か、raster_diagram_hint → Mermaid 化すべきか 等）
 
-**スコアを付けない理由**（signal-first + scaffold-dissolution）: 「次の行動を変える情報」だけを出す。`Lead: 6/10` は行動を変えない。「lead が誰向けか言っていない」が行動を変える。出力は diff 形式で `y/n` 承認できる粒度に分割。author-reviewer separation のため review は実装者と別 agent プロセスで回すのが望ましい（`editor` / `essay-reviewer` と同型）。
+出力は数値スコアでなく **具体所見 + y/n 承認できる粒度の具体 diff**（signal-first: `Lead: 6/10` は行動を変えない、「lead が誰向けか言っていない」が行動を変える）。Overall Assessment（EXCELLENT / GOOD / NEEDS REVISION / MAJOR ISSUES）だけは chain の早期停止判断が消費するため verdict として出す。
+
+**Cross-model 並列（条件付き）**: 公開 repo の README なら `codex-review` を readme-reviewer と**並列**起動してよい（脱相関レビュー）。その場合は **prompt-driven モード**で writing 観点の指示を渡す — scoped モードは Codex 組み込みのコード向けレビュー指示が走るため prose に不適。例:
+
+```
+/codex-review "Review the README changes as prose, not code: is the project recoverable from the README text alone, is the lead clear about what/who/why, is anything load-bearing hidden in images or collapsed sections?"
+```
 
 ### 3. fact 一致確認 → `context-sync`
 
@@ -212,6 +218,8 @@ uv run pytest tests/ --cov=scripts --cov-report=term-missing
 
 ## Related
 
+- `readme-reviewer` agent（`~/.claude/agents/readme-reviewer.md`）— 本 skill の Step 2 を担うレビュー agent。レビュー基準の正本
+- [`codex-review`](../codex-review/SKILL.md) — 公開 README への cross-model 並列レビュー（prompt-driven モード）
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) — AI surface の対になる writer（研究値ベースの `geo_check.py` を持つ）。本 skill は人間 surface。
 - [`when-code-when-llm`](../when-code-when-llm/SKILL.md) — structural / semantic の判定軸
 - [`context-sync`](../context-sync/SKILL.md) — README ↔ 機械層の fact 一致 / drift（fact 検証はこちらに委譲）

@@ -22,6 +22,10 @@ sub-agents / Workflow for parallel throughput; use this only where a second
   `code-reviewer` / `python-reviewer` and `security-reviewer`.
 - When the user wants a second opinion from a non-Claude model on a diff.
 - High-stakes or error-prone changes where decorrelated review pays off.
+- High-stakes **prose** diffs before publishing/deposit (public-repo README,
+  paper, public article) — the `writing` chain's conditional cross-model seam.
+  Use **prompt-driven mode** with writing-focused instructions; scoped modes
+  run Codex's built-in code-review instructions, which fit prose poorly.
 
 Skip it for trivial edits, throwaway scripts, or when Codex is not authenticated
 (the script fails fast with a fallback message — fall back to the Claude reviewers).
