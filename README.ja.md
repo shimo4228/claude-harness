@@ -16,8 +16,9 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 
 ### Skills
 
+<!-- BEGIN GENERATED: skills-table -->
 | Skill | Purpose |
-|-------|---------|
+| --- | --- |
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow。scout agent を呼び出して既存ツールを探索 |
 | [signal-first-research](skills/signal-first-research/SKILL.md) | 次の行動を変えうる情報だけを取り込む research intake filter の設計ガイド |
 | [learn-eval](skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
@@ -53,13 +54,15 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [gap-review](skills/gap-review/SKILL.md) | 継続運用する戦略の「次の一手」候補をランク付き生成 — deployed tactics × catalog × open questions × 最新文献の差分 |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | 研究 repo セッションから Obsidian LLM wiki (wiki/concept/) を read-only で走査し、repo の次アクションを変えうる候補だけを一次出典付き・ランク付き ledger として repo の `.notes/` に抽出 |
 | [wiki-query](skills/wiki-query/SKILL.md) | Obsidian LLM wiki (wiki/concept/) への read-only クエリ。`[[ ]]` 出典付きで合成回答 |
+<!-- END GENERATED: skills-table -->
 
-> 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
+> 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
 
 ### Agents
 
+<!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
-|-------|---------|
+| --- | --- |
 | [scout](agents/scout.md) | Pre-implementation solution discovery。npm / PyPI / MCP registry / GitHub から既存解を検索 |
 | [prompt-writer](agents/prompt-writer.md) | 軽量モデルで簡潔な prompt を生成。LLM prompt template の作成・書き換え |
 | [editor](agents/editor.md) | Strict technical article editor。コード正確性、AI slop、narrative flow、用語一貫性を厳格にレビュー |
@@ -72,13 +75,15 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md) | 導入 term の定義一貫性と sub-classification の明示性を検証 |
 | [clarity-reviewer](agents/clarity-reviewer.md) | 初見読者目線の明瞭性 review — 新語予算 / タイトル軸 / メタ語り / 内部文脈依存 |
 | [citation-formatter](agents/citation-formatter.md) | In-text citation と reference list の整合・format・DOI / arXiv ID 検証 |
+<!-- END GENERATED: agents-table -->
 
 ### Rules
 
 毎セッション自動ロードされる行動原則 (rule/common/ 配下):
 
+<!-- BEGIN GENERATED: rules-table -->
 | Rule | Purpose |
-|------|---------|
+| --- | --- |
 | [agents](rules/common/agents.md) | Agent orchestration 規約。いつどの agent を使うか、並列実行のパターン |
 | [akc-cycle](rules/common/akc-cycle.md) | Agent Knowledge Cycle の 6 フェーズ行動規約 (Research / Extract / Curate / Promote / Measure / Maintain) |
 | [authorship-strategy](rules/common/authorship-strategy.md) | DOI 登録された idea-rescue 研究 repo で作業する際に authorship-strategy framework を起動するポインタ rule |
@@ -86,6 +91,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [planning](rules/common/planning.md) | 計画時の必須項目 (What / Why / Alternatives)。Phase 0 外部調査の義務化 |
 | [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
+<!-- END GENERATED: rules-table -->
 
 ## 使い方
 

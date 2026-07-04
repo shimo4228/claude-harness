@@ -16,8 +16,9 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 
 ### Skills
 
+<!-- BEGIN GENERATED: skills-table -->
 | Skill | Purpose |
-|-------|---------|
+| --- | --- |
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow. Invokes the scout agent to discover existing tools |
 | [signal-first-research](skills/signal-first-research/SKILL.md) | Design guide for a research intake filter that admits only information likely to change your next action |
 | [learn-eval](skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
@@ -53,13 +54,15 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [gap-review](skills/gap-review/SKILL.md) | Generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against catalog, open questions, and latest literature |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | Read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/` |
 | [wiki-query](skills/wiki-query/SKILL.md) | Read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis |
+<!-- END GENERATED: skills-table -->
 
-> The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://zenodo.org/records/19200727). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
+> The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
 
 ### Agents
 
+<!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
-|-------|---------|
+| --- | --- |
 | [scout](agents/scout.md) | Pre-implementation solution discovery. Searches npm / PyPI / MCP registries / GitHub for existing solutions |
 | [prompt-writer](agents/prompt-writer.md) | Generates concise prompts using a lightweight model. Creates and rewrites LLM prompt templates |
 | [editor](agents/editor.md) | Strict technical article editor. Rigorously reviews code accuracy, AI slop, narrative flow, and terminology consistency |
@@ -72,13 +75,15 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md) | Verifies term definitions stay consistent and sub-classifications are explicit at introduction |
 | [clarity-reviewer](agents/clarity-reviewer.md) | First-contact reader clarity review — coined-term budget, title-axis alignment, meta-commentary, insider-context dependency |
 | [citation-formatter](agents/citation-formatter.md) | Verifies in-text citations against the reference list — format consistency, DOI / arXiv ID validity |
+<!-- END GENERATED: agents-table -->
 
 ### Rules
 
 Behavioral principles auto-loaded every session (under `rules/common/`):
 
+<!-- BEGIN GENERATED: rules-table -->
 | Rule | Purpose |
-|------|---------|
+| --- | --- |
 | [agents](rules/common/agents.md) | Agent orchestration conventions. When to use which agent, parallel execution patterns |
 | [akc-cycle](rules/common/akc-cycle.md) | Six-phase behavioral conventions of the Agent Knowledge Cycle (Research / Extract / Curate / Promote / Measure / Maintain) |
 | [authorship-strategy](rules/common/authorship-strategy.md) | Pointer rule activating the 4-layer authorship-strategy framework when working in DOI-registered idea-rescue research repos |
@@ -86,6 +91,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [planning](rules/common/planning.md) | Required items for planning (What / Why / Alternatives). Mandates Phase 0 external research |
 | [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
+<!-- END GENERATED: rules-table -->
 
 ## Usage
 

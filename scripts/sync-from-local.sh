@@ -5,9 +5,13 @@
 # Collects components whose origin marker matches ORIGIN (frontmatter
 # `origin: <value>` or HTML comment `<!-- origin: <value> -->`), stages
 # them, runs a secret scan, then replaces the managed subtrees
-# (skills/ agents/ rules/) wholesale. Root files (README, LICENSE,
-# llms*.txt) are never touched. The script never commits — `git diff`
-# in this repo is the review gate.
+# (skills/ agents/ rules/) wholesale. LICENSE and llms*.txt are never
+# touched; README.md / README.ja.md are rewritten ONLY inside their
+# `<!-- BEGIN/END GENERATED: ... -->` marker regions (the upstream-components
+# manifest and the skill/agent/rule tables) — all prose outside markers is
+# left intact, so those regions are mechanically owned and must not be
+# hand-edited except for the Purpose text they carry. The script never
+# commits — `git diff` in this repo is the review gate.
 #
 # Usage:
 #   scripts/sync-from-local.sh --dry-run   # report differences only
@@ -215,6 +219,147 @@ if new != text:
 else:
     print("# manifest: unchanged")
 PYEOF
+
+# --- regenerate the skill / agent / rule tables in README.md / README.ja.md ---
+# Membership is derived from the just-synced payload; the Purpose column is
+# preserved from the existing tables so hand-written curation survives, and only
+# genuinely new components get a seeded Purpose (first clause of the SKILL.md
+# `description`). Generated between markers so the roster cannot drift by
+# hand-editing. Aggregate counts ("N skills") are deliberately written nowhere:
+# a churning count baked into prose only drifts (No-volatile-state).
+# No `|| true`: compute-then-write means a failure leaves every README untouched
+# and aborts the run (set -e) rather than silently shipping a half-written table.
+if command -v python3 >/dev/null 2>&1; then
+python3 - "$TARGET_DIR" <<'PYEOF'
+import re
+import sys
+from pathlib import Path
+
+try:
+    import yaml  # frontmatter is YAML; safe_load handles block scalars (>-, |-)
+except ImportError:
+    yaml = None
+
+target = Path(sys.argv[1])
+KINDS = [
+    ("skills-table", "Skill", "skills"),
+    ("agents-table", "Agent", "agents"),
+    ("rules-table", "Rule", "rules"),
+]
+# Table rows look like: | [name](link/path) | purpose text |
+ROW_RE = re.compile(r"^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|\s*(.*?)\s*\|\s*$", re.M)
+_BLOCK_INDICATORS = {">", ">-", ">+", "|", "|-", "|+"}
+
+
+def clean(text):
+    return text.replace("|", r"\|").replace("\n", " ").strip()
+
+
+def seed_purpose(path):
+    # First clause of the frontmatter `description`, as a placeholder a human
+    # refines in the same `git diff`. Rules have no frontmatter -> "".
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    if not m:
+        return ""
+    front = m.group(1)
+    desc = ""
+    if yaml is not None:
+        try:
+            data = yaml.safe_load(front)
+            if isinstance(data, dict) and data.get("description"):
+                desc = str(data["description"])
+        except yaml.YAMLError:
+            desc = ""
+    if not desc:  # regex fallback (no PyYAML); may leak a bare block indicator
+        d = re.search(r"^description:\s*(.+)$", front, re.M)
+        cand = d.group(1).strip().strip("\"'") if d else ""
+        desc = "" if cand in _BLOCK_INDICATORS else cand
+    first = re.split(r"[。.](?:\s|$)", desc.strip(), maxsplit=1)[0]
+    # rstrip trailing space / backslash so the truncated seed survives a
+    # parse round-trip unchanged (ROW_RE strips trailing whitespace) — keeps
+    # regeneration idempotent even when [:140] cuts mid-token.
+    return clean(first)[:140].rstrip(" \\")
+
+
+def enumerate_kind(kind):
+    out = []
+    if kind == "skills":
+        for p in sorted(target.glob("skills/*/SKILL.md")):
+            out.append((p.parent.name, f"skills/{p.parent.name}/SKILL.md", p))
+        for p in sorted(target.glob("skills/*.md")):
+            out.append((p.stem, f"skills/{p.stem}.md", p))
+    elif kind == "agents":
+        for p in sorted(target.glob("agents/*.md")):
+            out.append((p.stem, f"agents/{p.stem}.md", p))
+    elif kind == "rules":
+        for p in sorted(target.glob("rules/*/*.md")):
+            out.append((p.stem, f"rules/{p.parent.name}/{p.stem}.md", p))
+    return out
+
+
+def regenerate(text, rname):
+    new_text = text
+    for marker_id, header, kind in KINDS:
+        begin = f"<!-- BEGIN GENERATED: {marker_id} -->"
+        end = f"<!-- END GENERATED: {marker_id} -->"
+        mo = re.search(re.escape(begin) + r"(.*?)" + re.escape(end), new_text, re.S)
+        if not mo:
+            print(
+                f"WARN: {marker_id} markers missing in {rname} — table NOT regenerated",
+                file=sys.stderr,
+            )
+            continue
+        # existing Purpose + order scoped to THIS marker block only, so the
+        # 4-column upstream-components table can never bleed into the parse.
+        existing, order = {}, []
+        for _name, path, purpose in ROW_RE.findall(mo.group(1)):
+            existing[path] = purpose
+            order.append(path)
+        order_set = set(order)
+        by_path = {path: (name, p) for name, path, p in enumerate_kind(kind)}
+        current = set(by_path)
+        # keep curated order, drop removed, append new (sorted) at the end
+        ordered = [pth for pth in order if pth in current]
+        ordered += sorted(pth for pth in current if pth not in order_set)
+        rows = [f"| {header} | Purpose |", "| --- | --- |"]
+        for pth in ordered:
+            name, p = by_path[pth]
+            # key-presence, not truthiness: an intentionally blank Purpose cell
+            # is preserved, never silently re-seeded on the next run.
+            purpose = existing[pth] if pth in existing else (seed_purpose(p) or "—")
+            rows.append(f"| [{name}]({pth}) | {purpose} |")
+        block = begin + "\n" + "\n".join(rows) + "\n" + end
+        new_text = new_text[: mo.start()] + block + new_text[mo.end():]
+    return new_text
+
+
+# Compute every README first; only then write. A crash mid-compute writes
+# nothing, so the two files can never end up asymmetrically updated.
+updates = []
+for rname in ("README.md", "README.ja.md"):
+    rp = target / rname
+    if not rp.exists():
+        continue
+    text = rp.read_text(encoding="utf-8")
+    new_text = regenerate(text, rname)
+    if new_text != text:
+        updates.append((rp, new_text, rname))
+
+for rp, new_text, rname in updates:
+    tmp = rp.with_suffix(rp.suffix + ".tmp")  # atomic: write temp then replace
+    tmp.write_text(new_text, encoding="utf-8")
+    tmp.replace(rp)
+    print(f"# tables: {rname} skill/agent/rule tables regenerated")
+if not updates:
+    print("# tables: READMEs unchanged")
+PYEOF
+else
+  echo "WARN: python3 not available — README tables not regenerated" >&2
+fi
 
 echo "# APPLIED (origin: $ORIGIN). Review before committing:"
 git -C "$TARGET_DIR" status --short
