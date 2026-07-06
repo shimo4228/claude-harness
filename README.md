@@ -54,6 +54,9 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [gap-review](skills/gap-review/SKILL.md) | Generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against catalog, open questions, and latest literature |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | Read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/` |
 | [wiki-query](skills/wiki-query/SKILL.md) | Read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis |
+| [kickoff](skills/kickoff/SKILL.md) | Session startup routine — repo state check (git status / branch sync / recent commits), unfinished-work signal detection (dirty tree / stash / unpushed / open PRs), fixed-format status report |
+| [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | Audits a project repo's non-code assets (tool configs, CI workflows, runbooks) for diminished value — flags assets whose consumer has vanished, with Keep/Update/Retire/Merge verdicts |
+| [task-stocktake](skills/task-stocktake/SKILL.md) | Audits and consolidates a repo's pending-task tracking into its single task ledger — bootstraps the ledger, sweeps stray task lines, verifies entries against git log and actual code |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
@@ -92,6 +95,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [planning](rules/common/planning.md) | Required items for planning (What / Why / Alternatives). Mandates Phase 0 external research |
 | [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
+| [task-tracking](rules/common/task-tracking.md) | Single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents |
 <!-- END GENERATED: rules-table -->
 
 ## Usage
@@ -143,8 +147,8 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC (unmodified) | agent-harness-construction, article-writing, security-scan | architect, python-reviewer, refactor-cleaner | python/coding-style, python/hooks, python/patterns, python/security |
-| ECC + local modifications | ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing, python/testing |
+| ECC (unmodified) | agent-harness-construction, article-writing, security-scan | architect, python-reviewer, refactor-cleaner | python/coding-style, python/patterns, python/security |
+| ECC + local modifications | ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing, python/hooks, python/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community | scientific-thinking-literature-review | — | — |

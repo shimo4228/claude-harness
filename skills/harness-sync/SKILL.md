@@ -156,6 +156,8 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/jsonld-knowledge-graph` ([repo](https://github.com/shimo4228/jsonld-knowledge-graph)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/jsonld-knowledge-graph` |
 | `~/MyAI_Lab/wikidata-federation` ([repo](https://github.com/shimo4228/wikidata-federation)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/wikidata-federation` |
 | `~/MyAI_Lab/authorship-strategy-skill` ([repo](https://github.com/shimo4228/authorship-strategy-skill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/authorship-strategy` |
+| `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/codex-review` |
+| `~/MyAI_Lab/repo-asset-stocktake` ([repo](https://github.com/shimo4228/repo-asset-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/repo-asset-stocktake` |
 | `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/paper-ecosystem` + `~/.claude/skills/paper-writing` |
 | `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/writing-ecosystem` |
 

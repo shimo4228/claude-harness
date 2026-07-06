@@ -54,6 +54,9 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [gap-review](skills/gap-review/SKILL.md) | 継続運用する戦略の「次の一手」候補をランク付き生成 — deployed tactics × catalog × open questions × 最新文献の差分 |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | 研究 repo セッションから Obsidian LLM wiki (wiki/concept/) を read-only で走査し、repo の次アクションを変えうる候補だけを一次出典付き・ランク付き ledger として repo の `.notes/` に抽出 |
 | [wiki-query](skills/wiki-query/SKILL.md) | Obsidian LLM wiki (wiki/concept/) への read-only クエリ。`[[ ]]` 出典付きで合成回答 |
+| [kickoff](skills/kickoff/SKILL.md) | 新セッションの定型立ち上げルーチン — repo 状態把握（git status / branch 同期 / 直近コミット）、未完了シグナル検出（dirty / stash / 未 push / open PR）、固定フォーマットの状態報告 |
+| [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | プロジェクト repo の非コード資産（ツール設定・CI workflow・runbook）の価値劣化を監査 — 消費者が消えた資産を検出し Keep/Update/Retire/Merge 判定 |
+| [task-stocktake](skills/task-stocktake/SKILL.md) | repo の pending タスク追跡を単一台帳へ棚卸し・統合 — 台帳の bootstrap、散在タスク行の収集、git log・実コードとの既済照合 |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
@@ -92,6 +95,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [planning](rules/common/planning.md) | 計画時の必須項目 (What / Why / Alternatives)。Phase 0 外部調査の義務化 |
 | [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
+| [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
 <!-- END GENERATED: rules-table -->
 
 ## 使い方

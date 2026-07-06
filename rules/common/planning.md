@@ -53,7 +53,10 @@ search-first skill が返した Verdict をそのまま計画の方向性に反�
 
 ### 構造的強制
 
-現時点ではルールレベルの規約として運用。将来的に PreToolUse hook による自動強制を検討。
+Stop hook (`hooks/search-first-verdict-check.sh`, advisory) が Verdict の存在を検査する。
+PreToolUse による hard 強制は非導入と判断（2026-07-06: false positive で実装が止まるコスト >
+advisory + LLM 裁量の遵守率、が現時点の評価。enforcement は secret scan / ruff など
+決定論的に判定できる箇所に限定して hook 化する方針）。
 
 ## 証拠ベースの意思決定
 

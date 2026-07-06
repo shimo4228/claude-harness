@@ -62,6 +62,9 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [gap-review](skills/gap-review/SKILL.md): generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against your action catalog, open questions, and the latest literature
 - [wiki-harvest](skills/wiki-harvest/SKILL.md): read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/`
 - [wiki-query](skills/wiki-query/SKILL.md): read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis
+- [kickoff](skills/kickoff/SKILL.md): session startup routine — repo state check (git status, branch sync, recent commits), unfinished-work signal detection (dirty tree, stashes, unpushed commits, open PRs), fixed-format status report
+- [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md): audits a project repository's non-code assets (tool configs, CI workflows, runbooks) for diminished value — every asset serves a consumer; flags assets whose consumer has vanished, with Keep/Update/Retire/Merge verdicts
+- [task-stocktake](skills/task-stocktake/SKILL.md): audits and consolidates a repository's pending-task tracking into its single task ledger — bootstraps the ledger, sweeps stray task lines from handoff and audit files, verifies entries against git log and actual code
 
 ## Agents
 
@@ -91,6 +94,7 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [planning](rules/common/planning.md): planning standards — required What / Why / Alternatives, Phase 0 external research mandate, evidence-based decision-making, prototype-before-scale
 - [skills](rules/common/skills.md): skill origin tracking spec, knowledge placement decision (existing skill vs new skill vs MEMORY.md), skill portability guidelines
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
+- [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
 
 ## Related repositories
 

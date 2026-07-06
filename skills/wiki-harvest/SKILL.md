@@ -76,6 +76,7 @@ VAULT="/Users/shimomoto_tatsuya/Library/Mobile Documents/iCloud~md~obsidian/Docu
 1. **gitignore 確保**: repo root の `.gitignore` に `.notes/` が無ければ1行追記する（`.gitignore` が無ければ作成）。これで working/non-citable な private ledger を git 追跡から物理的に外す（gap-review の two-tier 規律を担保）。
 2. **冪等性**: 各候補に `status`（new / pending / promoted / dismissed）を持たせる。dedup キー = `concept ページ名 + 節 + claim の安定キー`。再実行時、既 `promoted`/`dismissed` は再浮上させない。`pending` は内容が変化した時のみ更新（重複追記しない）。
 3. ranking: signal の強さ（repo アクションへの影響度）で `high` / `med` / `low`。
+4. **task 台帳との関係**: この ledger は**候補台帳**であってタスク台帳ではない（rule `common/task-tracking.md` の単一台帳の対象外 — 採否判断前の候補はタスクでない）。候補が `promoted` になり、昇格作業がそのセッション内で完結しない場合は、repo の task 台帳に 1 行立てて引き継ぐ。
 
 完了後、生成した候補の要約（件数・カテゴリ別内訳・high rank の見出し）を chat に返す。**ADR/graph への昇格は提案に留め、自動で書かない**。承認されたら既存 `adr-writer` agent / `citation-sync` / `jsonld-knowledge-graph` skill に人間が手動で引き継ぐ。
 

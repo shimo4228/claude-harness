@@ -201,6 +201,7 @@ not a script. Created on the first run — do not pre-seed an empty file.
 ## Related
 
 - `skill-stocktake` — the same audit for skills; this skill inverts its cost model (trigger pollution → residency).
+- `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code assets (configs / workflows / runbooks); rules-stocktake audits `~/.claude/rules/`.
 - `rules-distill` — promotes skill patterns *into* rules; rules-stocktake audits what accumulated and demotes back what stopped earning residency. Inverse directions over the same boundary.
 - `skill-comply` — measures whether rules are actually *followed* (dynamic). rules-stocktake stays static: never issue a compliance-based verdict without a skill-comply run; existing skill-comply results may serve as Stage 2 evidence (read, never require).
 - `config-gc` — whole-config GC across hooks/permissions/MCP; rules-stocktake judges rule *quality*.
