@@ -32,6 +32,7 @@ origin: shimo4228
    - 名前でマッチ。ニックネームは推論で解決する（例: "AAP" → `agent-attribution-practice`、"CA"/"contemplative" → `contemplative-agent`、"AKC" → `agent-knowledge-cycle`）。
    - 不確かなら `ls "${CC_PROJECTS_ROOT:-$HOME/MyAI_Lab}"` で確認。曖昧 or 該当なしなら**候補を出して聞く**。誤った repo を当て推量で起動しない。
    - 表示名はユーザー向けの綺麗なラベルにする（例: "AAP", "Contemplative Agent"）。dir 名と user-facing 名が違う場合は user-facing 名を使う。
+   - **命名規約 `<label>/<purpose>`**: ユーザーの発話にセッションの目的が含まれていれば、1〜2 語の英小文字スラッグにして表示名に付ける（「AAP のリリース作業やらせたい」→ "AAP/release"、「issue 42 直して」→ "AAP/issue-42"）。目的が読み取れなければ label のみでよい — 同名セッションが既に生きている場合の " #n" 付与は spawn.sh が自動で行う（意味づけはここ、重複解消は script、の分担）。目的を聞き返してまで埋めない。
 
 2. **起動する:**
    ```

@@ -13,12 +13,25 @@ PROJECT="${1:?usage: spawn.sh <project-dir> [display-name]}"
 PROJECT="${PROJECT/#\~/$HOME}"                       # 先頭 ~ を展開
 [[ -d "$PROJECT" ]] || { printf 'spawn.sh: no such directory: %s\n' "$PROJECT" >&2; exit 1; }
 
-NAME="${2:-$(basename "$PROJECT")}"                  # 省略時はディレクトリ名
-SESSION="cc-${NAME// /-}-$(date +%H%M%S)"            # tmux セッション名（空白は -)
-
 TMUX_BIN="$(command -v tmux || true)"
 : "${TMUX_BIN:=/opt/homebrew/bin/tmux}"              # PATH 外でも拾えるよう fallback
 [[ -x "$TMUX_BIN" ]] || { printf 'spawn.sh: tmux not found (install: brew install tmux)\n' >&2; exit 1; }
+
+NAME="${2:-$(basename "$PROJECT")}"                  # 省略時はディレクトリ名
+SLUG="${NAME//[^[:alnum:]_-]/-}"                     # 英数字・_・- 以外はすべて - に。tmux の禁止文字 (. :) 対策と、後段 grep -E への regex メタ文字混入防止を兼ねる
+
+# 同じ表示名の生存セッションを数え、2 本目以降は表示名に " #n" を付与する
+# (アプリ一覧の重複回避)。目的スラッグ等の意味づけは呼び出し側 (SKILL.md) の責務、
+# ここは構造的な重複解消のみ。ordinal のマーカーは "--n" — 素の名前由来の slug が
+# "-数字" で終わるケース (issue-42 等) と衝突させないため。
+# 注意: check-then-act なので同名を同時 spawn すると #n が漏れる (逐次利用前提)
+live=$("$TMUX_BIN" list-sessions -F '#S' 2>/dev/null | grep -cE "^cc-${SLUG}(--[0-9]+)?-[0-9]{6}$" 2>/dev/null) || true
+if [[ "${live:-0}" -gt 0 ]]; then
+  n=$((live + 1))
+  NAME="$NAME #$n"
+  SLUG="$SLUG--$n"
+fi
+SESSION="cc-${SLUG}-$(date +%H%M%S)"                 # tmux セッション名
 
 LOGIN_SHELL="${SHELL:-/bin/zsh}"                     # ユーザーのシェルを尊重
 

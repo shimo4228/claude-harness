@@ -152,7 +152,7 @@ The live harness also runs components from external upstreams. Their content —
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community | scientific-thinking-literature-review | — | — |
-| [mattpocock/skills](https://github.com/mattpocock/skills) | grill-me | — | — |
+| [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me | — | — |
 | oh-my-agent-check + local modifications | agent-architecture-audit | — | — |
 <!-- END GENERATED: upstream-components -->
 
