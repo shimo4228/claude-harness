@@ -206,4 +206,4 @@ If you are unsure after this checklist, write two small prototypes — one of ea
 ## Related
 
 - Companion principle: **AKC ADR-0008 "Code-LLM Layering"** — [agent-knowledge-cycle/docs/adr/0008-code-and-llm-collaboration.md](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0008-code-and-llm-collaboration.md) (Agent Knowledge Cycle research line, concept DOI [10.5281/zenodo.19200726](https://doi.org/10.5281/zenodo.19200726)). Code owns determinism / auditability / control flow + termination; LLM owns meaning; never let the LLM own durable state or termination. Scoring by an LLM is justified only as input to a code-owned decision (judge + enforce); a score nothing downstream consumes is scaffolding.
-- Source: this decision framework is distilled in the same AKC research line — [agent-knowledge-cycle/docs/skills/when-code-when-llm.md](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/skills/when-code-when-llm.md).
+- Source: this decision framework is distilled in the same AKC research line — published as a standalone repository: [shimo4228/when-code-when-llm](https://github.com/shimo4228/when-code-when-llm).

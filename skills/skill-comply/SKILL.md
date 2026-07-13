@@ -32,6 +32,11 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 ## Usage
 
 ```bash
+# 前提: scripts/ と pyproject.toml はこのスキルのディレクトリにあり、
+# `python -m scripts.run` の解決は cwd 依存のため、まずスキルディレクトリへ cd する
+# （`uv run --project` だけでは module 解決できないことを 2026-07-13 に実測確認）
+cd ~/.claude/skills/skill-comply
+
 # Full run
 uv run python -m scripts.run ~/.claude/rules/common/testing.md
 

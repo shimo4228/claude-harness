@@ -291,6 +291,5 @@ If Phase 0 ended with **acknowledged drift** (user declined to cascade update-co
 ## What This Skill Does NOT Do
 
 - Code quality checks (linting, testing, building) — use `verify`
-- Token/context window analysis — use `context-budget`
 - Agent-specific memory management (e.g., auto-memory systems)
 - `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`
