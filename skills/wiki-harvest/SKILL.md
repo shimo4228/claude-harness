@@ -56,7 +56,7 @@ VAULT="/Users/shimomoto_tatsuya/Library/Mobile Documents/iCloud~md~obsidian/Docu
 
 ### Step 3 — signal フィルタ（品質ゲート）
 
-`signal-first-research` の output discipline を適用する。**各候補は repo の具体的アクションを名指しできなければ捨てる**:
+signal-first の output discipline（`rules/common/akc-cycle.md` Research 節が正本）を適用する。**各候補は repo の具体的アクションを名指しできなければ捨てる**:
 
 - どの ADR 番号を更新 / 新設するか
 - どの graph 辺 / glossary 語 / manifesto 項を足す・解消するか

@@ -20,7 +20,6 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | Skill | Purpose |
 | --- | --- |
 | [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow。scout agent を呼び出して既存ツールを探索 |
-| [signal-first-research](skills/signal-first-research/SKILL.md) | 次の行動を変えうる情報だけを取り込む research intake filter の設計ガイド |
 | [learn-eval](skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill の品質監査 — Glob インベントリ + 単一コンテキスト holistic 評価、Keep/Improve/Update/Retire/Merge 判定 |
 | [skill-health](skills/skill-health/SKILL.md) | Skill ライブラリの構造的 debt スキャン — "missing artifacts"（SKILL.md が参照する script / agent / sibling skill がディスク上に存在しない）を検出。決定論的で、品質 / risk / validation は skill-stocktake / security-scan / skill-comply に委譲 |
