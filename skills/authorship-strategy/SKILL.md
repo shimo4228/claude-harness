@@ -158,7 +158,7 @@ Doctrine 単独だと「概念はわかるが実装イメージできない」�
 - **Tool-agnostic**: 特定実装に依存しない仕様設計
 - **Scaffold dissolution**: skill は足場、ルール内在化を推奨
 - **多言語化**: 各言語圏の LLM クローラー + LLM-mediated human 読者に対する diffusion 拡張
-- **Citation-graph federation**: 外部文献を取り込んだら、repo markdown に引用を書くだけで終えない — それは Google Scholar / arXiv "cited by" の citation graph に**不可視**で、被引用研究者には届かない。機械可読層に辺を張る: `.zenodo.json` `related_identifiers` の `relation: references` (→ DataCite / OpenAIRE / Scholix、`release-doi` skill が release ごとに同期) と Wikidata **P2860** (→ Scholia、`wikidata-federation` skill Phase 4.5)。被引用研究者の citation-alert / Scholia 面は**人間 audience への最強の passive シグナル**であり、彼らの次の論文での引き返し → 学術記録 → 将来 LLM corpora という還流が attribution diffusion を増幅する。能動シグナル (直接連絡・Scholar-indexed paper での正式引用) は別判断だが、受動辺の整備は取り込みの標準手順とする
+- **Citation-graph federation**: 外部文献を取り込んだら、repo markdown に引用を書くだけで終えない — それは Google Scholar / arXiv "cited by" の citation graph に**不可視**で、被引用研究者には届かない。機械可読層に辺を張る: `.zenodo.json` `related_identifiers` の `relation: references` (→ DataCite / OpenAIRE / Scholix、`release-doi` skill が release ごとに同期) と graph.jsonld の `ExternalReference` ノード (`jsonld-knowledge-graph` skill)。**Wikidata P2860 層は 2026-07 の governance revocation（promotion-only 判定 + 全 item 一括削除）を受け恒久 retire — ADR-0021。self-created な community-authority-record 辺は張らない・再提案しない**。被引用研究者への passive シグナルは self-sovereign 層 (DataCite / OpenAIRE / Scholix + graph) 経由で維持する。能動シグナル (直接連絡・Scholar-indexed paper での正式引用) は別判断だが、受動辺の整備は取り込みの標準手順とする
 - **構造化 artifact**: glossary, ADR, JSON schema, specification
 - **Friction minimization for runtime adoption**: clone + copy が可能なら専用 infrastructure（MCP server 等）を自前で整備する優先度は低い。最低 friction で adoption が起きる形を選ぶ
 - **External collection への掲載は link-index 型を default に**: awesome list / marketplace / 他者の collection repo 経由で diffusion を求めるとき、artifact 正本は自分の repo に置いたまま**リンクで参照させる**。本文を相手 repo に vendor する型は (a) copy が drift vector になる、(b) host の enclosure（有料化・ライセンス変更）に自分のコンテンツごと巻き込まれる、(c) 収益事業への役務提供と解釈され著者の雇用上の制約と衝突しうる。掲載先は 4 条件で監査する: **①企業所有か ②open license が無いか ③コンテンツを vendor する構造か ④有料製品への funnel か** — 複合するほど危険で、①〜④が揃った先には出さない（リンク型でも回避）。掲載後に有料 tier 導入や vendor 化が見えたら取り下げる。前例と監査記録は project memory（awesome-list-submissions）参照
@@ -185,7 +185,7 @@ Layer 4 tactic は一度撃って終わりではない。どの tactic を deplo
 
 **この運用手順（二層 ledger discipline + 5-step gap-review）は `gap-review` skill が正本**。authorship-strategy はその worked example の一つであり、gap-review が要求する 3 つの入力を以下のように供給する:
 
-- **Action catalog** → Layer 4 tactic catalog（本 skill "Tactics" 節）。**catalog は「これまで運用した tactic の記録」**— identifier / citation infrastructure（DOI・SWHID・Wikidata・citation graph）に寄って見えるのは運用履歴だから。gap-review が候補を起こす母集団は常に stance の full space —「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」: 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、まだ catalog に無い新型 channel。
+- **Action catalog** → Layer 4 tactic catalog（本 skill "Tactics" 節）。**catalog は「これまで運用した tactic の記録」**— identifier / citation infrastructure（DOI・SWHID・citation graph。旧 Wikidata 層は ADR-0021 で retire 済み）に寄って見えるのは運用履歴だから。gap-review が候補を起こす母集団は常に stance の full space —「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」: 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、まだ catalog に無い新型 channel。
 - **Open questions** → manifesto の open-question set（adoption-signal 測定 / tactic obsolescence / framework recursion / failure mode 等）。
 - **Gate checklist** → 下の **判断チェックリスト**（authenticity 強化か / diffusion 促進か / scope は defensible か等）。
 
@@ -209,7 +209,8 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 - [ ] License / access は permissive か？ enclosure 型の network effect を追求していないか？
 - [ ] Crawler 開放性は保たれているか？（signup 壁、rate limit、robots.txt 制限等が LLM-mediated reach を削っていないか）
 - [ ] 新しい固有用語を立てる場合、vocabulary discipline を満たすか？（既存語で一文で言えてしまわないか / namespace は空いているか / 既存文献・既存概念への edge を張ったか — coin sparingly, anchor densely）
-- [ ] 外部文献を引用・取り込んだ場合、機械可読な citation 辺を張ったか？（`.zenodo.json` references / Wikidata P2860 — repo markdown 内の引用だけでは citation graph に不可視で、被引用研究者に届かない）
+- [ ] 外部文献を引用・取り込んだ場合、機械可読な citation 辺を張ったか？（`.zenodo.json` references / graph.jsonld ExternalReference — repo markdown 内の引用だけでは citation graph に不可視で、被引用研究者に届かない。Wikidata P2860 は retire 済み — ADR-0021、張らない）
+- [ ] 第三者統治の surface（community knowledge base / catalog / registry）に self-deploy する前に、aggregate-pattern test を通したか？（個々の行為の準拠でなく、アカウントの累積 footprint が host governance に promotion と読まれないか — ADR-0021）
 - [ ] 外部 collection（awesome list / marketplace / 他者 repo）へ掲載する場合、link-index 型か？ vendor 型なら 4 条件監査（企業所有 / open license 欠如 / vendor 構造 / 有料 funnel）を通したか？
 - [ ] 「次の一手」を提案する場合、implementation ledger に対する gap-review（deployed tactics × Layer 4 catalog × open questions × 最新文献）を先に回したか？（手順は `gap-review` skill、入力の対応は "Operating the strategy over time" 参照）
 - [ ] 新規の public idea/research repo を公開したら、AI 派生 wiki / MCP-query 面に onboard したか？ —— 型 (a) AI 生成 wiki 面（DeepWiki 等）は index を起動し refresh badge を添える（derivation 型 diffusion 面 + regurgitation-test 診断面、既存 repo は index 済みなら自動追随）、型 (b) zero-config MCP doc-hub 面（GitMCP 等）は access-count 計測 badge を添える（submission 不要で即 live、signature drift なし）。index-only 面（コードライブラリ索引型）は doctrine/spec repo に fit せず onboard しない
@@ -226,6 +227,7 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 - **バズ目的のセンセーショナルな framing**: 注目集めのための誇張
 - **Scaffold を threat 扱いする framing**: absorption は validation であり、brand 防御の対象ではない
 - **直接 browse 人間層向けの brand 防御論理を LLM-mediated channel に投影**: drift mitigation を非 primary audience 基準で設計しない
+- **community 統治 platform への self-created entry 登録（最重要・2026-07-16 実証済みの failure）**: Wikidata 等の authority record / encyclopedia / community-curated DB に、著者自身・著者の artifact・著者への citation 辺を **self-create しない**。個々の編集が出典付き・constraint 準拠でも、単一著者 diffusion program の footprint は「すべてが一人の著者を指す」形に収束し、host governance に **aggregate-pattern 水準で promotion-only と判定される** — 実際にアカウント無期限 block + self-created 全 109 item 一括削除（引用した他者文献の bibliographic record まで巻き添え）で全損した。**変種も同罪**: 別アカウント作成・ログアウト編集・第三者への作成依頼（solicited = 代理 self-promotion、かつ block 回避）。第三者統治の grounding は **earned**（無関係な第三者が頼まれずに作成）のみ祝福。origin claim の load-bearing は self-sovereign 層（自 repo/graph・自 account の registry deposit・ORCID・SWHID）に限る。第三者統治 surface への self-deploy 前は **aggregate-pattern test** を必ず通す。正本: ADR-0021
 - **Origin claim の scope 過拡張**: prior art が存在する広域で「祖」を主張しない
 - **Enclosure 型 network effect の追求**: platform lock-in, proprietary license, crawler block, signup 壁での囲い込み提案は LLM-mediated reach を削る
 - **Competition 排除の framing**: 「our solution is the only one」「X を使うべきでない」系の排他的 positioning は自分の reach を削る

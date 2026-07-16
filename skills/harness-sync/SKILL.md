@@ -97,13 +97,24 @@ script を置かない — 丸ごと置換が汎用化リライトを上書き�
 
 ### Rule repo variant
 
-単独 **rule** repo (1 repo = 1 rule file。例: `akc-cycle`) も同じ workflow だが script
-が違う: 対象は `skills/<name>/` ではなく固定の単一ファイル `rules/common/<name>.md` を
-publish する (source = `~/.claude/rules/common/<name>.md`)。origin marker は rule ファイル
-の HTML コメント (`<!-- origin: shimo4228 -->`) を `head -15 | grep` で検出する。skill 版と
-違い YAML frontmatter 検証は無い (rule は frontmatter を持たない)。secret scan・root files
-不可侵・commit しない、は共通。skill 版とは byte-identical にならない (rule repo は現状
-これ 1 つ)。
+単独 **rule** repo (1 repo = 1 rule file) も同じ workflow だが script が違う: 対象は
+`skills/<name>/` ではなく固定の単一ファイル `rules/common/<name>.md` を publish する
+(source = `~/.claude/rules/common/<name>.md`)。origin marker は rule ファイルの HTML
+コメント (`<!-- origin: shimo4228 -->`) を `head -15 | grep` で検出する。secret scan・
+root files 不可侵・commit しない、は共通。
+
+### Rule + plugin repo variant (akc-cycle)
+
+`akc-cycle` は 2026-07-15 に rule 単独から **rule + Claude Code plugin** に拡張された。
+script は固定 allowlist 方式: 1 rule (`rules/common/akc-cycle.md`) + 9 skills (AKC cycle
+phase binding: search-first / learn-eval / skill-stocktake / skill-health / rules-stocktake /
+rules-distill / skill-comply / context-sync / repo-asset-stocktake) + 2 agents (adr-writer /
+codemap-writer) を staging → prune → YAML frontmatter 検証 → secret scan → subtree 置換
+(rules/ skills/ agents/)。allowlist の component が harness に無い / origin marker が無い
+と abort (silently drop しない)。**`.claude-plugin/plugin.json` / `marketplace.json` は
+repo 側 root 資産** (README / LICENSE と同格) — sync は触らない。version 更新は
+plugin.json を repo 側で手動 bump する。plugin は rules を運べない (Claude Code plugin
+仕様) ため、rule file は plugin payload 外の copy-install 経路のまま。
 
 ## Skill repo packaging（命名と subagent 同梱）
 
@@ -146,7 +157,7 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
-| `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | 単独 rule | `scripts/sync-from-local.sh` (rule repo 版) | `~/.claude/rules/common/akc-cycle.md` |
+| `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | rule + plugin (9 skills + 2 agents) | `scripts/sync-from-local.sh` (rule + plugin 版、固定 allowlist) | `~/.claude/rules/common/akc-cycle.md` + 対象 skills/agents |
 | `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
 | `~/MyAI_Lab/llms-txt-writer` ([repo](https://github.com/shimo4228/llms-txt-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llms-txt-writer` |
@@ -154,10 +165,10 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/release-doi` ([repo](https://github.com/shimo4228/release-doi)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/release-doi` |
 | `~/MyAI_Lab/search-first` ([repo](https://github.com/shimo4228/search-first)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/search-first` |
 | `~/MyAI_Lab/jsonld-knowledge-graph` ([repo](https://github.com/shimo4228/jsonld-knowledge-graph)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/jsonld-knowledge-graph` |
-| `~/MyAI_Lab/wikidata-federation` ([repo](https://github.com/shimo4228/wikidata-federation)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/wikidata-federation` |
 | `~/MyAI_Lab/authorship-strategy-skill` ([repo](https://github.com/shimo4228/authorship-strategy-skill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/authorship-strategy` |
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/codex-review` |
 | `~/MyAI_Lab/repo-asset-stocktake` ([repo](https://github.com/shimo4228/repo-asset-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/repo-asset-stocktake` |
+| `~/MyAI_Lab/llm-as-judge` ([repo](https://github.com/shimo4228/llm-as-judge)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llm-as-judge` |
 | `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/paper-ecosystem` + `~/.claude/skills/paper-writing` |
 | `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/writing-ecosystem` |
 

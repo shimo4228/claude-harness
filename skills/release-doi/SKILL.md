@@ -283,7 +283,7 @@ identifiers:
 
 **Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は `~/.config/zenodo/credentials.env`)。
 
-**Wikidata 連邦** (optional、新規 repo の初回 release 時): `wikidata-federation` skill で Wikidata item（P356=concept DOI, P50=著者 QID）を作成し、graph.jsonld に QID を sameAs 編入する。2回目以降の release では既存 item が concept DOI で解決し続けるため作業不要。
+**Wikidata 連邦 — RETIRED (2026-07)**: この step は実行しない。Wikidata アカウントが promotion-only 判定で無期限ブロックされ全 item が一括削除されたため、self-created な community-authority-record 登録は authorship-strategy ADR-0021 で恒久 retire。別アカウントでの再登録・代理依頼も禁止（block 回避）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
 
 **AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (現行 DeepWiki は "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく (authorship-strategy framework の Layer 4 tactic: derivation 型 diffusion 面 + regurgitation-test 診断面)。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
 

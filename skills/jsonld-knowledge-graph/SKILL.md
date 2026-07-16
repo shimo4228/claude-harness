@@ -343,7 +343,7 @@ graph.jsonld を更新したら、Hugging Face Datasets 上の mirror にも同�
 
 `release-doi` skill の Phase 5 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
 
-**Wikidata QID の sameAs 編入は [`wikidata-federation`](../wikidata-federation/SKILL.md) skill が担う**（Wikidata item 作成 → graph ノードへの QID アンカー。フォーマット保存編集と意味的検証つき）。graph 設計の正本は本 skill、Wikidata 連邦の operational layer は wikidata-federation、という役割分離。
+**Wikidata QID の sameAs 編入は行わない — RETIRED (2026-07)**。旧運用（`wikidata-federation` skill による item 作成 → QID アンカー）は、host governance の promotion-only 判定による全 item 一括削除を受け authorship-strategy ADR-0021 で恒久 retire。graph の `sameAs` は self-sovereign または earned な解決先（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）のみに張る。dead QID を検出したら purge する。
 
 HF 側の `README.md` (dataset card) は graph 更新では同期しない。Dataset card は HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えたい場合は手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
 

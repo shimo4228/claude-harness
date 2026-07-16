@@ -194,10 +194,12 @@ Validate any edited JSON (`python -c "import json,sys; json.load(open(sys.argv[1
 commit (`docs:`), and push / run `hf-sync` per the project's release cadence —
 the cross-links go live on GitHub and the HF mirror only once pushed/synced.
 
-Optionally, register the paper as a Wikidata item (P356 = concept DOI,
-P50 = author QID) and anchor the QID back into `graph.jsonld` via the
-`wikidata-federation` skill — this extends the federation beyond the repo's
-own files into the global knowledge graph (Scholia, SPARQL, CC0 dumps).
+Do NOT register the paper on Wikidata. The former optional step
+(Wikidata item + QID sameAs via the wikidata-federation skill) was
+permanently retired 2026-07 after the host's governance revoked the
+account as promotion-only and mass-deleted all self-created items
+(authorship-strategy ADR-0021). Entity grounding uses self-sovereign
+layers only: DOI, ORCID, SWHID, and the repo's own graph.jsonld.
 
 ## Step 6 — Reduce paper content back into the repo (post-deposit follow-up)
 
