@@ -183,26 +183,34 @@ Prior art が存在する領域で「祖」と主張すると origin claim 自�
 
 Layer 4 tactic は一度撃って終わりではない。どの tactic を deploy 済みで、何が次の一手かを継続管理し、定期的に新規提案を生む discipline を回す。これは strategy を *運用* する meta-process であり、judgment-per-proposal（下の判断チェックリスト）と相補的。
 
-**この運用手順（二層 ledger discipline + 5-step gap-review）は `gap-review` skill が正本**。authorship-strategy はその worked example の一つであり、gap-review が要求する 3 つの入力を以下のように供給する:
+**「次の一手」の default は full-space 発散生成**。母集団は stance の full space —「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」: 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、**まだ catalog に無い新型 channel**。Layer 4 tactic catalog（本 skill "Tactics" 節）は「これまで運用した tactic の記録」＝運用履歴であって、候補範囲の上限ではない（identifier / citation infrastructure に寄って見えるのはそのため）。**発散を既存 catalog に縛らない** — 縛ると「既知メニューの穴埋め」へスコープが縮む。
 
-- **Action catalog** → Layer 4 tactic catalog（本 skill "Tactics" 節）。**catalog は「これまで運用した tactic の記録」**— identifier / citation infrastructure（DOI・SWHID・citation graph。旧 Wikidata 層は ADR-0021 で retire 済み）に寄って見えるのは運用履歴だから。gap-review が候補を起こす母集団は常に stance の full space —「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」: 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、まだ catalog に無い新型 channel。
-- **Open questions** → manifesto の open-question set（adoption-signal 測定 / tactic obsolescence / framework recursion / failure mode 等）。
-- **Gate checklist** → 下の **判断チェックリスト**（authenticity 強化か / diffusion 促進か / scope は defensible か等）。
+手続き:
 
-Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・creative-reuse 誘発度**。ledger / public timeline の具体的な置き場所（どのファイルが private ledger でどれが public projection か）は本 framework の repo の context file（CLAUDE.md 等）が宣言し、gap-review の wiring-resolution がそこを読む。
+1. **発散生成** — full space を母集団に候補を起こす。open questions（manifesto の open-question set: adoption-signal 測定 / tactic obsolescence / framework recursion / failure mode 等）と最新文献を刺激に使ってよいが、catalog の空きスロットに限定しない。
+2. **gate 濾過** — 各候補をまず **channel 分類**（ADR-0008: retrieval / parametric-use / both）した上で、下の **判断チェックリスト**（authenticity 強化か / diffusion 促進か / scope は defensible か等）に通す。Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・creative-reuse 誘発度**。
+3. **記録** — 採用した候補は repo の **TASKS.md（単一台帳、rule `common/task-tracking.md`）** に行を立てる。**却下した候補も TASKS.md の廃止行 + 理由で残す**（再生成時の重複排除 = triage メモリ。専用の候補 ledger は持たない）。既に出荷済みかの確認は TASKS.md（active / Done / 廃止）+ git log を見る。
 
-このループ自体が on-thesis（program が自身の diffusion を観測し、自らが公開する catalog と open questions から次手を生む self-application）。手順の詳細・two-tier discipline の根拠は `gap-review` skill と ADR-0014 を参照。
+**Public intervention timeline（任意）**: strategy が公開面を持つ場合、deploy した手を「いつ・どの手を撃ったか」の**日付付き・因果主張なし**の changelog に 1 行記録する（"date Y に X をした" は書くが "X が指標 Z を上げた" は書かない）。empirical layer 規約下の公開成果物で、source は git / 現実 / TASKS.md — private な作業台帳を経由しない。置き場所は本 framework の repo の context file（CLAUDE.md 等）が宣言する。
+
+このループ自体が on-thesis（program が自身の diffusion を観測し、自らが公開する open questions から次手を生む self-application）。public timeline discipline の設計根拠は ADR-0014 を参照。
 
 ## 判断チェックリスト
 
 新規提案・実装・コラボ受け入れ等で以下を通す:
 
+**まず候補の diffusion channel を分類する**（ADR-0008）。ただし *自己申告でなく候補の客観プロパティから機械的に決める*（when-code-when-llm 構造判定）: 期待される結果に **fetch / link / citation が含まれるなら retrieval を必ず適用**、retrieval 機構が実質的に効くなら **both**（default 寄り）、**純 parametric/use を許すのは「retrieval に依存しない具体的な consumption path」を候補が明示できるときのみ**。下の citability 系項目（DOI / llms.txt / 機械可読 citation 辺）は **retrieval / both 候補にのみ pass/fail** として効き、純 parametric/use 候補（AI-native venue placement 等）を「citable artifact が無い」ことでは落とさない。この機械判定が「retrieval 候補が use を自称して citability を回避する」抜け道を塞ぐ。
+
 - [ ] この提案は authenticity を強化するか、希釈するか？
 - [ ] これは scaffold（消える）か、idea（残せる）か？
-- [ ] DOI-citable な構造で出せるか？（spec, schema, ADR, glossary）DOI が impractical な genre なら intrinsic identifier (SWHID) を substitute priority-claim にしたか？（ADR-0013）
+- [ ] **（retrieval / both 候補なら）** DOI-citable な構造で出せるか？（spec, schema, ADR, glossary）DOI が impractical な genre なら intrinsic identifier (SWHID) を substitute priority-claim にしたか？（ADR-0013）
 - [ ] tool-agnostic / any-usage を保てるか？
-- [ ] LLM-mediated 引用可能性は確保されているか？（llms.txt / 固有用語 / DOI）
+- [ ] **（retrieval / both 候補なら）** LLM-mediated 引用可能性は確保されているか？（llms.txt / DOI。※`固有用語` = parametric hook は下の signature 項目で扱う）
 - [ ] Creative reuse を誘発する形か？（worked implementation と abstract doctrine が揃っているか）
+- [ ] **（parametric channel の核・ADR-0008）** この候補は distinctive term と source の **cross-platform co-occurrence** を広げる位置づけか？（launch 前なので「広げる設計になっているか」を問う設計プロパティ判定。enclosed inbound link 型でなく分散した言及。相関 ≈0.664 vs 0.218）
+- [ ] **（venue mechanics・選択段階）** その venue に **agent / LLM が artifact を invoke / consume する具体的機構**が存在するか？（「実際に使われたか」の *観測* は選択段階で証明不能 — gate では *機構の有無・pilot 証拠* だけを問う。観測された third-party invocation は deploy 記録時の post-deploy 検証に回す = 既存 conformance Tier 3 / ledger の "deployed" 判定）
+- [ ] **（ghost-citation 回避・ADR-0008 / ADR-0011）** seed する artifact の distinctive signature（固有用語 / author–key-claim 構造）は **consume される payload の中に identity-bearing なまま残る**か？ 判定は density でなく **retrieval-suppressed naming probe（ADR-0011）で falsifiable に**行う: use 後に独立 agent が source を *名指し* できるか。（term を dense に繰り返すだけの keyword stuffing は不可）
+- [ ] **（rank-chasing 排除・ADR-0019 / ADR-0008）** これは artifact を seed する手であって、leaderboard 順位 / SOTA を目的化していないか？（ADR-0019「optimize the transmission path, never the content」/ ADR-0008 は rank 信号を near-zero と実証済み）
 - [ ] Diffusion を促進するか、exclusivity を強化するか？（前者が default）
 - [ ] Origin claim の scope は defensible か？（広すぎる「祖」になっていないか）
 - [ ] Runtime channel で自前 infrastructure を積み増そうとしていないか？（clone + copy で済むなら不要）
@@ -212,8 +220,8 @@ Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・cre
 - [ ] 外部文献を引用・取り込んだ場合、機械可読な citation 辺を張ったか？（`.zenodo.json` references / graph.jsonld ExternalReference — repo markdown 内の引用だけでは citation graph に不可視で、被引用研究者に届かない。Wikidata P2860 は retire 済み — ADR-0021、張らない）
 - [ ] 第三者統治の surface（community knowledge base / catalog / registry）に self-deploy する前に、aggregate-pattern test を通したか？（個々の行為の準拠でなく、アカウントの累積 footprint が host governance に promotion と読まれないか — ADR-0021）
 - [ ] 外部 collection（awesome list / marketplace / 他者 repo）へ掲載する場合、link-index 型か？ vendor 型なら 4 条件監査（企業所有 / open license 欠如 / vendor 構造 / 有料 funnel）を通したか？
-- [ ] 「次の一手」を提案する場合、implementation ledger に対する gap-review（deployed tactics × Layer 4 catalog × open questions × 最新文献）を先に回したか？（手順は `gap-review` skill、入力の対応は "Operating the strategy over time" 参照）
-- [ ] 新規の public idea/research repo を公開したら、AI 派生 wiki / MCP-query 面に onboard したか？ —— 型 (a) AI 生成 wiki 面（DeepWiki 等）は index を起動し refresh badge を添える（derivation 型 diffusion 面 + regurgitation-test 診断面、既存 repo は index 済みなら自動追随）、型 (b) zero-config MCP doc-hub 面（GitMCP 等）は access-count 計測 badge を添える（submission 不要で即 live、signature drift なし）。index-only 面（コードライブラリ索引型）は doctrine/spec repo に fit せず onboard しない
+- [ ] 「次の一手」を提案する場合、**full-space 発散生成 → 判断チェックリスト gate → TASKS.md 記録（却下は廃止行）→ deploy したら public timeline に 1 行**、の順を踏んだか？（既出荷は TASKS.md active/Done/廃止 + git で確認。発散を既存 catalog に縛らない。手順は "Operating the strategy over time" 参照。専用候補 ledger は持たない）
+- [ ] 新規の public idea/research repo を公開したら、AI 派生 wiki / MCP-query 面に onboard したか？ —— 型 (a) AI 生成 wiki 面（DeepWiki 等）は index を起動し refresh badge を添える（derivation 型 diffusion 面 + regurgitation-test 診断面、既存 repo は index 済みなら自動追随）、型 (b) zero-config MCP doc-hub 面（GitMCP 等）は access-count 計測 badge を添える（retrieval 面の計測、submission 不要で即 live、signature drift なし）。index-only 面（コードライブラリ索引型）は doctrine/spec repo に fit せず onboard しない
 
 ## 禁止事項（trigger 条件下のみ）
 

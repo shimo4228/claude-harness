@@ -121,7 +121,7 @@ a number.
 | Improve | Worth keeping, but needs tightening — for rules, Improve usually means *shorten* |
 | Update | Referenced technology is outdated (verify with WebSearch) |
 | Merge into [X] | Substantial overlap with another rule; name the target |
-| Demote to skill | Valuable content that doesn't earn per-session residency; move to the probabilistic trigger layer (the inverse of rules-distill), leaving a 1–3 line pointer in the rule (the authorship-strategy.md pointer pattern) |
+| Demote to skill | Valuable content that doesn't earn per-session residency; move to the probabilistic trigger layer (the inverse of rules-distill), leaving a 1–3 line pointer in the rule (the task-tracking.md pointer pattern) |
 | Dissolve | Absorbed by the substrate (harness went native) or the conversation (internalized). Retirement by *success*, not defect — delete before it becomes a stale shadow overriding newer defaults, and record the why in an ADR |
 | Retire | Defect-based removal: low quality, stale, broken beyond repair |
 

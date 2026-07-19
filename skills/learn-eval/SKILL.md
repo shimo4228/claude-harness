@@ -167,6 +167,10 @@ origin: auto-extracted
 
 ## References
 
+The generic design canon for this evaluation style (binary checks as evidence →
+holistic named verdict, no aggregation) is the `llm-as-judge` skill; Step 5 is its
+N=1 implementation.
+
 Design rationale for Step 5's two-layer design (binary question decomposition → holistic verdict):
 
 - BinEval — "Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement" ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)). A framework that decomposes evaluation criteria into atomic yes/no questions and wires failed questions directly into improvement feedback. The dynamic generation of draft-specific questions and the "No questions = improvement items" path are ported from here

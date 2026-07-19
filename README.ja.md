@@ -44,18 +44,18 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | voice 保持の日英翻訳 — term-lock + 2-pass + back-translation QA |
 | [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |
 | [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
-| [wikidata-federation](skills/wikidata-federation/SKILL.md) | 研究者・論文・repo の Wikidata item 作成と ORCID / DOI / graph.jsonld への QID 連邦 |
 | [citation-sync](skills/citation-sync/SKILL.md) | 研究 repo の引用 4 層 (docs / .zenodo.json / graph.jsonld / Wikidata P2860) を監査し下層から同期 |
 | [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | 決定論的 code vs LLM 処理の判断 framework — 構造/意味軸と false-positive テスト |
 | [spawn-session](skills/spawn-session/SKILL.md) | tmux で detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
 | [harness-sync](skills/harness-sync/SKILL.md) | 生きた harness から本 repo への origin filter 付き一方向エクスポート — 収集・secret scan・subtree 置換 |
 | [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | access-blocked / digest 由来の数値主張を、durable な引用の前にオープンミラーで検証する guardrail |
-| [gap-review](skills/gap-review/SKILL.md) | 継続運用する戦略の「次の一手」候補をランク付き生成 — deployed tactics × catalog × open questions × 最新文献の差分 |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | 研究 repo セッションから Obsidian LLM wiki (wiki/concept/) を read-only で走査し、repo の次アクションを変えうる候補だけを一次出典付き・ランク付き ledger として repo の `.notes/` に抽出 |
 | [wiki-query](skills/wiki-query/SKILL.md) | Obsidian LLM wiki (wiki/concept/) への read-only クエリ。`[[ ]]` 出典付きで合成回答 |
 | [kickoff](skills/kickoff/SKILL.md) | 新セッションの定型立ち上げルーチン — repo 状態把握（git status / branch 同期 / 直近コミット）、未完了シグナル検出（dirty / stash / 未 push / open PR）、固定フォーマットの状態報告 |
 | [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | プロジェクト repo の非コード資産（ツール設定・CI workflow・runbook）の価値劣化を監査 — 消費者が消えた資産を検出し Keep/Update/Retire/Merge 判定 |
 | [task-stocktake](skills/task-stocktake/SKILL.md) | repo の pending タスク追跡を単一台帳へ棚卸し・統合 — 台帳の bootstrap、散在タスク行の収集、git log・実コードとの既済照合 |
+| [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md) | 英語→日本語の voice 保持翻訳スキル。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な日本語にする。逐語訳でも MT でもなく、term-lock（訳す-by-default／英語保持は明示 |
+| [llm-as-judge](skills/llm-as-judge/SKILL.md) | Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
@@ -89,12 +89,12 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | --- | --- |
 | [agents](rules/common/agents.md) | Agent orchestration 規約。いつどの agent を使うか、並列実行のパターン |
 | [akc-cycle](rules/common/akc-cycle.md) | Agent Knowledge Cycle の 6 フェーズ行動規約 (Research / Extract / Curate / Promote / Measure / Maintain) |
-| [authorship-strategy](rules/common/authorship-strategy.md) | DOI 登録された idea-rescue 研究 repo で作業する際に authorship-strategy framework を起動するポインタ rule |
 | [debugging](rules/common/debugging.md) | 根本原因優先のデバッグフロー (仮説 → 証拠 → 確認 → 修正)、AI のリーセンシーバイアス対策、retry-with-context |
 | [planning](rules/common/planning.md) | 計画時の必須項目 (What / Why / Alternatives)。Phase 0 外部調査の義務化 |
 | [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
 | [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
+| [lint-gates](rules/python/lint-gates.md) | Python lint ゲートの baseline (ruff B/I/T20)、zip strict= の規律、文書化された構造不変条件の決定論ゲート化 (import-linter contract、frozen dataclass AST スキャン) |
 <!-- END GENERATED: rules-table -->
 
 ## 使い方

@@ -198,4 +198,4 @@ curl -sS -N --max-time 300 -X POST "https://airaxiv.com/mcp/" \
 ## 関連
 
 - 正本 deposit は skill: `paper-deposit` (Zenodo/SSRN)。本 skill はその**後段**
-- 記録規律 (two-tier ledger) は skill: `gap-review` / ADR-0014 系の discipline に従う
+- 記録規律 (deploy した手を public intervention timeline に日付付き・因果主張なしで記録) は skill: `authorship-strategy` "Operating the strategy over time" / ADR-0014 系の discipline に従う

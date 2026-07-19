@@ -11,9 +11,9 @@ Capture a design decision as a numbered ADR with consistent structure. The skill
 
 ## Why a Skill + Agent Split
 
-The skill owns deterministic concerns: where the ADR goes, what number it gets, which index needs updating. These are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift) so they live in scripted steps, not prose generation.
+The skill owns deterministic concerns: where the ADR goes, what number it gets, which index needs updating. These are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift) so they live in scripted steps.
 
-The agent owns subjective concerns: how to phrase Context, how to label Alternatives, whether Consequences are positive or negative. These benefit from LLM judgment, but the input must already be specific enough — the agent refuses to invent.
+The agent owns **rendering**, not deciding: given a frozen, already-approved decision packet, it re-expresses each section into the template, calibrates against neighbouring ADRs' house style, resolves links, and writes the file. What the ADR *means* — the real Context, the actual Decision, why each Alternative was rejected, which Consequences follow — is a **semantic decision that stays with the caller (the main loop)**. The agent has no authority to infer or invent it; it refuses to write when the packet is incomplete. See [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) — writer agents render, they do not decide. (This split does not exist merely to isolate context: rendering to a fixed house-style template is low-authority and cheaply verifiable, which is exactly what makes delegation safe here — unlike translation, whose prose carries the author's non-convergent voice and stays in the main loop.)
 
 ## When to Use
 
@@ -91,6 +91,8 @@ Ask the user (or accept from caller) for:
 
 If 3-6 are missing, request them — do not proceed. ADRs without these sections are noise.
 
+**Assemble and approve the decision packet before delegating.** The main loop holds the semantic authority for this ADR, so it — not the agent — must settle the actual content: the real Context, the decision as decided, why each Alternative was rejected, which Consequences genuinely follow. Confirm this packet with the user (especially the rejection reasons and both sides of Consequences) *before* Step 4. The agent that follows only renders what you hand it; it will not fill a gap you leave. If the decision is still fuzzy, resolve it here in the main loop — do not expect the agent to infer it.
+
 ### Step 4: Delegate body generation to the adr-writer agent
 
 Invoke the `adr-writer` agent via the Agent tool with:
@@ -108,6 +110,8 @@ The agent will:
 - Return a summary block
 
 If the agent returns "needs more input", surface the missing-fields message to the user and stop. Do not push partial ADRs.
+
+**Fidelity check (main loop, after the agent writes).** Because the agent only renders, verify it added nothing semantic: read the written file and confirm every Context fact, Decision clause, rejection reason, and Consequence traces back to the packet you approved in Step 3. If the agent introduced an inferred claim (a "logically entailed" consequence, an unstated rationale), strike it or send it back — the render must not exceed the packet.
 
 ### Step 5: Update the index
 

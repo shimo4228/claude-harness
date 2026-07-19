@@ -238,6 +238,8 @@ every write.
   assets.
 - `when-code-when-llm` — the dividing line Phase 0/2/3 implement: deterministic checks
   are code-owned and unconditional; judgment is holistic and narrow-context.
+- `llm-as-judge` — the generic judge design canon (binary screen → pressure-test →
+  holistic named verdict, no aggregation); Phase 2 is its library-scale implementation.
 - `harness-sync` — use it to sync this skill to its public repo.
 - Usage measurement: `~/.claude/hooks/log-skill-usage.sh` →
   `~/.claude/metrics/skill-usage.jsonl` (a measurement layer independent of stocktake).

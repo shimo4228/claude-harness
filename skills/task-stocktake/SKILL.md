@@ -54,7 +54,7 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 - README / CLAUDE.md 内の TODO 記述
 
 **sweep 対象外（タスク行の正本増殖に数えない）**: doctrine / ADR が正本指定した
-domain ledger（例: two-tier 運用の private 実装台帳）と、gap-review / wiki-harvest 型の
+domain ledger（例: strategy 運用の public intervention timeline）と、wiki-harvest 型の
 **候補台帳**（採否判断前の候補はタスクではない）。これらは台帳に吸収せず、
 ポインタ 1 行を置く。候補が採択され、作業として残った時点で初めて台帳行になる。
 

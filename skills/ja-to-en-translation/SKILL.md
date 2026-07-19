@@ -9,6 +9,8 @@ origin: shimo4228
 
 日本語の人間向け prose を、**著者の声を保ったまま**自然な英語に訳すためのスキル。直訳でも DeepL 等の MT でもなく、LLM + voice ルーブリックで訳す（MT は register / 発見調 / 修辞を保てない）。
 
+**専用エージェントは作らない** — 翻訳本体はメインループ（最上位モデル）が本方法論に従って実行する。理由は [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md): 翻訳の変換ステップは非収束な著者 voice を狙うため意味的権限が高く、サブエージェントへの lossy handoff（会話文脈・声の制約の喪失）で品質が落ちる。逆方向は姉妹スキル `en-to-ja-translation`。
+
 ## Scope
 
 - **対象**: JA→EN のみ。essay / opinion / research doc / README / ADR / glossary 等、人間向け prose。
@@ -83,3 +85,5 @@ EN 出力を既存の review agent にかける（**新規 reviewer agent は作
 - `essay-reviewer` / `editor` agent — 翻訳後の EN review
 - `citation-formatter` agent — 学術 citation の format 検証（本 skill の対象外）
 - `llms-txt-writer` skill — AI 向け doc（本 skill の対象外）
+- `en-to-ja-translation` skill — 逆方向（EN→JA）。本 skill の鏡像
+- [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) — writer agent は render 専任・翻訳は skill-only（メインループ実行、専用エージェントを作らない）の設計根拠。本 skill はその適用先

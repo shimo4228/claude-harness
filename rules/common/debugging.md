@@ -39,4 +39,15 @@ Never blindly retry a failed operation:
 
 For external API calls, use exponential backoff with max retry count (3-5).
 
-See skill: agent-harness-construction
+### Rate limit は警報であって障害ではない
+
+外部 platform への書き込み中にレートリミットが**連発**する（単発でなく、スロットル上限に
+張り付いている）場合、それは transient error ではなく **substrate からの policy シグナル** —
+「そのアカウント種別にとってその速度・量は異常」という警報。backoff で踏み抜く対象ではない。
+
+- 連発を検知したら **burst を停止して人間に報告**する（速度を落として続行、ではない）
+- 特に **非 bot アカウントでの大量作成・大量書き込み**中の連発は、platform のパトロール面に
+  最も目立つ行動をしている兆候。governance レビュー → アカウント措置の入口になりうる
+  （2026-07-16 に実証: 連発を無視した bulk 書き込みの数時間後にアカウント無期限 block + 全作成物一括削除）
+
+See skill: agent-harness-construction / learned note: [skills/learned/platform-governance-aggregate-pattern.md](../../skills/learned/platform-governance-aggregate-pattern.md)
