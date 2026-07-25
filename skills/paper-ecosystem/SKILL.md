@@ -322,9 +322,9 @@ Venue 固有 (SSRN subject classification、arXiv endorsement、journal house st
 <project>/.claude/rules/<venue>-paper-writing.md
 ```
 
-例:
-- `agent-attribution-practice/.claude/rules/ssrn-paper-writing.md`
-- `contemplative-agent/.claude/rules/arxiv-paper-writing.md`
+命名規約 (`<venue>` は投稿先の名前をそのまま使う。まだ overlay を持つ repo は無い):
+- SSRN 投稿の repo なら `<project>/.claude/rules/ssrn-paper-writing.md`
+- arXiv 投稿の repo なら `<project>/.claude/rules/arxiv-paper-writing.md`
 
 overlay 側のファイル冒頭に「本 skill を base とする」旨を明記し、venue 固有の追加ルールだけ書く。base の Source Fidelity / Vocabulary / Voice / Citation は overlay で再掲しない。
 

@@ -1,32 +1,37 @@
 <!-- origin: shimo4228 -->
 # Agent Orchestration
 
-## Agent Catalog
+agent カタログの正本は `~/.claude/agents/*.md` の frontmatter。セッション中は harness が
+Available agent types として全 agent の説明を自動提示するため、**ここに一覧の手書きコピーを
+置かない**（同じ frontmatter から生成される native 一覧に対して drift するだけ）。
+起動順は skill: `implementation-chain` の Chain Matrix。
 
-agent カタログの正本は `~/.claude/agents/*.md` の frontmatter (description が
-「いつ使うか」を含む)。セッション中は harness が Available agent types として
-全 agent の説明を自動提示するため、**ここに一覧の手書きコピーを置かない**
-(同じ frontmatter から生成される native 一覧に対して drift するだけ —
-akc-cycle.md Scaffold Dissolution の downward vector。2026-07-03 rules-stocktake
-監査で表を撤去)。
+## Author-Reviewer Separation
 
-## Immediate Agent Usage
+レビューは実装者とは**別の agent プロセス**で走らせる。同一 context = 著者バイアスの盲点。
+戦略的判断では別モデルを peer reviewer にする（→ `codex-review`）。
 
-各 agent をどの順序で起動するかは [`common/planning.md`](planning.md) の
-**Implementation Chain Specification** で定義する Chain Matrix に従う。
+## Cross-Agent Harness Sharing（Claude Code の外）
 
-## Multi-Perspective Analysis
+上記は Claude Code 内のサブエージェント編成。ここは別プロセスの CLI エージェント
+(Codex CLI / Antigravity CLI / Qwen Code 等) との rules 共有 — 別概念なので混同しない。
 
-For complex problems, use split role sub-agents:
-- Factual reviewer
-- Senior engineer
-- Security expert
-- Consistency reviewer
-- Redundancy checker
+原則は「参照 > 生成 > 同期」([ADR-0015](../../docs/adr/0015-cross-agent-rules-sharing-reference-first.md))。
+`~/.claude/rules` は正本のまま変更せず、各エージェント側のアタッチポイントで参照させる:
 
-### Author-Reviewer Separation
+- **Codex CLI**: `~/.codex/AGENTS.md` の指示文ブロックで参照（グローバル→repo→cwd の順で連結）
+- **Antigravity CLI**: `~/.gemini/config/rules/shared-claude-rules.md`（`trigger: always_on` 必須）
+- **Qwen Code**: `~/.qwen/QWEN.md` の `@絶対パス` import
 
-Run reviews in a separate agent process from the implementer:
-- Same context = author bias blind spots
-- For strategic decisions, use a second model as peer reviewer
+モデル試用（Kimi/GLM/Qwen をモデルとして使う）は `claude-code-router` でハーネスを維持したまま
+モデルだけ差し替える — この場合は rules 共有そのものが不要。
 
+## Cross-Agent Task Delegation（herdr 経由、上記とも別概念）
+
+**実行中のタスクを別プロセスの CLI エージェントに委譲する**話。手順・コマンド仕様の正本は
+skill: `herdr`（ここに複製しない — 実装詳細の再説明は drift すると実証済み）。
+
+**ゲート条件**: (1) Herdr 管理下の pane にいる（`HERDR_ENV=1`）こと — バイナリの有無だけで
+判定しない、(2) **ユーザーが明示的に Herdr 経由の委譲を求めた場合のみ**使う。
+委譲や並列化が有益そうというだけで自発的に使い始めない（`codex-review` はこの依存を持たず
+blocking exec で完結しており、それが既定路線）。

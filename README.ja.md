@@ -51,11 +51,13 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | access-blocked / digest 由来の数値主張を、durable な引用の前にオープンミラーで検証する guardrail |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | 研究 repo セッションから Obsidian LLM wiki (wiki/concept/) を read-only で走査し、repo の次アクションを変えうる候補だけを一次出典付き・ランク付き ledger として repo の `.notes/` に抽出 |
 | [wiki-query](skills/wiki-query/SKILL.md) | Obsidian LLM wiki (wiki/concept/) への read-only クエリ。`[[ ]]` 出典付きで合成回答 |
-| [kickoff](skills/kickoff/SKILL.md) | 新セッションの定型立ち上げルーチン — repo 状態把握（git status / branch 同期 / 直近コミット）、未完了シグナル検出（dirty / stash / 未 push / open PR）、固定フォーマットの状態報告 |
 | [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | プロジェクト repo の非コード資産（ツール設定・CI workflow・runbook）の価値劣化を監査 — 消費者が消えた資産を検出し Keep/Update/Retire/Merge 判定 |
 | [task-stocktake](skills/task-stocktake/SKILL.md) | repo の pending タスク追跡を単一台帳へ棚卸し・統合 — 台帳の bootstrap、散在タスク行の収集、git log・実コードとの既済照合 |
 | [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md) | 英語→日本語の voice 保持翻訳スキル。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な日本語にする。逐語訳でも MT でもなく、term-lock（訳す-by-default／英語保持は明示 |
 | [llm-as-judge](skills/llm-as-judge/SKILL.md) | Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation |
+| [ideate](skills/ideate/SKILL.md) | 発散セッション — 近傍 / 遠距離 / 外部の 3 ラウンドで刺激源を回し、全ラウンド終了まで評価を禁じる |
+| [implementation-chain](skills/implementation-chain/SKILL.md) | task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、対応する agent chain を plan に front-load する判断表 — Chain Matrix、レビュアー routing、早期停止条件 |
+| [public-comment](skills/public-comment/SKILL.md) | 公開技術スレッドへの返信 — AI slop tell の除去、スレッド接地、投稿前の日本語訳併記による人間 gate |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
@@ -94,7 +96,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
 | [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
-| [lint-gates](rules/python/lint-gates.md) | Python lint ゲートの baseline (ruff B/I/T20)、zip strict= の規律、文書化された構造不変条件の決定論ゲート化 (import-linter contract、frozen dataclass AST スキャン) |
+| [human-gate](rules/common/human-gate.md) | ゲートの第 2 軸 — artifact は機械が検査し、人間は intent を判断する。提示物は対象で分岐（behavior-shaping artifact と control plane は本文、実装は承認済み plan と照合する意図の要約） |
 <!-- END GENERATED: rules-table -->
 
 ## 使い方

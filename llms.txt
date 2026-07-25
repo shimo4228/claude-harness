@@ -28,7 +28,6 @@
 Each skill defines a workflow that Claude can invoke via slash command (`/<skill-name>`) or naturally trigger from its description.
 
 - [search-first](skills/search-first/SKILL.md): research-before-coding workflow — invokes the scout agent to discover existing libraries, MCP servers, or GitHub solutions before writing custom code
-- [signal-first-research](skills/signal-first-research/SKILL.md): design guide for a research intake filter that admits only information likely to change your next action — define the signal before the search
 - [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
 - [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — inline Glob inventory + single-context holistic evaluation (full / changed modes), Keep/Improve/Update/Retire/Merge verdicts
 - [skill-health](skills/skill-health/SKILL.md): structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts, agents, or sibling skills that don't resolve on disk); deterministic, delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply
@@ -55,15 +54,18 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [hf-sync](skills/hf-sync/SKILL.md): mirrors graph.jsonld-bearing research repos to Hugging Face Datasets — flattens the graph and uploads alongside graph.jsonl
 - [citation-sync](skills/citation-sync/SKILL.md): audits the three citation layers of a research repo (docs, .zenodo.json, graph.jsonld) and syncs them bottom-up
 - [when-code-when-llm](skills/when-code-when-llm/SKILL.md): decision framework for choosing deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test, worked examples in both directions
-- [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list
+- [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session inside Herdr, visible in the mobile app session list
 - [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
 - [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md): verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact (paper, knowledge graph, DOI repo)
-- [gap-review](skills/gap-review/SKILL.md): generate ranked next-move candidates for a strategy you operate over time — diff deployed tactics against your action catalog, open questions, and the latest literature
 - [wiki-harvest](skills/wiki-harvest/SKILL.md): read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/`
 - [wiki-query](skills/wiki-query/SKILL.md): read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis
-- [kickoff](skills/kickoff/SKILL.md): session startup routine — repo state check (git status, branch sync, recent commits), unfinished-work signal detection (dirty tree, stashes, unpushed commits, open PRs), fixed-format status report
 - [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md): audits a project repository's non-code assets (tool configs, CI workflows, runbooks) for diminished value — every asset serves a consumer; flags assets whose consumer has vanished, with Keep/Update/Retire/Merge verdicts
 - [task-stocktake](skills/task-stocktake/SKILL.md): audits and consolidates a repository's pending-task tracking into its single task ledger — bootstraps the ledger, sweeps stray task lines from handoff and audit files, verifies entries against git log and actual code
+- [implementation-chain](skills/implementation-chain/SKILL.md): decides the task type (feat / fix / refactor / chore / prototype / writing) and front-loads its agent chain into the plan — Chain Matrix, reviewer routing, early-stop conditions
+- [public-comment](skills/public-comment/SKILL.md): drafts replies for public technical threads (GitHub discussions, issues, PRs, Hugging Face discussions) — AI-slop tell removal, thread grounding, and a human gate with a Japanese translation before posting
+- [ideate](skills/ideate/SKILL.md): divergence session — three rounds of stimulus (near via wiki-query, far via mechanical concept sampling, outside via WebSearch), with evaluation forbidden until every round closes
+- [llm-as-judge](skills/llm-as-judge/SKILL.md): design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation
+- [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md): voice-preserving EN→JA translation for essays, research docs, READMEs, and ADRs — term-lock, 2-pass self-revision, back-translation QA
 
 ## Agents
 
@@ -88,11 +90,11 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 
 - [agents](rules/common/agents.md): agent orchestration conventions — when to use which agent, parallel execution patterns, author-reviewer separation
 - [akc-cycle](rules/common/akc-cycle.md): six-phase behavioral conventions of the Agent Knowledge Cycle (Research, Extract, Curate, Promote, Measure, Maintain) plus the scaffold-dissolution principle
-- [authorship-strategy](rules/common/authorship-strategy.md): pointer rule activating the 4-layer authorship-strategy framework when working in DOI-registered idea-rescue research repos
 - [debugging](rules/common/debugging.md): root-cause-first debugging flow (hypothesis → evidence → confirm → fix), AI recency-bias guards, retry-with-context with bounded backoff
 - [planning](rules/common/planning.md): planning standards — required What / Why / Alternatives, Phase 0 external research mandate, evidence-based decision-making, prototype-before-scale
 - [skills](rules/common/skills.md): skill origin tracking spec, knowledge placement decision (existing skill vs new skill vs MEMORY.md), skill portability guidelines
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
+- [human-gate](rules/common/human-gate.md): the second gate axis — machines verify artifacts, the human judges intent; what the gate shows branches by target (behavior-shaping artifacts and the control plane show full text, implementation shows an intent summary checked against the approved plan)
 - [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
 
 ## Related repositories

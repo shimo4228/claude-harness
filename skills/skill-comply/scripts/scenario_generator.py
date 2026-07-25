@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,8 +33,14 @@ def generate_scenarios(
     """
     skill_content = skill_path.read_text()
     prompt_template = (PROMPTS_DIR / "scenario_generator.md").read_text()
+    # The audited file is untrusted input, so it is fenced with a nonce the
+    # document cannot predict and therefore cannot close to escape its block.
+    # A fixed delimiter (the old `---`) is reproduced by ordinary markdown
+    # frontmatter, which is how an imported skill could address the generator
+    # directly and dictate the setup_commands it emits (security scan F2, F3).
+    nonce = f"<<<AUDITED-DOCUMENT-{secrets.token_hex(8)}>>>"
     prompt = (
-        prompt_template
+        prompt_template.replace("{nonce}", nonce)
         .replace("{skill_content}", skill_content)
         .replace("{spec_yaml}", spec_yaml)
     )
@@ -53,14 +60,16 @@ def generate_scenarios(
 
     scenarios: list[Scenario] = []
     for s in parsed["scenarios"]:
-        scenarios.append(Scenario(
-            id=s["id"],
-            level=s["level"],
-            level_name=s["level_name"],
-            description=s["description"],
-            prompt=s["prompt"].strip(),
-            setup_commands=tuple(s.get("setup_commands", [])),
-        ))
+        scenarios.append(
+            Scenario(
+                id=s["id"],
+                level=s["level"],
+                level_name=s["level_name"],
+                description=s["description"],
+                prompt=s["prompt"].strip(),
+                setup_commands=tuple(s.get("setup_commands", [])),
+            )
+        )
 
     return sorted(scenarios, key=lambda s: s.level)
 

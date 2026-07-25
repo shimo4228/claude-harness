@@ -322,7 +322,7 @@ uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph
 標準ツールを調査した上での Build 判定。再調査不要:
 
 - **[pySHACL](https://github.com/RDFLib/pySHACL)** (RDFLib): 活発に維持されている W3C 標準の RDF 検証器。ただし**展開後の RDF graph に対して動く**ため、DROPPED-KEY は原理的に検出できない（落ちた key は SHACL が見る前に消えている）。URL-LITERAL は `sh:nodeKind sh:IRI` で書けるが、predicate ごとの shapes ファイル維持が必要
-- **[jsonld-lint](https://github.com/mattrglobal/jsonld-lint)** (Mattr): un-mapped term 検出（= DROPPED-KEY）を持つ唯一の専用 linter だったが **2024-12 にアーカイブ済み**。採用不可
+- **[jsonld-lint](https://github.com/mattrglobal/jsonld-lint)** (Mattr): un-mapped term 検出（= DROPPED-KEY）を持つ唯一の専用 linter だったが **2025-09-26 に owner がアーカイブ**。採用不可
 - **jsonld.js の safe mode**: 展開時に未定義 term をエラー化できるが JS 専用。Python 側の pyld に相当機能なし
 
 つまり最も危険な DROPPED-KEY が標準ツールの死角にあり、VOLATILE はプロジェクト固有ポリシーなので、薄い自作 lint が正当。

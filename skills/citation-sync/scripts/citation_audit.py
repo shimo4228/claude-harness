@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Audit the four citation layers of research repos and report divergence.
+"""Audit the three citation layers of research repos and report divergence.
 
 Layers (lowest = source of truth):
   1. docs      — identifier-bearing citations in public markdown/text
                  (arXiv IDs and DOIs; excludes .notes/, .git/, hidden dirs)
   2. zenodo    — .zenodo.json related_identifiers with relation=references
   3. graph     — graph.jsonld nodes typed ExternalReference
-  4. wikidata  — P2860 (cites work) on the repo's Wikidata item, resolved to
-                 arXiv ID / DOI via each cited item's P818 / P356
-                 (repo QID is discovered from the graph self-node's sameAs)
+
+A former layer 4 (Wikidata P2860) is RETIRED as of 2026-07 following the
+governance revocation that deleted the items (authorship-strategy ADR-0021).
+Always pass --skip-wikidata; the probing code is kept only so that existing
+call sites do not break.
 
 Usage:
-    python3 citation_audit.py [--skip-wikidata] [--json OUT.json] REPO_DIR ...
+    python3 citation_audit.py --skip-wikidata [--json OUT.json] REPO_DIR ...
 
 Output: a per-repo divergence table (markdown) on stdout; exit 1 if any repo
 has layer divergence, 0 if all repos are converged. Read-only — never writes
@@ -32,8 +34,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-ARXIV_RE = re.compile(r"(?:arXiv[: ]?|arxiv\.org/abs/|10\.48550/arXiv\.)(\d{4}\.\d{4,5})",
-                      re.IGNORECASE)
+ARXIV_RE = re.compile(
+    r"(?:arXiv[: ]?|arxiv\.org/abs/|10\.48550/arXiv\.)(\d{4}\.\d{4,5})", re.IGNORECASE
+)
 DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>\])},;`&]+")
 ZENODO_PREFIX = "10.5281/zenodo."
 EXCLUDE_DIRS = {".notes", ".git", "node_modules", ".venv", "__pycache__"}
@@ -57,7 +60,10 @@ def scan_docs(repo: Path) -> set[str]:
     for p in repo.rglob("*"):
         if p.suffix not in (".md", ".txt"):
             continue
-        if any(part in EXCLUDE_DIRS or part.startswith(".") for part in p.relative_to(repo).parts[:-1]):
+        if any(
+            part in EXCLUDE_DIRS or part.startswith(".")
+            for part in p.relative_to(repo).parts[:-1]
+        ):
             continue
         try:
             text = p.read_text(errors="ignore")
@@ -116,7 +122,7 @@ def scan_graph(repo: Path) -> tuple[set[str], str | None]:
         if "ExternalReference" in types:
             for field in ("identifier", "@id", "url"):
                 v = node.get(field, "")
-                for s in (v if isinstance(v, list) else [v]):
+                for s in v if isinstance(v, list) else [v]:
                     if not isinstance(s, str):
                         continue
                     m = ARXIV_RE.search(s)
@@ -135,11 +141,17 @@ def scan_graph(repo: Path) -> tuple[set[str], str | None]:
         if isinstance(sames, str):
             sames = [sames]
         ids = [node.get("@id", ""), node.get("url", "")]
-        if any(isinstance(i, str)
-               and ((i.rstrip("/").endswith(f"/{repo_name}")
-                     and ("github.com" in i or "github.io" in i))
-                    or i == f"#{repo_name}")
-               for i in ids):
+        if any(
+            isinstance(i, str)
+            and (
+                (
+                    i.rstrip("/").endswith(f"/{repo_name}")
+                    and ("github.com" in i or "github.io" in i)
+                )
+                or i == f"#{repo_name}"
+            )
+            for i in ids
+        ):
             for s in sames:
                 if isinstance(s, str) and "wikidata.org" in s:
                     qid = s.rstrip("/").rsplit("/", 1)[-1]
@@ -164,19 +176,29 @@ def scan_wikidata(qid: str) -> set[str]:
     refs: set[str] = set()
     d = api_get(f"https://www.wikidata.org/wiki/Special:EntityData/{qid}.json")
     claims = d["entities"][qid].get("claims", {})
-    targets = [s["mainsnak"]["datavalue"]["value"]["id"]
-               for s in claims.get("P2860", [])
-               if s.get("mainsnak", {}).get("datavalue")]
+    targets = [
+        s["mainsnak"]["datavalue"]["value"]["id"]
+        for s in claims.get("P2860", [])
+        if s.get("mainsnak", {}).get("datavalue")
+    ]
     for i in range(0, len(targets), 50):
-        chunk = "|".join(targets[i:i + 50])
-        dd = api_get("https://www.wikidata.org/w/api.php?action=wbgetentities"
-                     f"&ids={chunk}&props=claims&format=json")
+        chunk = "|".join(targets[i : i + 50])
+        dd = api_get(
+            "https://www.wikidata.org/w/api.php?action=wbgetentities"
+            f"&ids={chunk}&props=claims&format=json"
+        )
         for tq, ent in dd.get("entities", {}).items():
             c = ent.get("claims", {})
-            p818 = [s["mainsnak"]["datavalue"]["value"] for s in c.get("P818", [])
-                    if s.get("mainsnak", {}).get("datavalue")]
-            p356 = [s["mainsnak"]["datavalue"]["value"] for s in c.get("P356", [])
-                    if s.get("mainsnak", {}).get("datavalue")]
+            p818 = [
+                s["mainsnak"]["datavalue"]["value"]
+                for s in c.get("P818", [])
+                if s.get("mainsnak", {}).get("datavalue")
+            ]
+            p356 = [
+                s["mainsnak"]["datavalue"]["value"]
+                for s in c.get("P356", [])
+                if s.get("mainsnak", {}).get("datavalue")
+            ]
             if p818:
                 refs.add(norm_arxiv(p818[0]))
             elif p356:
@@ -190,8 +212,11 @@ def scan_wikidata(qid: str) -> set[str]:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("repos", nargs="+", help="repo directories to audit")
-    ap.add_argument("--skip-wikidata", action="store_true",
-                    help="skip the Wikidata layer (offline / faster)")
+    ap.add_argument(
+        "--skip-wikidata",
+        action="store_true",
+        help="skip the retired Wikidata layer (ADR-0021) — always pass this",
+    )
     ap.add_argument("--json", help="also write machine-readable results to this path")
     args = ap.parse_args()
 
@@ -224,7 +249,10 @@ def main() -> int:
             "converged": not repo_diverged,
         }
 
-        print(f"\n## {repo.name}" + (f"  (Wikidata: {qid})" if qid else "  (no QID in graph)"))
+        print(
+            f"\n## {repo.name}"
+            + (f"  (Wikidata: {qid})" if qid else "  (no QID in graph)")
+        )
         if not union:
             print("  no external citations in any layer")
             continue

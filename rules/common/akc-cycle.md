@@ -1,100 +1,57 @@
 <!-- origin: shimo4228 -->
-# AKC Rules
+# AKC Rules (local edition)
 
-Behavioral principles for AI agents implementing the Agent Knowledge Cycle. These rules distill the AKC phases into actionable guidance that works without installing individual AKC skills.
+Agent Knowledge Cycle の行動原則。**このファイルはローカル harness 版**で、6 phase の
+解説本文は各 phase を担う skill 側に置いてある（この harness は全 skill を導入済みなので
+本文の常駐が二重になる）。skill 未導入の環境向けの自己完結版は AKC repo の配布版が正本。
 
-Copy this file to your agent's rules directory (e.g., `~/.claude/rules/`) and the cycle will run through natural conversation.
+## Phase → skill 対応（トリガー時に呼ぶ）
 
-## Research — Search broadly, filter by signal
+| Phase | トリガー | skill |
+|---|---|---|
+| **Research** | 新規依存の追加 / 既存にありそうなユーティリティの自作前 | `search-first` |
+| **Extract** | 非自明な解決・ハードな debug の直後、セッション終盤 | `learn-eval` |
+| **Curate** | skill / rule が増えた、参照先が消えた、cleanup 依頼 | `skill-stocktake` / `rules-stocktake` / `config-gc` |
+| **Promote** | 同じ助言が複数 skill・複数セッションに再出現した | `rules-distill` |
+| **Measure** | rule を追加・変更した直後、遵守が疑わしいとき | `skill-comply` |
+| **Maintain** | 大規模リファクタ後、context ファイルが肥大化 | `context-sync` |
 
-Before creating a new module, utility, or abstraction:
+Measure の注意: 遵守の確認は tool call だけでなく**エージェントの述べた理由と verdict のテキスト**
+も見る（判断フェーズの遵守はツール痕跡に残らない）。
+Maintain の注意: 同じ数値クレーム（モジュール数・テスト数・版番号）を 2 箇所に書かない。
+正本を 1 つ決めて他はポインタにする。検証時は既存 doc の値でなく**ライブのコマンド出力**を信じる。
 
-0. **Define the signal first** — what information would actually change your next action? Anything outside that is out of scope for this research pass.
-1. Search generously for existing libraries, tools, and patterns that solve the same problem
-2. Evaluate candidates for fitness (security, maintenance, relevance)
-3. Adopt or extend an existing solution when one fits; build only when none do
+## Signal-first — 広く探し、狭く取り込む
 
-Signal-first is the default. Search widely, intake narrowly. Information that does not change an action does not deserve to be held — intake is where human attention is spent, and unspent attention is the cycle's scarce resource. Exploration and learning phases are legitimate exceptions; name them explicitly when you take them.
+調査の前に**シグナルを定義する**: どの情報が次の行動を変えるか。その外は今回のスコープ外。
+探索は広く、intake は狭く。行動を変えない情報は保持に値しない — intake は人間の注意を
+消費し、未消費の注意がこのサイクルの希少資源である。探索・学習フェーズは正当な例外だが、
+例外を取るときは明示的にそう言う。
 
-**Trigger**: Any task that introduces a new dependency or creates a utility that might already exist.
+### Output discipline — 行動を変えるものだけ出力する
 
-### Output discipline — emit only what changes an action
-
-Signal-first applies to output as well as intake. Do not emit a score, grade, or
-recommendation unless something downstream (a code gate, a human decision, the next
-step) actually consumes it. A number that changes no action is scaffolding — replace
-it with the concrete observation that *does* change one ("the lead doesn't say who
-it's for"), not "Lead: 6/10". LLM scoring is justified only as input to a code-owned
-decision (judge + enforce).
-
-See skills: readme-writer, when-code-when-llm
-
-## Extract — Capture reusable patterns from sessions
-
-When a session produces a non-obvious solution, workaround, or decision:
-
-1. Identify whether the pattern is reusable beyond this specific context
-2. Evaluate quality before saving — not every solution deserves to persist
-3. Save to the appropriate layer: memory for observations, skills for workflows, rules for principles
-
-**Trigger**: End of a productive session, after a hard-won debugging victory, or when the user explicitly asks to learn from the session.
-
-## Curate — Audit accumulated knowledge
-
-Skills, rules, and learned patterns accumulate over time. Periodically:
-
-1. Check for redundancy — two components covering the same concern
-2. Check for staleness — references to deleted components, outdated advice
-3. Check for silence — components that exist but never get triggered
-4. Remove or consolidate what fails these checks
-
-**Trigger**: When the number of skills/rules grows noticeably, when a component references something that no longer exists, or when the user asks for cleanup.
-
-## Promote — Elevate recurring patterns to rules
-
-When the same guidance keeps resurfacing across skills, memory, and conversation — when the repetition itself has become the signal:
-
-1. Extract the cross-cutting principle
-2. Write it as a rule (concise, actionable, with a trigger condition)
-3. Remove the redundant occurrences from lower layers
-
-Rules are loaded every session and shape behavior reliably. Skills are triggered probabilistically. Promotion moves knowledge from the probabilistic layer to the deterministic layer.
-
-**Trigger**: Noticing the same advice being given repeatedly, or finding the same pattern in multiple skills.
-
-## Measure — Verify behavioral change quantitatively
-
-Subjective assessment ("I think it's following the rule") is insufficient:
-
-1. Define what compliance looks like in observable terms
-2. Check whether the behavior actually occurs — in tool calls, outputs, test results, *and* the agent's stated reasoning and verdicts (judgment-phase compliance lives in text, not tool calls)
-3. If compliance is low, investigate whether the rule is unclear, the trigger is wrong, or the rule conflicts with another
-
-**Trigger**: After adding or modifying a rule, or when the user questions whether a rule is being followed.
-
-## Maintain — Keep documentation roles clean
-
-Every documentation file serves one of four roles: Context (how to work here), Architecture (what the code looks like), Decisions (why it's this way), External (what this project is). Periodically:
-
-1. Verify each file serves exactly one role
-2. Check for content that belongs in a different role (e.g., design rationale in a context file → should be an ADR)
-3. Check numeric claims against reality (file counts, test counts, version numbers)
-4. Remove or update stale content rather than letting it accumulate
-5. Keep each fact in one place — never write the same numeric claim (module count, test count, version) in two files. Make one canonical and have others point to it. When verifying a documented number, trust live command output (`find … | wc -l`, `pytest --collect-only`), not the existing doc's value — docs drift, the command does not.
-
-**Trigger**: After major refactoring, when context files exceed ~200 lines, or when documentation claims feel wrong.
-
-See skills: context-sync, release-doi
+signal-first は出力にも適用する。下流（コードのゲート、人間の判断、次のステップ）が実際に
+消費しないスコア・グレード・推薦を出してはならない。行動を変えない数値は足場である —
+実際に行動を変える具体的な観察（「リードに誰向けか書かれていない」）に置き換える。
+「Lead: 6/10」ではない。LLM のスコアリングは code-owned decision の入力
+（judge + enforce）としてのみ正当。
 
 ## Scaffold Dissolution
 
-These rules are scaffolding. As the user and agent internalize the cycle through practice:
+これらの rule は足場である。実践を通じて内在化されるにつれ、rule は簡素化・削除されうる。
+成功は rule の数ではなく、明示的な呼び出しなしにサイクルが自然に回るかで測る。
 
-- The rules become implicit in how work is approached
-- Individual rules may be simplified or removed as their principles are absorbed into conversation patterns
-- Success is measured not by rule count, but by whether the cycle runs naturally without explicit invocation
+Dissolution には**2 つのベクトル**がある:
 
-Dissolution has **two vectors**, not one:
+- **Inward** — 原則が会話パターンに吸収され、それを教えた rule が不要になる
+- **Downward（substrate へ）** — 公式ハーネスがその領域をネイティブに扱うようになり、
+  足場だった自作 rule に足すものが無くなる。ハーネスの案内は**常に読み込まれ**
+  （tool description が system prompt に入る）進化を続ける。同じ領域を覆う手書き rule は
+  静的で drift したコピーになり、新しい既定を**上書きして劣化させうる**。substrate が
+  capability を吸収したら **rule を退役させる** — 古い影として residency させ続けない。
+  構造的にハーネスができないこと（例: cross-model 脱相関）だけを残し、*why* は
+  standing rule ではなく ADR に記録する
 
-- **Inward** — a principle is absorbed into the agent's and user's conversation patterns, so the rule that taught it is no longer needed.
-- **Downward (into the substrate)** — the official harness evolves to handle a domain natively, so the custom rule that scaffolded it has nothing left to add. Harness guidance is **always loaded** (tool descriptions live in the system prompt) and keeps evolving; a hand-written rule over the same domain (e.g. multi-agent orchestration, fan-out, tool-use defaults) becomes a static, drifting copy that can *override and degrade* the newer defaults. When the substrate absorbs the capability, **retire the rule** — don't let it linger as a stale shadow. Keep only what the harness structurally can't do (e.g. cross-model decorrelation); record the *why* in an ADR, not a standing rule.
+**モデル世代の交代も downward のトリガー**である。旧世代の弱さを補うための over-constraint
+（強い禁止・網羅的手順・反復強調・使用例の列挙）は、判断力の上がったモデルでは衝突コストに
+転じる。世代交代時は rule を再監査する（→ [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md)）。

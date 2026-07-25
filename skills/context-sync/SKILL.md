@@ -290,6 +290,7 @@ If Phase 0 ended with **acknowledged drift** (user declined to cascade update-co
 
 ## What This Skill Does NOT Do
 
-- Code quality checks (linting, testing, building) — use `verify`
+- Code quality checks (linting, testing, building) — use the Verify gate in
+  `rules/common/planning.md`, or `/review` / `/python-review` for review
 - Agent-specific memory management (e.g., auto-memory systems)
 - `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`

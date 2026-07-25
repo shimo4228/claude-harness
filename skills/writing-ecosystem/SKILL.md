@@ -172,6 +172,35 @@ fact-check で確定した一次資料を、**本文の出典セクションに�
 
 *最後の 3 項目は `article-writing` skill の Banned Patterns を包含。本リストは superset。*
 
+### 文体・構造 tell（2026-07 追補）
+
+前提: 2026 年時点で AI 使用は執筆の前提であり、tell は「AI 使用の証拠」ではなく「**未レビューの生ダンプ**」のシグナルとして読まれる。tell の除去は偽装ではなく、人間の判断が通った痕跡の可視化。
+
+構造 tell の判定原則（語彙の判定原則と対）:
+
+> 内容を変えずに形だけ真似できるパターンは tell（語彙は消せるが、リズムは残る）。
+
+構造 tell（語彙より優先度高）:
+
+| Tell | 対処 |
+|------|------|
+| 「It's not X, it's Y」対比構文 / 「〜ではなく〜だ」の決め構文 | 2026 年中盤で最も認知された構造 tell。主張の形だけ生成された兆候。主張を直接書く |
+| 3 点セット列挙（rule of three） | 「costs three things」型の予告つき triad、formulaic な 3 項 bold リスト。実内容が本当に 3 つある場合のみ、予告なしで書く |
+| em-dash（—）多用 | 「ChatGPT hyphen」。文の再構築（短文化・文長のばらつき）で代替。`:` / `;` への機械置換は禁止 — 等間隔リズムは記号が変わっても同じ指紋 |
+| bold 見出し + 本文の等間隔リズム反復（3 連以上） | 段落の長さと形をばらつかせる |
+| 箇条書き過多 | prose で足りる内容をリスト化しない |
+| Claude-ism hedging（"It's worth noting" / "Generally speaking" / "While this may vary"） | 断定するか削る |
+| 追従オープナー（"Great question!" / "You're absolutely right" / 「素晴らしい質問ですね」） | 本題から始める |
+| 無内容クローザー（"Hope this helps!" / 「参考になれば幸いです」「いかがでしたか」） | 最後の実質的な文で終える |
+| 絵文字 | 使わない（プラットフォームの明示的文化がある場合を除く） |
+
+語彙追補（radioactive vocab、上の表に追加）:
+
+- 英: delve / multifaceted / holistic / transformative / ever-evolving / testament to / dive into / deep dive / pivotal / landscape（比喩用法）/ tapestry / boasts / meticulous / unlock / harness / unleash / empower / paradigm
+- 日: 「〜と言えるでしょう」/「〜ではないでしょうか」（修辞疑問の乱用）/「深掘り」
+
+網羅リストの正本は複製しない。コミュニティリスト [AlpinDale/gptslop](https://github.com/AlpinDale/gptslop)（GPT/Claude 頻出句、~800 句規模の Antislop 系評価の基盤）を参照。
+
 ---
 
 ## Voice & Tone Rules

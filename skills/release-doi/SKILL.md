@@ -295,9 +295,9 @@ identifiers:
 # または同等:
 bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>
 
-# 反映確認
-# https://huggingface.co/datasets/<Owner/dataset>/commits/main を開いて
-# 最新 commit が直前 release より新しいことを目視
+# 反映確認 (内容照合。時刻の前後比較は「無関係な更新」でも通るので使わない)
+curl -sL "https://huggingface.co/datasets/<Owner/dataset>/resolve/main/graph.jsonld" \
+  | diff -q - graph.jsonld && echo "HF PASS"
 ```
 
 失敗時 (`hf upload` の 401 / 403、HF dataset 404 等) は `hf-sync` skill の "Failure modes" section に従う。

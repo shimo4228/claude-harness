@@ -1,6 +1,6 @@
 ---
 name: rules-stocktake
-description: Audit ~/.claude/rules (always-loaded behavioral rules) for quality — per-session residency cost, staleness, redundancy, broken See-skill pointers, and substrate absorption — and assign Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says "audit my rules", "rules stocktake", "review my rules", "which rules should be demoted or dissolved", "rules が肥大化してきた", "ルールを棚卸しして", or "/rules-stocktake". NOT for auditing skill quality (that is skill-stocktake), NOT for promoting skill patterns INTO rules (that is rules-distill — this skill is its inverse), NOT for measuring runtime rule compliance (that is skill-comply), and NOT for whole-config GC across hooks/permissions/MCP (that is config-gc).
+description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken See-skill pointers, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"which rules should be demoted or dissolved\", 「rules が肥大化してきた」「ルールを棚卸しして」, or when the model generation changed and over-constraints written for the previous one may now be net-negative (「新しいモデルに合わせて rules を見直したい」「rightsize したい」). NOT for — skill quality → skill-stocktake; promoting skill patterns INTO rules → rules-distill (this is its inverse); runtime compliance → skill-comply; whole-config GC → config-gc."
 license: MIT
 metadata:
   author: shimo4228
@@ -51,16 +51,19 @@ re-evaluation set even if its mtime is old.
 
 ## Phase 1 — Inventory + mechanical integrity checks
 
-Enumerate with Glob (no script): `~/.claude/rules/**/*.md`. The corpus is small
-(~1,100 lines) — read every file into one context; no batching, no grep pre-filter.
-Measure per-file line counts (`wc -l`) — they become the residency-cost column in
-Phase 3 and the `lines` field in the ledger.
+Enumerate with Glob (no script): `~/.claude/rules/**/*.md`. The corpus is small enough
+to read every file into one context — no batching, no grep pre-filter. Measure the
+corpus size live (`find ~/.claude/rules -name '*.md' | xargs wc -l`) rather than
+trusting a figure written here; per-file line counts become the residency-cost column
+in Phase 3 and the `lines` field in the ledger.
 
 Run the mechanical checks with throwaway bash/grep (detection is structural → code;
 judgment on what the findings mean → LLM, per the enumerate/decide split):
 
 - [ ] Every `See skill:` / `See skills:` target exists under `~/.claude/skills/<name>/`
-- [ ] Every `python/` → `common/` extends link resolves
+- [ ] Every relative link between rule files resolves (the corpus is flat as of
+  2026-07-25 — a language sub-layer was retired into `skills/python-patterns`, so a
+  surviving `python/` path is a stale pointer, not a layer to validate)
 - [ ] Every rule file's line 1 carries `<!-- origin: X -->`
 - [ ] `rules/README.md`'s tree matches the actual file list (no missing, no phantom entries)
 
@@ -74,8 +77,8 @@ Read the body of **every** rule and evaluate them one by one while seeing the wh
 **Stage 1 — binary screen (every rule).** Answer each item as an explicit Yes/No per
 rule. Record answers internally; **surface only the No answers**:
 
-- [ ] No content overlap with other rules? (**the common ↔ python extends hierarchy is
-  NOT overlap** — a python/ file deepening its common/ counterpart is intentional layering)
+- [ ] No content overlap with other rules? (a rule that **declares** another as 正本 and
+  points at it is NOT overlap — that is the intended layering. Copied prose is.)
 - [ ] No overlap with skills / MEMORY.md / CLAUDE.md? (the division "principle in the rule,
   detail in the skill, `See skill:` bridging them" is NOT overlap — a full procedure
   residing in the rule body **is**, and signals Demote)
@@ -193,8 +196,9 @@ alone is banned. For non-Keep verdicts, cite the No answers (question + one-line
 }
 ```
 
-Keys are directory-qualified stems (`common/planning`, `python/testing`) because rules,
-unlike skills, nest. `lines` / `total_lines` let `changed` mode rebuild the Phase 3 table
+Keys are directory-qualified stems (`common/planning`, `common/debugging`) so the schema
+survives if the corpus nests again — it is flat as of 2026-07-25 but has nested before.
+`lines` / `total_lines` let `changed` mode rebuild the Phase 3 table
 and the aggregate judgment from carried-forward entries. Update inline with Read/Write,
 not a script. Created on the first run — do not pre-seed an empty file.
 

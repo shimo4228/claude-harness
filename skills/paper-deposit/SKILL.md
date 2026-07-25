@@ -79,7 +79,9 @@ tail -n +3 paper.ja.md | pandoc -f markdown -o paper.ja.pdf \
 
 Notes: prose-only figure *captions* (blockquotes describing a figure, no image
 file) render fine — they stay as caption text. Markdown tables and fenced code
-blocks render correctly. Open the first page and eyeball it before depositing.
+blocks render correctly. Verify font embedding mechanically before depositing
+(`pdffonts <file>.pdf` — a CJK face must appear when the paper carries Japanese);
+the content itself was settled at the paper-ecosystem review gate.
 
 ## Step 2 — Deposit to Zenodo (the durable core)
 
@@ -225,7 +227,7 @@ write the deltas back:
 ## Quick checklist
 
 - [ ] Review gate passed (paper-ecosystem); placeholders filled; filename neutral
-- [ ] PDF(s) generated and eyeballed (CJK font set if needed)
+- [ ] PDF(s) generated; font embedding verified mechanically (`pdffonts <file>.pdf` — a CJK face must appear when the paper carries Japanese). Content itself is the author's call at the review gate above, not a second eyeball pass here
 - [ ] Zenodo: draft created via script, human reviewed + **published**, both DOIs recorded; token file deleted
 - [ ] DOI stamped on title page; PDF regenerated for downstream channels
 - [ ] (optional) SSRN: Preprint, Crossref-DOI field empty, title/abstract artifacts fixed

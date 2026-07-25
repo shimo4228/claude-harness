@@ -43,7 +43,9 @@ bash <公開repo>/scripts/sync-from-local.sh
 script は staging 収集 → runtime artifact 除去 (results.json, __pycache__ 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
 secret scan (検出時 abort) → skills/ agents/ rules/ subtree の置換、まで行う。
-**commit はしない** — `git diff` がレビューゲート。
+**commit はしない** — `git diff` がレビューゲート。ここで本文を読むのは artifact 検査ではない:
+同期対象が skills / rules / agents（behavior-shaping artifact）であり、**そのテキストが意図そのもの**
+だから読む（`rules/common/human-gate.md`）。
 
 ### 4. ドキュメント整合 (LLM 側の責務)
 

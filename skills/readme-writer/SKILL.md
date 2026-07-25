@@ -176,7 +176,10 @@ README の事実が llms.txt / llms-full.txt / graph.jsonld と一致するか�
 
 ### 4. 人間 gate
 
-diff を人間が承認して適用。
+README 本文を提示して承認を取り、適用する。ここで人間が判断するのは**文章の正しさではなく
+「この入口を公開物として引き受けるか」**（README は公開・不可逆で、テキストが意図そのもの）。
+構造的な品質は Step 1 の `readme_lint.py` と Step 2 の `readme-reviewer` が既に持っている
+（`rules/common/human-gate.md`）。
 
 ---
 

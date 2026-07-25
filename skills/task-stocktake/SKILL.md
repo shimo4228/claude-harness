@@ -1,6 +1,6 @@
 ---
 name: task-stocktake
-description: Audit and consolidate a repository's pending-task tracking into its single task ledger (default .notes/TASKS.md) — bootstrap the ledger if missing, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines, verify pending entries against git log and actual code, and propose archiving detail files of completed tasks. Use when the user says "残タスクを棚卸しして", "タスク台帳を作って/整理して", "task stocktake", "/task-stocktake", when task lines are scattered across multiple notes files, or when starting work on "残っているタスク" in a repo whose ledger may be stale. NOT for auditing skills (skill-stocktake), rules (rules-stocktake), repo non-code assets (repo-asset-stocktake), or in-session todo tracking (harness task tools).
+description: "Consolidate a repo's pending-task tracking into its single task ledger (default .notes/TASKS.md) — bootstrap it if missing, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines, verify pending entries against git log and actual code, archive detail files of completed tasks. Use when the user says 「残タスクを棚卸しして」「タスク台帳を作って/整理して」「残っているタスクは？」, \"task stocktake\", when task lines are scattered across notes files, or when a repo's ledger may be stale. NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools."
 user-invocable: true
 origin: shimo4228
 ---

@@ -1,6 +1,6 @@
 ---
 name: skill-health
-description: Scan the skill library for structural technical debt — dangling references where a SKILL.md names a script, bash file, agent, or sibling skill that does not exist on disk ("missing artifacts" debt). Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", or "/skill-health". NOT for holistic skill quality verdicts (that is skill-stocktake), NOT for config GC over hooks/permissions/MCP (that is config-gc), and NOT for security scanning (that is security-scan).
+description: Scan the skill library for structural technical debt — dangling references where a SKILL.md names a script, bash file, agent, or sibling skill that does not exist on disk ("missing artifacts" debt), plus external skills whose directory is a symlink out of the skills root, where a local fix would be overwritten by the owning package manager. Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", "which skills are not really mine to edit", or "/skill-health". NOT for holistic skill quality verdicts (that is skill-stocktake), NOT for config GC over hooks/permissions/MCP (that is config-gc), and NOT for security scanning (that is security-scan).
 license: MIT
 metadata:
   author: shimo4228
@@ -23,6 +23,49 @@ This is a **structural** property — decidable from the literal text plus a
 filesystem `exists()` check — so it is owned by deterministic code at 100%
 accuracy (AKC ADR-0008 Code-LLM Layering). The semantic, risk, and validation
 dimensions are **delegated, never re-implemented here**.
+
+### Three output categories — only one is a defect claim
+
+The scanner reports three lists, and conflating them is the mistake this section
+exists to prevent:
+
+- **Dangling references** (`dangling`, exit code 1) — the skill wrote a *path*,
+  and that path does not exist. `exists()` is authoritative here.
+- **Unresolved names** (`unresolved_names`, exit code unaffected) — the skill
+  named a skill/command *without a path* (`See skill: X`, `` `X` skill ``,
+  `` `/X` ``) and no file matches under the skills root. **This is an
+  enumeration handed to judgment, not a finding.** The name may still be a CLI
+  builtin, a bundled skill, a plugin command, or a project-scoped skill in
+  another repo — none of which live here.
+- **External skills** (`external`, exit code unaffected) — the skill's directory
+  is a **symlink out of the skills root**, so this harness does not own the file.
+  Also an enumeration, and it answers a different question from the other two:
+  not "is this skill correct?" but **"would a fix applied here survive?"** It
+  would not — the owning tree overwrites it on its next upgrade, and the change
+  never reaches version control. Route these **upstream** (issue / PR); do not
+  hand them a local verdict.
+
+The asymmetry is structural, not conservatism: the slash-command namespace a
+user actually types **is not enumerable from disk**, and the harness hides
+user-only commands from the agent entirely. On 2026-07-25 that produced a real
+misdiagnosis — `/code-review` was declared nonexistent (absent from the skills
+root, from `enabledPlugins`, from `installed_plugins.json`, and from the agent's
+own skill listing) and three skills were "fixed" to stop pointing at a command
+that was live all along. Code enumerates the names it cannot resolve; a human or
+a holistic pass decides which are real (enumerate/decide, per
+`when-code-when-llm`). `_KNOWN_NON_FILE_SKILLS` in the scanner is noise
+reduction only — never an authority on what exists.
+
+Ownership is decided by `is_symlink()` alone — no git call. `git ls-files` cannot
+even be *asked* about a path behind a symlink (`fatal: pathspec ... is beyond a
+symbolic link`), so the link itself is the boundary of what this repository owns.
+This category exists because of a live miss on 2026-07-25: a stocktake assigned
+`hunk-review` an Improve verdict for a stale flag table, and the fix was written
+straight into `/opt/homebrew/Cellar/hunk/0.17.1/libexec/skills/` — invisible to
+git and due to vanish on the next `brew upgrade`. It was reverted and filed as
+[modem-dev/hunk#595](https://github.com/modem-dev/hunk/issues/595) instead.
+Note that references *inside* an external skill are still scanned: ownership
+changes where a fix goes, not whether the defect is real.
 
 ## Boundary (read first — this skill does not overlap its neighbours)
 
@@ -67,6 +110,12 @@ scan root missing. The scanner is **conservative by design** — it skips templa
 placeholders (`<your-repo>/x.sh`), illustrative example links (`[](url)`), and
 `--directory`-overridden commands, because a false "missing artifact" is worse
 than a missed one. Run `--help` for flags; omit `--json` for a human report.
+
+The same run also reports **external skills** (`external` in JSON). Surface these
+before any repair is proposed: they set *where* a fix can go. For each one, say
+who owns it and route the fix upstream — an issue or PR against the owning
+project — rather than editing the symlinked file. Editing it "works" until the
+owner's next upgrade, and git never sees it.
 
 Present each dangling reference with: skill, ref type, the raw reference, the
 resolved path, and the line. Do not auto-fix — a dangling reference may mean the

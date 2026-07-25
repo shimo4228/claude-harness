@@ -8,6 +8,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,11 +29,28 @@ class ScenarioRun:
     timed_out: bool = False
 
 
+#: Tools the child agent may use without a permission prompt. Bash is NOT here.
+#:
+#: `--allowedTools` in `-p` mode is a whitelist *plus* auto-approval, and the
+#: prompt handed to the child is LLM output derived from the audited .md file's
+#: raw body — so with Bash on this list, an instruction smuggled through that
+#: file executes as the user with no human in the loop, unattended (security scan
+#: F3/F4/F18, 2026-07-25). `cwd` and `--add-dir` widen access; they do not confine
+#: it, and Bash reaches every path the user can.
+#:
+#: Bash is available with `--allow-bash` for the specs that genuinely need it
+#: (a skill whose compliance is "did it run the tests" cannot be measured
+#: without it). Opt-in is the point: routine periodic maintenance runs safe.
+DEFAULT_ALLOWED_TOOLS = "Read,Write,Edit,Glob,Grep"
+BASH_ALLOWED_TOOLS = "Read,Write,Edit,Bash,Glob,Grep"
+
+
 def run_scenario(
     scenario: Scenario,
     model: str = "sonnet",
     max_turns: int = 30,
     timeout: int = DEFAULT_TIMEOUT_SECONDS,
+    allow_bash: bool = False,
 ) -> ScenarioRun:
     """Execute a scenario and extract tool calls from stream-json output.
 
@@ -47,12 +65,19 @@ def run_scenario(
     _setup_sandbox(sandbox_dir, scenario)
 
     cmd = [
-        "claude", "-p", scenario.prompt,
-        "--model", model,
-        "--max-turns", str(max_turns),
-        "--add-dir", str(sandbox_dir),
-        "--allowedTools", "Read,Write,Edit,Bash,Glob,Grep",
-        "--output-format", "stream-json",
+        "claude",
+        "-p",
+        scenario.prompt,
+        "--model",
+        model,
+        "--max-turns",
+        str(max_turns),
+        "--add-dir",
+        str(sandbox_dir),
+        "--allowedTools",
+        BASH_ALLOWED_TOOLS if allow_bash else DEFAULT_ALLOWED_TOOLS,
+        "--output-format",
+        "stream-json",
         "--verbose",
     ]
 
@@ -94,17 +119,83 @@ def _safe_sandbox_dir(scenario_id: str) -> Path:
     return path
 
 
+def _contained(sandbox_dir: Path, raw: str) -> Path | None:
+    """Resolve `raw` against the sandbox, or None if it escapes.
+
+    Resolution is done on the real path (symlinks followed), so a link planted
+    inside the sandbox cannot be used as a door out of it.
+    """
+    base = sandbox_dir.resolve()
+    candidate = Path(raw)
+    target = candidate if candidate.is_absolute() else base / candidate
+    # The target usually does not exist yet, so resolve its nearest existing
+    # ancestor and re-attach the remainder.
+    probe, tail = target, []
+    while not probe.exists() and probe != probe.parent:
+        tail.append(probe.name)
+        probe = probe.parent
+    resolved = probe.resolve().joinpath(*reversed(tail))
+    return resolved if resolved == base or base in resolved.parents else None
+
+
+def _apply_setup_commands(sandbox_dir: Path, commands: Iterable[str]) -> list[str]:
+    """Build the sandbox skeleton from `commands`. Returns the refused ones.
+
+    **Nothing here executes a process.** `commands` is LLM output derived from the
+    audited .md file's raw body, so treating it as executable made any third-party
+    skill a command-execution vector (security scan F2, 2026-07-25): one
+    `bash -c 'curl … | sh'` entry ran on the host before the scenario started.
+
+    What the commands are actually for is creating directories and empty files,
+    and that needs no shell. Two verbs are interpreted with pathlib — `mkdir` and
+    `touch` — with every path required to resolve inside the sandbox. Everything
+    else is refused and returned to the caller for reporting; a refusal is data
+    about the generated scenario, not an error to raise.
+
+    The allowlist stays at two verbs deliberately. Widening it to "commands that
+    look harmless" is how this class of hole reopens.
+    """
+    refused: list[str] = []
+    for cmd in commands:
+        try:
+            parts = shlex.split(cmd)
+        except ValueError:
+            refused.append(cmd)
+            continue
+        if not parts:
+            continue
+        verb, args = parts[0], [a for a in parts[1:] if not a.startswith("-")]
+        if verb not in ("mkdir", "touch") or not args:
+            refused.append(cmd)
+            continue
+        targets = [_contained(sandbox_dir, a) for a in args]
+        if any(t is None for t in targets):
+            refused.append(cmd)
+            continue
+        for target in targets:
+            assert target is not None  # narrowed by the check above
+            if verb == "mkdir":
+                target.mkdir(parents=True, exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.touch(exist_ok=True)
+    return refused
+
+
 def _setup_sandbox(sandbox_dir: Path, scenario: Scenario) -> None:
-    """Create sandbox directory and run setup commands."""
+    """Create the sandbox directory and build its skeleton."""
     if sandbox_dir.exists():
         shutil.rmtree(sandbox_dir)
     sandbox_dir.mkdir(parents=True)
 
     subprocess.run(["git", "init"], cwd=sandbox_dir, capture_output=True)
 
-    for cmd in scenario.setup_commands:
-        parts = shlex.split(cmd)
-        subprocess.run(parts, cwd=sandbox_dir, capture_output=True)
+    refused = _apply_setup_commands(sandbox_dir, scenario.setup_commands)
+    for cmd in refused:
+        print(
+            f"  [setup refused] {cmd!r} — only `mkdir`/`touch` inside the sandbox run",
+            file=sys.stderr,
+        )
 
 
 TEXT_EVENT_MAX_CHARS = 2000
@@ -154,14 +245,16 @@ def _parse_stream_json(stdout: str) -> list[ObservationEvent]:
                 elif block_type == "text":
                     text_content = block.get("text", "")
                     if text_content.strip():
-                        events.append(ObservationEvent(
-                            timestamp=f"T{event_counter:04d}",
-                            event="text_output",
-                            tool="Text",
-                            session=session_id,
-                            input="",
-                            output=text_content[:TEXT_EVENT_MAX_CHARS],
-                        ))
+                        events.append(
+                            ObservationEvent(
+                                timestamp=f"T{event_counter:04d}",
+                                event="text_output",
+                                tool="Text",
+                                session=session_id,
+                                input="",
+                                output=text_content[:TEXT_EVENT_MAX_CHARS],
+                            )
+                        )
                         event_counter += 1
 
         elif msg_type == "user":
@@ -177,23 +270,27 @@ def _parse_stream_json(stdout: str) -> list[ObservationEvent]:
                         else:
                             output_str = str(output_content)[:5000]
 
-                        events.append(ObservationEvent(
-                            timestamp=f"T{info['order']:04d}",
-                            event="tool_complete",
-                            tool=info["tool"],
-                            session=msg.get("session_id", "unknown"),
-                            input=info["input"],
-                            output=output_str,
-                        ))
+                        events.append(
+                            ObservationEvent(
+                                timestamp=f"T{info['order']:04d}",
+                                event="tool_complete",
+                                tool=info["tool"],
+                                session=msg.get("session_id", "unknown"),
+                                input=info["input"],
+                                output=output_str,
+                            )
+                        )
 
     for _tool_use_id, info in pending.items():
-        events.append(ObservationEvent(
-            timestamp=f"T{info['order']:04d}",
-            event="tool_complete",
-            tool=info["tool"],
-            session="unknown",
-            input=info["input"],
-            output="",
-        ))
+        events.append(
+            ObservationEvent(
+                timestamp=f"T{info['order']:04d}",
+                event="tool_complete",
+                tool=info["tool"],
+                session="unknown",
+                input=info["input"],
+                output="",
+            )
+        )
 
     return sorted(events, key=lambda e: e.timestamp)

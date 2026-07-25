@@ -8,7 +8,7 @@ origin: shimo4228
 
 # Citation Sync
 
-研究 repo が外部文献を引用するとき、その引用は 4 つの層に現れる。層はそれぞれ別の audience に向けて伝播するため、**どれか 1 つに書いて終えると残りの層では引用が存在しないことになる**。本 skill はこの 4 層の divergence を検出し、下層から順に揃える。
+研究 repo が外部文献を引用するとき、その引用は 3 つの層に現れる。層はそれぞれ別の audience に向けて伝播するため、**どれか 1 つに書いて終えると残りの層では引用が存在しないことになる**。本 skill はこの 3 層の divergence を検出し、下層から順に揃える。
 
 | 層 | 担体 | 伝播先 | 実装 skill |
 |---|---|---|---|
@@ -23,12 +23,12 @@ origin: shimo4228
 
 ```bash
 python3 ~/.claude/skills/citation-sync/scripts/citation_audit.py REPO_DIR [REPO_DIR ...]
-#   --skip-wikidata   Wikidata 層を省略 (offline / 高速)
+#   --skip-wikidata   retired 層 (旧層 4) の探索を省略。常に付ける
 #   --json OUT.json   機械可読の結果も保存
 # exit 0 = 全 repo converged, 1 = divergence あり, 2 = fatal
 ```
 
-repo ごとに identifier × 層のマトリクスを出す。Wikidata 層は graph self-node の sameAs から repo QID を自動発見し、P2860 先の P818/P356 を解決して identifier 比較する。
+repo ごとに identifier × 層のマトリクスを出す (docs / zenodo / graph の 3 層)。
 
 **先に audit、議論はそれから。** どの層が欠けているかを推測で語らない — 今日の層別カバレッジは repo ごとに本当にバラバラで、直感は外れる (実例: ある repo は zenodo refs が空、別の repo は graph と zenodo が互いに素の集合を指していた)。
 
@@ -64,14 +64,13 @@ Phase 0 の audit を再実行し、全 repo `CONVERGED` を確認してから�
 |---|---|
 | 層が時期差で乖離する (graph は今日足したが zenodo は半年前のまま) | 引用を 1 本でも足したらこの skill を通す。release 前は必ず Phase 0 を回す |
 | docs の機械抽出を無批判に昇格させる | Phase 1 の curation 基準を適用。`.notes/` 由来と非引用文脈を落とす |
-| paper の references を repo 層に混ぜる (またはその逆) | paper item の P2860 は paper の reference list から、repo item の P2860 は repo docs の引用から。担体が違う |
-| Wikidata だけ先に膨らませる | 上流 (zenodo / graph) が空のまま Wikidata に辺を張ると、次の audit でまた divergence になる。必ず下層から |
+| paper の references を repo 層に混ぜる (またはその逆) | paper の引用は paper の reference list から、repo の引用は repo docs から。担体が違う (paper 側は `paper-deposit` の担当) |
 | sibling DOI を external citation として数える | ecosystem cross-link は別枠。audit script が自動で分離する |
 | graph に既存の内部 bibliography 規約があるのに新ノードを追加して重複させる | Phase 3 の前に graph 内を被引用文献の名前でも grep する（例: `ans:ref/sharf-2014` が既にあるのに DOI @id の新ノードを足してしまった）。既存ノードがあれば identifier / url / sameAs を**追記**する方が正しい |
 | `add_qid_sameas.py` が 1 行ノード形式の graph で JSONDecodeError | text surgery が複数行形式前提。1 行ノードの graph は手動 Edit（または Python 文字列置換 + json 検証）で注入する。失敗時はファイル無傷（書き込み前 validation）|
 | docs が識別子無しで引用 (名前のみ) → audit が docs 層欠落として DIVERGED を報告 | 識別子ベース比較の既知の限界。引用が docs に実在するなら**意図的残差**として完了報告に明記すれば良い（docs に ID を書き足す義務はない）|
 | graph 層が audit で全行空欄 (citation node が `ScholarlyArticle` 単独型) | audit script は `ExternalReference` 型のみを層 3 として検出する。citation node は `["ExternalReference", "ScholarlyArticle"]` の dual-type にする（AKC は v2.3.0 で全 prior-art node を移行済み。@context に `ExternalReference` の定義があるか先に確認）|
-| 括弧入り DOI (例: Bainbridge `10.1016/0005-1098(83)90046-8`) が docs/graph 層で truncate され永続 DIVERGED | script の DOI regex は `)` を終端扱いする既知制約。zenodo + wikidata のみで carry し、当該 graph node は dual-type から**除外**（truncate された偽 ID 行の発生防止）、**意図的残差**として記録して CONVERGED 相当と判定する |
+| 括弧入り DOI (例: Bainbridge `10.1016/0005-1098(83)90046-8`) が docs/graph 層で truncate され永続 DIVERGED | script の DOI regex は `)` を終端扱いする既知制約。zenodo 層でのみ carry し、当該 graph node は dual-type から**除外**（truncate された偽 ID 行の発生防止）、**意図的残差**として記録して CONVERGED 相当と判定する |
 
 ## Related skills
 

@@ -45,6 +45,17 @@ def main() -> None:
         help="Generate spec and scenarios without executing",
     )
     parser.add_argument(
+        "--allow-bash",
+        action="store_true",
+        help=(
+            "Give the scenario agent Bash. Off by default: the scenario prompt is "
+            "LLM output derived from the audited file, and --allowedTools auto-approves, "
+            "so Bash makes any attacker-influenced .md a command-execution vector. "
+            "Turn it on only for specs whose compliance depends on running commands, "
+            "and only for files you trust."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=None,
@@ -66,13 +77,15 @@ def main() -> None:
     print(f"       {len(spec.steps)} steps extracted")
 
     # Step 2: Generate scenarios
-    spec_yaml = yaml.dump({
-        "steps": [
-            {"id": s.id, "description": s.description, "required": s.required}
-            for s in spec.steps
-        ]
-    })
-    print(f"[2/4] Generating scenarios (3 prompt strictness levels)...")
+    spec_yaml = yaml.dump(
+        {
+            "steps": [
+                {"id": s.id, "description": s.description, "required": s.required}
+                for s in spec.steps
+            ]
+        }
+    )
+    print("[2/4] Generating scenarios (3 prompt strictness levels)...")
     scenarios = generate_scenarios(args.skill, spec_yaml, model=args.gen_model)
     print(f"       {len(scenarios)} scenarios generated")
 
@@ -93,26 +106,34 @@ def main() -> None:
 
     for scenario in scenarios:
         print(f"       Running {scenario.level_name}...", end="", flush=True)
-        run = run_scenario(scenario, model=args.model)
-        result = grade(spec, list(run.observations), classifier_model=args.classifier_model)
+        run = run_scenario(scenario, model=args.model, allow_bash=args.allow_bash)
+        result = grade(
+            spec, list(run.observations), classifier_model=args.classifier_model
+        )
         graded_results.append((scenario.level_name, result, list(run.observations)))
         print(f" {result.compliance_rate:.0%}")
 
     # Step 4: Generate report
-    skill_name = args.skill.parent.name if args.skill.stem == "SKILL" else args.skill.stem
+    skill_name = (
+        args.skill.parent.name if args.skill.stem == "SKILL" else args.skill.stem
+    )
     output_path = args.output or results_dir / f"{skill_name}.md"
-    print(f"[4/4] Generating report...")
+    print("[4/4] Generating report...")
 
     report = generate_report(args.skill, spec, graded_results, scenarios=scenarios)
     output_path.write_text(report)
     print(f"       Report saved to {output_path}")
 
     # Summary
-    overall = sum(r.compliance_rate for _, r, _obs in graded_results) / len(graded_results)
+    overall = sum(r.compliance_rate for _, r, _obs in graded_results) / len(
+        graded_results
+    )
     print(f"\n{'=' * 50}")
     print(f"Overall Compliance: {overall:.0%}")
     if overall < spec.threshold_promote_to_hook:
-        print("Recommendation: Some steps have low compliance. Consider promoting them to hooks. See the report for details.")
+        print(
+            "Recommendation: Some steps have low compliance. Consider promoting them to hooks. See the report for details."
+        )
 
 
 if __name__ == "__main__":

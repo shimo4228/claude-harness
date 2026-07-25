@@ -51,11 +51,13 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | Verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | Read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/` |
 | [wiki-query](skills/wiki-query/SKILL.md) | Read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis |
-| [kickoff](skills/kickoff/SKILL.md) | Session startup routine — repo state check (git status / branch sync / recent commits), unfinished-work signal detection (dirty tree / stash / unpushed / open PRs), fixed-format status report |
 | [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | Audits a project repo's non-code assets (tool configs, CI workflows, runbooks) for diminished value — flags assets whose consumer has vanished, with Keep/Update/Retire/Merge verdicts |
 | [task-stocktake](skills/task-stocktake/SKILL.md) | Audits and consolidates a repo's pending-task tracking into its single task ledger — bootstraps the ledger, sweeps stray task lines, verifies entries against git log and actual code |
 | [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md) | 英語→日本語の voice 保持翻訳スキル。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な日本語にする。逐語訳でも MT でもなく、term-lock（訳す-by-default／英語保持は明示 |
 | [llm-as-judge](skills/llm-as-judge/SKILL.md) | Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation |
+| [ideate](skills/ideate/SKILL.md) | Divergence session — three rounds of stimulus (near via wiki-query, far via mechanical concept sampling, outside via WebSearch), with evaluation forbidden until every round closes |
+| [implementation-chain](skills/implementation-chain/SKILL.md) | Decides the task type (feat / fix / refactor / chore / prototype / writing) and front-loads its agent chain into the plan — Chain Matrix, reviewer routing, early-stop conditions |
+| [public-comment](skills/public-comment/SKILL.md) | Replies in public technical threads (GitHub discussions / issues / PRs, HF discussions) — AI-slop tell removal, thread grounding, and a human gate with a Japanese translation before posting |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
@@ -94,7 +96,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
 | [task-tracking](rules/common/task-tracking.md) | Single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents |
-| [lint-gates](rules/python/lint-gates.md) | Python lint gate baseline (ruff B/I/T20), zip strict= discipline, and demoting documented structural invariants to deterministic gates (import-linter contracts, frozen-dataclass AST scan) |
+| [human-gate](rules/common/human-gate.md) | The second gate axis — machines verify artifacts, the human judges intent. What the gate shows branches by target: behavior-shaping artifacts and the control plane show full text, implementation shows an intent summary checked against the approved plan |
 <!-- END GENERATED: rules-table -->
 
 ## Usage
@@ -146,8 +148,8 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC (unmodified) | article-writing, security-scan | architect, python-reviewer, refactor-cleaner | python/coding-style, python/patterns, python/security |
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing, python/hooks, python/testing |
+| ECC (unmodified) | article-writing, security-scan | architect, python-reviewer, refactor-cleaner | — |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community | scientific-thinking-literature-review | — | — |
