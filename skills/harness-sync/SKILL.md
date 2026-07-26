@@ -155,6 +155,7 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/when-code-when-llm` |
 | `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を 2026-07-09 retire — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `rules/common/akc-cycle.md` Research 節 + `search-first`) |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/citation-sync` |
+| `~/MyAI_Lab/generation-audit` ([repo](https://github.com/shimo4228/generation-audit)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/generation-audit` |
 | `~/MyAI_Lab/rules-stocktake` ([repo](https://github.com/shimo4228/rules-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-stocktake` |
 | `~/MyAI_Lab/learn-eval` ([repo](https://github.com/shimo4228/learn-eval)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/learn-eval` |
 | `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
