@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: ADR-0015（cross-agent 参照 > 生成 > 同期）+ ADR-0018 §5 — agent 一覧の手書きコピーを廃し、分離原則と外部エージェント境界のみ常駐 -->
+<!-- review-when: Codex / Antigravity / Qwen のアタッチポイント構成を変えた時 / Herdr 環境を退役した時 / harness の native agent カタログ提示が変質した時 -->
 # Agent Orchestration
 
 agent カタログの正本は `~/.claude/agents/*.md` の frontmatter。セッション中は harness が

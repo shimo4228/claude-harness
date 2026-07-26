@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: 即修正で誤診を重ねた実訂正の蓄積（仮説→証拠→確認待ちフロー）+ 2026-07-16 のアカウント block 実証（rate limit = policy signal） -->
+<!-- review-when: 確認待ち例外を planning.md の 2 介入点モデルに統合した時 / harness が root-cause 優先の debug フローを native 強制し始めた時 -->
 # Debugging
 
 ## 根本原因優先（CRITICAL）

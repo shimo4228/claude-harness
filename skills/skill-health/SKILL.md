@@ -1,6 +1,6 @@
 ---
 name: skill-health
-description: Scan the skill library for structural technical debt — dangling references where a SKILL.md names a script, bash file, agent, or sibling skill that does not exist on disk ("missing artifacts" debt), plus external skills whose directory is a symlink out of the skills root, where a local fix would be overwritten by the owning package manager. Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", "which skills are not really mine to edit", or "/skill-health". NOT for holistic skill quality verdicts (that is skill-stocktake), NOT for config GC over hooks/permissions/MCP (that is config-gc), and NOT for security scanning (that is security-scan).
+description: Scan the skill library for structural technical debt — dangling references where a SKILL.md names a script, bash file, agent, or sibling skill that does not exist on disk ("missing artifacts" debt), plus external skills whose directory is a symlink out of the skills root, where a local fix would be overwritten by the owning package manager. Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", "which skills are not really mine to edit", or "/skill-health". NOT for holistic skill quality verdicts (that is skill-stocktake), NOT for config GC over hooks/permissions/MCP (that is config-gc), and NOT for security scanning (that is the /claude-security plugin).
 license: MIT
 metadata:
   author: shimo4228
@@ -76,12 +76,12 @@ three; `skill-health` adds the missing structural one and federates the rest:
 |---|---|---|
 | **Compatibility** (refs resolve) | **`skill-health`** ← here | the deterministic scan (Phase 2) |
 | **Utility** (frequency, value) | `skill-stocktake` | read its signal; flag over-specialized (LLM) |
-| **Risk** (security, side effects) | `security-scan` | delegate; prompt to run if stale |
+| **Risk** (security, side effects) | `/claude-security` plugin | delegate; prompt to run if stale |
 | **Validation** (tests/consistency) | `skill-comply` / `skill-creator` | note which skills lack a validator |
 
 - **`skill-stocktake`** = holistic *quality* judgment (Keep/Improve/Retire/Merge). Semantic, single-context.
 - **`config-gc`** = GC over *existence* across 8 channels (hooks/permissions/MCP/cache/…).
-- **`security-scan`** = *risk* (AgentShield).
+- **`/claude-security`** = *risk* (official plugin; results land in `CLAUDE-SECURITY-*/`).
 - **`skill-health`** = *structural debt within a skill* (do its references resolve?). Deterministic.
 
 If a finding is about whether a skill should *exist* or is *good*, it belongs to
@@ -134,8 +134,9 @@ health view — **labelling each value's source**, never recomputing it:
   triggered, judge **[LLM]** whether the cause is *over-specialized* scope (a
   trigger so narrow it never fires) versus simply *new*. If the log's first
   event is younger than 90 days, render usage as `unmeasured` — never `0`.
-- **Risk** — point to `security-scan`'s latest grade if present; if none/stale,
-  recommend running `security-scan`. Do not re-scan for vulnerabilities here.
+- **Risk** — point to the latest `CLAUDE-SECURITY-*/CLAUDE-SECURITY-RESULTS.md`
+  if present; if none/stale, recommend running `/claude-security`. Do not
+  re-scan for vulnerabilities here.
 - **Validation** — note (**missing validators** debt) which scanned skills have
   no `skill-comply` spec and no `skill-creator` benchmark, i.e. no way to verify
   their behaviour. Judge **[LLM]** trigger↔body consistency only where it is in
@@ -161,7 +162,7 @@ next run can diff. Update it inline with Read/Write.
 - `skill-stocktake` — holistic skill *quality*; hand a Compatibility-clean but
   low-quality skill there.
 - `config-gc` — skill *existence* / whole-config GC.
-- `security-scan` — the *risk* dimension this skill delegates to.
+- `/claude-security` (plugin) — the *risk* dimension this skill delegates to (ADR-0020).
 - `harness-sync` — use it to publish this skill to a public repo.
 - Debt taxonomy: SkillOps ([arXiv:2605.13716](https://arxiv.org/abs/2605.13716)).
   The four-dimension *health rubric* deliberately lives here in the harness, not

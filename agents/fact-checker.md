@@ -129,7 +129,7 @@ prefer in this order — machine records beat memory:
 2. File timestamps (`ls -la`, `stat`) — OS-level record
 3. Session transcript **metadata** (`~/.claude/projects/*/*.jsonl`) — timestamps and
    counts only, never the message bodies. See the constraint below before touching these.
-4. MEMORY.md (`~/.claude/projects/*/memory/`) — written at session end, memory bias
+4. memory/*.md fact files (`~/.claude/projects/*/memory/`; MEMORY.md is only the 1-line index — read the individual files) — written mid-session, memory bias
 5. Published articles — public but carry writing-time bias
 6. Drafts / dictation — largest memory bias
 

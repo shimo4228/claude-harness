@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: ADR-0001（origin policy）— ECC 等外部アップデート取り込み時の diff 判断機構。commands/ 廃止（2026-04-07）と Knowledge Placement を含む -->
+<!-- review-when: ECC 取り込み運用を終了した時 / harness が skill 出自・バージョン管理を native 化した時 -->
 # Skill Origin Tracking
 
 すべてのスキルファイルには出自（origin）メタデータを付与する。ECC / 外部のアップデート

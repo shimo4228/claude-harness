@@ -32,7 +32,7 @@ Gained new knowledge
   |
   +- Q3: Is it substantial enough for a standalone skill? (3+ rules, or includes a workflow)
       +- Yes -> create a new skill
-      +- No -> record 1-2 lines in MEMORY.md
+      +- No -> save a small single-fact file in memory/ + 1-line pointer in MEMORY.md
 ```
 
 ### Placement mapping
@@ -42,11 +42,11 @@ Gained new knowledge
 | Analysis data, comparison tables, topic lists | memory/ | 9-category buzz-pattern taxonomy, 5 new article topics |
 | Behavioral rules, checklists, workflows | skills/ (append to existing) | 7 title-design rules → a writing skill |
 | Systematic methods for a new domain | skills/ (create new) | LLM-as-Judge evaluation framework |
-| Small gotchas, one-sentence lessons | MEMORY.md | "Zenn slugs are immutable, so retitling is link-safe" |
+| Small gotchas, one-sentence lessons | memory/ (single-fact file; MEMORY.md holds only the 1-line pointer) | "Zenn slugs are immutable, so retitling is link-safe" |
 
 ## Anti-Patterns
 
-- "It's important, so make it a skill" → creating a new file for an insight under 10 lines (MEMORY.md suffices)
+- "It's important, so make it a skill" → creating a new skill for an insight under 10 lines (a small memory/ file suffices)
 - "Let's just batch it into memory" → behavioral rules get buried in reference context
 - "I don't want to pollute the existing skill" → a skill's value lies in comprehensiveness; appending is an improvement
 

@@ -65,6 +65,9 @@ judgment on what the findings mean → LLM, per the enumerate/decide split):
   2026-07-25 — a language sub-layer was retired into `skills/python-patterns`, so a
   surviving `python/` path is a stale pointer, not a layer to validate)
 - [ ] Every rule file's line 1 carries `<!-- origin: X -->`
+- [ ] Every `rules/common/` file carries `<!-- rationale: ... -->` and
+  `<!-- review-when: ... -->` within its first 10 lines (ADR-0021; harness_lint
+  checks presence deterministically — read its result instead of re-grepping)
 - [ ] `rules/README.md`'s tree matches the actual file list (no missing, no phantom entries)
 
 State the scan result up front: files found, total lines, integrity failures. Carry the
@@ -99,7 +102,11 @@ lost usage signal; further decomposition degrades holistic judgment (see Referen
 
 **Stage 2 — verdict pressure-test (non-Keep candidates only).** When Stage 1 plus the
 holistic read points away from Keep, generate **1–3 rule-specific atomic yes/no questions**
-that try to **refute the draft verdict** before finalizing it, each answered with one line
+that try to **refute the draft verdict** before finalizing it. **If the rule declares a
+`review-when:` comment, its triggers are the first questions** — they are the expiry
+conditions captured at write time (ADR-0021), which ad-hoc generation cannot recover.
+Ask "has trigger X fired — Yes/No" per declared trigger, then supplement with generated
+questions only if needed, each answered with one line
 of evidence (file read, path check, WebSearch, harness-doc check). For **Dissolve**
 candidates one question is mandatory: *"Can the absorbing harness feature be named
 concretely — Yes/No"* — an absorption claim that cannot name its absorber is refuted.
@@ -152,7 +159,9 @@ any point; `skip` records the verdict in the ledger unactioned.
 
 - **Improve / Update / Merge**: present the concrete edit per rule → ask `[y/n/skip]`;
   **after the user approves that rule, apply it directly in this session** (see Design
-  note 2 — no improvement engine exists for rules, and the files are small).
+  note 2 — no improvement engine exists for rules, and the files are small). If an
+  applied edit changes the rule's reason-to-exist or expiry conditions, refresh its
+  `rationale:` / `review-when:` comments in the same diff (ADR-0021).
 - **Demote to skill**: hand off skill creation to `skill-creator`; then reduce the rule
   to a 1–3 line principle + `See skill:` pointer.
 - **Dissolve / Retire**: per file, present (1) the absorption evidence or defect, (2) what

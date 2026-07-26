@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: ADR-0019 — ゲートの第 2 軸（artifact は機械 / intent は人間）を Reversibility Gate から分離して新設。AKC harness-alignment（ADR-0017 / DOI 10.5281/zenodo.20578272）の運用版 -->
+<!-- review-when: harness の native 承認 UI が本文提示 / 意図要約の分岐を運ぶようになった時 / AKC 側 harness-alignment 条項が改版された時 -->
 # Human Gate — 人間は何を判断するか
 
 ゲートには 2 軸ある。**いつ止まるか**は可逆性で決まる（[`coding-style.md`](coding-style.md) の

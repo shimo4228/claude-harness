@@ -16,8 +16,8 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 1. 台帳を解決する: `.notes/TASKS.md` → 既存タスクファイル（`TODO.md` / `TASKS.md` /
    `docs/backlog.md` 等）の順
 2. 見つかればそれを台帳と確定して Phase 2 へ
-3. 無ければ**ユーザーに確認してから**作成する（自動作成しない）:
-   - 置き場所の提案: `.notes/` 慣行がある repo は `.notes/TASKS.md`（gitignored = private）。
+3. 無ければ作成する。「作るか」は聞かない（skill の起動自体が依頼）— 確認するのは**置き場所だけ**:
+   - `.notes/` 慣行がある repo は `.notes/TASKS.md`（gitignored = private）に即決。
      無い repo は gitignore 状況を見て private / git-tracked（clone 先でも cold-start 可能）の
      トレードオフを提示して選んでもらう
    - 初期内容: Phase 2 の sweep 結果を集約して生成

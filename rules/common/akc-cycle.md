@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: ADR-0018 — 6 phase 解説を各 skill へ降格し、Phase→skill 対応表 + signal-first + Scaffold Dissolution のみ常駐するローカル版（自己完結版は AKC repo 配布版が正本） -->
+<!-- review-when: 対応表の skill を退役・改名した時 / substrate が knowledge cycle 相当（auto-memory 拡張等）を native 化した時 -->
 # AKC Rules (local edition)
 
 Agent Knowledge Cycle の行動原則。**このファイルはローカル harness 版**で、6 phase の

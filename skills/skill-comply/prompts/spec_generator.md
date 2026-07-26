@@ -41,7 +41,7 @@ Each step MUST correspond to something the measurement infrastructure can observ
 The runner only captures two kinds of signals from agent sessions:
 
 1. **Tool calls** (preferred): Write, Edit, Read, Bash, Grep, Glob, WebSearch,
-   WebFetch, Task, Skill, TodoWrite — anything that shows up in stream-json as
+   WebFetch, Agent, Skill, TaskCreate — anything that shows up in stream-json as
    a `tool_use` block.
 2. **Assistant text output**: natural-language reasoning produced by the agent,
    captured as a pseudo-event with tool name `Text`. Use this ONLY when the step
@@ -77,7 +77,7 @@ Skill says: "State verdict (Adopt / Extend / Compose / Build)"
 
 Skill says: "Plan the refactor steps"
 - Bad:   id: plan_refactor, detector: "agent plans internally"
-- Good:  id: plan_refactor, detector: "TodoWrite call that enumerates the
+- Good:  id: plan_refactor, detector: "TaskCreate calls that enumerate the
          refactor steps"
 
 ### after_step safety rule

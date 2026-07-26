@@ -48,9 +48,9 @@ Every project document should serve exactly one of these four roles. Overlap cau
 
 ## Workflow
 
-Run all six phases in order. **Confirmation policy: ask the user only when creating a new file or a new directory.** Edits to existing files are applied automatically — git diff is the audit trail, and `git checkout -- <file>` is the undo. New file / directory creation is irreversible without `rm`, so it stays gated.
+Run all six phases in order. **Confirmation policy: apply changes automatically** — git diff is the audit trail, and `git checkout -- <file>` / `rm` is the undo. Newly created files and directories are not pre-gated; instead, list them prominently in the Phase 5 report so the user can revert any they did not want.
 
-The skill runs end-to-end in one turn unless one of the gated decisions surfaces. Phase 5 (Report) summarizes what was done.
+The skill runs end-to-end in one turn. Phase 5 (Report) summarizes what was done.
 
 ### Phase 0: Codemap Freshness Pre-check
 

@@ -16,7 +16,7 @@ from scripts.parser import ObservationEvent
 from scripts.scenario_generator import Scenario
 
 SANDBOX_BASE = Path("/tmp/skill-comply-sandbox")
-ALLOWED_MODELS = frozenset({"haiku", "sonnet", "opus"})
+ALLOWED_MODELS = frozenset({"haiku", "sonnet", "opus", "fable"})
 MAX_SKILL_FILE_SIZE = 512 * 1024  # 512 KB
 DEFAULT_TIMEOUT_SECONDS = 3600
 

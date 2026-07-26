@@ -69,6 +69,7 @@ git -C <公開repo> add -A && git commit
 ```
 
 メッセージ例: `chore: sync from local harness (origin: shimo4228)` + 主な増減を body に。
+default branch へ直接 commit するのは意図的（sync = mirror 更新であり branch-first 規約の対象外）。
 **push はユーザーの判断に委ねる** (commit ≠ publish)。
 
 ## 削除の伝播

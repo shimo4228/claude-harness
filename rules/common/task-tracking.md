@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: タスク行の正本を名乗るファイルの増殖が分散の根因という実障害由来。単一台帳方式（GTD）+ verify-before-work feedback -->
+<!-- review-when: Backlog.md / beads 等へツールごと移行した時 / harness native の task 機構が repo 永続の台帳を持つようになった時 -->
 # Task Tracking
 
 Pending タスクの正本は **repo ごとに 1 ファイルのみ**（単一台帳方式 — GTD「信頼できるシステムは 1 つ」）。
@@ -8,8 +10,8 @@ Pending タスクの正本は **repo ごとに 1 ファイルのみ**（単一�
 
 1. 既存の `.notes/TASKS.md` があればそれが台帳
 2. 無ければ既存のタスクファイル（`TODO.md` / `TASKS.md` / `docs/backlog.md` 等）を台帳と認定
-3. どちらも無ければ **task-stocktake skill が確認の上で作成**する。
-   rule 層は自動作成しない（Reversibility Gate:「新規作成は確認してから」）
+3. どちらも無ければ **task-stocktake skill が置き場所を確認の上で作成**する
+   （rule 層は自動作成しない — 台帳の新設は repo 構造への意見なので skill 側で扱う）
 
 ## 台帳の形式
 

@@ -37,11 +37,9 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || REPO_ROOT="$(pwd)"
 ADR_DIR="$REPO_ROOT/docs/adr"
 ```
 
-If `$ADR_DIR` does not exist, ask the user once:
-
-> The repo has no `docs/adr/` directory. Create one with a README index template before writing the ADR? (Y/n)
-
-If yes, create `$ADR_DIR` and write a minimal `README.md` index:
+If `$ADR_DIR` does not exist, create it — the ADR request itself covers the directory, and
+git makes it reversible. Mention the creation in your final report. Write a minimal
+`README.md` index alongside:
 
 ```markdown
 # Architecture Decision Records

@@ -11,7 +11,7 @@ Markdown plus a filesystem `exists()` check. Per the Agent Knowledge Cycle
 ADR-0008 "Code-LLM Layering", code owns structural determinism and 100%
 accuracy here; the semantic debt patterns (over-specialized scope,
 trigger↔body drift), the risk dimension, and the validation dimension are
-delegated to a holistic LLM pass / security-scan / skill-comply and are
+delegated to a holistic LLM pass / the claude-security plugin / skill-comply and are
 **never scored** in this module.
 
   https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0008-code-and-llm-collaboration.md
@@ -116,7 +116,7 @@ _KNOWN_NON_FILE_SKILLS = frozenset(
 _DELEGATION_NOTE = (
     "Structural 'missing artifacts' check only — the semantic debt patterns "
     "(over-specialized, trigger↔body drift), the risk dimension, and the "
-    "validation dimension are delegated to skill-stocktake / security-scan / "
+    "validation dimension are delegated to skill-stocktake / the claude-security plugin / "
     "skill-comply, never reduced to a number."
 )
 

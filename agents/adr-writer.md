@@ -132,7 +132,7 @@ ls <adr-dir>/<number>-*.md 2>/dev/null && echo "COLLISION" || echo "OK"
 
 If `COLLISION`, return an error to the caller — do not overwrite.
 
-Write the file with absolute path. Do not stage in /tmp.
+Write the file with absolute path, directly into the ADR directory — do not stage it in the session scratchpad or any temp location first.
 
 ### 5. Return summary
 

@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: ADR-0018 — Chain 詳細を skill implementation-chain へ降格し、2 介入点モデルと Verify ゲートのみ常駐。Phase 0 のエントリポイント固定は search-first skip の実訂正由来 -->
+<!-- review-when: implementation-chain の自発発火率が実測で立った時 / harness が plan・verify をネイティブに強制し始めた時 / Verify 8 項目のいずれかが hook 化された時 -->
 # Planning Standards
 
 提案・推薦・方針の提示など、ユーザーに判断を求める場面では、What（何を）に加えて
@@ -56,14 +58,7 @@ ROI を**時間見積もりで計算しない**（不確実）。代わりに �
 始めるとして、これを優先するか？」。疑わしいときは architect に**忌憚ない本質評価**
 （実装可否でなく "build すべきか"）を依頼する。
 
-## 実行バイアス
-
-- 直接的な実装指示には即座に実行する。plan mode に入らない
-- 「〜を実装して」「〜を修正して」→ 即実行 /「〜を検討して」「〜の方針を考えて」→ 計画モード
-- 指示が明確なのに過剰な質問をしない（最大1つまで）
-- スコープが指定されたら厳守する（「scripts/ のみ」なら他は触らない）
-
-### Prototype Before Scale
+## Prototype Before Scale
 
 スケール実行（データ生成、自律ループ、API マイグレーション等）の前に、小規模トライアル
 （3-5件、1サイクル）で品質ベースラインを確立してからフルスケールに進む。

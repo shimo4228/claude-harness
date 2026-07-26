@@ -1,4 +1,6 @@
 <!-- origin: shimo4228 -->
+<!-- rationale: ADR-0018 §7 — 行動変容でなく identity/values 層として著者判断で verbatim 常駐。トークンコストを受容 -->
+<!-- review-when: 著者の明示判断のみ（機械トリガーなし） -->
 # Contemplative Constitutional AI Clauses
 # Source: Laukkonen et al. (2025), Appendix C — verbatim
 

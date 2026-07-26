@@ -1,7 +1,7 @@
 [project]
 name = "skill-health"
 version = "0.1.0"
-description = "Harness skill-library structural debt scanner (deterministic, structural-only). Detects 'missing artifacts' debt — references in a SKILL.md to scripts, bash files, agents, or sibling skills that do not resolve on disk. Semantic, risk, and validation dimensions are delegated to skill-stocktake / security-scan / skill-comply per the Agent Knowledge Cycle Curate phase. Debt taxonomy from SkillOps (arXiv:2605.13716)."
+description = "Harness skill-library structural debt scanner (deterministic, structural-only). Detects 'missing artifacts' debt — references in a SKILL.md to scripts, bash files, agents, or sibling skills that do not resolve on disk. Semantic, risk, and validation dimensions are delegated to skill-stocktake / the claude-security plugin / skill-comply per the Agent Knowledge Cycle Curate phase. Debt taxonomy from SkillOps (arXiv:2605.13716)."
 requires-python = ">=3.11"
 dependencies = []
 

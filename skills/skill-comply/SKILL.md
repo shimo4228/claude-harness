@@ -74,7 +74,7 @@ uv run python -m scripts.run --allow-bash <path>
 | Stage | Default | Why |
 |-------|---------|-----|
 | `--gen-model` | `haiku` | Spec / scenario generation. Short prompts, fast. |
-| `--model` | `sonnet` | Scenario execution (the agent under test). |
+| `--model` | `sonnet` | Scenario execution (the agent under test). `haiku` / `sonnet` / `opus` / `fable` を指定可。 |
 | `--classifier-model` | `sonnet` | Trace classification. Haiku times out on long traces (50+ events) and abstract specs (e.g. contemplative-axioms). Sonnet handles the load with a 300s timeout. |
 
 ## Key Concept: Prompt Independence

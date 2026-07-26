@@ -1,6 +1,6 @@
 ---
 name: implementation-chain
-description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」, or when planning.md の 2 介入点モデルに沿って Plan を書くとき。writing 種別の orchestrator skill へのルーティング表、早期停止条件、ユーザー実行枠 `U`（ビルトイン /code-review を意図確認 gate で提案する面）もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / tdd / codex-review / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
+description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」, or when planning.md の 2 介入点モデルに沿って Plan を書くとき。writing 種別の orchestrator skill へのルーティング表、早期停止条件、ユーザー実行枠 `U`（ビルトイン /code-review と /claude-security changes scan を意図確認 gate で提案する面）もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / tdd / codex-review / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
 user-invocable: true
 origin: shimo4228
 ---
@@ -43,6 +43,7 @@ origin: shimo4228
 | Doc Sync (context files) | C | C | C | C | - |
 | Verify (build / types / lint / tests / secrets / deps / doc sync / git status) | Y | Y | Y | Y | - |
 | User-Run Review (`/code-review`) | U | U | U | - | - |
+| User-Run Security Scan (`/claude-security` changes) | U | U | - | U | - |
 
 **条件付き発火 `C` の発動条件**:
 
@@ -69,9 +70,23 @@ Claude から起動できないため、自動枠の代替にはならない —
 - 低リスク refactor / chore で自動の bug 探索が薄い領域（refactor × Cross-Model = `C`、
   chore × = `-`）も、自動枠の昇格でなくこの枠でカバーする（2026-07-25 判断）
 
+**`/claude-security` changes scan の発動目安**（U に置く理由が `/code-review` と異なる —
+起動不可ではなく、multi-agent workflow でトークン重量級 + Workflow の明示 opt-in 規律のため
+実行判断がユーザーに属する）:
+
+- 提案するのは **security-reviewer が発火する変更**（入力処理・認証・秘匿情報・permissions・
+  hook・外部 API）のうち、panel 検証（3-voter の false positive 潰し）を掛けたい高 stakes
+  diff のみ。effort 目安は low〜medium（小 diff は medium でも単一 researcher に collapse）
+- **タイミングが `/code-review` と異なる**: committed 変更しか見ないため、意図確認 gate の
+  pending diff には掛けられない。提案は gate に相乗りし、実行はコミット後・push / 公開の前
+- 自動枠 security-reviewer の**代替ではなく上乗せ**。未コミット diff に軽く掛けたいときは
+  ビルトイン `/security-review`（現ブランチの pending changes 対象）が下位層
+
 **chain 非対象のビルトイン**: `/review` は GitHub PR 専用（ローカル diff は `/code-review` と
-description が明示）のため Review ステップには使えない。`/security-review` の帰属判定は
-T-006（claude-security plugin 再編）のスコープ。
+description が明示）のため Review ステップには使えない。`/security-review` は自動枠
+security-reviewer と同じ面（pending changes）の user-run 版で、chain には入れず上記の
+下位層として案内する（T-006 / [ADR-0020](../../docs/adr/0020-retire-security-scan-delegate-risk-to-claude-security.md)
+で security-scan skill は退役、committed diff の重量級は `/claude-security` changes scan）。
 
 ## Review / Cleanup ステップ（実装直後・Verify 前）
 
@@ -88,8 +103,9 @@ T-006（claude-security plugin 再編）のスコープ。
 
 Code Review・Security Review・Cross-Model Review は同じ diff を対象にするので並列起動する。
 TDD は Plan の後、Verify は全レビュー後（この 2 つは逐次必須）。
-意図確認 gate でユーザーに提示するとき、Matrix の `U` 枠に該当すれば `/code-review` の実行を
-あわせて提案する（発動目安は上の `U` 節）。
+意図確認 gate でユーザーに提示するとき、Matrix の `U` 枠に該当すれば `/code-review`（および
+セキュリティ高 stakes なら `/claude-security` changes scan）の実行をあわせて提案する
+（発動目安は上の `U` 節）。
 
 ## Writing Chain（`writing` 種別のルーティング）
 

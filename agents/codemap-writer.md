@@ -149,14 +149,15 @@ If `docs/CODEMAPS/<file>.md` already exists:
 
 ```bash
 # Compute byte-level similarity for each file
+# SCRATCH = the session scratchpad directory listed in your system prompt
 for f in architecture.md backend.md frontend.md data.md dependencies.md; do
   if [ -f "docs/CODEMAPS/$f" ]; then
-    diff -u "docs/CODEMAPS/$f" "/tmp/new-$f" | wc -l
+    diff -u "docs/CODEMAPS/$f" "$SCRATCH/new-$f" | wc -l
   fi
 done
 ```
 
-Report per-file change ratio to the caller. **Do not auto-overwrite** if change > 30%; surface the diff and wait for caller confirmation (the caller skill handles the user prompt).
+Report per-file change ratio to the caller. If change > 30%, write the new version but surface the diff summary prominently in your return — the previous version remains recoverable via git, so no confirmation gate is needed.
 
 ### 5. Return summary
 

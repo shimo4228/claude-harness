@@ -148,8 +148,8 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC (unmodified) | article-writing, security-scan | architect, python-reviewer, refactor-cleaner | — |
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/git-workflow, common/hooks, common/patterns, common/security, common/testing |
+| ECC (unmodified) | article-writing | architect, python-reviewer, refactor-cleaner | — |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/hooks, common/patterns, common/security, common/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community | scientific-thinking-literature-review | — | — |
