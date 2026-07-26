@@ -13,7 +13,7 @@ Agent Knowledge Cycle の行動原則。**このファイルはローカル harn
 |---|---|---|
 | **Research** | 新規依存の追加 / 既存にありそうなユーティリティの自作前 | `search-first` |
 | **Extract** | 非自明な解決・ハードな debug の直後、セッション終盤 | `learn-eval` |
-| **Curate** | skill / rule が増えた、参照先が消えた、cleanup 依頼 | `skill-stocktake` / `rules-stocktake` / `config-gc` |
+| **Curate** | skill / rule が増えた、参照先が消えた、cleanup 依頼 | `skill-stocktake` / `rules-stocktake` / `agent-stocktake` / `config-gc` |
 | **Promote** | 同じ助言が複数 skill・複数セッションに再出現した | `rules-distill` |
 | **Measure** | rule を追加・変更した直後、遵守が疑わしいとき | `skill-comply` |
 | **Maintain** | 大規模リファクタ後、context ファイルが肥大化 | `context-sync` |
@@ -56,4 +56,5 @@ Dissolution には**2 つのベクトル**がある:
 
 **モデル世代の交代も downward のトリガー**である。旧世代の弱さを補うための over-constraint
 （強い禁止・網羅的手順・反復強調・使用例の列挙）は、判断力の上がったモデルでは衝突コストに
-転じる。世代交代時は rule を再監査する（→ [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md)）。
+転じる。世代交代時は `generation-audit` で全資産クラスを再監査する
+（→ [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md)）。

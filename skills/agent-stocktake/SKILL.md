@@ -1,0 +1,219 @@
+---
+name: agent-stocktake
+description: "Audit ~/.claude/agents/*.md (subagent definitions) for description-layer residency cost, body-layer quality, suppression instructions, staleness, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my agents\", \"agent stocktake\", \"which agents should I retire or merge\", 「agent を棚卸しして」「エージェント定義を見直して」, or when the model generation changed and agent bodies written for the previous one may suppress or over-constrain the current one. NOT for — skill quality → skill-stocktake; rules → rules-stocktake; runtime 層との横断照合 → generation-audit; whole-config GC → config-gc."
+license: MIT
+metadata:
+  author: shimo4228
+  version: "1.0"
+user-invocable: true
+origin: shimo4228
+---
+
+# agent-stocktake — Agent Definition Quality Audit
+
+Evaluate every agent definition under `~/.claude/agents/*.md` and assign each a verdict:
+`Keep / Improve / Update / Merge / Demote to skill / Dissolve / Retire`. The audit unit
+is the file, but the cost unit is **split across two layers** — that split is the reason
+this skill exists as a third sibling next to skill-stocktake and rules-stocktake.
+
+> Design note — the hybrid cost model. A skill's cost is trigger pollution (probabilistic
+> firing degrades selection); a rule's cost is residency (always loaded). An agent has
+> **both at once**: its `description` is injected into every session via the
+> "Available agent types" listing (**residency**, like a rule), while its body loads only
+> when the agent is invoked (**invocation**, like a skill — but triggered by Claude's
+> delegation judgment, not by description matching against the user's words). So the
+> description is audited on residency density and the body on invocation quality, with
+> different questions for each layer.
+
+> Design note 2 — edits are applied in-session. Same reasoning as rules-stocktake: no
+> improvement engine exists for agent definitions, and the corpus is ~20 small files —
+> delegation would be overengineering. The handoff exception is Demote to skill
+> (creating a skill is skill-creator's job).
+
+## Modes (`$ARGUMENTS`)
+
+| Argument | Behavior |
+|----------|----------|
+| none / `full` | Read and evaluate every agent definition (default) |
+| `changed` | Re-evaluate only files whose mtime is newer than `results.json`'s `evaluated_at`; carry the rest forward from the ledger |
+
+`changed` detects changes inline (no script):
+```bash
+find ~/.claude/agents -name "*.md" -newermt "$(jq -r .evaluated_at ~/.claude/skills/agent-stocktake/results.json)"
+```
+
+As in rules-stocktake, the Phase 1 integrity checks **always run over the full set** —
+retiring a skill or hook silently breaks a reference inside an unmodified agent body, and
+mtime cannot see that. Any agent with a newly broken reference joins the re-evaluation set.
+
+## Phase 1 — Inventory + mechanical integrity checks
+
+Enumerate with Glob: `~/.claude/agents/*.md`. Read every file into one context (the
+corpus is small). Measure live — `wc -w` per description for the residency column,
+`wc -l` per file for the body column; never trust figures written in docs.
+
+Mechanical checks with throwaway bash/grep (structural detection → code; meaning →
+LLM, per the enumerate/decide split):
+
+- [ ] Frontmatter parses and carries `name`, `description`, `origin` (missing origin is
+  an integrity finding per rules/common/skills.md, feeding Improve)
+- [ ] `name` matches the filename stem (the delegation registry keys on it)
+- [ ] Every tool named in `tools:` exists in the current harness (a retired MCP server
+  or renamed tool → Update evidence)
+- [ ] Every file path / hook / skill the body references resolves
+- [ ] No two agents share a near-identical description (flag for the Stage 1 overlap
+  question — the listing is a selection surface; twins split delegation traffic)
+
+State the scan result up front: files found, total description words (the per-session
+residency tax of the listing), integrity failures. Carry failures into Stage 1 as
+pre-computed evidence.
+
+## Phase 2 — Evaluation (fully inline, holistic)
+
+Read every body while seeing the whole set.
+
+**Stage 1 — binary screen (every agent).** Explicit Yes/No per item; surface only the
+No answers. The first two questions audit the **description layer** (residency), the
+rest the **body layer** (invocation):
+
+- [ ] *Description earns its residency?* — dense, distinct, and selection-enabling in
+  the always-loaded listing; states when to delegate AND when not to
+- [ ] *Description truthful to the body?* — what it promises is what the body does
+  (a drifted description misroutes delegation every session, even if the body is fine)
+- [ ] *Body free of suppression instructions?* — confidence thresholds ("only report
+  findings you are ≥N% sure of"), severity floors ("only high-severity"), "be
+  conservative" framings. The current-generation guidance is: report everything,
+  filter in a separate pass — a suppression instruction is followed literally and
+  silently drops findings. A No here is an **Improve-by-inversion** candidate:
+  rewrite the instruction in the opposite direction, never just delete the section
+  (deleting leaves the suppressive frame; inverting replaces it)
+- [ ] *Body free of previous-generation over-constraint?* — exhaustive step-by-step
+  procedures for judgment the current model holds natively, repeated emphasis,
+  ALWAYS/NEVER pairs that the surrounding-context judgment should own
+- [ ] *Not absorbed by the substrate?* — does the harness now cover this agent's job
+  natively (native review machinery, plan mode, built-in slash commands)? Absorption →
+  Dissolve candidate; the claim must name its absorber concretely
+- [ ] *Technical references current?* — commands, flags, model names, tool lists
+  (verify with `--help` / WebSearch when they look stale)
+- [ ] *Unique within the set?* — no other agent (or skill) owns the same job; a
+  documented orchestrator→sub-agent split is NOT overlap
+
+Seven questions and no more — further decomposition degrades holistic judgment
+(see References).
+
+**Stage 2 — verdict pressure-test (non-Keep candidates only).** Generate 1–3
+agent-specific atomic yes/no questions that try to **refute** the draft verdict, each
+answered with one line of evidence (file read, path check, `--help`, WebSearch,
+harness-doc check). For **Dissolve** candidates one question is mandatory: *"Can the
+absorbing harness feature be named concretely — Yes/No"* — an absorption claim that
+cannot name its absorber is refuted. Keep-bound agents get no dynamic questions.
+
+Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence,
+never aggregated into a score. Evaluation is **origin-blind** (ECC / shimo4228 /
+customized all get the same checklist); a *missing* origin header is itself a finding.
+
+**Aggregate residency cost (set-level):** every description loads into every session,
+and the longer the listing, the weaker each entry's selection signal. The Keep bar
+rises with total description words — a merely-adequate agent is a Merge/Retire
+candidate on dilution grounds alone when the listing is crowded. A judgment input,
+never a quota.
+
+| Verdict | Meaning |
+|---------|---------|
+| Keep | Earns both layers: description dense and truthful, body current and unique |
+| Improve | Worth keeping, needs tightening — includes **inversion** of suppression instructions (rewrite direction, don't delete) |
+| Update | Referenced technology/tool/model is outdated (verified, with evidence) |
+| Merge into [X] | Substantial overlap with another agent; name the target |
+| Demote to skill | The value is the instructions, not the separate context/process — move to the skill layer via skill-creator |
+| Dissolve | Absorbed by the substrate. Retirement by *success* — delete before the stale body overrides newer defaults; record the why in an ADR |
+| Retire | Defect-based removal: low quality, stale, broken beyond repair |
+
+**Mandatory-surface rule**: a No on the absorption question MUST surface the agent as a
+Dissolve candidate (final call is the user's) — an absorbed agent still receives
+delegation traffic and actively applies its stale body to current work.
+
+## Phase 3 — Summary
+
+Render a table: `Agent | Desc words | Body lines | Verdict | Reason`. Close with one
+line reporting total description words and the delta since the previous audit —
+input to the aggregate-residency judgment next run.
+
+## Phase 4 — Consolidation
+
+**Confirm one by one** (config-gc's confirm-each design): walk the non-Keep candidates
+sequentially — evidence first, then `[y/n/skip]`. Never batch the approval; one agent,
+one decision. `skip` records the verdict unactioned.
+
+- **Improve / Update / Merge**: present the concrete edit → on approval, **apply it
+  directly in this session** (Design note 2). Inversion edits show old and new
+  direction side by side.
+- **Demote to skill**: hand skill creation to `skill-creator`, then delete or reduce
+  the agent file per the user's call.
+- **Dissolve / Retire**: per file, present (1) the absorption evidence or defect,
+  (2) what covers the need instead, (3) removal impact — **skills and rules that name
+  this agent** (grep the harness) and the public repo copy. Act only after the user
+  confirms. For Dissolve, offer to record the why via `adr-writer`.
+- **Update the ledger**: Read `results.json` → merge verdicts → Write back
+  (`evaluated_at` = real UTC from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode,
+  preserve prior verdicts of files not re-evaluated.
+- **Public-repo note**: editing or retiring an `origin: shimo4228` agent leaves the
+  public repo stale — point the user at `harness-sync`.
+
+## Reason quality (required)
+
+Every `reason` must be self-contained and decision-enabling. For non-Keep verdicts,
+cite the No answers (question + one-line evidence):
+
+- **Improve (inversion)**: Bad: `"Has a threshold"` / Good: `"L23 'only report issues
+  you are 80%+ confident in' suppresses findings per current-generation guidance —
+  invert to 'report everything; caller filters in a separate pass'."`
+- **Dissolve**: name the absorber. Bad: `"Not needed"` / Good: `"Harness plan mode +
+  Plan agent type now provide native planning delegation; body duplicates and predates
+  it. ADR the why, then delete."`
+- **Merge**: name the target + what to integrate.
+- **Keep** (carry-forward in `changed` mode): restate the rationale.
+
+## results.json (lean ledger)
+
+```json
+{
+  "evaluated_at": "2026-07-26T00:00:00Z",
+  "total_desc_words": 0,
+  "agents": {
+    "code-reviewer": {
+      "path": "~/.claude/agents/code-reviewer.md",
+      "desc_words": 38,
+      "body_lines": 120,
+      "verdict": "Keep",
+      "reason": "...",
+      "mtime": "2026-07-01T00:00:00Z"
+    }
+  }
+}
+```
+
+Created on the first run — do not pre-seed. Update inline with Read/Write, not a script.
+
+## Related
+
+- `skill-stocktake` / `rules-stocktake` — the two siblings; this skill fuses their cost
+  models (description = residency, body = invocation).
+- `generation-audit` — the cross-asset orchestrator; on a model-generation change it
+  collects runtime-layer evidence (conflict / redundancy / drift classification) and
+  hands the agents slice to this skill as Stage 2 evidence.
+- `skill-creator` — handoff target for the skill-creation half of Demote.
+- `adr-writer` — records the why of a Dissolve.
+- `config-gc` — whole-config GC; this skill judges agent *quality*.
+- `harness-sync` — syncs surviving `origin: shimo4228` agents to the public repo.
+
+## References
+
+The two-stage binary-question design (screen → verdict pressure-test, holistic verdict,
+no score aggregation) is inherited from skill-stocktake / rules-stocktake and follows
+the checklist-decomposition evaluation line: BinEval "Ask, Don't Judge"
+([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)), CheckEval (arXiv:2403.18771),
+TICK (arXiv:2410.03608) — over-decomposition degrades correlation on holistic quality,
+hence seven questions and no score. The suppression-instruction question implements the
+current-generation prompting guidance (report everything, filter in a separate pass);
+the absorption question and Dissolve verdict implement `rules/common/akc-cycle.md`'s
+Scaffold Dissolution (inward / downward vectors + model-generation trigger, ADR-0018).

@@ -217,6 +217,7 @@ not a script. Created on the first run — do not pre-seed an empty file.
 - `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code assets (configs / workflows / runbooks); rules-stocktake audits `~/.claude/rules/`.
 - `rules-distill` — promotes skill patterns *into* rules; rules-stocktake audits what accumulated and demotes back what stopped earning residency. Inverse directions over the same boundary.
 - `skill-comply` — measures whether rules are actually *followed* (dynamic). rules-stocktake stays static: never issue a compliance-based verdict without a skill-comply run; existing skill-comply results may serve as Stage 2 evidence (read, never require).
+- `generation-audit` — on a model-generation change, collects runtime-layer evidence (conflict / redundancy / drift classification against the live system prompt and tool descriptions) and hands the rules slice here as Stage 2 evidence, same read-never-require contract as skill-comply results.
 - `config-gc` — whole-config GC across hooks/permissions/MCP; rules-stocktake judges rule *quality*.
 - `skill-creator` — handoff target for the skill-creation half of Demote.
 - `adr-writer` — records the why of a Dissolve.
