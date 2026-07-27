@@ -65,9 +65,10 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [task-stocktake](skills/task-stocktake/SKILL.md): audits and consolidates a repository's pending-task tracking into its single task ledger — bootstraps the ledger, sweeps stray task lines from handoff and audit files, verifies entries against git log and actual code
 - [implementation-chain](skills/implementation-chain/SKILL.md): decides the task type (feat / fix / refactor / chore / prototype / writing) and front-loads its agent chain into the plan — Chain Matrix, reviewer routing, early-stop conditions
 - [public-comment](skills/public-comment/SKILL.md): drafts replies for public technical threads (GitHub discussions, issues, PRs, Hugging Face discussions) — AI-slop tell removal, thread grounding, and a human gate with a Japanese translation before posting
-- [ideate](skills/ideate/SKILL.md): divergence session — three rounds of stimulus (near via wiki-query, far via mechanical concept sampling, outside via WebSearch), with evaluation forbidden until every round closes
 - [llm-as-judge](skills/llm-as-judge/SKILL.md): design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation
 - [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md): voice-preserving EN→JA translation for essays, research docs, READMEs, and ADRs — term-lock, 2-pass self-revision, back-translation QA
+- [git-workflow](skills/git-workflow/SKILL.md): permission-friction discipline for running git in this environment — one Bash call per git command; chaining with && or pipes breaks the Bash(git:*) auto-allow and stalls on manual prompts
+- [headline-craft](skills/headline-craft/SKILL.md): craft skill for the one line that makes readers open — title / tagline / subtitle / SNS-post candidate generation with concrete techniques, evaluated per traffic channel (search vs feed)
 
 ## Agents
 
@@ -85,6 +86,8 @@ Specialized agents in `agents/`, each with its own tool allowlist.
 - [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md): verifies that terms carry consistent definitions throughout a paper and that sub-classifications are explicit at introduction
 - [clarity-reviewer](agents/clarity-reviewer.md): first-contact reader clarity review — coined-term budget, title-axis alignment, meta-commentary, insider-context dependency
 - [citation-formatter](agents/citation-formatter.md): verifies in-text citations against the reference list — format consistency, DOI and arXiv ID validity
+- [readme-reviewer](agents/readme-reviewer.md): strict README / repo top-page review — LLM-read floor recovery, lead clarity, human hook, scannability, length discipline, visual effectiveness
+- [readme-clarity-reviewer](agents/readme-clarity-reviewer.md): first-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register; parallel partner of readme-reviewer
 
 ## Rules
 
@@ -101,7 +104,7 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 
 ## Related repositories
 
-- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200727) — the framework that the first six skills here implement
+- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200726) — the framework that the first six skills here implement
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules): rule-only implementation of the four Contemplative AI axioms with adapters for Cursor, Copilot, and the Iterated Prisoner's Dilemma benchmark
 - [contemplative-agent](https://github.com/shimo4228/contemplative-agent): autonomous agent built on the AKC + Contemplative AI foundations — reference application of these patterns in a long-running runtime
 - standalone skill repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) and design-pattern skills (when-code-when-llm, signal-first-research, code-and-llm-collaboration, llm-agent-security-principles), plus rules-stocktake and generation-audit
