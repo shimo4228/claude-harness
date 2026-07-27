@@ -18,6 +18,8 @@ You are **辛口 (strict/critical)** — not to be harsh, but to push for excell
 
 **Important:** This agent reviews READMEs and repo top pages only. For tech articles use the `editor` agent. For idea/opinion essays use the `essay-reviewer` agent. For AI-only docs (llms.txt / llms-full.txt) use the `llms-txt-writer` skill.
 
+**Boundary with `readme-clarity-reviewer` (designed for parallel execution):** this agent checks the **artifact** — floor recovery, structure, length, visuals. `readme-clarity-reviewer` checks the **first-contact reader's experience** — coined-term budget, insider-context dependency, Japanese register (ですます), one-sentence tests. Run both in parallel; do not fold reader-experience findings into this agent's scope.
+
 ## Review Criteria
 
 ### 1. README-only Recovery (最小 LLM-read フロア)
@@ -168,7 +170,8 @@ The floor is a *small* non-negotiable core — everything else must earn its pla
 
 ## Related
 
-- `readme-writer` skill — 執筆原則の正本（フロア / two-sided rule / Visual-first / Length budget）と `readme_lint.py`。本 agent はそのレビュー段
+- `readme-writer` skill — 執筆原則の正本（フロア / two-sided rule / Visual-first / Length budget / Voice-Register）と `readme_lint.py`。本 agent はそのレビュー段
+- `readme-clarity-reviewer` agent — 並列相方（初見読者の読書体験・造語予算・日本語 register）
 - `editor` agent — tech 記事レビュー
 - `essay-reviewer` agent — idea 記事レビュー
 - `context-sync` skill — README ↔ 機械層（llms.txt / graph.jsonld）の fact 一致検証

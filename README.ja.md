@@ -55,11 +55,12 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [task-stocktake](skills/task-stocktake/SKILL.md) | repo の pending タスク追跡を単一台帳へ棚卸し・統合 — 台帳の bootstrap、散在タスク行の収集、git log・実コードとの既済照合 |
 | [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md) | 英語→日本語の voice 保持翻訳スキル。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な日本語にする。逐語訳でも MT でもなく、term-lock（訳す-by-default／英語保持は明示 |
 | [llm-as-judge](skills/llm-as-judge/SKILL.md) | Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation |
-| [ideate](skills/ideate/SKILL.md) | 発散セッション — 近傍 / 遠距離 / 外部の 3 ラウンドで刺激源を回し、全ラウンド終了まで評価を禁じる |
 | [implementation-chain](skills/implementation-chain/SKILL.md) | task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、対応する agent chain を plan に front-load する判断表 — Chain Matrix、レビュアー routing、早期停止条件 |
 | [public-comment](skills/public-comment/SKILL.md) | 公開技術スレッドへの返信 — AI slop tell の除去、スレッド接地、投稿前の日本語訳併記による人間 gate |
 | [agent-stocktake](skills/agent-stocktake/SKILL.md) | subagent 定義をハイブリッド cost model（description = 毎セッション常駐 / body = 起動時ロード）で監査 — 抑制指示と substrate 吸収を検出する第 3 の stocktake |
 | [generation-audit](skills/generation-audit/SKILL.md) | モデル世代交代時に runtime 層（system prompt + tool description）を実セッションから採取し、競合 / 冗長 / ドリフトに分類して各 stocktake に証拠として渡すオーケストレータ |
+| [git-workflow](skills/git-workflow/SKILL.md) | この環境での git 実行作法 — 1 Bash call = 1 git コマンド。&& やパイプで連結すると Bash(git:*) の自動許可が外れて手動承認になる |
+| [headline-craft](skills/headline-craft/SKILL.md) | 「開かせる一行」の craft — タイトル・tagline・subtitle・SNS 告知文の候補生成と、流入経路 2 軸（検索 / フィード）での評価 |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
@@ -82,6 +83,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [clarity-reviewer](agents/clarity-reviewer.md) | 初見読者目線の明瞭性 review — 新語予算 / タイトル軸 / メタ語り / 内部文脈依存 |
 | [citation-formatter](agents/citation-formatter.md) | In-text citation と reference list の整合・format・DOI / arXiv ID 検証 |
 | [readme-reviewer](agents/readme-reviewer.md) | README / repo トップページの厳格レビュアー — LLM 読解フロア / lead 明瞭性 / human hook / 走査性 / 長さ規律 / 視覚効果。readme-writer の companion |
+| [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | README の初見読者目線レビュー — 造語予算 / 内部文脈依存 / 日本語 register（ですます）。readme-reviewer の並列相方 |
 <!-- END GENERATED: agents-table -->
 
 ### Rules

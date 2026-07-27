@@ -288,6 +288,8 @@ type（tech / idea）にかかわらず、**だ/である調 × 発見調** で�
 
 *文字数上限はプラットフォーム依存。プロジェクト overlay で定義する（例: Zenn は 50–60 字）。*
 
+*この節は**規範**（何を禁止するか）の正本。候補を**作る技法**（具体性・ベネフィット前置・誠実な好奇心ギャップ・流入経路 2 軸評価）は skill: `headline-craft` が正本 — 生成された候補は必ずこの節のフィルタを通す。*
+
 ---
 
 ## Article Topic Selection (3-axis)
@@ -334,6 +336,7 @@ overlay 側のファイル冒頭に「本 skill を base とする」旨を明�
 ## Related
 
 - `article-writing` skill — 執筆時の汎用フレームワーク（本 skill の Banned Patterns を包含）
+- `headline-craft` skill — 「開かせる一行」の候補生成技法（タイトル・tagline・subtitle・SNS 告知文）。規範は本 skill の Title Conventions、技法はあちら
 - `ja-to-en-translation` skill — 日本語→英語の voice 保持翻訳（英語 AI-slop / Voice / Title / 出典編入は本 skill に defer）
 - `substack-publishing` skill — Substack 公開 + LLM corpus ミラーのワークフロー（Voice / AI-slop / Title / 出典は本 skill に defer）
 - `editor` agent — tech 記事レビュー（構造・コード・AI slop・用語）

@@ -100,7 +100,24 @@ GitHub のメタ面（repo description / topics / social-preview / CITATION フ�
 - GitHub が theme-aware SVG にネイティブ描画。ソースはテキスト（diff 可能・~10 token/edge）で **pixel を見られない text-only クローラにも読める**。散文/graph に埋もれた構造（concept matrix・phase binding・pipeline 段）を Mermaid 化すると**短くなり情報密度が上がる**。
 - **モバイル最優先で `TD`（縦）**。横長 `LR` は狭幅で破綻しやすい。
 - 描画上限は char ベース（`maxTextSize` 既定 50,000）+ edge ベースで、ノード数ではない（「50-100 node が限界」は俗説）。超えそうなら subsystem 分割。special な Project README では描画されない。
+- **視覚的ポップ化の正統経路は Mermaid styling**（`%%{init}%%` themeVariables / `classDef`）— 色・フォントも text ソースに載るので LLM 側のコストゼロ。classDef で色を塗るときは `color:` でテキスト色も明示する（GitHub の dark mode が淡色 fill の上の文字を白に反転して潰すのを防ぐ）。参照 URL は `inspiration.md` の「Mermaid visual styling」節。
+- **辺の交差はコードで直せる**（描き直し不要）: (1) ノードの左右配置は**初出順**で決まる — 辺のグループが隣接ノードに繋がるよう宣言順を入れ替える。(2) 1 ノードが多数に fan-out して交差するときは**矢印の向きを反転して sink にする**（`A --> B & C & D` を `B & C & D --> A` に。A が最下段に落ち、収束の意味論も出る）。
 - 抽出器が Mermaid を落とす可能性があるので、上の**テキスト等価**で意味を必ず別途担保する。
+
+### カバーアート（hero）
+
+above-the-fold の「任意の hero」枠の実装ガイド。**唯一、純装飾 raster が正当な場所**:
+
+- **配置**: 言語切替行（あれば）と H1 の間。**画像内にテキスト情報を入れない** — 名前・タグラインは H1 と本文が持つ（画像内文字は LLM に不可視なので、入れると情報が消えるか二重管理になる）
+- **仕様**: 横長 3:1〜4:1。画像自身に背景色を持たせる（GitHub の light / dark 両モードで安定）。生成画像は幅 1600px・数百 KB 目安に圧縮して `assets/` に commit（`sips -s format jpeg -s formatOptions 85 -Z 1600` で PNG 数 MB → ~300KB）
+- **alt 必須・言語別**: README.ja には日本語 alt を書く
+- **モチーフとパレットを README 内の図と揃える**と一枚の設計に見える（AI 生成時のプロンプト作法は `inspiration.md`）
+
+### 表セルの視覚改善は不可能（制約）
+
+GitHub は markdown / HTML 表の inline style・bgcolor を sanitize するため**セルの色付けはできない**。
+表の視覚改善はセル文の短縮（1 文化）と、関係構造の Mermaid 図併置で行う。絵文字アンカーは
+テキストネイティブな唯一の装飾手段だが、好みが分かれるのでユーザー確認なしに既定案にしない。
 
 ### raster / その他
 
@@ -125,7 +142,80 @@ GitHub のメタ面（repo description / topics / social-preview / CITATION フ�
 
 ---
 
-## Workflow（Code filter → readme-reviewer agent → 人間 gate）
+## Voice / Register（初見読者に開いた文体）
+
+README は最初の着地面であり、読者の大半は著者の文脈を何も知らない初見者である。
+文体と用語密度はその前提で設計する。
+
+### AI-slop 禁止リストは README にも適用する
+
+`writing-ecosystem` の AI-slop 禁止リスト（日英）は記事だけでなく **README の prose にも適用する**。
+特に **EN の em-dash（—）多用**（ChatGPT hyphen）: 修正は文の再構築（短文化・括弧・コンマ同格）で行い、
+`:` / `;` への機械置換をしない（等間隔リズムは記号が変わっても同じ指紋）。禁止リストの正本は
+writing-ecosystem に置いたまま、ここには適用宣言だけを置く。
+
+### 日本語 README はですます調
+
+- **日本語 README の地の文はですます調**で書く。これは `writing-ecosystem` の Voice 規約
+  （だ/である × 発見調）からの**意図的な分岐**である — あちらはエッセイ・記事（著者の思考を
+  たどる長文 prose）の規約で、README は「初対面の案内」。案内は敬体の方がとっつきやすく、
+  である調の断定連打は入口では威圧になる。将来の stocktake がこの差を「不整合」として
+  逆修正しないこと。
+- 表のセル・箇条書きの体言止め・見出しはこの限りではない（敬体を強制すると冗長になる）。
+- 英語 README に対応する軸はない。英語は一人称のパーソナルな register（"I build…"）を保つ。
+
+### 造語・専門用語は初出で一行の平易な言い換え（両言語共通）
+
+- repo 固有の造語（line 名・概念名・層名）は**削除せず**、初出に一行の平易な言い換えを添える。
+  造語は concept pages / graph.jsonld / glossary と連合する引用アンカーなので、名前を消すと
+  機械層との整合が壊れる。開くのは名前でなく**説明**。
+- 1 文に repo 固有の造語を 2 個以上同時に保持させない（初見読者が parse できない）。
+- lead（identity 文とその段落）は造語密度を最小にする。lead で使ってよい造語は
+  タイトル / repo 名が既に約束しているものだけ。
+- 英語混じり日本語文（「〜の source of truth ではない」等）は、日本語で言える語は日本語にする。
+  固有名詞・引用アンカー（DOI / ORCID / 概念名）はそのまま。
+- **段落は役割ごとに割る**: リードを 4-5 文の一塊にしない（自己紹介 / 誰向けか / この repo の
+  位置づけ、のように 1 段落 1 役割）。密度を下げる最安のレバーは削る前にまず改行。
+
+### 漢語直写の翻訳調を開く（JA README）
+
+EN の名詞句を漢語に直写した訳語は、意味は正しくても JA README では制度文書調・翻訳調に
+読まれる。開き方は「別の名詞に言い換える」だけでなく、**名詞を役割の文に組み替える**のが
+最も効く（"source of truth" は「正本」でなく「最新情報は各リポジトリにあります」）。
+実測ベースの対応例（2026-07-27 hub README 改修）:
+
+| EN 名詞句 / 直写訳 | 開いた形 |
+|---|---|
+| practice line / 実践ライン | プロジェクト、長期プロジェクト |
+| canonical record / 正準レコード | 代表的な引用先 |
+| source of truth / 正本 | 「最新情報は◯◯にあります」（文で言う） |
+| stable relationships / 安定した関係 | 変わらない関係 |
+| stable concept / 安定した概念 | 核になる考え |
+| this program / このプログラム | この取り組み |
+| publishes and makes citable / 公開して引用できる形にします | 外に開いて引用できるようにしています |
+| concept DOI | 語は残す + 初出グロス「常に最新版へつながる代表 DOI」 |
+
+運用上の注意 3 点:
+
+- **造語の和訳名を JA prose から撤去してよい条件**: 用語連合（graph.jsonld / concept pages /
+  glossary）を EN 版と機械層が担っていること。引用アンカーの本体が EN に残るなら、JA は
+  読みやすさ優先で一般語に開いてよい（「造語は削除しない」規約の JA 側例外）。
+- **見出しの和訳併記はアンカーを壊す**: 「Through-line（全体を貫く主張）」のような CJK 混じり
+  見出しはアンカー生成がレンダラー間で不安定。見出しは英語のまま残し、**節冒頭の一文**で
+  意味を開く。
+- **Mermaid ラベルの言語も本文に従える**: 本文で和訳グロスを導入した概念は、JA 版の図ノード
+  にも和文併記する（本文で日本語化した直後に図だけ英語へ戻ると違和感が残る）。意味・構造は
+  変えない。
+
+lint の i18n 注意: `doi_citation_pairing` は Citation 等の**英語見出し語**を探すため、JA 版の
+「引用と識別子」節では false warning になる。EN 版が clean なら JA 側の warning は見送ってよい
+（恒久対応するなら readme_lint.py に JA 見出しトークンを足す）。
+
+検査器は `readme-clarity-reviewer` agent（Workflow Step 2 で readme-reviewer と並列起動）。
+
+---
+
+## Workflow（Code filter → readme-reviewer ∥ readme-clarity-reviewer → 人間 gate）
 
 ### 1. Code filter — `readme_lint.py`（決定論的・structural only）
 
@@ -150,9 +240,14 @@ uv run --directory ~/.claude/skills/readme-writer python -m scripts.readme_lint 
 - `identity_lead` — H1 と最初の section の間に prose の lead 文が無い（**順序は強制しない**。H1 不在は single_h1 が担当）
 - `doi_citation_pairing` — DOI があるのに how-to-cite（Citation 節 / BibTeX / CITATION.cff）が無い（**DOI を非研究 repo に強制しない**——DOI がある時だけ発火）
 
-### 2. LLM review — `readme-reviewer` agent を起動（author-reviewer separation）
+### 2. LLM review — `readme-reviewer` ∥ `readme-clarity-reviewer` を並列起動（author-reviewer separation）
 
-lint が通ったら **`readme-reviewer` agent** を起動する。実装者（本 skill を回している Claude）と別 agent プロセスでレビューを回すことで author bias の盲点を避ける（`editor` / `essay-reviewer` と同型）。**レビュー基準の正本は agent 定義**（`~/.claude/agents/readme-reviewer.md`）— lens の一覧だけ挙げると:
+lint が通ったら **`readme-reviewer` agent** と **`readme-clarity-reviewer` agent** を**並列**起動する。実装者（本 skill を回している Claude）と別 agent プロセスでレビューを回すことで author bias の盲点を避ける（`editor` / `essay-reviewer` と同型）。役割分担は paper-ecosystem の paper-reviewer ∥ clarity-reviewer と同型:
+
+- **readme-reviewer** — artifact 側の厳密さ: フロア復元・構成・長さ・視覚形式。基準の正本は `~/.claude/agents/readme-reviewer.md`
+- **readme-clarity-reviewer** — 初見読者の読書体験: 造語予算・内部文脈依存・日本語 register（ですます）・一文テスト。基準の正本は `~/.claude/agents/readme-clarity-reviewer.md`
+
+readme-reviewer の lens 一覧:
 
 1. **README-only recovery（最重要）** — テキストだけでプロジェクトを復元できるか、フロア欠落の具体列挙
 2. Lead の What / Who / Why
@@ -221,7 +316,8 @@ uv run pytest tests/ --cov=scripts --cov-report=term-missing
 
 ## Related
 
-- `readme-reviewer` agent（`~/.claude/agents/readme-reviewer.md`）— 本 skill の Step 2 を担うレビュー agent。レビュー基準の正本
+- `readme-reviewer` agent（`~/.claude/agents/readme-reviewer.md`）— 本 skill の Step 2 を担うレビュー agent（artifact 側）。レビュー基準の正本
+- `readme-clarity-reviewer` agent（`~/.claude/agents/readme-clarity-reviewer.md`）— Step 2 の並列相方（初見読者側）。Voice / Register 節の検査器
 - [`codex-review`](../codex-review/SKILL.md) — 公開 README への cross-model 並列レビュー（prompt-driven モード）
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) — AI surface の対になる writer（研究値ベースの `geo_check.py` を持つ）。本 skill は人間 surface。
 - [`when-code-when-llm`](../when-code-when-llm/SKILL.md) — structural / semantic の判定軸
