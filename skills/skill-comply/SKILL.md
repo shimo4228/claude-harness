@@ -19,7 +19,7 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 ## Supported Targets
 
 - **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first, TDD guides
-- **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, git-workflow.md
+- **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, debugging.md
 - **Agent definitions** (`agents/*.md`): Whether an agent gets invoked when expected (internal workflow verification not yet supported)
 
 ## When to Activate

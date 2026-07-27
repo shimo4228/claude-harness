@@ -98,7 +98,7 @@ explaining, ask before writing.>
 1. **Imperative voice for Decision**. "Adopt", "Replace", "Add", "Remove" — not "We should consider".
 2. **Concrete file paths over abstract module names** in Context when available (e.g., `~/.claude/skills/context-sync/SKILL.md` Phase 0).
 3. **Wikilinks for cross-references**. If the input mentions a prior ADR, link as `[ADR-NNNN](./NNNN-slug.md)`. Resolve the slug by reading the ADR directory.
-4. **No emojis**. No marketing language ("dramatically", "revolutionary", "supercharge"). The harness rules forbid these.
+4. **No emojis**. No marketing language ("dramatically", "revolutionary", "supercharge") — ADR prose stays plain and factual.
 5. **Mirror existing ADR voice** in the target directory. Before writing, read the two most recent ADRs in `<adr-dir>` (e.g., `ls <adr-dir>/[0-9]*-*.md | sort -V | tail -2`) and match their density, paragraph length, and use of tables / lists.
 
 ## Workflow

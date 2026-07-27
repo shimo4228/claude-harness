@@ -75,7 +75,7 @@ chain's structured summary:
 ```
 Agent: codex-review
 Verdict: <CRITICAL | HIGH | MEDIUM | LOW | CLEAN>
-Findings (top 3): <one line each — keep only the ones you judge real>
+Findings (top 3 + 残数): <one line each — keep only the ones you judge real; 確認済みが 3 件を超えたら「+N more confirmed」と件数を明示し、黙って落とさない>
 Files touched: <path:line>
 Next action: <continue | stop | re-plan>
 ```

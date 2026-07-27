@@ -15,7 +15,7 @@ origin: shimo4228
 
 - **対象**: JA→EN のみ。essay / opinion / research doc / README / ADR / glossary 等、人間向け prose。
 - **対象外**:
-  - EN→JA（逆方向。必要なら別の sibling skill）
+  - EN→JA（逆方向）→ sibling skill `en-to-ja-translation`
   - AI 向け doc（`llms.txt` / `llms-full.txt` / FAQ）→ `llms-txt-writer`
   - 学術 citation / reference list の format 検証 → `citation-formatter`
 - **defer**: 英語の AI-slop 禁止リスト・Voice 規約・Title 規約・出典編入（Citation & Sources Workflow）は `~/.claude/skills/writing-ecosystem/SKILL.md` を正本とする。本 skill では再掲しない。

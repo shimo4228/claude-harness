@@ -23,7 +23,7 @@ Scaffold Dissolution（`rules/common/akc-cycle.md`）の**第 3 トリガー = �
 > だけをここが持つ。
 
 **発火は明示呼び出し（`/generation-audit`）が前提**。世代交代は稀で明示的なイベントで
-あり、自発トリガー（実質上限 ≒ 40%）に頼らない。
+あり、自発トリガーに頼らない。
 
 ## Phase 1 — runtime 層の採取
 

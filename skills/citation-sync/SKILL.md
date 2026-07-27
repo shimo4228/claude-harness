@@ -67,7 +67,7 @@ Phase 0 の audit を再実行し、全 repo `CONVERGED` を確認してから�
 | paper の references を repo 層に混ぜる (またはその逆) | paper の引用は paper の reference list から、repo の引用は repo docs から。担体が違う (paper 側は `paper-deposit` の担当) |
 | sibling DOI を external citation として数える | ecosystem cross-link は別枠。audit script が自動で分離する |
 | graph に既存の内部 bibliography 規約があるのに新ノードを追加して重複させる | Phase 3 の前に graph 内を被引用文献の名前でも grep する（例: `ans:ref/sharf-2014` が既にあるのに DOI @id の新ノードを足してしまった）。既存ノードがあれば identifier / url / sameAs を**追記**する方が正しい |
-| `add_qid_sameas.py` が 1 行ノード形式の graph で JSONDecodeError | text surgery が複数行形式前提。1 行ノードの graph は手動 Edit（または Python 文字列置換 + json 検証）で注入する。失敗時はファイル無傷（書き込み前 validation）|
+| 複数行 node 形式前提の text-surgery script が 1 行ノード形式の graph で JSONDecodeError | graph への機械的注入 script は pretty-print 前提で書かれがち。1 行ノードの graph は手動 Edit（または Python 文字列置換 + json 検証）で注入する。失敗時にファイル無傷となるよう書き込み前 validation を挟む |
 | docs が識別子無しで引用 (名前のみ) → audit が docs 層欠落として DIVERGED を報告 | 識別子ベース比較の既知の限界。引用が docs に実在するなら**意図的残差**として完了報告に明記すれば良い（docs に ID を書き足す義務はない）|
 | graph 層が audit で全行空欄 (citation node が `ScholarlyArticle` 単独型) | audit script は `ExternalReference` 型のみを層 3 として検出する。citation node は `["ExternalReference", "ScholarlyArticle"]` の dual-type にする（AKC は v2.3.0 で全 prior-art node を移行済み。@context に `ExternalReference` の定義があるか先に確認）|
 | 括弧入り DOI (例: Bainbridge `10.1016/0005-1098(83)90046-8`) が docs/graph 層で truncate され永続 DIVERGED | script の DOI regex は `)` を終端扱いする既知制約。zenodo 層でのみ carry し、当該 graph node は dual-type から**除外**（truncate された偽 ID 行の発生防止）、**意図的残差**として記録して CONVERGED 相当と判定する |

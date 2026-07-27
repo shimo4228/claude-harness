@@ -21,7 +21,7 @@ Position paper / preprint / journal-style article の draft 手順を、`paper-e
 
 - Blog post / essay (人間 primary、informal) → `writing-ecosystem` を使う
 - llms.txt / FAQ (AI primary) → `llms-txt-writer` を使う
-- README / CHANGELOG (project doc) → これらは skill を介さず直接書く
+- README (project doc) → `readme-writer` を使う / CHANGELOG → skill を介さず直接書く
 
 ## Pre-draft Checklist
 

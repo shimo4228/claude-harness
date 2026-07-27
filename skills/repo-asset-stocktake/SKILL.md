@@ -25,7 +25,7 @@ Audit a project repository's **non-code assets** — configs, CI workflows, runb
 | Mode | When | Scope |
 |---|---|---|
 | `full` (default) | First audit, or a periodic sweep | Every non-code asset in REPO_DIR |
-| `changed` | Re-audit after edits | **tier-1 reachability always runs over the full asset set** — a reference edge breaks when a *referenced* target is deleted elsewhere, and the referencing asset's own mtime never changes, so an mtime filter would miss it (the failure `rules-stocktake` already guards against). Only the tier-2 holistic re-evaluation is scoped: re-judge assets modified since the last `evaluated_at` (detect via `git diff` / mtime comparison — see the results.json note; not the GNU-only `find -newermt`) **plus any asset whose reachability changed vs the prior ledger**; carry prior verdicts forward only for assets that are both unmodified **and** reachability-unchanged. |
+| `changed` | Re-audit after edits | **tier-1 reachability always runs over the full asset set** — a reference edge breaks when a *referenced* target is deleted elsewhere, and the referencing asset's own mtime never changes, so an mtime filter would miss it (the failure `rules-stocktake` already guards against). Only the tier-2 holistic re-evaluation is scoped: re-judge assets modified since the last `evaluated_at` (detect via `git diff` / mtime comparison — see the results.json note) **plus any asset whose reachability changed vs the prior ledger**; carry prior verdicts forward only for assets that are both unmodified **and** reachability-unchanged. |
 
 ## Phase 1 — Inventory + tier-1 reachability
 
@@ -131,7 +131,7 @@ Persist verdicts so `changed` mode can carry them forward. Written inline via Re
 }
 ```
 
-`evaluated_at` is an ISO-8601 UTC stamp (`date -u +%Y-%m-%dT%H:%M:%SZ`). To find the modified set in `changed` mode, do **not** rely on `find -newermt` (GNU-only — it errors on the BSD/macOS `find` in this environment); prefer git (`git diff --name-only` / `git log --since`) when the repo is version-controlled, or parse `evaluated_at` and compare each asset's mtime in the agent's own logic. Carry a prior row forward **only** when its asset is both unmodified **and** its tier-1 reachability is unchanged vs the prior ledger — an asset whose reachability dropped to zero while its own file was untouched must be re-judged, never left a silent stale `Keep`.
+`evaluated_at` is an ISO-8601 UTC stamp (`date -u +%Y-%m-%dT%H:%M:%SZ`). To find the modified set in `changed` mode, prefer git (`git diff --name-only` / `git log --since`) when the repo is version-controlled — clone/checkout reset mtimes, so `find -newermt` comparisons mislead in git-managed trees even though the flag itself works on BSD/macOS find — or parse `evaluated_at` and compare each asset's mtime in the agent's own logic. Carry a prior row forward **only** when its asset is both unmodified **and** its tier-1 reachability is unchanged vs the prior ledger — an asset whose reachability dropped to zero while its own file was untouched must be re-judged, never left a silent stale `Keep`.
 
 ## Related
 

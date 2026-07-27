@@ -66,7 +66,7 @@ domain ledger（例: strategy 運用の public intervention timeline）と、wik
 台帳（+ Phase 2 検出分）の各 pending 行を実態と突合する:
 
 1. `git log --oneline` + 該当ファイル・コードの直読みで**既に完了していないか**確認
-   （feedback: verify-before-work の機械化。台帳は drift する、コマンドはしない）
+   （台帳は drift する、コマンドはしない）
 2. 着手条件付きタスクは条件が開いたか（リリース済み / 観察窓明け / 依存解消）を確認
 3. 結果を 3 分類で報告: `既済（Done へ移動）` / `stale（内容更新が必要）` / `現役`
 

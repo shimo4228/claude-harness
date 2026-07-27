@@ -64,9 +64,22 @@ LLM, per the enumerate/decide split):
 - [ ] No two agents share a near-identical description (flag for the Stage 1 overlap
   question — the listing is a selection surface; twins split delegation traffic)
 
+**Usage counts** (evidence input, never a verdict trigger): read
+`~/.claude/metrics/agent-usage.jsonl` inline (the hook `log-agent-usage.sh` appends one
+`invoke` event per Agent-tool launch, keyed by `subagent_type`) and count per-agent
+events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-liner.
+
+- If the log is **missing or its first event is younger than 90 days**, render usage as
+  `—` (unmeasured). **Never render it as 0** — unmeasured and unused are different facts.
+- Counts are **lower bounds**: only Agent (Task) tool launches are captured. Workflow
+  `agent()` workers, plugin-internal dispatch, and built-in machinery that bypasses the
+  tool call do not reach the hook. Never Retire/Dissolve on low usage alone — an agent's
+  value can be episodic (e.g. paper reviewers fire only near a deposit).
+- Log exists since **2026-07-27**; before that date there is no measurement at all.
+
 State the scan result up front: files found, total description words (the per-session
-residency tax of the listing), integrity failures. Carry failures into Stage 1 as
-pre-computed evidence.
+residency tax of the listing), integrity failures, and whether usage is measurable.
+Carry failures into Stage 1 as pre-computed evidence.
 
 ## Phase 2 — Evaluation (fully inline, holistic)
 
@@ -92,7 +105,19 @@ rest the **body layer** (invocation):
   ALWAYS/NEVER pairs that the surrounding-context judgment should own
 - [ ] *Not absorbed by the substrate?* — does the harness now cover this agent's job
   natively (native review machinery, plan mode, built-in slash commands)? Absorption →
-  Dissolve candidate; the claim must name its absorber concretely
+  Dissolve candidate; the claim must name its absorber concretely. Judge with the
+  **fresh/rich context axis** ([ADR-0023](../../docs/adr/0023-dissolve-planner-narrow-architect-to-essence-evaluation.md)):
+  roles that gain from *fresh* context (review, adversarial verification, essence
+  evaluation — decorrelation from the proposer's sunk cost) legitimately live in a
+  subagent; roles that gain from *rich* context (planning, generation, implementation —
+  user intent, in-conversation constraints) are main-loop work, so for them the main
+  loop itself counts as an absorber. Two auxiliary rationales legitimately override
+  the rich-context pull (ADR-0024): a **frozen-input render contract** — the caller
+  freezes a self-contained packet before invocation, so conversation context is not
+  needed by design (adr-writer per ADR-0016, prompt-writer; likewise repo-grounded
+  work whose input is the codebase, not the conversation — codemap-writer, scout) —
+  and **bulk context isolation** — the work reads or produces volume that would
+  pollute the main context (e2e-runner, refactor-cleaner)
 - [ ] *Technical references current?* — commands, flags, model names, tool lists
   (verify with `--help` / WebSearch when they look stale)
 - [ ] *Unique within the set?* — no other agent (or skill) owns the same job; a
@@ -106,7 +131,13 @@ agent-specific atomic yes/no questions that try to **refute** the draft verdict,
 answered with one line of evidence (file read, path check, `--help`, WebSearch,
 harness-doc check). For **Dissolve** candidates one question is mandatory: *"Can the
 absorbing harness feature be named concretely — Yes/No"* — an absorption claim that
-cannot name its absorber is refuted. Keep-bound agents get no dynamic questions.
+cannot name its absorber is refuted. And when a Dissolve is about to be *refuted* by a
+capability the substrate counterpart lacks (a tool, a wired sub-agent), one
+counter-question is mandatory before accepting the refutation: *"Is the subagent the
+right place to use that capability — or does the main loop hold it anyway?"* Capability
+existence is necessary but not sufficient; the fresh/rich context axis decides where the
+capability belongs (precedent: planner's `Agent(scout)` refutation collapsed because the
+main loop holds the full Agent tool, ADR-0023). Keep-bound agents get no dynamic questions.
 
 Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence,
 never aggregated into a score. Evaluation is **origin-blind** (ECC / shimo4228 /
@@ -134,7 +165,8 @@ delegation traffic and actively applies its stale body to current work.
 
 ## Phase 3 — Summary
 
-Render a table: `Agent | Desc words | Body lines | Verdict | Reason`. Close with one
+Render a table: `Agent | Desc words | Body lines | Usage 90d | Verdict | Reason`
+(`Usage 90d` is `—` while unmeasured, per Phase 1). Close with one
 line reporting total description words and the delta since the previous audit —
 input to the aggregate-residency judgment next run.
 
@@ -205,6 +237,9 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
 - `adr-writer` — records the why of a Dissolve.
 - `config-gc` — whole-config GC; this skill judges agent *quality*.
 - `harness-sync` — syncs surviving `origin: shimo4228` agents to the public repo.
+- Usage measurement: `~/.claude/hooks/log-agent-usage.sh` →
+  `~/.claude/metrics/agent-usage.jsonl` (a measurement layer independent of stocktake,
+  mirroring skill-stocktake's `log-skill-usage.sh`).
 
 ## References
 

@@ -33,9 +33,9 @@ origin: shimo4228
 
 | ステップ | feat | fix | refactor | chore | prototype |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Plan (planner) | Y | Y | Y | - | - |
+| Plan（メインループ / plan mode。sub-agent へ委譲しない — plan は rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
-| TDD (tdd-guide) | Y | Y | - | - | - |
+| TDD（メインループ、skill: `tdd`） | Y | Y | - | - | - |
 | Refactor Clean (refactor-cleaner) | - | - | Y | - | - |
 | Code Review (code-reviewer / python-reviewer) | Y | Y | Y | C | - |
 | Security Review (security-reviewer) | Y | C | - | C | - |

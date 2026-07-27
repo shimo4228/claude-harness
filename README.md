@@ -150,11 +150,11 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC (unmodified) | article-writing | architect, python-reviewer, refactor-cleaner | — |
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | code-reviewer, e2e-runner, planner, security-reviewer, tdd-guide | common/coding-style, common/hooks, common/patterns, common/security, common/testing |
+| ECC (unmodified) | article-writing | python-reviewer | — |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | architect, code-reviewer, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/hooks, common/patterns, common/security, common/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
-| community | scientific-thinking-literature-review | — | — |
+| community + local modifications | scientific-thinking-literature-review | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |
 | [ogulcancelik/herdr](https://github.com/ogulcancelik/herdr) | herdr | — | — |

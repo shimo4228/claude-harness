@@ -251,7 +251,7 @@ graph.jsonld を作っただけでは crawler に見つからない。`llms.txt`
 | `llms.txt` | (1) 冒頭に Graph-first reading order blockquote と numbered section、(2) Core documentation navigator の最上位に graph.jsonld entry |
 | `llms-full.txt` | 末尾に question-form H2（"How do X and Y relate as a graph?"）+ graph.jsonld への link + 3 つ程度の load-bearing design choice 説明 |
 | `README.md` (人間向け) | 冒頭に `<details><summary>AI-facing reading order</summary>` 折りたたみ block。維持している language mirror があれば同 block を mirror にも入れる |
-| `README.{lang}.md` (追加 mirror がある場合) | summary tag と intro 行のみ localize、bullet list は paths なので en 共通でよい。**ja を超えて mirror を維持するかは traffic data に基づき判断**: human viewers が統計的に存在しない mirror は LLM crawler が en source から多言語 answer する現状を踏まえると不要 |
+| `README.{lang}.md` (追加 mirror がある場合) | summary tag と intro 行のみ localize、bullet list は paths なので en 共通でよい。mirror を維持するか（traffic-data 基準）の判断は `llms-txt-writer` の Companion JSON-LD Graph セクションが正本 |
 | hub-and-spoke の line README | hub graph への reverse-link を上記 block 内に追加 |
 
 詳細な wording は `~/.claude/skills/llms-txt-writer/SKILL.md` の Companion JSON-LD Graph セクション参照。

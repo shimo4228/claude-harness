@@ -35,7 +35,7 @@ Search these sources in parallel, prioritized by reliability:
 #### 2b. MCP Ecosystem
 - Search for MCP servers: `WebSearch` for "MCP server [functionality] claude"
 - Check Context7 for library docs: `mcp__context7__resolve-library-id` (if available — see Notes)
-- Check existing installed MCPs in `~/.claude/settings.json`
+- Check existing installed MCPs in `~/.claude.json` (the `mcpServers` key)
 
 #### 2c. Claude Code Skills & Agents
 - Check existing skills: `Glob` for `~/.claude/skills/*/SKILL.md`
@@ -153,9 +153,9 @@ Return a structured report:
 
 ## Integration with Other Agents
 
-- **Before planner**: Run scout to inform the implementation plan
-- **Before architect**: Run scout to discover existing patterns/libraries
-- **Before tdd-guide**: Run scout to find testing utilities
+- **Before the main-loop plan step**: Run scout to inform the implementation plan
+- **Before architect (essence evaluation)**: Run scout so the build-or-not verdict can weigh existing solutions
+- **Before the TDD step**: Run scout to find testing utilities
 
 ## Scope Boundary
 

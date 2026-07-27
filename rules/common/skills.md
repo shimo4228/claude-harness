@@ -39,5 +39,14 @@ frontmatter の `name` 修正のみは対象外。自作 origin（`shimo4228` / 
 2. 独立スキルとして十分な量がある（3+ ルールまたはワークフロー） → 新規スキル
 3. それ以外 → MEMORY.md（1-2行）
 
+### Global vs Project（skill / agent / rule 共通）
+
+- **2+ の repo / channel で使う** → global（`~/.claude/`）
+- **単一 platform・channel・repo に固有** → project `.claude/` overlay
+- **迷ったら global**（project へ後から降ろす方が逆より容易）
+
+ここが正本（→ ADR-0025）。ADR-0008（言語非依存のみ global）・learn-eval の判定・
+writing-ecosystem の Overlay 行はこの基準の実例。
+
 skill を**書く / 公開する**ときの規約（Portability test、repo packaging）は
 skill: `skill-creator` / `harness-sync` が正本。

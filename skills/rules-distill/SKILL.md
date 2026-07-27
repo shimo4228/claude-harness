@@ -29,7 +29,7 @@ candidates and verdicts; it **never edits rules without your approval**.
 Enumerate with Glob (no script):
 
 - Skills: `~/.claude/skills/*/SKILL.md` + `~/.claude/skills/learned/*.md`
-- Rules: read every `~/.claude/rules/**/*.md` in full — the corpus is small (~800 lines total), so no grep pre-filter is needed
+- Rules: read every `~/.claude/rules/**/*.md` in full — the corpus is small (measure live with `wc -l` — rules/README.md forbids writing the volatile number down), so no grep pre-filter is needed
 
 > Glob targets only skill definition files, so dependency markdown under `.venv` /
 > `.pytest_cache` is excluded structurally.

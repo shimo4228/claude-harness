@@ -1,5 +1,5 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: タスク行の正本を名乗るファイルの増殖が分散の根因という実障害由来。単一台帳方式（GTD）+ verify-before-work feedback -->
+<!-- rationale: タスク行の正本を名乗るファイルの増殖が分散の根因という実障害由来。単一台帳方式（GTD）+ 着手前の既済照合は実訂正由来 -->
 <!-- review-when: Backlog.md / beads 等へツールごと移行した時 / harness native の task 機構が repo 永続の台帳を持つようになった時 -->
 # Task Tracking
 
@@ -27,7 +27,7 @@ Pending タスクの正本は **repo ごとに 1 ファイルのみ**（単一�
 - auto-memory (MEMORY.md) の Pending 節は**台帳へのポインタ 1 行のみ**
   （状態・件数を複製しない — 「集約カウントの正本は 1 箇所」規律と同型）
 - 残タスクを問われたら台帳を最初に読む。台帳行は信用せず着手前に git log + 実コードで
-  既済照合する（feedback: verify-before-work）
+  既済照合する
 - タスクを完了・追加・廃止したら**同じ作業内で**台帳を更新する
 
 ## スケール時の卒業パス

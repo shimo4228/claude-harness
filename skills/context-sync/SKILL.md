@@ -291,6 +291,6 @@ If Phase 0 ended with **acknowledged drift** (user declined to cascade update-co
 ## What This Skill Does NOT Do
 
 - Code quality checks (linting, testing, building) — use the Verify gate in
-  `rules/common/planning.md`, or `/review` / `/python-review` for review
+  `rules/common/planning.md`, or `/code-review` / `/python-review` for review（`/review` は GitHub PR 専用 — implementation-chain 参照）
 - Agent-specific memory management (e.g., auto-memory systems)
 - `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`

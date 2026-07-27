@@ -155,11 +155,11 @@ grep -rnE "<deleted_module_name>" src/ tests/ --include='*.py' | head -5
 git status --short
 ```
 
-全 PASS で次へ。FAIL があれば停止して user に報告 (memory: `verify-before-work`)。
+全 PASS で次へ。FAIL があれば停止して user に報告。
 
 ## Phase 5: Release execution
 
-`git push` および `gh release create` は **user 明示依頼があれば実行**。memory `push-workflow` の default は「user に提案して止まる」だが、user が「push して」「release を切って」と言ったら実行する。**Release object 作成 = Zenodo webhook trigger** なので irreversible (DOI 採番が動き始める)。
+`git push` および `gh release create` は **user 明示依頼があれば実行**。既定は「user に提案して止まる」だが、user が「push して」「release を切って」と言ったら実行する。**Release object 作成 = Zenodo webhook trigger** なので irreversible (DOI 採番が動き始める)。
 
 ```bash
 # codemeta.json は CITATION.cff の派生物 — stage 前に再生成 (存在する repo のみ)
@@ -172,7 +172,7 @@ git add CHANGELOG.md CITATION.cff pyproject.toml \
   llms.txt llms-full.txt
 test -f codemeta.json && git add codemeta.json
 
-# HEREDOC で commit (attribution は global settings.json で disable 済み — 追記しない)
+# HEREDOC で commit
 git commit -m "$(cat <<'EOF'
 release: vX.Y.Z — <one-line title>
 
@@ -202,7 +202,7 @@ gh release create vX.Y.Z \
   --latest
 ```
 
-**Branch 切らない・PR 作らない** (memory `push-workflow`: 個人研究 repo は main 直 push、`gh pr create` 自動実行禁止)。`gh release create` は別物 — Zenodo DOI 連鎖の起点なので、user 明示依頼下では実行する。
+**Branch 切らない・PR 作らない** (個人研究 repo の規約: main 直 push、`gh pr create` 自動実行禁止)。`gh release create` は別物 — Zenodo DOI 連鎖の起点なので、user 明示依頼下では実行する。
 
 **HF dataset sync** (`graph.jsonld` を持つ repo のみ): `gh release create` の後、project root で `/hf-sync <Owner/dataset>` を起動して HF mirror を反映する。Local の `hf login` token を使うので CI / token secret 管理は不要。詳細は `hf-sync` skill 参照。
 
@@ -387,10 +387,10 @@ GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/rel
 - **`.zenodo.json` references = 被引用研究者への passive シグナル**: repo markdown 内の引用は Google Scholar / arXiv "cited by" の citation graph に一切入らない (被引用側から不可視)。`.zenodo.json` の `references` 辺は release 時に DataCite metadata として propagate し、OpenAIRE / Scholix の citation graph に機械可読な辺を張る。引用した文献の著者周辺に届く数少ない受動経路なので、新規引用が増えた release では必ず同期する (authorship-strategy の citation-graph federation tactic)。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
 - **多言語 README は default 中間**: 全文再翻訳は cost 過大、最小 (badge のみ) は drift を残す。version + 統計 + sunset sentence までが妥当
 - **DOI 欄は Phase 5 で据え置き**: tag push 前に新 DOI を埋めると Zenodo 採番前なので必ず壊れる。Post-release で 1 commit 増やす方が安全
-- **Branch 切らない**: memory `push-workflow` — 個人研究 repo の default は main 直 push。`gh pr create` を自動実行しない
-- **Numeric cap を quality filter にしない**: memory `no-numeric-caps` — `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
-- **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う (memory `single-responsibility-per-artifact`)
-- **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し (memory `substrate-migration-sweep`)
+- **Branch 切らない**: 個人研究 repo の default は main 直 push。`gh pr create` を自動実行しない
+- **Numeric cap を quality filter にしない**: `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
+- **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う
+- **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し
 - **SWHID は DOI の補完であって代替ではない** (authorship-strategy ADR-0013): DOI は extrinsic (registry 依存、metadata record を指す)、SWHID は intrinsic (content hash 由来、registry なしで検証可能)。各層が他方の failure mode をカバーする。DOI 登録が impractical な genre (blog 等) では SWHID が substitute priority-claim mechanism。Software Heritage は code 系 LLM training corpus (The Stack v2 系) の直接 ingest source でもあり、archive は parametric channel への第二の ingest surface を兼ねる
 - **新規 DOI repo は Zenodo opt-in が事前必須**: Zenodo の GitHub 連携は repo ごとの opt-in 設計。toggle ON 前に作成された release は遡及的に拾われない (公式仕様)。Pre-flight で `gh api repos/<owner>/<repo>/hooks` を確認しないと、Phase 5 まで進めて Zenodo に何も届いていないことを Post-release で初めて発見してリカバリーすることになる。**新規 repo のたびに必要だが忘れがち** — sibling repo (AKC / AAP / contemplative-agent / authorship-strategy) では既に opt-in 済みのため、慣れていると新規 repo で初回 release を切る時の盲点になる。doctrine-corpus v0.1.0 (2026-05-22) でこの漏れが発生し、tag/release 再作成でリカバリーした事例あり
 
