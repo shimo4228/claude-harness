@@ -1,40 +1,7 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: タスク行の正本を名乗るファイルの増殖が分散の根因という実障害由来。単一台帳方式（GTD）+ 着手前の既済照合は実訂正由来 -->
-<!-- review-when: Backlog.md / beads 等へツールごと移行した時 / harness native の task 機構が repo 永続の台帳を持つようになった時 -->
+<!-- rationale: ADR-0035 — 台帳の手順を task-stocktake へ移し、repo ごとの正本 path だけ常駐 -->
+<!-- review-when: harness native task store または repo の台帳 path を変えた時 -->
 # Task Tracking
 
-Pending タスクの正本は **repo ごとに 1 ファイルのみ**（単一台帳方式 — GTD「信頼できるシステムは 1 つ」）。
-分散の根因は「タスク行の正本を名乗るファイルが増殖すること」であり、フォルダ不足ではない。
-
-## 台帳の解決順序
-
-1. 既存の `.notes/TASKS.md` があればそれが台帳
-2. 無ければ既存のタスクファイル（`TODO.md` / `TASKS.md` / `docs/backlog.md` 等）を台帳と認定
-3. どちらも無ければ **task-stocktake skill が置き場所を確認の上で作成**する
-   （rule 層は自動作成しない — 台帳の新設は repo 構造への意見なので skill 側で扱う）
-
-## 台帳の形式
-
-- 1 タスク 1 行: `ID | 状態 | 一行説明 | 着手条件 | 詳細リンク`（Markdown 表 or リスト）
-- 完了・廃止したタスクは削除せず **Done 節へ移動**（判断履歴を残す）
-- 詳細はリンク先に置き、台帳行には複製しない
-
-## 規律
-
-- **handoff / 監査台帳 / cold-start ファイルは詳細資料**。タスク行の正本を持たせない。
-  これらを新規作成したら、同じ作業内で台帳にリンク行を足す
-- 完了タスクの詳細ファイルは archive へ移動し、Done 行から参照する
-- auto-memory (MEMORY.md) の Pending 節は**台帳へのポインタ 1 行のみ**
-  （状態・件数を複製しない — 「集約カウントの正本は 1 箇所」規律と同型）
-- 残タスクを問われたら台帳を最初に読む。台帳行は信用せず着手前に git log + 実コードで
-  既済照合する
-- タスクを完了・追加・廃止したら**同じ作業内で**台帳を更新する
-
-## スケール時の卒業パス
-
-solo repo・pending 数十件までは単一台帳 Markdown が最適（依存ゼロ・LLM 可読）。
-タスク量の増大や多 agent 並行が常態化したら、1 タスク 1 ファイル型（Backlog.md）や
-git-backed graph 型（beads）への移行を検討する — 台帳を分割して増やすのではなく、
-ツールごと乗り換える。
-
-See skill: task-stocktake
+Pending task の正本は repo ごとに1つ。既存の `.notes/TASKS.md` があればそれを使う。
+新設・統合・archive の手順は skill: `task-stocktake` が持つ。

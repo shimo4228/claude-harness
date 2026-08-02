@@ -53,7 +53,7 @@ root, from `enabledPlugins`, from `installed_plugins.json`, and from the agent's
 own skill listing) and three skills were "fixed" to stop pointing at a command
 that was live all along. Code enumerates the names it cannot resolve; a human or
 a holistic pass decides which are real (enumerate/decide, per
-`when-code-when-llm`). `_KNOWN_NON_FILE_SKILLS` in the scanner is noise
+structural checks). `_KNOWN_NON_FILE_SKILLS` in the scanner is noise
 reduction only — never an authority on what exists.
 
 Ownership is decided by `is_symlink()` alone — no git call. `git ls-files` cannot

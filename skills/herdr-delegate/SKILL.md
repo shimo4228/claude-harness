@@ -123,7 +123,7 @@ blocked（承認 UI）の可能性があるので、通知が来たら `herdr ag
 1. `git status --short` + `git diff` — 報告された成果物が実在するか、余計な変更がないか
 2. **diff 全文レビュー**（このリポジトリの review chain — code-reviewer / 言語別 reviewer）
 3. **検証をこちらでも再実行**（build / test / lint。相手の「green にした」を再現確認）
-4. 合格後にこちらの手でコミット（意図確認 gate は通常どおり）
+4. task request に commit が含まれる場合は、合格後にこちらの手でコミット
 
 不合格なら差し戻し: `herdr agent prompt <name> "<具体的な指摘>"` で同一セッションの
 文脈を保ったまま修正させる。2 回差し戻して直らなければ引き取って自分で直す。

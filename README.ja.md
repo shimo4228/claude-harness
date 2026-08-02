@@ -45,7 +45,6 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |
 | [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
 | [citation-sync](skills/citation-sync/SKILL.md) | 研究 repo の引用 4 層 (docs / .zenodo.json / graph.jsonld / Wikidata P2860) を監査し下層から同期 |
-| [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | 決定論的 code vs LLM 処理の判断 framework — 構造/意味軸と false-positive テスト |
 | [spawn-session](skills/spawn-session/SKILL.md) | tmux で detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
 | [harness-sync](skills/harness-sync/SKILL.md) | 生きた harness から本 repo への origin filter 付き一方向エクスポート — 収集・secret scan・subtree 置換 |
 | [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | access-blocked / digest 由来の数値主張を、durable な引用の前にオープンミラーで検証する guardrail |
@@ -107,8 +106,6 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
 | [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
-| [human-gate](rules/common/human-gate.md) | ゲートの第 2 軸 — artifact は機械が検査し、人間は intent を判断する。提示物は対象で分岐（behavior-shaping artifact と control plane は本文、実装は承認済み plan と照合する意図の要約） |
-| [output-register](rules/common/output-register.md) | 常駐テキストは context を節約するために圧縮されているが、ユーザー向けの文章はそうではない。内部向けの書き方を説明文に持ち込まないための rule |
 <!-- END GENERATED: rules-table -->
 
 ## 使い方

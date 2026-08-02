@@ -45,7 +45,6 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [substack-publishing](skills/substack-publishing/SKILL.md) | Publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery |
 | [hf-sync](skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
 | [citation-sync](skills/citation-sync/SKILL.md) | Audits the three citation layers of a research repo (docs / .zenodo.json / graph.jsonld) and syncs them bottom-up |
-| [when-code-when-llm](skills/when-code-when-llm/SKILL.md) | Decision framework for deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test |
 | [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session via tmux, visible in the mobile app session list |
 | [harness-sync](skills/harness-sync/SKILL.md) | One-way export of origin-filtered components from the live harness into this repo — collection, secret scan, subtree replacement |
 | [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | Verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact |
@@ -107,8 +106,6 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
 | [task-tracking](rules/common/task-tracking.md) | Single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents |
-| [human-gate](rules/common/human-gate.md) | The second gate axis — machines verify artifacts, the human judges intent. What the gate shows branches by target: behavior-shaping artifacts and the control plane show full text, implementation shows an intent summary checked against the approved plan |
-| [output-register](rules/common/output-register.md) | Residency prose is compressed to save context; user-facing prose is not. Keeps the internal register out of explanations written for a reader |
 <!-- END GENERATED: rules-table -->
 
 ## Usage
@@ -161,7 +158,7 @@ The live harness also runs components from external upstreams. Their content —
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
 | ECC (unmodified) | article-writing | — | — |
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | architect, code-reviewer, e2e-runner, python-reviewer, refactor-cleaner, security-reviewer | common/coding-style, common/hooks, common/patterns, common/security, common/testing |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | architect, code-reviewer, e2e-runner, python-reviewer, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community + local modifications | scientific-thinking-literature-review | — | — |

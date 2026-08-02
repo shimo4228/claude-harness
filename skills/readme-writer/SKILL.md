@@ -43,7 +43,7 @@ README 最適化の本当の対立軸は「人間向け情報 vs LLM 向け情�
 
 ## なぜ「構造 lint」と「ホリスティック review」を分けるのか
 
-README 品質には 2 種類の property が混在する。**Code-LLM Layering**（構造は code が 100% 精度で所有、意味は LLM が所有）に従い所有者を分ける。判定軸は [`when-code-when-llm`](../when-code-when-llm/SKILL.md): 「同じバイト列が文脈で違う意味になりうるか?」
+README 品質には 2 種類の property が混在する。機械的に確定できる構造検査と、文脈を読む意味レビューに所有者を分ける。
 
 | property | 例 | 種別 | 所有者 |
 |---|---|---|---|
@@ -305,7 +305,7 @@ truncation クラス（`text-truncate` / `line-clamp`）を**持たず**、300 �
 
 #### topics は「選ぶ」前に「測る」
 
-どの語が索引面として生きているかは**実数で決まる**（意味の議論ではない → `when-code-when-llm` の構造的性質）:
+どの語が索引面として生きているかは**実数で決まる**:
 
 ```bash
 gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'
@@ -338,12 +338,11 @@ Reversibility Gate — 可逆でも「消す/変える判断」自体はユー�
 変更案は 3 要素それぞれについて **現状 → 提案** の形で書き出す。homepage を**空にする**提案なら
 それも明示する（無変更と区別がつかなくなるため）。
 
-### 5. 人間 gate
+### 5. 公開スコープ
 
-README 本文と About の変更案（**件数とスコープを明示**）を**まとめて 1 回**提示して承認を取る
-（1 作業 1 ゲート — `rules/common/human-gate.md`）。ここで人間が判断するのは**文章の正しさではなく
-「この入口を公開物として引き受けるか」**（README は公開・不可逆で、テキストが意図そのもの）。
-構造的な品質は Step 1 の `readme_lint.py` と Step 2 の `readme-reviewer` が既に持っている。
+task request / approved plan が commit・公開まで含む場合は追加確認せず進める。
+対象 repo、公開面、ファイルが承認済み scope から増えた場合だけ scope change として停止する。
+構造的な品質は Step 1 の `readme_lint.py` と Step 2 の `readme-reviewer` が持つ。
 
 ### 6. 適用と検証（承認後）
 
@@ -385,7 +384,7 @@ gh api "search/repositories?q=topic:X+user:OWNER" --jq '.total_count'  # 索引�
 ## Anti-patterns
 
 - 数値スコアだけ出して具体案なしで終わる（recommender 型の罠）
-- 構造 lint で済む項目を LLM に判断させる / 意味的判断を regex で代用する（`when-code-when-llm` 参照）
+- 構造 lint で済む項目を LLM に判断させる / 意味的判断を regex で代用する
 - AI surface の数値指標（ski-ramp / entity density / 疑問見出し farming）を人間 README に流用する（可読性低下）
 - **「ビジュアル優先」を散文の画像化と解釈する**（raster 図は text-only LLM に不可視 = 情報をエージェントから隠す。Mermaid を使う）
 - **「削るな・再構造化せよ」を効かせすぎて偽装 llms-full.txt 化する**（フロアは小さく、上は容赦なく削る/relocate）
@@ -417,7 +416,6 @@ uv run pytest tests/ --cov=scripts --cov-report=term-missing
 - `readme-clarity-reviewer` agent（`~/.claude/agents/readme-clarity-reviewer.md`）— Step 2 の並列相方（初見読者側）。Voice / Register 節の検査器
 - [`codex-review`](../codex-review/SKILL.md) — 公開 README への cross-model 並列レビュー（prompt-driven モード）
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) — AI surface の対になる writer（研究値ベースの `geo_check.py` を持つ）。本 skill は人間 surface。
-- [`when-code-when-llm`](../when-code-when-llm/SKILL.md) — structural / semantic の判定軸
 - [`context-sync`](../context-sync/SKILL.md) — README ↔ 機械層の fact 一致 / drift（fact 検証はこちらに委譲）
 - [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — graph.jsonld 設計
 - [`writing-ecosystem`](../writing-ecosystem/SKILL.md) — 人間向け長文 prose の orchestrator

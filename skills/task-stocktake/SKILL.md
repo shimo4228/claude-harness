@@ -59,7 +59,7 @@ domain ledger（例: strategy 運用の public intervention timeline）と、wik
 ポインタ 1 行を置く。候補が採択され、作業として残った時点で初めて台帳行になる。
 
 検出は列挙・報告まで（enumerate）。台帳へ載せるか・どの状態にするかはユーザー / 会話で
-判断する（decide）— when-code-when-llm の enumerate/decide 分割。
+判断する（decide）。
 
 ## Phase 3 — Verify（既済・stale 照合）
 

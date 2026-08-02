@@ -12,9 +12,8 @@ origin: shimo4228
 
 # verify-bootstrap — repo に機械ゲートを立てる
 
-人間がコードを読む速度は、AI が書く速度に追いつかない。だから正しさの判定は
-**機械に移す**（レビューを手放すのではなく、担当を移す — `rules/common/human-gate.md`
-の「artifact は機械、intent は人間」の実装面）。この skill は repo ごとに、
+人間がコードを読む速度は、AI が書く速度に追いつかない。だから構造的な正しさの判定は
+**機械に移す**。この skill は repo ごとに、
 その時点で最良の検査ツールを立てる。
 
 ## この skill が持たないもの（設計上の中核）
@@ -152,9 +151,8 @@ repo が持つ **唯一の入口**。ハーネス側の hook はこのファイ�
 python3 ~/.claude/scripts/hooks/verify_allow.py approve <repo>
 ```
 
-承認は内容ハッシュに紐づくので、`verify.sh` を編集したら再承認が要る（control plane の変更は
-毎回人間の目を通す — これは摩擦ではなく設計）。承認を求めるときは **verify.sh の本文を提示**する
-（[`human-gate.md`](../../rules/common/human-gate.md) の control plane 区分）。
+承認は内容ハッシュに紐づくので、`verify.sh` を編集したら `verify_allow.py` の台帳を更新する前に
+新しい本文を確認する。これは permission prompt を経ない repo-local code 実行の信頼境界である。
 
 生成した `verify.sh` は**その場で 1 回実行して動作を確認する**。さらに
 **違反を一時注入して category ごとに発火を実証する**（format 崩し・未使用 import・
@@ -206,5 +204,3 @@ tool: pyright ==1.1.x
 
 - Phase 0 のエントリポイント: skill `search-first`（ツール選定は必ずここを通す）
 - ゲートを含む実装フロー全体: skill `implementation-chain`
-- 機械 / 人間の担当分界: `rules/common/human-gate.md`
-- 検出は code・判断は人間という分割: `rules/common/patterns.md`

@@ -137,8 +137,10 @@ class TestExtractMdLinks:
         assert refs[0].target == str(Path("/s/foo/reference/x.md"))
 
     def test_sibling_skill_link(self) -> None:
-        refs = extract_md_links("[wcwl](../when-code-when-llm/SKILL.md)\n", "foo", Path("/s/foo"))
-        assert refs[0].target == str(Path("/s/foo/../when-code-when-llm/SKILL.md"))
+        refs = extract_md_links(
+            "[chain](../implementation-chain/SKILL.md)\n", "foo", Path("/s/foo")
+        )
+        assert refs[0].target == str(Path("/s/foo/../implementation-chain/SKILL.md"))
 
     def test_external_url_skipped(self) -> None:
         assert extract_md_links("[site](https://example.com/x)\n", "foo", Path("/s/foo")) == []

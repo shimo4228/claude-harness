@@ -1,6 +1,6 @@
 ---
 name: llm-as-judge
-description: Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation. Use when designing or reviewing any LLM-based quality gate, evaluator, judge prompt, or verdict schema; when a judge's rubric scores fluctuate between runs; when you catch yourself asking an LLM for a 1-5 score, averaging check results, or thresholding a satisfaction ratio. NOT for choosing whether a task belongs to code or LLM (that is when-code-when-llm) and NOT for the architecture-level judge+enforce state-mutation split (that is code-and-llm-collaboration).
+description: Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation. Use when designing or reviewing any LLM-based quality gate, evaluator, judge prompt, or verdict schema; when a judge's rubric scores fluctuate between runs; when you catch yourself asking an LLM for a 1-5 score, averaging check results, or thresholding a satisfaction ratio. NOT for choosing whether a task needs deterministic or semantic processing, and NOT for the architecture-level judge+enforce state-mutation split.
 license: MIT
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
@@ -168,7 +168,6 @@ in `evidence` are the improvement list handed to the next stage.
 
 ## Related
 
-- `when-code-when-llm` — decides whether a task belongs to code or LLM at all;
   this skill assumes the judgment part is already LLM-owned and designs it.
 - `code-and-llm-collaboration` — the architecture-level "LLM judge + Code
   enforce" pattern (judgment never mutates state directly); this skill designs

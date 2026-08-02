@@ -279,7 +279,7 @@ def extract_skill_refs(markdown: str, skill: str, root: Path) -> list[Reference]
     harness hides user-only commands from the agent's invocation list. So an
     unresolved name is reported as *unresolved*, not as a defect, and does NOT
     move the exit code. Code enumerates; a human or a holistic pass decides
-    (enumerate/decide, per when-code-when-llm).
+    (enumerate first, then decide).
 
     Only high-precision forms are matched, keeping the scanner's
     false-positive-is-worse-than-a-miss stance: ``See skill(s): X``,
@@ -537,7 +537,7 @@ def main(argv: list[str] | None = None) -> int:
     # Neither unresolved names nor external ownership moves the gate. The scanner
     # cannot enumerate the slash-command namespace, so failing CI on a name would
     # fail on correct code; and an externally-owned skill is a routing fact, not a
-    # defect of this repository (enumerate/decide, per when-code-when-llm).
+    # defect of this repository (enumerate first, then decide).
     missing, _ = partition_findings(items)
     return 1 if missing else 0
 

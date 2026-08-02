@@ -29,7 +29,7 @@ skill-creator is the fixer.
 > and (2) a **conditional** verification trigger ("confirm if it looks stale") degrades
 > to "never verify" in a loaded context, because the trigger itself is a diluting
 > judgment. v3.0 is therefore a hybrid, split not by context length but by the property
-> being checked (see when-code-when-llm): deterministic checks are code-owned and
+> being checked: deterministic checks are code-owned and
 > unconditional; per-item judgment gets narrow, dense contexts; set-level judgment gets
 > a light description sweep with targeted deep reads.
 
@@ -252,7 +252,6 @@ every write.
   external evidence (read, never require).
 - `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code
   assets.
-- `when-code-when-llm` — the dividing line Phase 0/2/3 implement: deterministic checks
   are code-owned and unconditional; judgment is holistic and narrow-context.
 - `llm-as-judge` — the generic judge design canon (binary screen → pressure-test →
   holistic named verdict, no aggregation); Phase 2 is its library-scale implementation.

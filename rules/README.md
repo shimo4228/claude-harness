@@ -1,49 +1,25 @@
 <!-- origin: shimo4228 -->
 # Rules
 
-毎セッション自動ロードされる常駐層。**常駐は希少資源**なので、ここに置くのは
-「Claude が既定で持っていない、この環境固有の gotcha と意見」だけ。手順の詳細・
-判断表・言語固有の慣行は skill 側に置き、ポインタで参照する（progressive disclosure）。
+毎セッション自動ロードされる常駐層。採用基準は「この環境固有の事実・配線・罠」。
+思考や作業の手順は skill、発火時刻を要する検査は hook、一般的な判断は substrate が持つ。
+経緯は [ADR-0018](../docs/adr/0018-rules-rightsize-for-claude5.md) と
+[ADR-0035](../docs/adr/0035-commit-review-hook-and-rules-rightsize.md)。
 
-現在 `common/` 14 ファイル（語数は volatile のため記載しない — `wc -w` で都度実測する。
-2026-07-25 の rightsize → [ADR-0018](../docs/adr/0018-rules-rightsize-for-claude5.md)、
-同日の `human-gate.md` 新設 → [ADR-0019](../docs/adr/0019-human-gate-layer.md)、
-2026-07-26 の system-prompt 整合調整で作成ゲート行を削除、同日 `git-workflow.md` を substrate 吸収で退役、
-2026-07-31 に `akc-cycle.md` の Signal-first 節を退役 → [ADR-0026](../docs/adr/0026-retire-signal-first-residency.md)、
-2026-08-01 に `output-register.md` を新設 — 常駐テキストの語調をモデルが模倣し、
-ユーザー向け出力まで難解になっていた実測に対する対処）。
-
-各ファイル先頭の `<!-- rationale: -->` / `<!-- review-when: -->` コメントは存在根拠と
-失効条件のメタデータ（[ADR-0021](../docs/adr/0021-rules-metadata-and-premise-lint-gates.md)）。
-HTML コメントはセッション注入時に strip されるため常駐コストゼロ — `wc -w` の disk 値は
-注入実測より大きく出る。存在は harness_lint が検査し、消費者は rules-stocktake。
+各 rule は `origin`、`rationale`、`review-when` を持つ。存在は `harness_lint.py`、
+意味と失効条件は skill: `rules-stocktake` が検査する。
 
 ## Structure
 
-```
-rules/
-└── common/          # 言語非依存（python/ 層は 2026-07-25 に廃止 → skills/python-patterns へ吸収）
-    ├── agents.md           # Author-Reviewer 分離、cross-agent 共有 / 委譲のゲート条件
-    ├── akc-cycle.md        # Phase → skill 対応、Scaffold Dissolution
-    ├── coding-style.md     # Reversibility Gate、Iteration Bounds、Change Target
-    ├── contemplative-axioms.md  # Contemplative Constitutional AI 条項（verbatim）
-    ├── debugging.md        # 根本原因優先フロー、Rate limit = policy signal
-    ├── hooks.md            # hooks vs skills の決定論性、外部スクリプト分離
-    ├── human-gate.md       # ゲートの第 2 軸 — artifact は機械 / intent は人間、提示物の対象分岐
-    ├── output-register.md  # ユーザー向けの書き方 — 常駐テキストの短い書き方を出力に持ち込まない
-    ├── patterns.md         # Code vs LLM seam、documented-invariant → ゲート化
-    ├── planning.md         # Phase 0、複雑性チャレンジ、2 介入点モデル、Verify ゲート
-    ├── security.md         # シークレット管理、LLM 信頼境界
-    ├── skills.md           # Origin Tracking、Knowledge Placement
-    ├── task-tracking.md    # 単一タスク台帳（1 repo 1 ファイル）
-    └── testing.md          # カバレッジ 80%、MagicMock の罠、本番テスト禁止
-```
-
-## Rules vs Skills
-
-- **Rules** — 常駐。確実に適用されるが、全セッションのコンテキストを消費する
-- **Skills** — description に基づいて確率的にトリガー（自発発火は保証されない）。
-  深さを持てる。確実に効かせたいものは `user-invocable: true` で明示呼び出しにする
-
-**判定**: そのファイルは毎セッション読まれる価値があるか？ 特定の作業を始めた時だけ
-必要なら skill。Claude が既に知っている一般論なら削除。
+| Rule | 常駐する情報 |
+|---|---|
+| `agents.md` | agent catalog と外部 agent の境界 |
+| `akc-cycle.md` | Scaffold Dissolution |
+| `coding-style.md` | global harness の変更対象 |
+| `contemplative-axioms.md` | identity / values（verbatim） |
+| `debugging.md` | rate limit の実証済み policy signal |
+| `planning.md` | search / chain / verify の入口 |
+| `security.md` | commit hook と trust boundary |
+| `skills.md` | origin schema と skill path |
+| `task-tracking.md` | repo ごとの task ledger path |
+| `testing.md` | coverage と production 境界 |

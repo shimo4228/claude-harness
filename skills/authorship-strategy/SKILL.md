@@ -199,7 +199,7 @@ Layer 4 tactic は一度撃って終わりではない。どの tactic を deplo
 
 新規提案・実装・コラボ受け入れ等で以下を通す:
 
-**まず候補の diffusion channel を分類する**（ADR-0008）。ただし *自己申告でなく候補の客観プロパティから機械的に決める*（when-code-when-llm 構造判定）: 期待される結果に **fetch / link / citation が含まれるなら retrieval を必ず適用**、retrieval 機構が実質的に効くなら **both**（default 寄り）、**純 parametric/use を許すのは「retrieval に依存しない具体的な consumption path」を候補が明示できるときのみ**。下の citability 系項目（DOI / llms.txt / 機械可読 citation 辺）は **retrieval / both 候補にのみ pass/fail** として効き、純 parametric/use 候補（AI-native venue placement 等）を「citable artifact が無い」ことでは落とさない。この機械判定が「retrieval 候補が use を自称して citability を回避する」抜け道を塞ぐ。
+**まず候補の diffusion channel を分類する**（ADR-0008）。ただし *自己申告でなく候補の客観プロパティから機械的に決める*: 期待される結果に **fetch / link / citation が含まれるなら retrieval を必ず適用**、retrieval 機構が実質的に効くなら **both**（default 寄り）、**純 parametric/use を許すのは「retrieval に依存しない具体的な consumption path」を候補が明示できるときのみ**。下の citability 系項目（DOI / llms.txt / 機械可読 citation 辺）は **retrieval / both 候補にのみ pass/fail** として効き、純 parametric/use 候補（AI-native venue placement 等）を「citable artifact が無い」ことでは落とさない。この機械判定が「retrieval 候補が use を自称して citability を回避する」抜け道を塞ぐ。
 
 - [ ] この提案は authenticity を強化するか、希釈するか？
 - [ ] これは scaffold（消える）か、idea（残せる）か？

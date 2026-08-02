@@ -29,10 +29,10 @@ bash <公開repo>/scripts/sync-from-local.sh --dry-run
 
 差分の要約 (新規 / 変更 / 削除されるコンポーネント) をユーザーに提示する。
 
-### 2. 公開ゲート (ユーザー確認)
+### 2. 公開スコープ確認
 
-新しく公開対象になるコンポーネントがある場合は**必ず一覧で示して確認を取る**。
-push しなくても commit は公開準備なので、ここが実質の公開判断点。
+task request / approved plan に列挙された repo と component は追加確認なしで進める。
+列挙外の repo・新規公開 component が見つかった場合だけ scope change として停止する。
 
 ### 3. 適用
 
@@ -43,9 +43,7 @@ bash <公開repo>/scripts/sync-from-local.sh
 script は staging 収集 → runtime artifact 除去 (results.json, __pycache__ 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
 secret scan (検出時 abort) → skills/ agents/ rules/ subtree の置換、まで行う。
-**commit はしない** — `git diff` がレビューゲート。ここで本文を読むのは artifact 検査ではない:
-同期対象が skills / rules / agents（behavior-shaping artifact）であり、**そのテキストが意図そのもの**
-だから読む（`rules/common/human-gate.md`）。
+script は commit しない。LLM 側で diff と secret scan の結果を確認してから次へ進む。
 
 ### 4. ドキュメント整合 (LLM 側の責務)
 
@@ -65,12 +63,13 @@ secret scan (検出時 abort) → skills/ agents/ rules/ subtree の置換、ま
 ### 5. コミット
 
 ```bash
-git -C <公開repo> add -A && git commit
+git -C <公開repo> add -A
+git -C <公開repo> commit
 ```
 
 メッセージ例: `chore: sync from local harness (origin: shimo4228)` + 主な増減を body に。
 default branch へ直接 commit するのは意図的（sync = mirror 更新であり branch-first 規約の対象外）。
-**push はユーザーの判断に委ねる** (commit ≠ publish)。
+task request が push まで含む場合は追加確認せず push する。
 
 ## 削除の伝播
 
@@ -85,7 +84,7 @@ repo 側で明示的に削除する。
 
 ## Skill repo sync モード
 
-単独 skill repo (1 repo = 1 skill) も同じ workflow (dry-run → 公開ゲート → apply →
+単独 skill repo (1 repo = 1 skill) も同じ workflow (dry-run → scope 確認 → apply →
 docs 整合 → commit) で同期する。違いは script だけ:
 
 - 対象 skill は **repo 自身の `skills/` 配下ディレクトリ名から導出**(これにより script は
@@ -152,12 +151,11 @@ Packaging から 2026-07-03 に移動）:
 | target | 種別 | script | 正本 |
 |---|---|---|---|
 | `~/MyAI_Lab/claude-harness` ([repo](https://github.com/shimo4228/claude-harness)) | 集約 (skills + agents + rules) | `scripts/sync-from-local.sh` (集約版) | `~/.claude` |
-| `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/when-code-when-llm` |
 | `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を 2026-07-09 retire — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `search-first` 等の消費 skill — 常駐の Signal-first 節は 2026-07-31 に退役、ADR-0026) |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/citation-sync` |
 | `~/MyAI_Lab/generation-audit` ([repo](https://github.com/shimo4228/generation-audit)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/generation-audit` |
 | `~/MyAI_Lab/agent-stocktake` ([repo](https://github.com/shimo4228/agent-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/agent-stocktake` |
-| `~/MyAI_Lab/human-gate` ([repo](https://github.com/shimo4228/human-gate)) | rule + hook | `scripts/sync-from-local.sh` (rule+hook 版 — rule は origin 必須、hook は存在のみ検査) | `~/.claude/rules/common/human-gate.md` + `~/.claude/hooks/evidence-file-notice.sh` |
+| `~/MyAI_Lab/human-gate` ([repo](https://github.com/shimo4228/human-gate)) | retired rule artifact | sync abort（2026-08-02 に local scaffold を退役） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/rules-stocktake` ([repo](https://github.com/shimo4228/rules-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-stocktake` |
 | `~/MyAI_Lab/learn-eval` ([repo](https://github.com/shimo4228/learn-eval)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/learn-eval` |
 | `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
