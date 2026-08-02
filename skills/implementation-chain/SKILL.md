@@ -37,7 +37,7 @@ origin: shimo4228
 | Phase 0 External Research | Y | - | - | - | - |
 | TDD（メインループ、skill: `tdd`） | Y | Y | - | - | - |
 | Refactor Clean (refactor-cleaner) | - | - | Y | - | - |
-| Code Review (code-reviewer / python-reviewer) | Y | Y | Y | C | - |
+| Code Review (code-reviewer / python-reviewer / swift-reviewer) | Y | Y | Y | C | - |
 | Security Review (security-reviewer) | Y | C | - | C | - |
 | Cross-Model Review (codex-review) | Y | Y | C | - | - |
 | Doc Sync (context files) | C | C | C | C | - |
@@ -97,8 +97,14 @@ security-reviewer と同じ面（pending changes）の user-run 版で、chain �
   探さない）、次に refactor-cleaner（knip / depcheck 等ツール駆動の dead code / 重複除去）。
   前者は質的改善（modify）、後者は死蔵資産の除去で役割が異なる
 - **python-reviewer** — Python (`.py`) を変更したとき
-- **code-reviewer** — Python 以外のコード（TS / Swift / shell 等）を変更したとき
+- **swift-reviewer** — Swift (`.swift`) を変更したとき
+- **code-reviewer** — Python / Swift 以外のコード（TS / shell 等）を変更したとき
 - **security-reviewer** — 入力処理・認証・秘匿情報・permissions・hook を触ったとき
+- **adr-reviewer** — `docs/adr/` を新設・改稿したとき（記録の検査: Context が検証可能な根拠を
+  持つか / Alternatives が藁人形でないか / Consequences が両面あるか / 先行 ADR との override
+  関係が書かれているか）。**決定そのものの是非は architect**、**生成は adr-writer** で、
+  この agent は記録の質のみを見る（ADR-0016 の render/judge 分離）。高 stakes な ADR は
+  codex-review を prompt-driven で併走させ、書き方のニュアンスを別モデルにも見せる
 - **codex-review** — `feat` / `fix` で非自明な diff を実装したとき（cross-model 脱相関レビュー、read-only）。**diff ベースのレビュアーなので plan 時には走らせない — plan には chain entry として列挙するだけで、実装後に diff へ走らせる。「実装差分が無い」を理由に plan（設計）を codex で直接レビューする即興代替をしてはならない**
 
 Code Review・Security Review・Cross-Model Review は同じ diff を対象にするので並列起動する。
@@ -117,6 +123,7 @@ TDD は Plan の後、Verify は全レビュー後（この 2 つは逐次必須
 | 学術論文 / preprint / position paper | `paper-ecosystem` |
 | README / repo トップページ | `readme-writer` |
 | llms.txt 等 AI-doc | `llms-txt-writer` |
+| ADR（設計判断の記録） | `adr-writer`（生成）+ adr-reviewer agent（記録の検査） |
 
 チェーン本体（agent 起動順・並列化・最終 gate）の**正本は各 skill の定義**（ここに複製しない）。
 この skill が規定するのは以下の糊のみ:
@@ -138,7 +145,9 @@ TDD は Plan の後、Verify は全レビュー後（この 2 つは逐次必須
 **人間 gate**: 公開・deposit・commit 直前。2 介入点モデルの「意図確認」に対応する。
 提示物は対象で分岐する（正本: `rules/common/human-gate.md`）— **`writing` の成果物と rules / skills /
 identity は本文を提示**する（テキストが意図そのものなので、読むこと自体が intent 層の作業）。
-実装コード・設定・生成物は**意図の要約**を提示し、diff 本文と Verify の PASS 一覧は提示しない。
+control plane と**検査の証拠を作るもの**（テスト / fixture / lint 設定 / CI 定義 / 依存）も本文側。
+実装コード・生成物は**意図の要約**（`plan との差分` の 3 値宣言必須）を提示し、diff 本文と
+Verify の PASS 一覧は提示しない。不可逆・高影響な変更は区分によらず本文へ昇格する。
 
 ## 早期停止条件
 

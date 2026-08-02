@@ -1,5 +1,5 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0018 — 6 phase 解説を各 skill へ降格し、Phase→skill 対応表 + signal-first + Scaffold Dissolution のみ常駐するローカル版（自己完結版は AKC repo 配布版が正本） -->
+<!-- rationale: ADR-0018 — 6 phase 解説を各 skill へ降格し、Phase→skill 対応表 + Scaffold Dissolution のみ常駐するローカル版（自己完結版は AKC repo 配布版が正本）。Signal-first 節は ADR-0026 で退役 — 原則は消費 skill（search-first / wiki-harvest / readme-writer 等）にインライン内在化済みで、常駐は grill-me 型の要件質問を抑制する衝突コストに転じたため -->
 <!-- review-when: 対応表の skill を退役・改名した時 / substrate が knowledge cycle 相当（auto-memory 拡張等）を native 化した時 -->
 # AKC Rules (local edition)
 
@@ -22,21 +22,6 @@ Measure の注意: 遵守の確認は tool call だけでなく**エージェン
 も見る（判断フェーズの遵守はツール痕跡に残らない）。
 Maintain の注意: 同じ数値クレーム（モジュール数・テスト数・版番号）を 2 箇所に書かない。
 正本を 1 つ決めて他はポインタにする。検証時は既存 doc の値でなく**ライブのコマンド出力**を信じる。
-
-## Signal-first — 広く探し、狭く取り込む
-
-調査の前に**シグナルを定義する**: どの情報が次の行動を変えるか。その外は今回のスコープ外。
-探索は広く、intake は狭く。行動を変えない情報は保持に値しない — intake は人間の注意を
-消費し、未消費の注意がこのサイクルの希少資源である。探索・学習フェーズは正当な例外だが、
-例外を取るときは明示的にそう言う。
-
-### Output discipline — 行動を変えるものだけ出力する
-
-signal-first は出力にも適用する。下流（コードのゲート、人間の判断、次のステップ）が実際に
-消費しないスコア・グレード・推薦を出してはならない。行動を変えない数値は足場である —
-実際に行動を変える具体的な観察（「リードに誰向けか書かれていない」）に置き換える。
-「Lead: 6/10」ではない。LLM のスコアリングは code-owned decision の入力
-（judge + enforce）としてのみ正当。
 
 ## Scaffold Dissolution
 

@@ -1,6 +1,6 @@
 ---
 name: readme-writer
-description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直すときに使う。こんな時に必ず呼ぶ — README が長い／文字の壁で読まれない→短く走査しやすくしたい、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、構成図・アーキ図を入れたい（PNG や架空図でなく Mermaid を勧める）、badge を貼りすぎたので整理したい、長い rationale や「なぜ」を docs/ に逃がしたい、研究・DOI repo の README を引用付きで読める長さにまとめたい。短く・視覚優先にしつつ、LLM が README 一枚で要点を復元できる情報フロアは残す。CLI でも UI でも研究 repo でも、日本語でも英語でも、新規作成でも既存改善でも対象。AI 専用ドキュメント（llms.txt / llms-full.txt 等）は対象外（→ llms-txt-writer）、記事・エッセイ等の長文 prose は → writing-ecosystem。
+description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直すときに使う。こんな時に必ず呼ぶ — README が長い／文字の壁で読まれない→短く走査しやすくしたい、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、構成図・アーキ図を入れたい（PNG や架空図でなく Mermaid を勧める）、badge を貼りすぎたので整理したい、GitHub の About（description / topics / homepage）が空・的外れで repo が検索や topic ページに載っていない、長い rationale や「なぜ」を docs/ に逃がしたい、研究・DOI repo の README を引用付きで読める長さにまとめたい。短く・視覚優先にしつつ、LLM が README 一枚で要点を復元できる情報フロアは残す。CLI でも UI でも研究 repo でも、日本語でも英語でも、新規作成でも既存改善でも対象。AI 専用ドキュメント（llms.txt / llms-full.txt 等）は対象外（→ llms-txt-writer）、記事・エッセイ等の長文 prose は → writing-ecosystem。
 compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -18,6 +18,7 @@ origin: shimo4228
 - repo / プロジェクトの「人間が最初に着地するページ」を整える
 - 既存 README が「機械寄りで人間に中途半端」/「人間向けに薄すぎて LLM が掴めない」のを直す
 - README を**短く・視覚優先**にしたいが情報フロアを落としたくないとき
+- GitHub の **About（description / topics / homepage）** を整える（README 本文と同じ第一画面の構成要素。topics は*まだ来ていない人*を連れてくる索引面）
 
 **使わない場面**:
 - `llms.txt` / `llms-full.txt` / FAQ など AI 専用 doc（→ `llms-txt-writer`）
@@ -76,7 +77,7 @@ README 品質には 2 種類の property が混在する。**Code-LLM Layering**
 
 `graph.jsonld` / `llms.txt` を README から作る場合、**README prose を構造ソースにしない**。識別子・graph 辺は `CITATION.cff` / `.zenodo.json` / frontmatter の小さな manifest から derive する（手書きの並行コピーは drift する）。
 
-GitHub のメタ面（repo description / topics / social-preview / CITATION ファイル / release / package metadata）も grounding に効く floor の一部。README 本文では設定しない（`gh repo edit` / `release-doi` 側）が、checklist として揃っているか確認する。
+GitHub のメタ面（repo description / topics / social-preview / CITATION ファイル / release / package metadata）も grounding に効く floor の一部。このうち **description / topics / homepage は本 skill が Workflow Step 4–6 で担当する**。social-preview 画像・CITATION ファイル・release / package metadata は対象外で（→ `release-doi`）、checklist として揃っているか確認するに留める。
 
 ---
 
@@ -215,7 +216,7 @@ lint の i18n 注意: `doi_citation_pairing` は Citation 等の**英語見出�
 
 ---
 
-## Workflow（Code filter → readme-reviewer ∥ readme-clarity-reviewer → 人間 gate）
+## Workflow（Code filter → readme-reviewer ∥ readme-clarity-reviewer → About 変更案 → 人間 gate → 適用）
 
 ### 1. Code filter — `readme_lint.py`（決定論的・structural only）
 
@@ -269,12 +270,101 @@ readme-reviewer の lens 一覧:
 
 README の事実が llms.txt / llms-full.txt / graph.jsonld と一致するか（cloaking 回避）は `context-sync` が正本。本 skill では再実装しない。
 
-### 4. 人間 gate
+### 4. About の最適化（description / topics / homepage）
 
-README 本文を提示して承認を取り、適用する。ここで人間が判断するのは**文章の正しさではなく
+repo トップは README 本文と **About サイドバー**で 1 つの第一画面を作る。README がどれだけ良くても
+**About が空なら「到達した人」にしか効かない** — topics は*まだ来ていない人*を索引から連れてくる
+唯一の面なので、README と同じ作業単位で整える。
+
+| 要素 | 出る場所 | 規約 |
+|---|---|---|
+| **description** | topic ページ・repo リスト・検索結果・外部ディレクトリ掲載時の唯一の一文 | README の lead と**同じ主張**にする（食い違いは cloaking）。**1 文目だけで機能が伝わる**構成にする（下記） |
+| **homepage** | About と repo カードのリンク | docs サイト / その repo を解説した記事 / hub。**無いなら空のまま**（無関係な URL を埋めない） |
+| **topics** | topic ページ・topic 付き検索の索引 | 最大 20。小文字英数字とハイフンのみ |
+
+#### description に文字数目標を置かない
+
+**2026-08-01 の UI 実測**: GitHub の topic ページと プロフィール repo リストは description 要素に
+truncation クラス（`text-truncate` / `line-clamp`）を**持たず**、300 字超でも全文が折り返し表示された。
+「カードで切れるから短く」は少なくともこの時点では誤った前提なので、**文字数目標を置かない**
+（README の Length budget と同じ思想: 数値でなく構成で決める）。
+
+**これは仕様保証ではなく観測**である — GitHub 公式 API doc は description を "A short description" と
+呼ぶだけで、全文表示を約束していない。UI は変わりうるので、**長い description を採るときは
+実際の topic ページで表示を 1 度確かめる**。切れていたら 1 文目だけで成立する構成に畳む
+（下の「1 文目を完結させる」は、どちらに転んでも効く）。
+
+効くのは長さでなく**構成**:
+
+- **1 文目を、単独で機能が伝わる完結した文**にする。背景・出自・関連 repo・ADR 番号は 2 文目以降
+- 走査読みでは 1 文目しか読まれない。2 文目以降は「クリックするか」を決めた後の補強
+- **アンチパターン: 作品の題名だけを置く**（論文タイトルをそのまま description にする等）。
+  題名は「何をするものか」を言っていないので、repo リストで中身を推測できない
+- 外部ディレクトリ・awesome-list・OGP カードは**独自に truncate しうる**。GitHub の挙動をそこへ
+  一般化しない（掲載先ごとに実物で確認する）
+
+#### topics は「選ぶ」前に「測る」
+
+どの語が索引面として生きているかは**実数で決まる**（意味の議論ではない → `when-code-when-llm` の構造的性質）:
+
+```bash
+gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'
+```
+
+| 規模 | 扱い | 例（2026-08 実測） |
+|---|---|---|
+| **> 50k** | 母数用に 1–2 個。**それだけでは埋もれる** | `llm` 105k / `mcp` 56k / `claude-code` 54k |
+| **2k–20k** | **主力**。対象読者が濃く母数も現実的 | `agent-skills` 12.8k / `claude-skills` 6.2k |
+| **< 500** | 固有名・造語。既に知っている人にしか効かない。1–2 個まで | `research-software` 466 |
+
+- **単数形と複数形は別 topic**（`agent-skill` 2.5k と `agent-skills` 12.8k は別の索引面）。
+  **両方が実勢を持ち、かつ repo にとって自然なら両方付ける**。件数は repo 数であって到達数ではなく
+  重複もあるので、「片方だけだと到達が半減する」とは言えない — 判断材料は「その面に載る価値が
+  20 枠のうち 1 つを使うに値するか」
+- 広い面で母数・中規模で命中・固有名で識別、の 3 層を混ぜる
+- 上限 20 枠は有限資源。不自然な語形で枠を埋めて、関連性の高い topic を追い出さない
+
+#### 現状の把握（read-only。ここで書き込まない）
+
+```bash
+gh api repos/OWNER/REPO --jq '{description, homepage, topics}'   # 現状の 3 要素
+gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'  # 候補 topic の実勢
+```
+
+**このステップの成果物は「変更案」であって適用ではない。** `gh repo edit` は GitHub への durable な
+書き込みなので、Step 5 の承認を得るまで実行しない（`rules/common/coding-style.md` の
+Reversibility Gate — 可逆でも「消す/変える判断」自体はユーザーのもの）。
+
+変更案は 3 要素それぞれについて **現状 → 提案** の形で書き出す。homepage を**空にする**提案なら
+それも明示する（無変更と区別がつかなくなるため）。
+
+### 5. 人間 gate
+
+README 本文と About の変更案（**件数とスコープを明示**）を**まとめて 1 回**提示して承認を取る
+（1 作業 1 ゲート — `rules/common/human-gate.md`）。ここで人間が判断するのは**文章の正しさではなく
 「この入口を公開物として引き受けるか」**（README は公開・不可逆で、テキストが意図そのもの）。
-構造的な品質は Step 1 の `readme_lint.py` と Step 2 の `readme-reviewer` が既に持っている
-（`rules/common/human-gate.md`）。
+構造的な品質は Step 1 の `readme_lint.py` と Step 2 の `readme-reviewer` が既に持っている。
+
+### 6. 適用と検証（承認後）
+
+README を書き、About を反映する:
+
+```bash
+gh repo edit OWNER/REPO --description "..."            # description
+gh repo edit OWNER/REPO --homepage "https://..."       # homepage（空にするなら --homepage ""）
+gh repo edit OWNER/REPO --add-topic X --add-topic Y    # --add-topic は追加のみ（既存を消さない）
+gh repo edit OWNER/REPO --remove-topic Z               # 削除は明示的に
+```
+
+検証:
+
+```bash
+gh api repos/OWNER/REPO --jq '{description, homepage, topics}'         # 適用の確認
+gh api "search/repositories?q=topic:X+user:OWNER" --jq '.total_count'  # 索引反映の確認（数秒）
+```
+
+**自分の repo のメタデータ変更なので可逆**であり、外部ディレクトリへの申請（他者が管理する空間への
+書き込み）とは審査面の有無でリスク構造が違う — 混同しない。
 
 ---
 
@@ -284,7 +374,10 @@ README 本文を提示して承認を取り、適用する。ここで人間が�
 - `graph.jsonld` を設計しない（→ `jsonld-knowledge-graph`）
 - cross-surface の drift 検出 / 同期をしない（→ `context-sync` / `release-doi`）
 - 記事 / エッセイを編集しない（→ `writing-ecosystem`）
-- repo の description / topics / social-preview を設定しない（`gh repo edit` / `release-doi` 側。本 skill は checklist として提示するのみ）
+- **social-preview 画像**（OGP カード）を作らない（画像制作は別作業。本 skill は不足を指摘するのみ）。
+  description / topics / homepage は Step 4–6 で**本 skill が持つ**（README と同じ第一画面のため）
+- 外部ディレクトリ・awesome-list への掲載申請をしない（他者が管理する空間への書き込みで、審査面と
+  累積 footprint の判断が要る。本 skill が扱うのは自分の repo のメタデータまで）
 - **品質スコア / grade / 評点を出さない**
 
 ---
@@ -299,6 +392,10 @@ README 本文を提示して承認を取り、適用する。ここで人間が�
 - 機械層（llms.txt/graph）が backstop する前提で README フロアを薄くする（grounding 経路で読まれない）
 - `llms.txt`/`graph` を **README prose から** derive する（drift。manifest から derive）
 - 人間向けに事実を盛る / マネタイズ訴求を足す（authenticity 毀損 + 機械層との矛盾 = cloaking。梱包は変えても主張は変えない）
+- **topics を実勢を測らずに選ぶ** — 巨大 topic だけ付けて新着の奔流に沈む / 造語・固有名だけ付けて
+  誰にも検索されない。どちらも「設定済み」に見えて索引面に載っていない（Step 4 の測定コマンド）
+- topics の単数形か複数形の**片方だけ**付ける（別の面なので、大きい方を落とすと到達が半減する）
+- description を README lead と**別の主張**にする（同じ repo が面ごとに違うことを言う = cloaking）
 
 ---
 

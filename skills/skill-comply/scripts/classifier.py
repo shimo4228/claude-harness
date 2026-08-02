@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 from scripts.parser import ComplianceSpec, ObservationEvent
+from scripts.spec_generator import UTILITY_SETTINGS
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
@@ -27,10 +28,7 @@ def classify_events(
     if not trace:
         return {}
 
-    steps_desc = "\n".join(
-        f"- {step.id}: {step.detector.description}"
-        for step in spec.steps
-    )
+    steps_desc = "\n".join(f"- {step.id}: {step.detector.description}" for step in spec.steps)
 
     tool_calls = "\n".join(
         f"[{i}] {event.tool}: input={event.input[:500]} output={event.output[:200]}"
@@ -38,14 +36,22 @@ def classify_events(
     )
 
     prompt_template = (PROMPTS_DIR / "classifier.md").read_text()
-    prompt = (
-        prompt_template
-        .replace("{steps_description}", steps_desc)
-        .replace("{tool_calls}", tool_calls)
+    prompt = prompt_template.replace("{steps_description}", steps_desc).replace(
+        "{tool_calls}", tool_calls
     )
 
     result = subprocess.run(
-        ["claude", "-p", prompt, "--model", model, "--output-format", "text"],
+        [
+            "claude",
+            "-p",
+            prompt,
+            "--model",
+            model,
+            "--output-format",
+            "text",
+            "--settings",
+            UTILITY_SETTINGS,
+        ],
         capture_output=True,
         text=True,
         timeout=CLASSIFIER_TIMEOUT_SECONDS,
@@ -53,31 +59,57 @@ def classify_events(
 
     if result.returncode != 0:
         raise RuntimeError(
-            f"classifier subprocess failed (rc={result.returncode}): "
-            f"{result.stderr[:500]}"
+            f"classifier subprocess failed (rc={result.returncode}): {result.stderr[:500]!r}"
         )
 
     return _parse_classification(result.stdout)
 
 
-def _parse_classification(text: str) -> dict[str, list[int]]:
-    """Parse LLM classification output into {step_id: [event_indices]}."""
-    text = text.strip()
-    # Strip markdown fences
-    lines = text.splitlines()
-    if lines and lines[0].startswith("```"):
-        lines = lines[1:]
-    if lines and lines[-1].startswith("```"):
-        lines = lines[:-1]
-    cleaned = "\n".join(lines)
+class ClassificationParseError(RuntimeError):
+    """Raised when no classification JSON can be extracted from model output.
 
-    try:
-        parsed = json.loads(cleaned)
-        # Validate structure
-        return {
-            k: [int(i) for i in v]
-            for k, v in parsed.items()
-            if isinstance(v, list)
-        }
-    except (json.JSONDecodeError, ValueError):
-        return {}
+    A silent `{}` here is indistinguishable from "the model matched nothing",
+    which turns a broken measurement into a plausible-looking 0% report.
+    """
+
+
+def _parse_classification(text: str) -> dict[str, list[int]]:
+    """Parse LLM classification output into {step_id: [event_indices]}.
+
+    The child `claude -p` session inherits user-level config (output styles,
+    CLAUDE.md), so on long traces the answer JSON may arrive wrapped in
+    narrative prose and markdown fences rather than as bare stdout. The text
+    is scanned FORWARD, decoding at each candidate `{` and skipping the whole
+    decoded span, so only TOP-LEVEL objects are candidates — a nested object
+    inside the answer can never shadow it (scanning from the end did exactly
+    that: the innermost `{` decoded first and silently replaced the real
+    mapping). Among top-level objects the last valid one wins (the final
+    object is the answer by convention). An empty `{}` from the model is a
+    legitimate "nothing matched" verdict; extracting no JSON at all is a
+    measurement failure and raises.
+    """
+    decoder = json.JSONDecoder()
+    result: dict[str, list[int]] | None = None
+    pos = 0
+    while True:
+        brace = text.find("{", pos)
+        if brace == -1:
+            break
+        try:
+            parsed, end = decoder.raw_decode(text, brace)
+        except json.JSONDecodeError:
+            pos = brace + 1
+            continue
+        pos = end
+        if not isinstance(parsed, dict):
+            continue
+        try:
+            result = {k: [int(i) for i in v] for k, v in parsed.items() if isinstance(v, list)}
+        except (TypeError, ValueError):
+            continue
+    if result is not None:
+        return result
+    raise ClassificationParseError(
+        "no parsable classification JSON in model output; "
+        f"first 500 chars of stdout: {text[:500]!r}"
+    )

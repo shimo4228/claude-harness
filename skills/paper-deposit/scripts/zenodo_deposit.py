@@ -46,6 +46,7 @@ wrapper. Minimal example (see SKILL.md for the full field guide):
       ]
     }
 """
+
 from __future__ import annotations
 
 import argparse
@@ -62,8 +63,7 @@ def _api_base(sandbox: bool) -> str:
     return f"https://{host}/api/deposit/depositions"
 
 
-def _request(method: str, url: str, token: str, *, data=None,
-             raw: bool = False) -> tuple[int, Any]:
+def _request(method: str, url: str, token: str, *, data=None, raw: bool = False) -> tuple[int, Any]:
     """Single HTTP call. Returns (status, parsed_json). Never logs the token."""
     headers = {"Authorization": f"Bearer {token}"}
     body = data
@@ -89,16 +89,33 @@ def _load_metadata(path: Path) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Create a Zenodo DRAFT deposition (never publishes).")
-    parser.add_argument("--token-file", required=True, type=Path,
-                        help="File containing the Zenodo access token (one line). "
-                             "Read only; never printed. Delete it after use.")
-    parser.add_argument("--metadata", required=True, type=Path,
-                        help="JSON file: Zenodo metadata dict or {'metadata': {...}}.")
-    parser.add_argument("--files", required=True, nargs="+", type=Path,
-                        help="Files to upload (PDF + Markdown, all languages).")
-    parser.add_argument("--sandbox", action="store_true",
-                        help="Target sandbox.zenodo.org (test without touching production).")
+        description="Create a Zenodo DRAFT deposition (never publishes)."
+    )
+    parser.add_argument(
+        "--token-file",
+        required=True,
+        type=Path,
+        help="File containing the Zenodo access token (one line). "
+        "Read only; never printed. Delete it after use.",
+    )
+    parser.add_argument(
+        "--metadata",
+        required=True,
+        type=Path,
+        help="JSON file: Zenodo metadata dict or {'metadata': {...}}.",
+    )
+    parser.add_argument(
+        "--files",
+        required=True,
+        nargs="+",
+        type=Path,
+        help="Files to upload (PDF + Markdown, all languages).",
+    )
+    parser.add_argument(
+        "--sandbox",
+        action="store_true",
+        help="Target sandbox.zenodo.org (test without touching production).",
+    )
     args = parser.parse_args(argv)
 
     # Validate inputs before touching the network.
@@ -125,8 +142,7 @@ def main(argv: list[str] | None = None) -> int:
     # 2. Upload files to the bucket.
     failed = False
     for f in args.files:
-        s, _ = _request("PUT", f"{bucket}/{f.name}", token,
-                        data=f.read_bytes(), raw=True)
+        s, _ = _request("PUT", f"{bucket}/{f.name}", token, data=f.read_bytes(), raw=True)
         ok = s in (200, 201)
         failed = failed or not ok
         print(f"  upload {f.name}: {'OK' if ok else 'FAIL ' + str(s)}")
@@ -150,8 +166,10 @@ def main(argv: list[str] | None = None) -> int:
     print("--- DRAFT READY (not published) ---")
     print(f"reserved DOI (activates on publish): {doi}")
     print(f"review & Publish here: {html}")
-    print("Zenodo also mints a separate concept DOI (all-versions) at publish; "
-          "it appears on the published record page.")
+    print(
+        "Zenodo also mints a separate concept DOI (all-versions) at publish; "
+        "it appears on the published record page."
+    )
     return 1 if failed else 0
 
 

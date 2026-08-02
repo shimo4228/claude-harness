@@ -61,6 +61,10 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [generation-audit](skills/generation-audit/SKILL.md) | モデル世代交代時に runtime 層（system prompt + tool description）を実セッションから採取し、競合 / 冗長 / ドリフトに分類して各 stocktake に証拠として渡すオーケストレータ |
 | [git-workflow](skills/git-workflow/SKILL.md) | この環境での git 実行作法 — 1 Bash call = 1 git コマンド。&& やパイプで連結すると Bash(git:*) の自動許可が外れて手動承認になる |
 | [headline-craft](skills/headline-craft/SKILL.md) | 「開かせる一行」の craft — タイトル・tagline・subtitle・SNS 告知文の候補生成と、流入経路 2 軸（検索 / フィード）での評価 |
+| [herdr-delegate](skills/herdr-delegate/SKILL.md) | Herdr の pane に別プロセスの CLI エージェント（Codex 等）を立てて実装タスクを丸ごと委譲する。ユーザーの明示指示があるときだけ使う — 並列化できそう、は理由にならない |
+| [prompt-perturb](skills/prompt-perturb/SKILL.md) | 多様性の注入。文脈をあえて持たない forager agent が外部の創造技法カタログからプロンプトを拾ってくるので、角度がセッション自身の手癖の外から来る |
+| [session-judgment-mining](skills/session-judgment-mining/SKILL.md) | 過去のセッション記録から、ユーザーが繰り返し下した判断を発掘し、再出現するものを skill / rule に正本化する |
+| [verify-bootstrap](skills/verify-bootstrap/SKILL.md) | repo の機械ゲート（format / lint / type check / security / dependency / test）を立てる、または古びたゲートを棚卸しする。ツール選定は skill に焼き込まず、その時点で調べ直す |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
@@ -84,6 +88,9 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [citation-formatter](agents/citation-formatter.md) | In-text citation と reference list の整合・format・DOI / arXiv ID 検証 |
 | [readme-reviewer](agents/readme-reviewer.md) | README / repo トップページの厳格レビュアー — LLM 読解フロア / lead 明瞭性 / human hook / 走査性 / 長さ規律 / 視覚効果。readme-writer の companion |
 | [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | README の初見読者目線レビュー — 造語予算 / 内部文脈依存 / 日本語 register（ですます）。readme-reviewer の並列相方 |
+| [adr-reviewer](agents/adr-reviewer.md) | ADR の「決定」ではなく「記録」を検査する — Context が検証可能な根拠を持つか、Alternatives が藁人形でないか、Consequences が両面あるか、先行 ADR との override 関係が明示されているか |
+| [prompt-forager](agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
+| [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI レビュー — Swift 6 strict concurrency、値セマンティクス、SwiftUI の状態所有、retain cycle、HIG 準拠 |
 <!-- END GENERATED: agents-table -->
 
 ### Rules
@@ -101,6 +108,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
 | [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
 | [human-gate](rules/common/human-gate.md) | ゲートの第 2 軸 — artifact は機械が検査し、人間は intent を判断する。提示物は対象で分岐（behavior-shaping artifact と control plane は本文、実装は承認済み plan と照合する意図の要約） |
+| [output-register](rules/common/output-register.md) | 常駐テキストは context を節約するために圧縮されているが、ユーザー向けの文章はそうではない。内部向けの書き方を説明文に持ち込まないための rule |
 <!-- END GENERATED: rules-table -->
 
 ## 使い方

@@ -1,6 +1,6 @@
 ---
 name: codemap-writer
-description: Generate or refresh `docs/CODEMAPS/` for the current repo. Use when the user runs /update-codemaps, when context-sync Phase 0 detects stale codemaps, or when an LLM needs token-lean architecture documentation for an unfamiliar codebase. Scans source dirs, produces INDEX.md + up to five role-specific codemaps (architecture / backend / frontend / data / dependencies), each capped at ~1000 tokens, and stamps every file with a freshness header.
+description: Generate or refresh `docs/CODEMAPS/` for the current repo. Use when the user runs /update-codemaps, when context-sync Phase 0 detects stale codemaps, or when an LLM needs token-lean architecture documentation for an unfamiliar codebase. Scans source dirs, produces INDEX.md + up to five role-specific codemaps (architecture / backend / frontend / data / dependencies) and stamps every file with a freshness header.
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 origin: shimo4228
@@ -34,7 +34,10 @@ Write into `<repo-root>/docs/CODEMAPS/` (create if missing). Produce up to six f
 | `data.md` | If schema / migrations exist | Tables + relationships / migration history (latest 5) |
 | `dependencies.md` | If external integrations exist | Third-party services / shared libraries with rationale |
 
-**Token budget**: each file ≤ 1000 tokens (~4000 chars). If a section overflows, summarize edges and link to source paths rather than inlining code.
+**When a section grows long**: summarize edges and link to source paths rather than inlining
+code. Compress by raising the altitude of the description — never by dropping a subsystem.
+A codemap that omits a component is worse than a long one, because the reader cannot tell
+the difference between "absent" and "not documented".
 
 **Freshness header** (top of every file):
 

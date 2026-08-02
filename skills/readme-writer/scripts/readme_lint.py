@@ -85,8 +85,19 @@ _BADGE_SRC_RE = re.compile(
 # GitHub-rendered, and far less opaque to text crawlers, so it is left alone).
 _DIAGRAM_KEYWORDS = frozenset(
     {
-        "architecture", "flow", "flowchart", "dataflow", "diagram", "sequence",
-        "pipeline", "graph", "chart", "erd", "uml", "topology", "schema",
+        "architecture",
+        "flow",
+        "flowchart",
+        "dataflow",
+        "diagram",
+        "sequence",
+        "pipeline",
+        "graph",
+        "chart",
+        "erd",
+        "uml",
+        "topology",
+        "schema",
         "statemachine",
     }
 )

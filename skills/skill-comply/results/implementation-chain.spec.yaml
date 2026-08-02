@@ -1,0 +1,82 @@
+id: implementation-chain
+name: "Implementation Chain Orchestration"
+source_rule: "~/.claude/skills/implementation-chain/SKILL.md"
+version: "1.0"
+
+steps:
+  - id: classify_task_type
+    description: "Agent classifies the task into one of six types (feat, fix, refactor, chore, prototype, or writing) based on stated goals and scope"
+    required: true
+    detector:
+      description: "Assistant text output explicitly identifying the task type as one of: feat, fix, refactor, chore, prototype, or writing"
+
+  - id: route_writing_task
+    description: "If task type is writing, route to appropriate documentation orchestrator skill based on document classification"
+    required: false
+    detector:
+      description: "Skill call to one of: writing-ecosystem, paper-ecosystem, readme-writer, or llms-txt-writer"
+      after_step: classify_task_type
+
+  - id: phase_0_research
+    description: "If task type is feat, conduct external research phase to identify existing solutions and tools before implementation"
+    required: false
+    detector:
+      description: "Skill call to search-first to research existing libraries, frameworks, or approaches"
+      after_step: classify_task_type
+
+  - id: run_tdd
+    description: "If task type is feat or fix, execute test-driven development workflow to write and verify tests"
+    required: false
+    detector:
+      description: "Skill call to tdd"
+      after_step: classify_task_type
+
+  - id: refactor_cleanup
+    description: "If task type is refactor, identify and remove dead code, unused dependencies, and duplicated patterns"
+    required: false
+    detector:
+      description: "Skill call to refactor-cleaner"
+      after_step: classify_task_type
+
+  - id: code_review
+    description: "Review code changes for quality, correctness, maintainability, style adherence, and language-specific idioms"
+    required: false
+    detector:
+      description: "Agent or Skill call to code-reviewer (for non-Python) or python-reviewer (for Python files)"
+      before_step: verify_changes
+
+  - id: security_review
+    description: "Review changes affecting input validation, authentication, secrets handling, permissions, or security-sensitive operations"
+    required: false
+    detector:
+      description: "Agent or Skill call to security-reviewer"
+      before_step: verify_changes
+
+  - id: cross_model_review
+    description: "Obtain independent quality and security review using different model family to catch single-model blind spots"
+    required: false
+    detector:
+      description: "Skill call to codex-review"
+      before_step: verify_changes
+
+  - id: doc_sync
+    description: "Identify documentation requiring updates based on code changes and apply updates in the same diff (architecture docs, README, AI-facing docs, reference material)"
+    required: false
+    detector:
+      description: "Read or Grep calls to inspect affected documentation, followed by Edit or Write calls to update documentation"
+      before_step: verify_changes
+
+  - id: verify_changes
+    description: "Automated verification of all changes: build success, type checking, linting, test coverage and passage, secret scanning, dependency audit, documentation validation, and git status"
+    required: true
+    detector:
+      description: "Bash calls executing build tools, type checkers, linters, test runners, secret scanners, dependency auditors, and git commands"
+
+  - id: check_early_stop
+    description: "Detect and report early stop conditions: CRITICAL findings from reviews, verify failures, unsubstantiated root causes in fixes, Phase 0 Adopt verdicts, or writing chain critical verdicts"
+    required: false
+    detector:
+      description: "Assistant text output describing early stop condition (CRITICAL findings, verify failure, root cause not confirmed, re-plan needed, or stopping execution)"
+
+scoring:
+  threshold_promote_to_hook: 0.6

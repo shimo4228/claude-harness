@@ -88,3 +88,24 @@ class TestParseSpec:
         assert len(required) == 4
         assert len(optional) == 1
         assert optional[0].id == "refactor"
+
+    def test_unknown_temporal_reference_raises(self, tmp_path: Path) -> None:
+        """A hallucinated after_step id must fail at load, not soften grading."""
+        bad_spec = tmp_path / "bad.yaml"
+        bad_spec.write_text(
+            "id: bad\n"
+            "name: Bad\n"
+            "source_rule: x.md\n"
+            'version: "1.0"\n'
+            "steps:\n"
+            "  - id: step_a\n"
+            "    description: a\n"
+            "    required: true\n"
+            "    detector:\n"
+            "      description: a\n"
+            "      after_step: no_such_step\n"
+            "scoring:\n"
+            "  threshold_promote_to_hook: 0.6\n"
+        )
+        with pytest.raises(ValueError, match="no_such_step"):
+            parse_spec(bad_spec)

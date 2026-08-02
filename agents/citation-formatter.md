@@ -2,7 +2,7 @@
 name: citation-formatter
 description: Citation and reference list specialist for academic papers. Verifies that all in-text citations have matching reference list entries, that reference format is consistent (APA-like / Chicago / etc.), that DOIs and arXiv IDs are valid, and that no orphan citations or unreferenced sources exist. Use PROACTIVELY before paper deposit, after source-fidelity-checker and vocabulary-consistency-checker pass.
 tools: ["Read", "Grep", "Glob", "WebFetch"]
-model: sonnet
+model: haiku
 origin: shimo4228
 ---
 

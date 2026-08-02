@@ -62,6 +62,7 @@ def lint_file(path: str, allow: set[str]) -> tuple[list[str], bool]:
 
     try:
         from pyld import jsonld
+
         nquads = jsonld.to_rdf(doc, {"format": "application/n-quads"})
     except Exception as e:  # pyld raises its own hierarchy
         return findings + [f"FATAL expansion failed: {e}"], True

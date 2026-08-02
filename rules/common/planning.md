@@ -1,6 +1,6 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0018 — Chain 詳細を skill implementation-chain へ降格し、2 介入点モデルと Verify ゲートのみ常駐。Phase 0 のエントリポイント固定は search-first skip の実訂正由来 -->
-<!-- review-when: implementation-chain の自発発火率が実測で立った時 / harness が plan・verify をネイティブに強制し始めた時 / Verify 8 項目のいずれかが hook 化された時 -->
+<!-- rationale: ADR-0018 — Chain 詳細を skill implementation-chain へ降格し、2 介入点モデルと Verify ゲートのみ常駐。Phase 0 のエントリポイント固定は search-first skip の実訂正由来。ADR-0027 — Verify の Review 実行確認（reviewer 名簿 + commit せず戻る動詞）は復元: 表は skill でよいが、commit の瞬間に発動する命令は常駐でないと効かない（実測 54%→20%） -->
+<!-- review-when: implementation-chain の自発発火率が実測で立った時 / harness が plan・verify をネイティブに強制し始めた時 / Verify 4 項目のいずれかが hook 化された時 -->
 # Planning Standards
 
 提案・推薦・方針の提示など、ユーザーに判断を求める場面では、What（何を）に加えて
@@ -66,8 +66,10 @@ ROI を**時間見積もりで計算しない**（不確実）。代わりに �
 ## Implementation Chain
 
 実装着手前にタスク種別を判定し、対応する agent chain を **plan に front-load** する。
+**chain を組むときは Skill ツールで `implementation-chain` を呼ぶ**（受動的なポインタ参照は
+発火しない — 2026-07-28 skill-comply 実測で neutral prompt の自発発火 0/3 → TASKS.md T-001）。
 種別判定表・Chain Matrix（種別 × ステップ）・Review 起動条件・Writing Chain の
-ルーティング・早期停止条件は **skill: `implementation-chain`**（正本）を読んで組む。
+ルーティング・早期停止条件は同 skill（正本）に従って組む。
 
 ### 2 介入点モデル
 
@@ -75,26 +77,38 @@ ROI を**時間見積もりで計算しない**（不確実）。代わりに �
 
 1. **Plan 確認** — chain が確定した時点（`writing` では doc 分類とルーティング先が確定した時点）
 2. **意図確認** — コミット直前（`writing` では公開・deposit 直前の人間 gate と同一点）。
-   提示物は対象で分岐する — behavior-shaping artifact（rules / skills / identity / 公開ドキュメント）は
-   **本文**、実装コード・設定・生成物は**意図の要約**（介入点 1 の plan と照合する）。
-   Verify の PASS 一覧は提示しない。正本: [`human-gate.md`](human-gate.md)
+   提示物は対象で分岐する — behavior-shaping artifact / control plane / **検査の証拠を作るもの**は
+   **本文**、実装コード・生成物は**意図の要約**（`plan との差分` の 3 値宣言必須）。
+   不可逆・高影響は区分によらず本文へ**昇格**。Verify の PASS 一覧は提示しないが破棄もしない。
+   正本: [`human-gate.md`](human-gate.md)
 
 `fix` 種別の根本原因確認待ち（[`debugging.md`](debugging.md) の 仮説 → 証拠 → 確認待ち →
 修正フロー）は **明示的な例外**として残す。
 
 ### Verify ステップ（chain 最終ステップ・commit の門）
 
-変更内容に応じた Review agent を起動済みか確認したうえで:
+**Review 実行確認**（下の 4 項目より前に立つ門）: 変更内容と task 種別に応じて Review 群を
+起動済みか確認する — code review（python-reviewer / code-reviewer / swift-reviewer）・
+security-reviewer・**codex-review**（`feat` / `fix` は必須）・`refactor` なら refactor-cleaner。
+**未起動なら commit せず Review に戻る**。決定論ゲートの全 PASS は review の代替にならない
+（テストが通っても残る欠陥 — 認可・並行性・設計盲点 — を見る別の層）。種別ごとの要否は
+skill: `implementation-chain` の Chain Matrix。
 
-1. **build** — 該当言語のビルドコマンド
-2. **type check** — mypy / pyright / tsc 等
-3. **lint** — ruff / eslint / textlint 等
-4. **tests** — pytest / vitest 等。coverage ≥ 80%
-5. **secret scan** — hardcoded keys / tokens の不在確認（[`security.md`](security.md)）
-6. **依存監査** — Python の依存変更（pyproject.toml / requirements / lockfile）を含む diff では
-   `pip-audit` を実行（既知脆弱性の混入確認。依存を触らない diff は省略可）
-7. **doc sync 確認** — Doc Sync 発火条件に該当する変更なら、対応 doc が同じ diff にあるか
-8. **`git status` 確認** — 意図しないファイルが含まれていないか
+そのうえで:
 
-8 項目はすべて機械 / agent の担当で、人間に上げるのは FAIL のみ（[`human-gate.md`](human-gate.md)）。
+1. **repo の機械ゲートを実行** — `.claude/verify.sh`（引数なし = 全体検査）。format / lint /
+   type check / build / test / 依存監査を **repo が所有**する。ツール名をこの層に書かない
+   （ツールは数年で入れ替わるので、常駐ルールに書けばそこが陳腐化の発生源になる）。
+   ゲートが無い repo なら skill: `verify-bootstrap` で立てる — 立てずに手で回すのは
+   その場しのぎで、次のセッションに残らない
+2. **secret scan** — hardcoded keys / tokens の不在確認（[`security.md`](security.md)）
+3. **doc sync 確認** — Doc Sync 発火条件に該当する変更なら、対応 doc が同じ diff にあるか
+4. **`git status` 確認** — 意図しないファイルが含まれていないか
+
+4 項目はすべて機械 / agent の担当で、人間に上げるのは FAIL のみ（[`human-gate.md`](human-gate.md)）。
 全 PASS でのみコミット可。FAIL があれば停止してユーザーに報告する。
+
+commit 境界では hook (`hooks/verify-precommit.sh`) が同じゲートを `--staged` で自動実行する。
+hook は言語を知らず、`.claude/verify.sh` の有無と exit code だけを見る。
+
+See skill: verify-bootstrap

@@ -298,9 +298,7 @@ class TestCheckLocalLinks:
         links = [Link("x", "//cdn.example.com/a.js", 1)]
         assert check_local_links(links, [], tmp_path) == []
 
-    def test_percent_encoded_target_is_decoded_before_resolving(
-        self, tmp_path: Path
-    ) -> None:
+    def test_percent_encoded_target_is_decoded_before_resolving(self, tmp_path: Path) -> None:
         # Regression: Markdown encodes non-ASCII link targets (e.g. Japanese
         # filenames) as percent-escapes. The linter must decode before resolving
         # on disk — otherwise it probes the literal "%E5..." name, which never
@@ -433,9 +431,7 @@ class TestSeverity:
 
     def test_exit_code_ignores_warning_only_reports(self, tmp_path: Path) -> None:
         # A doc whose ONLY issues are advisory warnings must still exit 0.
-        report = LintReport(
-            path="r", issues=(Issue("badge_budget", "many badges", 3, "warning"),)
-        )
+        report = LintReport(path="r", issues=(Issue("badge_budget", "many badges", 3, "warning"),))
         # render must not crash and must not claim "no issues" when warnings exist
         text = render_report(report).lower()
         assert "warning" in text
@@ -470,9 +466,7 @@ class TestCheckRasterDiagramHint:
 @pytest.mark.unit
 class TestCheckBadgeBudget:
     def test_badge_wall_flagged(self) -> None:
-        imgs = [
-            Image(f"b{i}", f"https://img.shields.io/badge/x{i}.svg", 3) for i in range(7)
-        ]
+        imgs = [Image(f"b{i}", f"https://img.shields.io/badge/x{i}.svg", 3) for i in range(7)]
         issues = check_badge_budget(imgs)
         assert len(issues) == 1
         assert issues[0].check == "badge_budget"
@@ -494,7 +488,9 @@ class TestCheckBadgeBudget:
 @pytest.mark.unit
 class TestCheckDetailsFloorLeak:
     def test_doi_inside_details_flagged(self) -> None:
-        md = "# T\n\n<details>\n<summary>cite</summary>\n\nDOI 10.5281/zenodo.123456\n\n</details>\n"
+        md = (
+            "# T\n\n<details>\n<summary>cite</summary>\n\nDOI 10.5281/zenodo.123456\n\n</details>\n"
+        )
         issues = check_details_floor_leak(md)
         assert len(issues) == 1
         assert issues[0].check == "details_floor_leak"
@@ -517,7 +513,9 @@ class TestCheckDetailsFloorLeak:
         assert check_details_floor_leak(md) == []
 
     def test_doi_in_details_body_still_flagged(self) -> None:
-        md = "# T\n\n<details>\n<summary>refs</summary>\n\nDOI 10.5281/zenodo.123456\n\n</details>\n"
+        md = (
+            "# T\n\n<details>\n<summary>refs</summary>\n\nDOI 10.5281/zenodo.123456\n\n</details>\n"
+        )
         assert len(check_details_floor_leak(md)) == 1
 
 
@@ -545,7 +543,7 @@ class TestCheckIdentityLead:
         assert check_identity_lead(md, parse_headings(md)) == []
 
     def test_prose_after_hero_image_clean(self) -> None:
-        md = '# T\n\n![hero](assets/hero.png)\n\nReal identity sentence here.\n\n## S\n'
+        md = "# T\n\n![hero](assets/hero.png)\n\nReal identity sentence here.\n\n## S\n"
         assert check_identity_lead(md, parse_headings(md)) == []
 
     def test_bare_nav_link_only_is_not_a_lead(self) -> None:

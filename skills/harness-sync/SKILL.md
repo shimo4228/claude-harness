@@ -153,9 +153,11 @@ Packaging から 2026-07-03 に移動）:
 |---|---|---|---|
 | `~/MyAI_Lab/claude-harness` ([repo](https://github.com/shimo4228/claude-harness)) | 集約 (skills + agents + rules) | `scripts/sync-from-local.sh` (集約版) | `~/.claude` |
 | `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/when-code-when-llm` |
-| `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を 2026-07-09 retire — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `rules/common/akc-cycle.md` Research 節 + `search-first`) |
+| `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を 2026-07-09 retire — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `search-first` 等の消費 skill — 常駐の Signal-first 節は 2026-07-31 に退役、ADR-0026) |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/citation-sync` |
 | `~/MyAI_Lab/generation-audit` ([repo](https://github.com/shimo4228/generation-audit)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/generation-audit` |
+| `~/MyAI_Lab/agent-stocktake` ([repo](https://github.com/shimo4228/agent-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/agent-stocktake` |
+| `~/MyAI_Lab/human-gate` ([repo](https://github.com/shimo4228/human-gate)) | rule + hook | `scripts/sync-from-local.sh` (rule+hook 版 — rule は origin 必須、hook は存在のみ検査) | `~/.claude/rules/common/human-gate.md` + `~/.claude/hooks/evidence-file-notice.sh` |
 | `~/MyAI_Lab/rules-stocktake` ([repo](https://github.com/shimo4228/rules-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-stocktake` |
 | `~/MyAI_Lab/learn-eval` ([repo](https://github.com/shimo4228/learn-eval)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/learn-eval` |
 | `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
@@ -197,7 +199,7 @@ learn-eval / rules-distill / skill-stocktake、第二波: 残り 11 repo — 移
 **script を vendor するのが default** — 例外にする場合はここに理由ごと追記する。
 
 **`signal-first-research` は 2026-07-09 に local 正本を retire**（usage telemetry で
-organic 発火ゼロ — 原則は `rules/common/akc-cycle.md` Research 節 + `search-first` に
-吸収済みの scaffold dissolution 完了例）。repo は AKC の citable design-pattern artifact
+organic 発火ゼロ — 原則は `search-first` 等の消費 skill に吸収済みの scaffold dissolution
+完了例。常駐側の Signal-first 節も 2026-07-31 に退役 — ADR-0026）。repo は AKC の citable design-pattern artifact
 として凍結存続。repo 側 script は source 不在で abort する（仕様通り）— 更新が必要に
 なったら手動 curation。

@@ -21,6 +21,8 @@ origin: shimo4228
 - **断定文 ≳ 疑問文**: HN の長期分析で statement が question をわずかに上回る。問いの形は知的関心に訴える場面（why/how）に限定して使う
 - **好奇心ギャップは情報の欠落**: Loewenstein の information gap 理論。知っていることと知りたいことの差が開かせる。ただし**本文が必ずギャップを埋めること** — 埋めない好奇心ギャップがクリックベイトの定義
 - **日本語圏の参考値**: Qiita 全記事分析でバズ記事はタイトル 20–36 字に集中。上限（Zenn 50–60）より短い方に最適帯がある
+- **トピック中心 → 結果駆動への進化**: タイトルは戦いの 90%。詩的タイトル（意味不明で素通り）と教科書調（「〜の分析」= 宿題感）が二大失敗形。具体的数値・明示的な価値・人間の声の 3 点が指を止める（Kaguura 2026, 90 日で 20,585 購読者の実践知）
+- **タイトル A/B テストは読者関心の学習装置**: Substack はタイトル A/B テストを機構として持つ。目的は釣りの最適化ではなく「読者が実際に何に関心があるか」を学ぶこと（明快な解決型 vs 興味深いパラドックス型、等）。内容を変えず語選びを検証するのは Distribution 層で、Content Integrity（zenn-content ADR-0001）に適合する
 
 ## 技法カタログ
 
@@ -29,6 +31,7 @@ origin: shimo4228
 | 技法 | 型 | 適用条件 |
 |---|---|---|
 | **具体性** | 固有名詞・数値・状況を入れる（「LLM で」→「Claude Code の hooks で」） | 常時。迷ったらまずこれ |
+| **結果駆動** | トピック名でなく読者が得る結果を言う（「Newsletter 成長モデルの分析」→「1,000 本を分析してわかった、登録が増える 3 つのレイアウト」） | 本文が実際にその結果を提供する |
 | **ベネフィット前置** | 読後に読者が得るものを先頭側に（「〜する方法」より「〜できるようになる」の中身を言う） | 本文が実際にそれを提供する |
 | **誠実な好奇心ギャップ** | 結論の手前まで言う（「試したら意外な結果になった」ではなく「試したら X だけが失敗した」） | 本文がギャップを完全に埋める |
 | **対比・転換** | Before/After、期待と実際（「A だと思っていたが B だった」） | 実体験・実測が本文にある |
@@ -71,3 +74,4 @@ origin: shimo4228
 - [Words growing or shrinking in Hacker News titles (Variance Explained)](http://varianceexplained.org/r/hn-trends/) / [On Bad Hacker News Titles (HubSpot)](https://product.hubspot.com/blog/on-bad-hacker-new-titles) — HN タイトル傾向の定量分析
 - [Qiita の全記事分析｜バズる投稿を考察する](https://qiita.com/mtitg/items/25e3d0d75429dcfeb199) — 日本語圏のタイトル字数帯
 - Loewenstein, G. (1994). The psychology of curiosity — information gap 理論
+- [How I Got 20,585 Substack Subscribers in 90 Days (Kaguura Gichuru, The Write Path 2026)](https://kaguura.substack.com/p/90-days-20585-new-subscribers-heres) — 結果駆動ヘッダー・A/B テストの実践知

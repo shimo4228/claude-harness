@@ -19,10 +19,13 @@ origin: shimo4228
 - 既存の会話を続けたい → `claude --continue` / `--resume`
 - 現在のセッションの文脈を消したいだけ → `/clear`
 - 現在のセッションの model / effort 切替 → `/model`, `--effort`
+- **同じ repo で複数セッションが欲しいだけ** → 公式 server mode（`claude remote-control --spawn worktree --capacity N`）で足りる。この skill は要らない
+- **Dispatch で足りる用件** → Cowork タブの Dispatch に投げると、開発作業なら **Code タブのセッション**が起きる（Dispatch バッジ付きでサイドバーに出る）。**`~/.claude` の設定系は読まれる** — personal skills in `~/.claude/skills/` は local session に効き、`~/.claude/settings.json` も Desktop と共有される（設定が claude.ai 同期になるのは **Cowork タブ側**の skills / plugins / connectors であって Code セッションではない）。この skill を使う理由は設定の届き方ではなく、**Desktop アプリが実行主体になり Herdr 艦隊ビューに並ばないこと**と、**起こす repo をこちらが選べないこと**（Dispatch が種別で振り分ける）。Pro/Max 限定で Team/Enterprise では使えない
+- **cloud session**（Claude Code on the web）→ Anthropic 側で実行されるので、ローカル FS / MCP / Herdr と無関係。手元の repo を触らせたいなら対象外
 
 ## How it works
 
-公式 Remote Control はモバイル側から新セッションを起こせない（1 マシン基本 1 セッション）。回避策: 生きている任意のセッションが Bash で別の `claude --remote-control "<名前>"` を Herdr の pane 内に detached 起動する。新プロセスが自分の RC を登録し、アプリ一覧に出る。Herdr の persistent session（server）が pty を保持するので、Ghostty/SSH の切断や起動元セッションの終了後も生き残る。server が動いていなければ spawn.sh が headless server を自動起動する（tmux のサーバー自動起動と同等のセマンティクス）。
+埋めているギャップは **cwd の壁**であって、セッション数の壁ではない（2026-08-01 に公式 docs で確認）。公式 Remote Control には server mode があり `--spawn <same-dir|worktree|session>` / `--capacity <N>`（既定 32）/ `--[no-]create-session-in-dir` で **1 プロセスから複数セッション**を持てる。ただし **server mode の全セッションはその server プロセスの cwd（= 1 repo）に縛られる** — `same-dir` は cwd 共有、`worktree` はその repo の worktree。**別プロジェクトのセッションを起こす手段が公式には無い**。回避策: 生きている任意のセッションが Bash で別の `claude --remote-control "<名前>"` を、指定した repo の cwd で Herdr の pane 内に detached 起動する。新プロセスが自分の RC を登録し、アプリ一覧に出る。Herdr の persistent session（server）が pty を保持するので、Ghostty/SSH の切断や起動元セッションの終了後も生き残る。server が動いていなければ spawn.sh が headless server を自動起動する（tmux のサーバー自動起動と同等のセマンティクス）。
 
 配置は repo 単位 workspace 運用に合わせる: **同じルート（cwd）の workspace が既にあればそこに新 tab、無ければ新 workspace を作成**（workspace label は repo 名、表示名は tab label）。
 
@@ -114,6 +117,7 @@ origin: shimo4228
 - `herdr not found` → `brew install herdr`。
 - `herdr server を起動できませんでした` → headless 自動起動が失敗。`herdr status` で server の状態を確認する。
 - `claude が idle に到達しませんでした` 警告（pane の直近出力付き）→ 生やした claude が起動に失敗した。典型原因は Claude Code の auth（OAuth）切れ — Mac 側でのブラウザ再ログインが必要で、モバイル側からは対処できない。または `claude` が pane シェルの PATH に無い。
+- **workspace trust ダイアログで止まる（未対応・既知の制約）** → その repo で一度も Claude Code を開いたことがない場合、起動直後に trust の確認が出るが、detached 起動には**押す人がいない**。`spawn.sh` は trust を一切扱わない（2026-08-01 確認）。**自動で `~/.claude.json` の `hasTrustDialogAccepted` を立てる回避はしない** — それは security gate を黙って外す行為で、モバイルから未知の repo を trust させる経路を作ってしまう。**対処は「初回だけ Mac 側で一度開いておく」**。pane に入れば人間が押せるので、`herdr agent read` で画面を見て判断する。
 
 ## Notes
 

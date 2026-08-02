@@ -61,8 +61,7 @@ def scan_docs(repo: Path) -> set[str]:
         if p.suffix not in (".md", ".txt"):
             continue
         if any(
-            part in EXCLUDE_DIRS or part.startswith(".")
-            for part in p.relative_to(repo).parts[:-1]
+            part in EXCLUDE_DIRS or part.startswith(".") for part in p.relative_to(repo).parts[:-1]
         ):
             continue
         try:
@@ -249,10 +248,7 @@ def main() -> int:
             "converged": not repo_diverged,
         }
 
-        print(
-            f"\n## {repo.name}"
-            + (f"  (Wikidata: {qid})" if qid else "  (no QID in graph)")
-        )
+        print(f"\n## {repo.name}" + (f"  (Wikidata: {qid})" if qid else "  (no QID in graph)"))
         if not union:
             print("  no external citations in any layer")
             continue

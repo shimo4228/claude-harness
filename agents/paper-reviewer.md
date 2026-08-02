@@ -2,7 +2,7 @@
 name: paper-reviewer
 description: Strict academic paper reviewer for position papers, preprints, and journal-style articles. Reviews argument flow, section transitions, claim sharpness, evidence-claim alignment, and overall paper structure. Use PROACTIVELY after drafting or substantially revising a paper section, before deposit.
 tools: ["Read", "Grep", "Glob"]
-model: sonnet
+model: opus
 origin: shimo4228
 ---
 

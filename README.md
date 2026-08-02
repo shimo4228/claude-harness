@@ -61,6 +61,10 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [generation-audit](skills/generation-audit/SKILL.md) | On a model-generation change, capture the live runtime layer (system prompt + tool descriptions), classify mismatches as conflict / redundancy / drift, and hand the evidence to the stocktake skills for verdicts |
 | [git-workflow](skills/git-workflow/SKILL.md) | Permission-friction discipline for git in this environment — one Bash call per git command; chaining with && or pipes breaks the Bash(git:*) auto-allow and stalls on manual prompts |
 | [headline-craft](skills/headline-craft/SKILL.md) | Craft skill for the one line that makes readers open — title / tagline / subtitle / SNS-post candidates, generated with concrete techniques and scored per traffic channel (search vs feed) |
+| [herdr-delegate](skills/herdr-delegate/SKILL.md) | Hand a whole implementation task to a different CLI agent running in a Herdr pane (Codex, etc.). Gated on an explicit user request — parallelism alone is not a reason |
+| [prompt-perturb](skills/prompt-perturb/SKILL.md) | Diversity injection. A deliberately context-starved forager agent fetches prompts from external creativity-technique catalogs, so the angles come from outside the session's own habits |
+| [session-judgment-mining](skills/session-judgment-mining/SKILL.md) | Mine past session transcripts for judgements the user made repeatedly, and promote the recurring ones into skills or rules |
+| [verify-bootstrap](skills/verify-bootstrap/SKILL.md) | Stand up a repo's machine gates (format / lint / type check / security / dependency / test), or take stock of gates that have gone stale. Tool choice is researched at bootstrap time rather than baked into the skill |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
@@ -84,6 +88,9 @@ A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`.
 | [citation-formatter](agents/citation-formatter.md) | Verifies in-text citations against the reference list — format consistency, DOI / arXiv ID validity |
 | [readme-reviewer](agents/readme-reviewer.md) | Strict README / repo top-page review — LLM-read floor, lead clarity, human hook, scannability, length discipline, visual effectiveness. Companion to readme-writer |
 | [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | First-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register (ですます). Parallel partner of readme-reviewer |
+| [adr-reviewer](agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, Alternatives are real rather than straw men, Consequences show both sides, and override relations with prior ADRs are stated |
+| [prompt-forager](agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
+| [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance |
 <!-- END GENERATED: agents-table -->
 
 ### Rules
@@ -101,6 +108,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
 | [task-tracking](rules/common/task-tracking.md) | Single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents |
 | [human-gate](rules/common/human-gate.md) | The second gate axis — machines verify artifacts, the human judges intent. What the gate shows branches by target: behavior-shaping artifacts and the control plane show full text, implementation shows an intent summary checked against the approved plan |
+| [output-register](rules/common/output-register.md) | Residency prose is compressed to save context; user-facing prose is not. Keeps the internal register out of explanations written for a reader |
 <!-- END GENERATED: rules-table -->
 
 ## Usage
@@ -152,8 +160,8 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC (unmodified) | article-writing | python-reviewer | — |
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | architect, code-reviewer, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/hooks, common/patterns, common/security, common/testing |
+| ECC (unmodified) | article-writing | — | — |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, council, e2e, iterative-retrieval, product-lens, python-patterns, python-review, refactor-clean, tdd, update-codemaps | architect, code-reviewer, e2e-runner, python-reviewer, refactor-cleaner, security-reviewer | common/coding-style, common/hooks, common/patterns, common/security, common/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) (unmodified) | mcp-builder | — | — |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community + local modifications | scientific-thinking-literature-review | — | — |

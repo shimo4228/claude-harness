@@ -67,7 +67,7 @@ VAULT="/Users/shimomoto_tatsuya/Library/Mobile Documents/iCloud~md~obsidian/Docu
 
 ### Step 3 — signal フィルタ（品質ゲート）
 
-signal-first の output discipline（`rules/common/akc-cycle.md` Research 節が正本）を適用する。**各候補は repo の具体的アクションを名指しできなければ捨てる**:
+output discipline を適用する（正本はこの節 — 旧 `rules/common/akc-cycle.md` の Signal-first 常駐節は [ADR-0026](../../docs/adr/0026-retire-signal-first-residency.md) で退役、原則は本 skill にインライン内在化済み）。**各候補は repo の具体的アクションを名指しできなければ捨てる**:
 
 - どの ADR 番号を更新 / 新設するか
 - どの graph 辺 / glossary 語 / manifesto 項を足す・解消するか

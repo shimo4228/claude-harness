@@ -9,6 +9,9 @@ from pathlib import Path
 
 import yaml
 
+from scripts.parser import extract_yaml_payload
+from scripts.spec_generator import GENERATION_TIMEOUT_SECONDS, UTILITY_SETTINGS
+
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
 
@@ -20,6 +23,14 @@ class Scenario:
     description: str
     prompt: str
     setup_commands: tuple[str, ...]
+    #: Fixture files as (relative path, content) pairs — data, not commands.
+    #: The generator kept reaching for `cat > f << EOF` because the two-verb
+    #: setup vocabulary cannot express content, and every such entry was refused
+    #: (6 refusals in one real run), leaving sandboxes empty and one agent
+    #: writing its own 15KB fixture. The invariant that matters is "no shell, no
+    #: process, paths confined and inert" — not "no content" — so content gets a
+    #: route that starts no process instead of pressure to smuggle one.
+    files: tuple[tuple[str, str], ...] = ()
 
 
 def generate_scenarios(
@@ -46,16 +57,26 @@ def generate_scenarios(
     )
 
     result = subprocess.run(
-        ["claude", "-p", prompt, "--model", model, "--output-format", "text"],
+        [
+            "claude",
+            "-p",
+            prompt,
+            "--model",
+            model,
+            "--output-format",
+            "text",
+            "--settings",
+            UTILITY_SETTINGS,
+        ],
         capture_output=True,
         text=True,
-        timeout=120,
+        timeout=GENERATION_TIMEOUT_SECONDS,
     )
 
     if result.returncode != 0:
         raise RuntimeError(f"claude -p failed: {result.stderr}")
 
-    raw_yaml = _extract_yaml(result.stdout)
+    raw_yaml = extract_yaml_payload(result.stdout)
     parsed = yaml.safe_load(raw_yaml)
 
     scenarios: list[Scenario] = []
@@ -68,17 +89,8 @@ def generate_scenarios(
                 description=s["description"],
                 prompt=s["prompt"].strip(),
                 setup_commands=tuple(s.get("setup_commands", [])),
+                files=tuple((str(k), str(v)) for k, v in (s.get("files") or {}).items()),
             )
         )
 
     return sorted(scenarios, key=lambda s: s.level)
-
-
-def _extract_yaml(text: str) -> str:
-    """Extract YAML from LLM output, stripping markdown fences if present."""
-    lines = text.strip().splitlines()
-    if lines and lines[0].startswith("```"):
-        lines = lines[1:]
-    if lines and lines[-1].startswith("```"):
-        lines = lines[:-1]
-    return "\n".join(lines)
