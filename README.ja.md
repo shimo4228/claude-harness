@@ -45,7 +45,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |
 | [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
 | [citation-sync](skills/citation-sync/SKILL.md) | 研究 repo の引用 4 層 (docs / .zenodo.json / graph.jsonld / Wikidata P2860) を監査し下層から同期 |
-| [spawn-session](skills/spawn-session/SKILL.md) | tmux で detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
+| [spawn-session](skills/spawn-session/SKILL.md) | Herdr の pane に detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
 | [harness-sync](skills/harness-sync/SKILL.md) | 生きた harness から本 repo への origin filter 付き一方向エクスポート — 収集・secret scan・subtree 置換 |
 | [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md) | access-blocked / digest 由来の数値主張を、durable な引用の前にオープンミラーで検証する guardrail |
 | [wiki-harvest](skills/wiki-harvest/SKILL.md) | 研究 repo セッションから Obsidian LLM wiki (wiki/concept/) を read-only で走査し、repo の次アクションを変えうる候補だけを一次出典付き・ランク付き ledger として repo の `.notes/` に抽出 |

@@ -103,7 +103,7 @@ else
 fi
 
 # --- secret scan (high-confidence patterns; abort on any hit) ---
-SECRET_RE='sk-ant-api[0-9A-Za-z_-]+|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{20,}|AKIA[0-9A-Z]{16}|xox[bporas]-[0-9A-Za-z-]{10,}|AIza[0-9A-Za-z_-]{35}|hf_[A-Za-z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY'
+SECRET_RE='sk-ant-api[0-9A-Za-z_-]+|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{20,}|AKIA[0-9A-Z]{16}|xox[bporas]-[0-9A-Za-z-]{10,}|AIza[0-9A-Za-z_-]{35}|hf_[A-Za-z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY'  # pragma: allowlist secret
 if hits="$(grep -rEl "$SECRET_RE" "$STAGING" 2>/dev/null)"; then
   echo "ABORT: potential secrets detected in staged payload:" >&2
   echo "$hits" >&2
