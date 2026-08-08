@@ -110,6 +110,10 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | LLM 分野の外部知識は 1 週間スケールで陳腐化するという世界観を既定にする — 手法・仕様・相場観を記憶から断言せず検索時点で照合し、根拠に as-of 日付を、推奨に失効条件を付ける |
 <!-- END GENERATED: rules-table -->
 
+### 設計判断 (ADR)
+
+`docs/adr/` には、このハーネスがなぜ今の形なのか — 採用・退役・方針転換 — を日付付きの Architecture Decision Record として記録し、コンポーネントと一緒に実働ハーネスから同期しています。上の skills / agents / rules が「何があるか」だとすれば、ADR は「なぜそうなったか」— 失敗も含めた監査証跡です。[ADR index](docs/adr/README.md) から読めます。
+
 ## 使い方
 
 ### 全部入り

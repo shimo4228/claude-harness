@@ -110,6 +110,10 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | Treats external LLM-domain knowledge as going stale on a one-week scale — never assert tooling, specs, or going rates from memory; check at search time, date the evidence, and attach an expiry condition to any recommendation |
 <!-- END GENERATED: rules-table -->
 
+### Design decisions (ADRs)
+
+`docs/adr/` records why this harness is shaped the way it is: adoptions, retirements, and reversals, each as a dated Architecture Decision Record synced from the live harness alongside the components. The skills, agents, and rules above are the *what*; the ADRs are the *why* — the audit trail behind the harness, failures included. Start from the [ADR index](docs/adr/README.md). ADRs are written in Japanese.
+
 ## Usage
 
 ### Full install

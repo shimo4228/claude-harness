@@ -1,9 +1,10 @@
 # claude-harness
 
-> Public snapshot of the Claude Code harness (skills, agents, rules) used
-> day-to-day by shimo4228. Mechanically aggregated from `~/.claude/` for
-> assets tagged `origin: shimo4228`. Excludes ECC-derived material
-> (`origin: ECC` / `ECC-customized`) and auto-extracted artifacts.
+> Public snapshot of the Claude Code harness (skills, agents, rules, and
+> the harness's own ADRs) used day-to-day by shimo4228. Mechanically
+> aggregated from `~/.claude/` for assets tagged `origin: shimo4228`.
+> Excludes ECC-derived material (`origin: ECC` / `ECC-customized`) and
+> auto-extracted artifacts.
 >
 > Bundles skills covering research-before-coding, knowledge extraction,
 > skill auditing, AI-facing documentation, human-facing writing review,
@@ -101,6 +102,10 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
 - [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
 - [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
+
+## Design decisions (ADRs)
+
+- [ADR index](docs/adr/README.md): dated Architecture Decision Records for the harness itself — why each skill, agent, and rule was adopted, retired, or reversed, including superseded decisions. The audit trail that makes the harness's evolution (and its value layer) inspectable rather than merely declared. Written in Japanese; each follows a fixed 6-section template (Status / Date / Context / Decision / Alternatives Considered / Consequences)
 
 ## Related repositories
 

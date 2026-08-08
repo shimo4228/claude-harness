@@ -42,7 +42,10 @@ bash <公開repo>/scripts/sync-from-local.sh
 
 script は staging 収集 → runtime artifact 除去 (results.json, __pycache__ 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
-secret scan (検出時 abort) → skills/ agents/ rules/ subtree の置換、まで行う。
+secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ subtree の置換、まで行う。
+docs/adr/ (集約 repo のみ、2026-08-08 追加) は origin filter を掛けない —
+ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、ディレクトリ丸ごとが対象。
+以後の ADR は公開される前提で書く。
 script は commit しない。LLM 側で diff と secret scan の結果を確認してから次へ進む。
 
 ### 4. ドキュメント整合 (LLM 側の責務)
@@ -155,7 +158,7 @@ Packaging から 2026-07-03 に移動）:
 
 | target | 種別 | script | 正本 |
 |---|---|---|---|
-| `~/MyAI_Lab/claude-harness` ([repo](https://github.com/shimo4228/claude-harness)) | 集約 (skills + agents + rules) | `scripts/sync-from-local.sh` (集約版) | `~/.claude` |
+| `~/MyAI_Lab/claude-harness` ([repo](https://github.com/shimo4228/claude-harness)) | 集約 (skills + agents + rules + ADRs) | `scripts/sync-from-local.sh` (集約版) | `~/.claude` |
 | `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を 2026-07-09 retire — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `search-first` 等の消費 skill — 常駐の Signal-first 節は 2026-07-31 に退役、ADR-0026) |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/citation-sync` |
 | `~/MyAI_Lab/generation-audit` ([repo](https://github.com/shimo4228/generation-audit)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/generation-audit` |

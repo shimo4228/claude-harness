@@ -5,7 +5,9 @@
 # Collects components whose origin marker matches ORIGIN (frontmatter
 # `origin: <value>` or HTML comment `<!-- origin: <value> -->`), stages
 # them, runs a secret scan, then replaces the managed subtrees
-# (skills/ agents/ rules/) wholesale. LICENSE and llms*.txt are never
+# (skills/ agents/ rules/ docs/adr/) wholesale. docs/adr/ carries no
+# origin markers: ADRs record this harness's own design decisions and
+# are self-authored by definition, so the whole directory is synced. LICENSE and llms*.txt are never
 # touched; README.md / README.ja.md are rewritten ONLY inside their
 # `<!-- BEGIN/END GENERATED: ... -->` marker regions (the upstream-components
 # manifest and the skill/agent/rule tables) — all prose outside markers is
@@ -26,7 +28,7 @@ set -euo pipefail
 SOURCE_DIR="${HARNESS_SYNC_SOURCE:-$HOME/.claude}"
 ORIGIN="${HARNESS_SYNC_ORIGIN:-shimo4228}"
 TARGET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBTREES=(skills agents rules)
+SUBTREES=(skills agents rules docs/adr)
 
 DRY_RUN=0
 [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]] && DRY_RUN=1
@@ -44,7 +46,7 @@ fi
 # --- staging ---
 STAGING="$(mktemp -d)"
 trap 'rm -rf "$STAGING"' EXIT
-mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules"
+mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/adr"
 
 has_origin() { head -15 "$1" | grep -q "origin: $ORIGIN"; }
 
@@ -68,6 +70,13 @@ while IFS= read -r rule; do
   mkdir -p "$STAGING/rules/$(dirname "$rel")"
   cp "$rule" "$STAGING/rules/$rel"
 done < <(grep -rl "origin: $ORIGIN" "$SOURCE_DIR/rules/" 2>/dev/null || true)
+
+# ADRs: the whole directory, no origin filter (self-authored by definition —
+# they document this harness's own decisions; nothing external lands here)
+for adr in "$SOURCE_DIR"/docs/adr/*.md; do
+  [[ -f "$adr" ]] || continue
+  cp "$adr" "$STAGING/docs/adr/"
+done
 
 # --- prune runtime artifacts from the staged payload ---
 find "$STAGING" \( -name results.json -o -name '*.log' -o -name '*.pyc' \
@@ -114,7 +123,13 @@ fi
 if (( DRY_RUN )); then
   echo "# DRY-RUN (origin: $ORIGIN) — differences staging vs $TARGET_DIR"
   for t in "${SUBTREES[@]}"; do
-    diff -rq "$STAGING/$t" "$TARGET_DIR/$t" 2>/dev/null || true
+    if [[ -d "$TARGET_DIR/$t" ]]; then
+      diff -rq "$STAGING/$t" "$TARGET_DIR/$t" 2>/dev/null || true
+    else
+      # brand-new subtree: diff against a missing dir reports nothing, so
+      # list the staged files explicitly instead of staying silent
+      find "$STAGING/$t" -type f | sed "s|^$STAGING/|NEW: |" | sort
+    fi
   done
   exit 0
 fi
