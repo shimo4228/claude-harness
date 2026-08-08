@@ -99,8 +99,8 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [planning](rules/common/planning.md): planning standards — required What / Why / Alternatives, Phase 0 external research mandate, evidence-based decision-making, prototype-before-scale
 - [skills](rules/common/skills.md): skill origin tracking spec, knowledge placement decision (existing skill vs new skill vs MEMORY.md), skill portability guidelines
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
-- [human-gate](rules/common/human-gate.md): the second gate axis — machines verify artifacts, the human judges intent; what the gate shows branches by target (behavior-shaping artifacts and the control plane show full text, implementation shows an intent summary checked against the approved plan)
 - [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
+- [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
 
 ## Related repositories
 

@@ -1,6 +1,6 @@
 ---
 name: authorship-strategy
-description: maker / 実践者が AI 時代の著者戦略を実地で探るための判断フレームワーク。あなた自身の DOI-registered idea-rescue repo 群（著者自身の例は AKC, Contemplative Agent）で適用する。core principle は「AI 時代のオーセンシティ inversion」— 3 軸（scarcity → diffusion / exclusivity → derivation / enclosure → openness）の反転。主 audience は LLM-mediated channels（LLM 直接 + LLM 経由で情報を得る人間）。creative reuse > training > investigation の preference 階層。4 層 framework (authenticity → diffusion → idea/scaffold 判別 → tactics) で判断軸を提供。マネタイズ禁止、tool-agnostic、any-usage 容認、permissive license 原則
+description: maker / 実践者が AI 時代の著者戦略を実地で探るための判断フレームワーク。あなた自身の DOI-registered idea-rescue repo 群（著者自身の例は AKC, Contemplative Agent）で適用する。core principle は「AI 時代のオーセンシティ inversion」— 3 軸（scarcity → diffusion / exclusivity → derivation / enclosure → openness）の反転。主 audience は層別（ADR-0022 二層会計）— doctrine 層 = LLM-mediated channels（LLM 直接 + LLM 経由で情報を得る人間）、essay 層 = 同時代の human reader（同時代 KPI の観測+操舵可）。creative reuse > training > investigation の preference 階層。4 層 framework (authenticity → diffusion → idea/scaffold 判別 → tactics) で判断軸を提供。マネタイズ禁止、tool-agnostic、any-usage 容認、permissive license 原則
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -101,7 +101,16 @@ authenticity を future-proof する手段: 自作概念を LLM-mediated channel
 - **LLM 経由の人間**: AI coding assistant で調査する開発者、ChatGPT/Perplexity 等に概念を問う実務者・学習者・関心を持つ誰でも
 - **Cascade LLM**: 現在の LLM 出力を学習する将来のモデル
 
-**Non-primary audience**: GitHub を直接 browse する人間（star / PR / direct view）。この層の brand 認識 drift は strategy の defense target ではない。
+**Non-primary audience**: doctrine repository を GitHub 上で直接 browse する人間（star / PR / direct view）。この層の brand 認識 drift は strategy の defense target ではない。**この降格の scope は doctrine layer 限定**（ADR-0022 が明文化）— 人間一般の降格ではない。
+
+#### 第二の audience layer: essay layer（ADR-0022、2026-08-05）
+
+strategy の会計は時定数の違う二層に分かれる（genre で routing、ADR-0016 の延長）:
+
+- **doctrine layer** — DOI repo 群 + paper。時定数 月〜年。primary audience = LLM-mediated channels（上記のとおり、不変）
+- **essay layer** — governed essay corpus（zenn-content）とその syndication surface。時定数 日〜週。primary audience = **同時代の human reader**
+
+essay layer では同時代 KPI（reads / 反応 / follower 数）を**見ることも、執筆判断（テーマ・cadence・言語配置）を操舵することも正当** — 功名心が数字を見ることは戦略違反ではない。境界は 3 つだけ: ① essay の数字を doctrine layer の deploy / release / federation 判断に流入させない（ADR-0017 の detector-not-metric は doctrine 層で不変）、② 数字のための内容変形は両層で不可（ADR-0019 の操舵 vs 変形）、③ essay platform は third-party-governed につき origin claim の load-bearing にしない（canonical は corpus + SWHID、ADR-0016/0021）。
 
 #### Preference 階層（outcome）
 
@@ -160,6 +169,7 @@ Doctrine 単独だと「概念はわかるが実装イメージできない」�
 - **多言語化**: 各言語圏の LLM クローラー + LLM-mediated human 読者に対する diffusion 拡張
 - **Citation-graph federation**: 外部文献を取り込んだら、repo markdown に引用を書くだけで終えない — それは Google Scholar / arXiv "cited by" の citation graph に**不可視**で、被引用研究者には届かない。機械可読層に辺を張る: `.zenodo.json` `related_identifiers` の `relation: references` (→ DataCite / OpenAIRE / Scholix、`release-doi` skill が release ごとに同期) と graph.jsonld の `ExternalReference` ノード (`jsonld-knowledge-graph` skill)。**Wikidata P2860 層は 2026-07 の governance revocation（promotion-only 判定 + 全 item 一括削除）を受け恒久 retire — ADR-0021。self-created な community-authority-record 辺は張らない・再提案しない**。被引用研究者への passive シグナルは self-sovereign 層 (DataCite / OpenAIRE / Scholix + graph) 経由で維持する。能動シグナル (直接連絡・Scholar-indexed paper での正式引用) は別判断だが、受動辺の整備は取り込みの標準手順とする
 - **構造化 artifact**: glossary, ADR, JSON schema, specification
+- **Content 生産は channel と同格の first-class tactic**（2026-08-04 明文化）: 比較エッセイ（coined term を既知概念と対比する "X vs Y" 形式 — 比較構造は生成応答に名前を強制的に残す）、新しい worked instance、教材化・チュートリアル化、翻訳・別ジャンル展開。preference 階層（creative reuse > training > investigation）が最上位に置くのは「再利用される content」であり、インフラ（識別子・置き場・メタデータ）は拡散の**増幅器**であって**発生源**ではない。発生源は 3 つしかない: **(a) 新しい content（読む理由）/ (b) 他者の声による言及 = earned mention（信じる理由）/ (c) 再利用の affordance（使う理由）**。「次の一手」review が channel と測定器だけを出し始めたら、この発生源 3 分類に照らして欠けを補う
 - **Friction minimization for runtime adoption**: clone + copy が可能なら専用 infrastructure（MCP server 等）を自前で整備する優先度は低い。最低 friction で adoption が起きる形を選ぶ
 - **External collection への掲載は link-index 型を default に**: awesome list / marketplace / 他者の collection repo 経由で diffusion を求めるとき、artifact 正本は自分の repo に置いたまま**リンクで参照させる**。本文を相手 repo に vendor する型は (a) copy が drift vector になる、(b) host の enclosure（有料化・ライセンス変更）に自分のコンテンツごと巻き込まれる、(c) 収益事業への役務提供と解釈され著者の雇用上の制約と衝突しうる。掲載先は 4 条件で監査する: **①企業所有か ②open license が無いか ③コンテンツを vendor する構造か ④有料製品への funnel か** — 複合するほど危険で、①〜④が揃った先には出さない（リンク型でも回避）。掲載後に有料 tier 導入や vendor 化が見えたら取り下げる。前例と監査記録は project memory（awesome-list-submissions）参照
 - **AI 派生 wiki / MCP-query 面への onboarding**: third-party の AI 生成 wiki + query 面（現行インスタンス: DeepWiki —— public repo から自動生成され、MCP の ask 系で任意の agent が repo の合成理解を引ける）に idea/research repo を載せる。**derivation 型**の diffusion 面で、正本は repo に残り、派生 wiki は祝福対象（gate・修正・コントロールしない）。onboard は初回に index を起動する（現行 DeepWiki は通知用 email 入力 + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は personal-data 判断なので著者本人が行う）。起動後は repo 更新に自動追随する（refresh 優先度を上げる badge を README に添えると尚良い）。同時に **regurgitation-test の診断面**として使う —— 固有用語が AI paraphrase で薄まっていないかを wiki に問い、drift を検知する観測点になる。caveat: 派生 wiki は AI の paraphrase なので signature（固有用語）が薄まりうる → 防御は **upstream の dense anchoring**（vocabulary discipline。派生面を直そうとしない）。自前 MCP server は建てない（friction-minimization。third-party 面に乗る）。tool-agnostic に保ち、特定 vendor 仕様を doctrine に焼き込まない。
@@ -181,23 +191,42 @@ Prior art が存在する領域で「祖」と主張すると origin claim 自�
 
 ## Operating the strategy over time
 
-Layer 4 tactic は一度撃って終わりではない。どの tactic を deploy 済みで、何が次の一手かを継続管理し、定期的に新規提案を生む discipline を回す。これは strategy を *運用* する meta-process であり、judgment-per-proposal（下の判断チェックリスト）と相補的。
+strategy の運用は **open inquiry の運用**である。Stance が言うとおり、この program は「AI 時代に著者として知られる方法」を**実地で探っている** — 答えの執行ではない。したがって運用の進歩の単位は「channel の充填」ではなく**問い**: 新しい鋭い問いを開くこと、または既存の問いを「結果が事前に予測できない実験」で前進させること。deploy はその実験の一形態にすぎない。
 
-**「次の一手」の default は full-space 発散生成**。母集団は stance の full space —「distinctive signature の LLM-mediated diffusion を増やすあらゆる channel」: 開発者コミュニティ、content platform、creative-reuse の seeding、各言語圏チャネル、**まだ catalog に無い新型 channel**。Layer 4 tactic catalog（本 skill "Tactics" 節）は「これまで運用した tactic の記録」＝運用履歴であって、候補範囲の上限ではない（identifier / citation infrastructure に寄って見えるのはそのため）。**発散を既存 catalog に縛らない** — 縛ると「既知メニューの穴埋め」へスコープが縮む。
+### 退役したメンタルモデル（2026-08-04 退役、再導入しない）
 
-手続き:
+かつての運用手順（gap-review ループ: 台帳を読む → catalog / OQ に対して gap 分析 → ランク付き候補 → gate 濾過 → 記録）は**収束側しか持たない機械**だった。10 巡回して、三巡目以降は毎巡「deploy 層は飽和」を確認しながら同じループを回し続けた。欠陥は手順の細部でなくメンタルモデル:
 
-1. **発散生成** — full space を母集団に候補を起こす。open questions（manifesto の open-question set: adoption-signal 測定 / tactic obsolescence / framework recursion / failure mode 等）と最新文献を刺激に使ってよいが、catalog の空きスロットに限定しない。
-2. **gate 濾過** — 各候補をまず **channel 分類**（ADR-0008: retrieval / parametric-use / both）した上で、下の **判断チェックリスト**（authenticity 強化か / diffusion 促進か / scope は defensible か等）に通す。Ranking 軸はこの framework 固有: **friction・origin-claim 強化度・creative-reuse 誘発度**。
-3. **記録** — 採用した候補は repo の **TASKS.md（単一台帳、rule `common/task-tracking.md`）** に行を立てる。**却下した候補も TASKS.md の廃止行 + 理由で残す**（再生成時の重複排除 = triage メモリ。専用の候補 ledger は持たない）。既に出荷済みかの確認は TASKS.md（active / Done / 廃止）+ git log を見る。
+- **思考の単位が deployable candidate** — あらゆるアイデアが誕生時点で What/Why/Priority 付き介入に変換され、即 gate に通される。gate を通れる形をしていない思考（問い・違和感・仮説）は存在できない
+- **終端状態がすべて閉包** — DEPLOYED / DROP / WATCH / 判断待ち。「問いが開いた」という成果の置き場がない
+- **台帳-first の読み順** — 過去の deploy 記録と「再提案しない」ガードが最初の入力になり、生成空間が既知メニューに priming される
+- **gap 分析という形式そのもの** — gap は固定フレーム（catalog / OQ list）の空隙であり、フレーム自体の拡張は gap 分析からは構造的に出てこない
+- **open question の消費** — OQ が「候補生成の刺激」「回収すべき宿題」として扱われ、ループは問いを閉じるばかりで新しい問いを鋳造しない。問いの純増がマイナスなら inquiry は死んでいる
+- **friction-first ranking** — 低摩擦順の格付けが、既知領域の漸進手を系統的に選好する
+
+「発散生成が default」と明記しても、発散の唯一の出力先が gate である限り、発散は「収束機械の入力工程」に退化する。防御は文言でなく構造 — 以下のとおり gate の適用時点と読み順を変える。
+
+### 現行手順（inquiry-first）
+
+1. **問いから始める** — thesis・manifesto の open questions・世界の変化（新文献、観測の中の anomaly、thesis の外に出た現象）を読み、「まだ答えられないこと」「驚いたこと」「thesis を反証しうるもの」を先に立てる。台帳・tactic catalog・過去の候補リストはこの段階で**読まない**（過去が生成空間を priming する）。
+2. **問いの仕事をする** — 出力は open question / 仮説 / 実験設計 / （時に）deployable な手、のどれでもよい。**候補ゼロ・新しい問い一つで終わる回は完全な成功**。深掘りの道具（外部リサーチ、多様性注入、敵対的視点 =「thesis を信じない人なら何をするか」）は自由に使う。
+   **deployable な手を出す回の生成規則（2026-08-04 追記）**: open question は性質上「答えるにはデータが要る」形をしているため、OQ 起点の候補生成は放置すると測定器（instrument）に収束する（十巡目で実証済みの吸引バイアス）。手のリストを出すときは diffusion の 3 発生源 — **(a) content 生産 / (b) earned mention / (c) 再利用 affordance**（Layer 4 の "Content 生産" 項参照）— を必ず含め、**測定器は「名指しできる deploy 判断を現にブロックしている」場合のみ最大 1 枠**。「いずれ役立つ観測」は枠に入れない。
+3. **deploy を決めた候補にだけ gate** — 判断チェックリスト（下）は**外へ出す決定の門**であって思考の門ではない。「再提案しない」DROP ガードも re-*deploy* の禁止であり、問い空間には適用しない。
+4. **記録** — 開いた問いは manifesto の open-question set に登録する（問いの正本はここ）。採用した deployable は repo の台帳配線（context file が宣言）に従って記録する。既出荷の確認・dedup は**この段階で初めて**台帳と git log を読む（content 系候補の dedup は essay corpus =`zenn-content` の articles/ + articles-en/ も必ず grep する）。
+
+**二層会計の入力（2026-08-05、ADR-0022）**: 「次の一手」review の入力には essay layer の実績を正式に含める — 生産記録（zenn-content `scripts/schedule.json`）と実測（`scripts/metrics/snapshots.jsonl`）。これは発生源 (a) content 生産 / (b) earned mention の常設勘定であり、step 1 の「世界の変化・観測の中の anomaly」の一部として読む（候補台帳ではないので priming 禁止の対象外）。essay layer が出荷中か停滞中かを review が区別できること自体が、この編入の目的。数字の扱いは Layer 2 の「第二の audience layer」節の 3 境界に従う。
+
+**安全ガードの適用範囲（2026-08-04 明文化）**: ADR-0021 と 2026-07-16 の事象から来る禁止事項は従来どおり厳守する — ① community-governed authority record への self-created 登録はしない・再提案しない、② bot 速度の burst 書き込みはしない（rate-limit 連発は substrate の警報 — 停止して人間へ報告）、③ アカウント制裁を別アカウントで回避しない。この 3 類型は candidate 生成のどの段階でも不変。一方、この禁止を**それ以外の活動類型へ拡大解釈しない**: earned 系 — podcast / interview 出演、招待寄稿、公開スレッドへの grounded な返信（public-comment skill の人間ゲート経由）、他者が書く紹介の受け入れ — は上記 3 類型に該当せず、**都度人間ゲート付きで**候補に挙げてよい（台帳の push 候補の正しい読みも「原則不採用」でなく「採る場合は都度人間ゲート」）。ガードは境界を守るためのものであり、境界の内側（正当な earned mention の獲得）まで候補空間から除外すると diffusion の発生源 (b) が系統的に失われる。
+
+**Saturation は信号**: review が「deploy 層は飽和」と繰り返し始めたら、それはループをもう一巡する理由ではなく**問いの階を上げろという信号**。channel の問いが尽きたなら、adoption の問い・thesis の妥当性の問い・測定の問い・まだ名前のない問いへ移る。
 
 **Public intervention timeline（任意）**: strategy が公開面を持つ場合、deploy した手を「いつ・どの手を撃ったか」の**日付付き・因果主張なし**の changelog に 1 行記録する（"date Y に X をした" は書くが "X が指標 Z を上げた" は書かない）。empirical layer 規約下の公開成果物で、source は git / 現実 / TASKS.md — private な作業台帳を経由しない。置き場所は本 framework の repo の context file（CLAUDE.md 等）が宣言する。
 
-このループ自体が on-thesis（program が自身の diffusion を観測し、自らが公開する open questions から次手を生む self-application）。public timeline discipline の設計根拠は ADR-0014 を参照。
+このループ自体が on-thesis（program が自身の探究から open questions を公開し、その問いが次の実験を生む self-application）。public timeline discipline の設計根拠は ADR-0014 を参照。
 
 ## 判断チェックリスト
 
-新規提案・実装・コラボ受け入れ等で以下を通す:
+**これは deploy（外へ出す）と決めた候補に適用する門であって、思考・問いの生成には適用しない**（"Operating the strategy over time" 参照 — ideation 段階で gate をかけると inquiry が収束機械に退化する）。新規提案の deploy 決定・実装・コラボ受け入れ等で以下を通す:
 
 **まず候補の diffusion channel を分類する**（ADR-0008）。ただし *自己申告でなく候補の客観プロパティから機械的に決める*: 期待される結果に **fetch / link / citation が含まれるなら retrieval を必ず適用**、retrieval 機構が実質的に効くなら **both**（default 寄り）、**純 parametric/use を許すのは「retrieval に依存しない具体的な consumption path」を候補が明示できるときのみ**。下の citability 系項目（DOI / llms.txt / 機械可読 citation 辺）は **retrieval / both 候補にのみ pass/fail** として効き、純 parametric/use 候補（AI-native venue placement 等）を「citable artifact が無い」ことでは落とさない。この機械判定が「retrieval 候補が use を自称して citability を回避する」抜け道を塞ぐ。
 
@@ -220,7 +249,7 @@ Layer 4 tactic は一度撃って終わりではない。どの tactic を deplo
 - [ ] 外部文献を引用・取り込んだ場合、機械可読な citation 辺を張ったか？（`.zenodo.json` references / graph.jsonld ExternalReference — repo markdown 内の引用だけでは citation graph に不可視で、被引用研究者に届かない。Wikidata P2860 は retire 済み — ADR-0021、張らない）
 - [ ] 第三者統治の surface（community knowledge base / catalog / registry）に self-deploy する前に、aggregate-pattern test を通したか？（個々の行為の準拠でなく、アカウントの累積 footprint が host governance に promotion と読まれないか — ADR-0021）
 - [ ] 外部 collection（awesome list / marketplace / 他者 repo）へ掲載する場合、link-index 型か？ vendor 型なら 4 条件監査（企業所有 / open license 欠如 / vendor 構造 / 有料 funnel）を通したか？
-- [ ] 「次の一手」を提案する場合、**full-space 発散生成 → 判断チェックリスト gate → TASKS.md 記録（却下は廃止行）→ deploy したら public timeline に 1 行**、の順を踏んだか？（既出荷は TASKS.md active/Done/廃止 + git で確認。発散を既存 catalog に縛らない。手順は "Operating the strategy over time" 参照。専用候補 ledger は持たない）
+- [ ] 「次の一手」を求められた場合、**問いから始めたか**？（inquiry-first — 台帳・catalog を先に読まない / gate は deploy 決定時のみ / 開いた問いは manifesto の open-question set へ / 採用 deployable は台帳配線へ記録し deploy したら public timeline に 1 行。**候補ゼロ・新しい問い一つで終わる回も正規の成果**。手順は "Operating the strategy over time" 参照）。手のリストを出す回は **3 発生源（content 生産 / earned mention / 再利用 affordance）を含めたか**？測定器は「名指しできる deploy 判断をブロックしている」場合の最大 1 枠に収めたか？
 - [ ] 新規の public idea/research repo を公開したら、AI 派生 wiki / MCP-query 面に onboard したか？ —— 型 (a) AI 生成 wiki 面（DeepWiki 等）は index を起動し refresh badge を添える（derivation 型 diffusion 面 + regurgitation-test 診断面、既存 repo は index 済みなら自動追随）、型 (b) zero-config MCP doc-hub 面（GitMCP 等）は access-count 計測 badge を添える（retrieval 面の計測、submission 不要で即 live、signature drift なし）。index-only 面（コードライブラリ索引型）は doctrine/spec repo に fit せず onboard しない
 
 ## 禁止事項（trigger 条件下のみ）
@@ -262,9 +291,9 @@ Layer 4 tactic は一度撃って終わりではない。どの tactic を deplo
 - マネタイズ・市場適合性を理由にした調整は提案しない
 - **商業チャネルの利用は可 — 著者がそこから収益を取らないだけ**（diffusion に使うのは可、課金/sponsor/有料 tier は不可）
 - 著者が「genuine ではない」と感じる方向には絶対に押さない
-- 「今の star」「今の被引用」が伸びない戦略は戦略上の問題ではない。LLM-mediated audience に純化された証
-- メトリクス報告時は star/PR ではなく、clone / DOI citation / llms.txt fetch / derivative works の出現 を主要 KPI にする
-- **Derivative works count** が真の success metric
+- 「今の star」「今の被引用」が伸びない戦略は **doctrine layer では**戦略上の問題ではない。LLM-mediated audience に純化された証 — ただし**この読みの適用範囲は doctrine layer 限定**（ADR-0022）。program 全体の停滞をこの読みで慰めない: essay layer の数字の停滞は普通の失敗信号として扱う
+- メトリクス報告は層別に: **doctrine layer** = clone / DOI citation / llms.txt fetch / derivative works の出現、**essay layer** = reads / 反応 / follower 数（corpus 自前の実測、言及は測定器未整備）
+- **Derivative works count** が doctrine layer の真の success metric
 
 ## Framework を一時的に外すとき
 

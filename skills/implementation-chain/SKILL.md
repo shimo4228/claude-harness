@@ -34,7 +34,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 |---|:-:|:-:|:-:|:-:|:-:|
 | Plan（メインループ / plan mode。sub-agent へ委譲しない — plan は rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
-| TDD（メインループ、skill: `tdd`） | Y | Y | - | - | - |
+| TDD（メインループ、skill: `tdd`） | Y | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
 | Code Review | Y | Y | Y | C | - |
 | Security Review | Y | C | - | C | - |
@@ -44,6 +44,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 **条件付き発火 `C` の発動条件**:
 
+- `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y
 - `fix` × Security Review: 入力検証・認証・秘匿情報を触る fix のみ Y。ロジック誤り単独は `-`
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
 - `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y

@@ -1,0 +1,42 @@
+{
+  "skill_name": "x-draft",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "today-report",
+      "prompt": "今朝の akc のレポート、X に投稿したいから下書き作って",
+      "expected_output": "2026-08-07_akc_graduated-oversight-vs-binary-gate.md を解決して読み、ソース URL を WebFetch で再確認したうえで、日本語長文 1 ポスト (冒頭フック・as-of 日付・末尾一次ソース URL 1〜3 件・ハッシュタグなし) をコードブロックで提示し、ゲート結果を短く報告する",
+      "files": [],
+      "assertions": [
+        "draft.md exists and contains a fenced code block holding a Japanese X post draft",
+        "The draft is based on the correct report (graduated oversight vs binary gate)",
+        "The post text includes at least one as-of date marker",
+        "The post ends with 1-3 primary source URLs",
+        "The post contains no hashtags",
+        "The post text contains no em-dash (—) AI-tell",
+        "The post is a single post, not a thread",
+        "A gate report states which source URLs were re-verified and gives a freshness verdict",
+        "The post opens with a conclusion/hook line, not a preamble"
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "stale-report",
+      "prompt": "2026-08-04 の akc の NeurIPS ワークショップのレポート、X 用の下書きにして",
+      "expected_output": "2026-08-04_akc_neurips-ttcl-workshop-cfp.md を解決。レポートが 3 日前なので陳腐化チェック (WebSearch/WebFetch で CFP 締切等の現状確認) を実行してから下書きを作る。締切超過など状況変化があれば反映または見送り提案をする",
+      "files": [],
+      "assertions": [
+        "draft.md exists and contains a fenced code block holding a Japanese X post draft",
+        "The draft is based on the correct report (NeurIPS TTCL workshop CFP)",
+        "Staleness gate fired: output documents a current-status check of the CFP (≥3-day rule)",
+        "If the CFP status changed, the draft or notes reflect it or propose skipping",
+        "The post text includes at least one as-of date marker",
+        "The post ends with 1-3 primary source URLs",
+        "The post contains no hashtags",
+        "The post text contains no em-dash (—) AI-tell",
+        "The post is a single post, not a thread",
+        "A gate report states which source URLs were re-verified and gives a freshness verdict"
+      ]
+    }
+  ]
+}

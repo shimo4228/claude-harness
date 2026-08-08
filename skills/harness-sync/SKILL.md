@@ -118,6 +118,11 @@ repo 側 root 資産** (README / LICENSE と同格) — sync は触らない。v
 plugin.json を repo 側で手動 bump する。plugin は rules を運べない (Claude Code plugin
 仕様) ため、rule file は plugin payload 外の copy-install 経路のまま。
 
+`herdr-toolkit` (2026-08-03 公開) は同型の **skills-only plugin variant**: 固定 allowlist は
+2 skills (herdr-delegate / spawn-session) のみで rule / agent 収集ブロックを持たない。
+外部 origin の `herdr` skill 本体は Herdr 自身の integration が配るため対象外
+(ADR-0036)。
+
 ## Skill repo packaging（命名と subagent 同梱）
 
 skill repo を GitHub 公開する際の規約（正本。旧 `rules/common/skills.md` §Skill Repo
@@ -162,6 +167,7 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | rule + plugin (9 skills + 2 agents) | `scripts/sync-from-local.sh` (rule + plugin 版、固定 allowlist) | `~/.claude/rules/common/akc-cycle.md` + 対象 skills/agents |
+| `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/herdr-delegate` + `~/.claude/skills/spawn-session` |
 | `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
 | `~/MyAI_Lab/llms-txt-writer` ([repo](https://github.com/shimo4228/llms-txt-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llms-txt-writer` |

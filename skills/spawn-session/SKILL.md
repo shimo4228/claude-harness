@@ -39,9 +39,10 @@ origin: shimo4228
    - 表示名はユーザー向けの綺麗なラベルにする（例: "AAP", "Contemplative Agent"）。dir 名と user-facing 名が違う場合は user-facing 名を使う。
    - **命名規約 `<label>/<purpose>`**: ユーザーの発話にセッションの目的が含まれていれば、1〜2 語の英小文字スラッグにして表示名に付ける（「AAP のリリース作業やらせたい」→ "AAP/release"、「issue 42 直して」→ "AAP/issue-42"）。目的が読み取れなければ label のみでよい — 同名セッションが既に生きている場合の " #n" 付与は spawn.sh が自動で行う（意味づけはここ、重複解消は script、の分担）。目的を聞き返してまで埋めない。
 
-2. **起動する:**
+2. **起動する。** `spawn.sh` は本 SKILL.md と同じディレクトリにある（直置きなら
+   `~/.claude/skills/spawn-session/`、plugin 導入なら plugin の skill ディレクトリ）:
    ```
-   bash ~/.claude/skills/spawn-session/spawn.sh <解決した絶対パスの project-dir> "<表示名>"
+   bash <この skill のディレクトリ>/spawn.sh <解決した絶対パスの project-dir> "<表示名>"
    ```
 
 3. **報告する。** 返ってきたセッション名をユーザーに伝える（アプリ一覧で何をタップすればよいかの目印になる）。

@@ -157,6 +157,14 @@ git status --short
 
 全 PASS で次へ。FAIL があれば停止して user に報告。
 
+### Phase 4b: sibling backend の適合 (該当 repo のみ)
+
+`LLMBackend` 型の Protocol を外部 repo に公開している repo（現状 `contemplative-agent`）では、push の前に sibling 適合を確認する。手順・判断基準の正本は repo 内:
+
+**[`docs/runbooks/sibling-backend-conformance.md`](../../../MyAI_Lab/contemplative-agent/docs/runbooks/sibling-backend-conformance.md)**（`./scripts/check-sibling-backends.sh` を実行し、出力の読み方に従う）
+
+リリースは契約を publish する行為なので、契約変更が sibling に伝わったかを確認する最後の地点がここ。この gate が無かった 3 か月、`contemplative-agent-cloud` は呼べない状態のまま誰にも気づかれなかった（ADR-0088）。
+
 ## Phase 5: Release execution
 
 `git push` および `gh release create` は **user 明示依頼があれば実行**。既定は「user に提案して止まる」だが、user が「push して」「release を切って」と言ったら実行する。**Release object 作成 = Zenodo webhook trigger** なので irreversible (DOI 採番が動き始める)。
