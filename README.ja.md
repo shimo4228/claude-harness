@@ -154,7 +154,7 @@ uv sync  # or: pip install -e .
 
 ## 関連 repo
 
-- [shimo4228](https://github.com/shimo4228/shimo4228) — 3 研究ライン (AKC / Contemplative Agent / AAP) とエコシステムを集約するハブ repo
+- [shimo4228](https://github.com/shimo4228/shimo4228) — 5 実践ライン (AKC / Contemplative Agent / AAP / Authorship Strategy / Attention Not Self) とエコシステムを集約するハブ repo。この repo の clone/view トラフィックは[公開 dashboard](https://shimo4228.github.io/shimo4228/traffic/dashboard/) で観測できる
 - [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle) — AKC の概念と DOI 付きリリース (Zenodo: 10.5281/zenodo.19200726)
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules) — Contemplative Constitutional AI の rule 実装
 - 個別 skill repo 群 — AKC 各 skill の独立版 (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) + 隣接スキル (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem / when-code-when-llm / signal-first-research / rules-stocktake)
