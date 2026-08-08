@@ -12,8 +12,9 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **License**: MIT
 - **Repository**: github.com/shimo4228/claude-harness
 - **Source of truth**: `~/.claude/` (this repo is a manually-synced artifact)
-- **Components**: skills, agents, and rules (see [README](https://github.com/shimo4228/claude-harness#contents) for the current inventory)
-- **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`)
+- **Components**: skills, agents, rules, commit-boundary hooks, and the harness's own ADRs (see [README](https://github.com/shimo4228/claude-harness#contents) for the current inventory)
+- **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`) — applies to skills, agents, and rules; ADRs sync wholesale and hooks come from a curated allowlist
+- **Hooks directory**: `hooks/` — five PreToolUse hooks at the `git commit` boundary (secret scan, repo-owned gate runner, bandit, `ruff format --check`, review reminder) plus shared parts; wired manually into `settings.json`, install guide at `docs/hooks.md`
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
 - **Agents directory**: `agents/` — prompt generation (scout, prompt-writer) and editorial review (editor, essay-reviewer, fact-checker)
 - **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, root-cause-first debugging, skill origin tracking, knowledge staleness, and the Contemplative Constitutional AI clauses
@@ -43,7 +44,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 
 ## What is claude-harness?
 
-claude-harness is defined as the public snapshot of shimo4228's personal Claude Code harness. It bundles skills, agents, rules, and the harness's own Architecture Decision Records (ADRs), mechanically aggregated from `~/.claude/` (component files are filtered by the `origin: shimo4228` tag; the ADR directory is synced whole, as ADRs are self-authored by definition). The harness extends Anthropic's Claude Code CLI (and its IDE extensions) with custom workflows covering research-before-coding, knowledge extraction, skill auditing, AI-facing documentation (including JSON-LD knowledge graph design), human-facing writing review, authorship strategy for DOI-registered research repos, and DOI release management. See the [repository README](https://github.com/shimo4228/claude-harness#contents) for the current inventory. The repository is published under the MIT License and is intended to be forked or cherry-picked rather than receiving external pull requests.
+claude-harness is defined as the public snapshot of shimo4228's personal Claude Code harness. It bundles skills, agents, rules, commit-boundary hooks, and the harness's own Architecture Decision Records (ADRs), mechanically aggregated from `~/.claude/` (skill, agent, and rule files are filtered by the `origin: shimo4228` tag; the ADR directory is synced whole, as ADRs are self-authored by definition; hooks come from a curated allowlist, because publishing a hook is a judgement about reuse outside one machine rather than about who wrote it). The harness extends Anthropic's Claude Code CLI (and its IDE extensions) with custom workflows covering research-before-coding, knowledge extraction, skill auditing, AI-facing documentation (including JSON-LD knowledge graph design), human-facing writing review, authorship strategy for DOI-registered research repos, and DOI release management. See the [repository README](https://github.com/shimo4228/claude-harness#contents) for the current inventory. The repository is published under the MIT License and is intended to be forked or cherry-picked rather than receiving external pull requests.
 
 ## Who maintains claude-harness, and how is it synced?
 
@@ -52,6 +53,10 @@ shimo4228 (GitHub: shimo4228, email shimo4228@gmail.com) maintains claude-harnes
 ## What are the harness ADRs?
 
 The `docs/adr/` directory carries the harness's own Architecture Decision Records: dated records of why each skill, agent, and rule was adopted, retired, or reversed, including superseded decisions. Each ADR follows a fixed 6-section template (Status / Date / Context / Decision / Alternatives Considered / Consequences) and is written in Japanese. Together they form the audit trail of the harness's evolution — the decision history behind the components in this repository, failures and retractions included. They are synced from the live `~/.claude/docs/adr/` directory alongside the components; start from the [ADR index](docs/adr/README.md).
+
+## What are the commit-boundary hooks, and how are they installed?
+
+The `hooks/` directory carries five Claude Code PreToolUse hooks that fire when a Bash command contains `git commit`: a secret scan over what the command will actually commit, a runner for the repository's own `.claude/verify.sh --staged`, a bandit scan at MEDIUM severity and confidence, a `ruff format --check`, and an advisory reminder that review and verify should have run. Two shared parts ship with them: `_git-target-common.sh`, which works out which repository a command targets, and `scripts/hooks/verify_allow.py`, a direnv-style approval ledger. Unlike skills and rules, hooks are not picked up by copying files alone — they must be installed under `~/.claude` and wired into the `hooks` key of `settings.json`, for which `docs/hooks.md` supplies a copy-pasteable JSON fragment. The verify hook deliberately knows no languages and no tools, reading only its gate's exit code (0 pass, 1 block, 2 unable to check), so that tool churn cannot make the harness stale. Because a hook runs without a permission prompt, the gate is executed only at a content hash a human has approved, and the bytes that were checked are the bytes that run; the threat model is untrusted repository content, not a compromised local account. Two of the five hooks have bats tests, plus the shared extractor; verify, bandit, and ruff-format do not. The publication decision is recorded in ADR-0038.
 
 ## What is the Agent Knowledge Cycle (AKC)?
 
@@ -127,7 +132,7 @@ Prototype-before-scale is defined as a planning rule requiring a small-scale tri
 
 ## How do I install claude-harness components?
 
-Installation has two paths. The full install runs `git clone https://github.com/shimo4228/claude-harness.git ~/.claude-harness` and copies all skills, agents, and rules into `~/.claude/skills/`, `~/.claude/agents/`, and `~/.claude/rules/common/` respectively. The cherry-pick path copies a single directory — for example, `cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/`. After installation, restart Claude Code (the `claude` CLI binary) so the rules layer reloads. For the four Python-implemented skills (llms-txt-writer, skill-comply, rules-distill, skill-stocktake), run `uv sync` or `pip install -e .` inside each skill directory. Python 3.10+ is required.
+Installation has two paths. The full install runs `git clone https://github.com/shimo4228/claude-harness.git ~/.claude-harness` and copies all skills, agents, and rules into `~/.claude/skills/`, `~/.claude/agents/`, and `~/.claude/rules/common/` respectively. The cherry-pick path copies a single directory — for example, `cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/`. After installation, restart Claude Code (the `claude` CLI binary) so the rules layer reloads. For the five Python-implemented skills (llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health), run `uv sync` or `pip install -e .` inside each skill directory. Python 3.10+ is required. Hooks follow a third path: they must be copied under `~/.claude/hooks/` and `~/.claude/scripts/hooks/` — the verify hook resolves its approval ledger at a hardcoded `$HOME/.claude` path and fails open elsewhere — and then wired into `settings.json` by hand, as described in `docs/hooks.md`.
 
 ## Why are ECC-derived components excluded from this repository?
 

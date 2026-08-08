@@ -1,0 +1,21 @@
+# Formatting contract for the Python that ships in this repo — currently just
+# `scripts/hooks/verify_allow.py`. Skills with their own `pyproject.toml` keep
+# their own settings; this only governs the root-level files.
+#
+# It exists because the published files are byte-identical copies from the live
+# harness, which formats at 100 columns. Without this, `ruff format --check`
+# here would report the file as unformatted purely because ruff's default is 88 —
+# including for anyone who installs the hooks and then commits in this repo.
+#
+# Kept deliberately smaller than the harness's own root config: the rules dropped
+# here are ones whose rationale is about directories that do not exist in this
+# repo. If the two ever disagree about `line-length`, the harness is canonical.
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+# Pinned explicitly rather than left to ruff's default set, so a ruff release
+# cannot silently move the gate (the default set went 59 -> 413 rules in 0.16).
+# `S` (flake8-bandit) is deliberately absent — security is a separate gate.
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]

@@ -42,10 +42,16 @@ bash <公開repo>/scripts/sync-from-local.sh
 
 script は staging 収集 → runtime artifact 除去 (results.json, __pycache__ 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
-secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ subtree の置換、まで行う。
-docs/adr/ (集約 repo のみ、2026-08-08 追加) は origin filter を掛けない —
-ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、ディレクトリ丸ごとが対象。
-以後の ADR は公開される前提で書く。
+secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ hooks/ scripts/hooks/ tests/
+subtree の置換、まで行う。origin filter が効くのは skills/ agents/ rules/ だけで、
+残り 2 系統は別の規則で決まる (いずれも集約 repo のみ、2026-08-08 追加):
+
+- `docs/adr/` — ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、origin filter を
+  掛けずディレクトリ丸ごとが対象。以後の ADR は公開される前提で書く。
+- `hooks/` `scripts/hooks/` `tests/` — script 内の `HOOK_ALLOWLIST` に列挙したファイルだけ。
+  公開は provenance でなく curation の判断 (ADR-0038)。commit 面 hook を追加・rename したら
+  allowlist を更新する — source に無い entry があると sync は abort する。install 手順の正本は
+  公開 repo の `docs/hooks.md` で、これは subtree の**外**にある (中に置くと sync で消える)。
 script は commit しない。LLM 側で diff と secret scan の結果を確認してから次へ進む。
 
 ### 4. ドキュメント整合 (LLM 側の責務)
@@ -59,6 +65,8 @@ script は commit しない。LLM 側で diff と secret scan の結果を確認
   書かない**（No-volatile-state。churning count は焼き込むと drift する）
 - **repo の About（description）も同様に volatile-free に保つ** — 数字を入れず、
   価値提案（何を pick できるか）で記述する。`gh repo edit --description` で編集
+- `docs/hooks.md` — **script 生成ではない手書き doc**。hook の発火条件・bypass 変数・
+  `settings.json` 断片・bats 被覆を持つので、公開 hook を足す / 挙動を変えたら手で追随する
 - `llms.txt` / `llms-full.txt` — 構成変更があれば。文面の質は `llms-txt-writer` に defer
 - 集約 repo README の「Upstream components」節も **script 生成**（marker 間を apply 時に
   自動再生成、外部 origin の名前のみ・ECC トップリンクのみ）— 手で編集しない

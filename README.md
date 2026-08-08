@@ -2,14 +2,14 @@ Language: English | [日本語](README.ja.md)
 
 # claude-harness
 
-Public snapshot of the Claude Code harness (skills / agents / rules) that shimo4228 uses day-to-day.
+Public snapshot of the Claude Code harness (skills / agents / rules / hooks) that shimo4228 uses day-to-day.
 
-A mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`. ECC-derived material (`origin: ECC` / `ECC-customized`) and auto-extracted artifacts (`origin: auto-extracted`) are excluded.
+Skills, agents, and rules are a mechanical aggregation of assets tagged `origin: shimo4228` from `~/.claude/`; ECC-derived material (`origin: ECC` / `ECC-customized`) and auto-extracted artifacts (`origin: auto-extracted`) are excluded. ADRs are synced wholesale, and hooks come from a curated allowlist — publication there is a judgement about reuse outside this machine, not about who wrote the file.
 
 ## Positioning
 
 - **Audience**: Claude Code (CLI + IDE extensions) users, and developers researching agent skill / rule ecosystems
-- **Source of truth**: `~/.claude/` is canonical; this repo is a one-way export produced by [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) (origin filter → secret scan → subtree replacement)
+- **Source of truth**: `~/.claude/` is canonical; this repo is a one-way export produced by [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) (origin filter + hook allowlist → secret scan → subtree replacement)
 - **License**: MIT. Free to copy, modify, and redistribute. Forking and customizing for personal use is encouraged
 
 ## Contents
@@ -110,6 +110,10 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | Treats external LLM-domain knowledge as going stale on a one-week scale — never assert tooling, specs, or going rates from memory; check at search time, date the evidence, and attach an expiry condition to any recommendation |
 <!-- END GENERATED: rules-table -->
 
+### Hooks
+
+`hooks/` carries five PreToolUse hooks that run at the `git commit` boundary — a secret scan, a runner for the repo's own machine gate, a bandit scan, a `ruff format --check`, and a review reminder — plus the two parts they need. Several ADRs argue about their internals, so the code lives here rather than leaving those decisions pointing at nothing. Unlike skills and rules, hooks need manual wiring into `settings.json`, and three of the five have no test. Install steps, the approval model behind the verify gate, and what is deliberately left out: [docs/hooks.md](docs/hooks.md).
+
 ### Design decisions (ADRs)
 
 `docs/adr/` records why this harness is shaped the way it is: adoptions, retirements, and reversals, each as a dated Architecture Decision Record synced from the live harness alongside the components. The skills, agents, and rules above are the *what*; the ADRs are the *why* — the audit trail behind the harness, failures included. Start from the [ADR index](docs/adr/README.md). ADRs are written in Japanese.
@@ -125,6 +129,8 @@ cp -r ~/.claude-harness/skills/* ~/.claude/skills/
 cp -r ~/.claude-harness/agents/* ~/.claude/agents/
 cp -r ~/.claude-harness/rules/common/* ~/.claude/rules/common/
 ```
+
+Hooks are separate: they must live under `~/.claude` and be wired into `settings.json` by hand. See [docs/hooks.md](docs/hooks.md).
 
 ### Cherry-pick
 

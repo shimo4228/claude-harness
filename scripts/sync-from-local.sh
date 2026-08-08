@@ -5,9 +5,18 @@
 # Collects components whose origin marker matches ORIGIN (frontmatter
 # `origin: <value>` or HTML comment `<!-- origin: <value> -->`), stages
 # them, runs a secret scan, then replaces the managed subtrees
-# (skills/ agents/ rules/ docs/adr/) wholesale. docs/adr/ carries no
-# origin markers: ADRs record this harness's own design decisions and
-# are self-authored by definition, so the whole directory is synced. LICENSE and llms*.txt are never
+# (skills/ agents/ rules/ docs/adr/ hooks/ scripts/hooks/ tests/) wholesale.
+#
+# Two subtrees are NOT origin-filtered:
+#   docs/adr/  — ADRs record this harness's own design decisions and are
+#     self-authored by definition, so the whole directory is synced.
+#   hooks/ scripts/hooks/ tests/  — membership comes from HOOK_ALLOWLIST below.
+#     Publication here is a *curation* judgement (is this reusable outside this
+#     machine?), not a *provenance* fact (who wrote it). Most hooks in the live
+#     harness are self-authored AND ~/.claude-specific, so an origin filter would
+#     conflate the two and publish code that cannot run anywhere else. ADR-0038.
+#
+# LICENSE and llms*.txt are never
 # touched; README.md / README.ja.md are rewritten ONLY inside their
 # `<!-- BEGIN/END GENERATED: ... -->` marker regions (the upstream-components
 # manifest and the skill/agent/rule tables) — all prose outside markers is
@@ -28,7 +37,33 @@ set -euo pipefail
 SOURCE_DIR="${HARNESS_SYNC_SOURCE:-$HOME/.claude}"
 ORIGIN="${HARNESS_SYNC_ORIGIN:-shimo4228}"
 TARGET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBTREES=(skills agents rules docs/adr)
+SUBTREES=(skills agents rules docs/adr hooks scripts/hooks tests)
+
+# Commit-surface hooks that are useful in any repo, plus the parts they need to
+# run and be verified. Paths are relative to SOURCE_DIR and land at the same
+# relative path in the publication repo. Deliberately excluded: hooks that only
+# ever fire inside ~/.claude (harness-lint-precommit.sh + harness_lint.py),
+# harness-internal automations (episode-log guards, contemplative-name-reminder,
+# herdr-agent-state), and the non-commit surface (validate-bash, docs-prewrite,
+# bats-autorun, log-*-usage) which is a separate publication judgement.
+#
+# Because these live in wholesale-replaced subtrees, dropping an entry here makes
+# the file disappear from the publication repo on the next sync, showing up as a
+# deletion in `git diff` — removal stays reviewable rather than silently lingering.
+# Any hand-written companion doc therefore belongs OUTSIDE these subtrees
+# (docs/hooks.md), or it would be wiped on every run.
+HOOK_ALLOWLIST=(
+  hooks/_git-target-common.sh
+  hooks/secret-scan-precommit.sh
+  hooks/verify-precommit.sh
+  hooks/bandit-precommit.sh
+  hooks/ruff-format-precommit.sh
+  hooks/review-chain-notice.sh
+  scripts/hooks/verify_allow.py
+  tests/git-target-extraction.bats
+  tests/secret-scan-precommit.bats
+  tests/review-chain-notice.bats
+)
 
 DRY_RUN=0
 [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]] && DRY_RUN=1
@@ -46,7 +81,8 @@ fi
 # --- staging ---
 STAGING="$(mktemp -d)"
 trap 'rm -rf "$STAGING"' EXIT
-mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/adr"
+mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/adr" \
+  "$STAGING/hooks" "$STAGING/scripts/hooks" "$STAGING/tests"
 
 has_origin() { head -15 "$1" | grep -q "origin: $ORIGIN"; }
 
@@ -76,6 +112,19 @@ done < <(grep -rl "origin: $ORIGIN" "$SOURCE_DIR/rules/" 2>/dev/null || true)
 for adr in "$SOURCE_DIR"/docs/adr/*.md; do
   [[ -f "$adr" ]] || continue
   cp "$adr" "$STAGING/docs/adr/"
+done
+
+# hooks + their shared parts + their bats: explicit allowlist, no origin filter.
+# A missing entry aborts rather than skipping: a renamed or deleted hook must be
+# reconciled here, not silently published as a subset (the wholesale replace
+# would then delete the file from the repo with no diff explaining why).
+for rel in "${HOOK_ALLOWLIST[@]}"; do
+  if [[ ! -f "$SOURCE_DIR/$rel" ]]; then
+    echo "ABORT: HOOK_ALLOWLIST entry not found in source harness: $rel" >&2
+    echo "       Reconcile scripts/sync-from-local.sh with $SOURCE_DIR." >&2
+    exit 1
+  fi
+  cp -p "$SOURCE_DIR/$rel" "$STAGING/$rel"
 done
 
 # --- prune runtime artifacts from the staged payload ---

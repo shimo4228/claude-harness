@@ -1,10 +1,13 @@
 # claude-harness
 
-> Public snapshot of the Claude Code harness (skills, agents, rules, and
-> the harness's own ADRs) used day-to-day by shimo4228. Mechanically
-> aggregated from `~/.claude/` for assets tagged `origin: shimo4228`.
-> Excludes ECC-derived material (`origin: ECC` / `ECC-customized`) and
-> auto-extracted artifacts.
+> Public snapshot of the Claude Code harness (skills, agents, rules,
+> commit-boundary hooks, and the harness's own ADRs) used day-to-day by
+> shimo4228. Skills, agents, and rules are mechanically aggregated from
+> `~/.claude/` for assets tagged `origin: shimo4228`, excluding
+> ECC-derived material (`origin: ECC` / `ECC-customized`) and
+> auto-extracted artifacts. ADRs sync wholesale; hooks come from a
+> curated allowlist, since publishing a hook is a judgement about reuse
+> outside this machine rather than about who wrote it.
 >
 > Bundles skills covering research-before-coding, knowledge extraction,
 > skill auditing, AI-facing documentation, human-facing writing review,
@@ -56,7 +59,6 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [substack-publishing](skills/substack-publishing/SKILL.md): publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery
 - [hf-sync](skills/hf-sync/SKILL.md): mirrors graph.jsonld-bearing research repos to Hugging Face Datasets — flattens the graph and uploads alongside graph.jsonl
 - [citation-sync](skills/citation-sync/SKILL.md): audits the three citation layers of a research repo (docs, .zenodo.json, graph.jsonld) and syncs them bottom-up
-- [when-code-when-llm](skills/when-code-when-llm/SKILL.md): decision framework for choosing deterministic code vs LLM processing — structural-vs-semantic axis, false-positive test, worked examples in both directions
 - [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session inside Herdr, visible in the mobile app session list
 - [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
 - [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md): verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact (paper, knowledge graph, DOI repo)
@@ -102,6 +104,17 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
 - [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
 - [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
+
+## Hooks
+
+- [Hook guide](docs/hooks.md): install and operating guide for the commit-boundary hooks — per-hook firing conditions, block conditions, bypass environment variables, the copy-pasteable `settings.json` fragment, the content-hash approval model behind the verify gate, test coverage, and what is deliberately not published
+- [secret-scan-precommit.sh](hooks/secret-scan-precommit.sh): PreToolUse hook that scans what a `git commit` command will actually commit (not merely what is staged when the hook fires) for credentials, preferring detect-secrets over a regex fallback
+- [verify-precommit.sh](hooks/verify-precommit.sh): PreToolUse hook that runs the repo's own `.claude/verify.sh --staged` and reads only its exit code — the harness knows no languages and no tools, so it cannot go stale as tooling turns over
+- [bandit-precommit.sh](hooks/bandit-precommit.sh): PreToolUse hook running bandit at MEDIUM severity + MEDIUM confidence over the staged (index) content of `.py` files; stands down if the repo owns a `.claude/verify.sh`
+- [ruff-format-precommit.sh](hooks/ruff-format-precommit.sh): PreToolUse hook running `ruff format --check` over staged `.py` content — checks only, never rewrites, because per-edit auto-formatting raced with in-progress edits
+- [review-chain-notice.sh](hooks/review-chain-notice.sh): advisory PreToolUse hook that asks whether review and verify ran before commit / revert / merge
+- [_git-target-common.sh](hooks/_git-target-common.sh): shared extractor for which repositories a command will commit to — drops backslash escapes and quoted spans before segment parsing so a commit message cannot redirect the scan, and returns every matching repo rather than one, since a single answer leaves one half of a compound commit unexamined
+- [verify_allow.py](scripts/hooks/verify_allow.py): direnv-style approval ledger — only a human-approved content hash of a repo's gate is executed, and the checked bytes are the executed bytes
 
 ## Design decisions (ADRs)
 

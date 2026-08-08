@@ -30,6 +30,8 @@ ADR-0006 / 0007 で職業を特定していた語を、職業を特定しない�
 
 無害化を `-c diff.external=` (空 config) で行わないのが要点: 空文字は git が空コマンドを外部 diff として実行しようとして `git diff` 自体を壊す。ADR-0034 が当初提案した `GIT=(… -c diff.external= …)` 配列は、`git diff` を通さない薄い reminder hook でしか使われず未検証だった誤りである。正しい無害化は config ではなく diff 呼び出し側の `--no-ext-diff`。
 
+> **訂正 (2026-08-08、ADR-0038 の公開前レビュー)** — 本節の「同種を全掃」は達成できていなかった。`--no-ext-diff` は `diff.<driver>.textconv` を止めない (それには `--no-textconv` が要る)。`diff.external` を封じた結果 git が textconv driver へ落ちるようになり、repo 内 `.git/config` + `.gitattributes` から任意コマンドが実行される状態が残っていた (実測で発火を確認)。ADR-0038 が `--no-textconv` を diff を呼ぶ 3 hook 全部に追加し、secret-scan に回帰テストを足して閉じた。**1 つ塞ぐと同じクラスの兄弟が表に出る**という形は、この層で今後も繰り返し得る。
+
 ## Alternatives Considered
 
 - **ADR を公開しない (現状維持)** — value-layer harness engineering の audit 層を伏せたまま「engineered だ」と主張することになり、README で昇格させた主張と非整合。却下。
@@ -46,7 +48,7 @@ ADR-0006 / 0007 で職業を特定していた語を、職業を特定しない�
 **容易になること:**
 - value-layer harness engineering が「宣言」でなく「監査可能な実践」であることを、判断履歴という一次証拠で示せる。README の主張と公開物が整合する。
 - clone している層が、構成の背後にある「なぜ (採用・退役・撤回)」を追える。失敗・撤回を含む trail がそのまま差別化コンテンツになる (open-failure disclosure と整合)。
-- commit 面 hook 群の敵対的 .git/config 経路が実際に塞がり、台帳 T-GIT-HOSTILE-CONFIG / T-SIGPIPE-HEAD-PIPE を閉じられる。Security Response Protocol 5 (同種を全掃) がコード上完了する。
+- commit 面 hook 群の敵対的 .git/config 経路が実際に塞がり、台帳 T-GIT-HOSTILE-CONFIG / T-SIGPIPE-HEAD-PIPE を閉じられる。(訂正: Security Response Protocol 5「同種を全掃」は本 ADR では未完だった — `diff.<driver>.textconv` が残っていた。ADR-0038 で解消。上記 Decision 3 の訂正注記を参照。)
 
 **困難になること / 残余リスク:**
 - 以後の ADR は「公開される前提」で書く制約が乗る。職業・第三者情報・未修正脆弱性の手法は書く前に自己検閲が要る。今回の書きぶりでは実質的な変化は小さいが、公開前レビューを release 手順に組み込むのが安全側 (`sync-from-local.sh` の secret scan は API key 形状しか見ず、職業・第三者情報・脆弱性手法は検出しない)。

@@ -2,14 +2,14 @@ Language: [English](README.md) | 日本語
 
 # claude-harness
 
-shimo4228 が日常的に使っている Claude Code ハーネス (skills / agents / rules) の公開版。
+shimo4228 が日常的に使っている Claude Code ハーネス (skills / agents / rules / hooks) の公開版。
 
-`~/.claude/` 配下から `origin: shimo4228` タグを持つ資産を機械的に集約したもの。ECC 由来 (origin: ECC / ECC-customized) や自動抽出物 (origin: auto-extracted) は含まない。
+skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグを持つ資産を機械的に集約したもので、ECC 由来 (origin: ECC / ECC-customized) や自動抽出物 (origin: auto-extracted) は含まない。ADR は丸ごと、hooks は curated allowlist で同期する — hooks の公開可否は「誰が書いたか」ではなく「このマシンの外で再利用できるか」の判断。
 
 ## 位置付け
 
 - **対象**: Claude Code (CLI + IDE extensions) のユーザー、および agent skill / rule エコシステムを研究する開発者
-- **運用方針**: `~/.claude/` が source of truth、この repo は [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) による一方向エクスポート (origin filter → secret scan → subtree 置換)
+- **運用方針**: `~/.claude/` が source of truth、この repo は [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) による一方向エクスポート (origin filter + hook allowlist → secret scan → subtree 置換)
 - **ライセンス**: MIT。自由にコピー・改変・再配布可能。fork して自分用にカスタマイズする使い方を歓迎
 
 ## 中身
@@ -110,6 +110,10 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | LLM 分野の外部知識は 1 週間スケールで陳腐化するという世界観を既定にする — 手法・仕様・相場観を記憶から断言せず検索時点で照合し、根拠に as-of 日付を、推奨に失効条件を付ける |
 <!-- END GENERATED: rules-table -->
 
+### Hooks
+
+`hooks/` には `git commit` 境界で走る PreToolUse hook 5 本 — secret scan、repo 自身の機械ゲートの起動、bandit scan、`ruff format --check`、レビュー確認 — と、それらが必要とする共有部品 2 つが入っています。複数の ADR がこれらの内部挙動を論じているため、判断だけが宙に浮かないようコードも置いています。skills / rules と違い hooks は `settings.json` への手動配線が要り、5 本中 3 本にはテストがありません。導入手順・verify ゲートの承認モデル・意図的に公開していないものは [docs/hooks.md](docs/hooks.md) にあります。
+
 ### 設計判断 (ADR)
 
 `docs/adr/` には、このハーネスがなぜ今の形なのか — 採用・退役・方針転換 — を日付付きの Architecture Decision Record として記録し、コンポーネントと一緒に実働ハーネスから同期しています。上の skills / agents / rules が「何があるか」だとすれば、ADR は「なぜそうなったか」— 失敗も含めた監査証跡です。[ADR index](docs/adr/README.md) から読めます。
@@ -125,6 +129,8 @@ cp -r ~/.claude-harness/skills/* ~/.claude/skills/
 cp -r ~/.claude-harness/agents/* ~/.claude/agents/
 cp -r ~/.claude-harness/rules/common/* ~/.claude/rules/common/
 ```
+
+hooks は別扱いです。`~/.claude` 配下に置いたうえで `settings.json` へ手動で配線してください。手順は [docs/hooks.md](docs/hooks.md) にあります。
 
 ### つまみ食い
 
