@@ -63,6 +63,9 @@ HOOK_ALLOWLIST=(
   tests/git-target-extraction.bats
   tests/secret-scan-precommit.bats
   tests/review-chain-notice.bats
+  tests/verify-precommit.bats
+  tests/bandit-precommit.bats
+  tests/ruff-format-precommit.bats
 )
 
 DRY_RUN=0
@@ -132,7 +135,13 @@ find "$STAGING" \( -name results.json -o -name '*.log' -o -name '*.pyc' \
   -o -name .DS_Store -o -name .coverage -o -name '.coverage.*' \) -delete
 find "$STAGING" \( -name __pycache__ -o -name .pytest_cache -o -name .venv \
   -o -name node_modules -o -name .mypy_cache -o -name .ruff_cache \
-  -o -name htmlcov \) -type d -prune -exec rm -rf {} + 2>/dev/null || true
+  -o -name htmlcov -o -name results \) -type d -prune -exec rm -rf {} + 2>/dev/null || true
+# `results` is skill-comply's run-output directory (generated specs + reports).
+# It was being published because this script copies from the filesystem while the
+# source harness gitignores it — so files the canonical repo declines to track
+# were landing here, carrying absolute `/Users/<name>/…` paths from the machine
+# that produced them. Pruning the directory is the fix; the path guard below is
+# the backstop for the next artifact nobody thought about.
 
 # --- frontmatter YAML validation (GitHub / SkillsMP parse strictly; abort on invalid) ---
 if command -v python3 >/dev/null 2>&1 && python3 -c 'import yaml' >/dev/null 2>&1; then
@@ -165,6 +174,28 @@ SECRET_RE='sk-ant-api[0-9A-Za-z_-]+|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{
 if hits="$(grep -rEl "$SECRET_RE" "$STAGING" 2>/dev/null)"; then
   echo "ABORT: potential secrets detected in staged payload:" >&2
   echo "$hits" >&2
+  exit 1
+fi
+
+# --- home-directory path scan (abort on any hit) ---
+# The secret scan above only knows credential shapes. It says nothing about
+# `$HOME/MyAI_Lab/...` expanded to a literal, which leaks this machine's
+# filesystem layout and the private project names sitting in it. Eleven such
+# files reached the public repo before this check existed (2026-08-08), all of
+# them generated artifacts nobody read line by line. Aborting rather than
+# warning: a warning printed in the middle of a sync is exactly what got missed.
+#
+# Matched as the **literal value of $HOME**, not a `/Users/<name>/` shape. The
+# generic pattern fires on placeholders that are entirely fine to publish
+# (`/Users/username/` in a reviewer checklist, `/Users/me/` in a test fixture,
+# `/home/linuxbrew/` as a Homebrew constant), and a guard that cries wolf is a
+# guard that gets bypassed. What is actually at stake is this machine's paths.
+#
+# To publish such a path deliberately, mark the line with the pragma below.
+if hits="$(grep -rFn "$HOME/" "$STAGING" 2>/dev/null | grep -v 'pragma: allow-home-path')"; then
+  echo "ABORT: absolute home-directory paths in staged payload" >&2
+  echo "       (rewrite as \$HOME-relative, or mark the line 'pragma: allow-home-path'):" >&2
+  printf '%s\n' "$hits" | sed "s|^$STAGING/|  |" >&2
   exit 1
 fi
 

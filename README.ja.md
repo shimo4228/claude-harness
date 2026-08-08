@@ -112,7 +112,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 
 ### Hooks
 
-`hooks/` には `git commit` 境界で走る PreToolUse hook 5 本 — secret scan、repo 自身の機械ゲートの起動、bandit scan、`ruff format --check`、レビュー確認 — と、それらが必要とする共有部品 2 つが入っています。複数の ADR がこれらの内部挙動を論じているため、判断だけが宙に浮かないようコードも置いています。skills / rules と違い hooks は `settings.json` への手動配線が要り、5 本中 3 本にはテストがありません。導入手順・verify ゲートの承認モデル・意図的に公開していないものは [docs/hooks.md](docs/hooks.md) にあります。
+`hooks/` には `git commit` 境界で走る PreToolUse hook 5 本 — secret scan、repo 自身の機械ゲートの起動、bandit scan、`ruff format --check`、レビュー確認 — と、それらが必要とする共有部品 2 つが入っています。複数の ADR がこれらの内部挙動を論じているため、判断だけが宙に浮かないようコードも置いています。skills / rules と違い hooks は `settings.json` への手動配線が要ります。5 本すべてに bats があり、いずれも負のコントロール（性質を壊した hook に対してテストが実際に落ちること）で確認済みです。導入手順・verify ゲートの承認モデル・意図的に公開していないものは [docs/hooks.md](docs/hooks.md) にあります。
 
 ### 設計判断 (ADR)
 

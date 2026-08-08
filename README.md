@@ -112,7 +112,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 
 ### Hooks
 
-`hooks/` carries five PreToolUse hooks that run at the `git commit` boundary — a secret scan, a runner for the repo's own machine gate, a bandit scan, a `ruff format --check`, and a review reminder — plus the two parts they need. Several ADRs argue about their internals, so the code lives here rather than leaving those decisions pointing at nothing. Unlike skills and rules, hooks need manual wiring into `settings.json`, and three of the five have no test. Install steps, the approval model behind the verify gate, and what is deliberately left out: [docs/hooks.md](docs/hooks.md).
+`hooks/` carries five PreToolUse hooks that run at the `git commit` boundary — a secret scan, a runner for the repo's own machine gate, a bandit scan, a `ruff format --check`, and a review reminder — plus the two parts they need. Several ADRs argue about their internals, so the code lives here rather than leaving those decisions pointing at nothing. Unlike skills and rules, hooks need manual wiring into `settings.json`. All five carry bats tests, each checked with a negative control — the hook mutated to remove the property, the test confirmed to fail against the mutant. Install steps, the approval model behind the verify gate, and what is deliberately left out: [docs/hooks.md](docs/hooks.md).
 
 ### Design decisions (ADRs)
 

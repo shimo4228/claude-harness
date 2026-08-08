@@ -17,7 +17,7 @@ Obsidian Vault 内の LLM wiki に問い合わせ、**出典 `[[ ]]` を明記�
 ## Vault パス（固定）
 
 ```
-VAULT="/Users/shimomoto_tatsuya/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vault"
+VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vault"
 ```
 
 - 概念ページ: `$VAULT/wiki/concept/<概念名>.md`

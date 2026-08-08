@@ -152,7 +152,11 @@ plant_untracked_secret() {
   # ran it would create this marker file. --no-ext-diff must keep it from firing.
   git -C "$REPO" config diff.external "touch $TMP/pwned #"
   run_hook "git -C $REPO commit -m 'chore: sync'"
-  blocked
+  # `|| return 1`: bats only inspects the final command's status, so a bare
+  # `blocked` here would be swallowed by the `[ ! -e ]` that follows and the
+  # "does not blind the scan" half would silently stop being checked
+  # (T-BATS-MULTI-ASSERT).
+  blocked || return 1
   [ ! -e "$TMP/pwned" ]
 }
 
@@ -168,7 +172,7 @@ plant_untracked_secret() {
   printf '*.env diff=evil\n' > "$REPO/.gitattributes"
   git -C "$REPO" add .gitattributes
   run_hook "git -C $REPO commit -m 'chore: sync'"
-  blocked
+  blocked || return 1
   [ ! -e "$TMP/pwned-textconv" ]
 }
 

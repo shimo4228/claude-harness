@@ -7,8 +7,7 @@ published here rather than leaving those decisions pointing at nothing.
 
 These are not a framework. They are the hooks one person actually runs, warts
 included: the inline comments are in Japanese, so are the stderr messages you
-will see when a gate goes quiet, they date their own bug fixes, and three of the
-five have no test.
+will see when a gate goes quiet, and they date their own bug fixes.
 
 ## What each one does
 
@@ -159,19 +158,32 @@ content*, not a compromised local account — the same trust level as `~/.zshrc`
 bats ~/.claude/tests/
 ```
 
-Two of the five hooks are covered, plus the shared extractor. The tests hardcode
-`$HOME/.claude/hooks/…`, so they only pass after the install above.
+All five hooks are covered, plus the shared extractor. The tests hardcode
+`$HOME/.claude/hooks/…`, so they only pass after the install above, and they
+invoke each hook as `bash <path>` — the way `settings.json` does — rather than
+depending on a mode bit that production never consults.
 
 | Test | Pins |
 |---|---|
 | `git-target-extraction.bats` | Repo extraction: the quoted-span and escaped-quote hijacks, the `git -C … add && git -C … commit` spelling, and that a compound commit yields *both* targets in either order |
 | `secret-scan-precommit.bats` | That the scan target comes from what the command will commit rather than from what is staged when the hook fires; that a hostile `diff.external` or `diff.textconv` neither runs nor blinds the scan; that a secret in either half of a compound commit is caught |
+| `verify-precommit.bats` | That an unapproved gate is **never executed** and never blocks; that editing a gate revokes its approval; that a gate symlinked outside the repo is refused; that any unexpected non-zero exit blocks rather than waving the commit through; and that the gate is handed `--staged`, the repo root as cwd, and `VERIFY_REPO_ROOT` |
+| `bandit-precommit.bats` | That the **index** is scanned rather than the working tree; that MEDIUM+ blocks while LOW does not; that an executable `.claude/verify.sh` triggers the stand-down and a non-executable one does not; fail-soft when no scanner resolves |
+| `ruff-format-precommit.bats` | That a blocked commit leaves the working tree and index byte-identical (check only, never rewrite); that the repo's own `ruff.toml` / `pyproject.toml` is honoured; that each repo of a compound commit is judged by its own config |
 | `review-chain-notice.bats` | Which command shapes trigger the advisory |
 
-**`verify-precommit.sh`, `bandit-precommit.sh`, and `ruff-format-precommit.sh`
-have no tests.** They are exercised daily but not pinned. The multi-target and
-`--no-textconv` changes they received are covered only indirectly, through the
-extractor and secret-scan suites.
+Every claim above was checked with a negative control — the hook was mutated to
+remove the property, and the test confirmed to fail against the mutant. A test
+that also passes against the broken version is pinning nothing, which is easy to
+ship by accident and impossible to notice later.
+
+One honest exception, found that way: `bandit-precommit.sh` and
+`ruff-format-precommit.sh` ask git only for `diff --name-only` and
+`git show :<path>`, and **neither converts content**, so their `--no-textconv`
+tests pass with the flag removed. The flag and its test are kept there as
+defence in depth for the day either grows a content diff. In
+`secret-scan-precommit.sh`, which does diff content, the vector was live and the
+test does pin the fix.
 
 ## Not published here
 

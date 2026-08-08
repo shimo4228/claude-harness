@@ -50,7 +50,21 @@ install 手順・各 hook の発火条件表・bypass 環境変数・`verify_all
 
 回帰テストを 12 本追加する (抽出器 8 / secret-scan 4)。**負のコントロールで、修正前のコードに対して実際に落ちることを確認する** — 通るだけのテストは何も pin していない。bats は 150 → 162 本。
 
-**5. 非公開のまま残すものを明示する。**
+続けて、無テストだった verify / bandit / ruff-format にも bats を新設する (67 本、計 229 本)。ADR-0037 が残余リスクとして記録し、本 ADR が当初「別タスク」として先送りした被覆の非対称をここで閉じる。テストは hook を `bash <path>` で起動する — `settings.json` と同じ経路であり、production が参照しない実行権ビットに依存しない (公開 5 hook のうち 2 本は実行権が無く、直接 exec するテストは環境依存で落ちる)。
+
+**5. sync の公開ペイロードから run 成果物を除き、`$HOME` 実値の混入を abort させる** (同日追記)。
+
+bats 追加後の sync で、`skills/skill-comply/results/` の生成物が公開されようとしていた。作業ツリーを grep すると 11 ファイルが `/Users/<name>/…` を含んでいた。
+
+**実際に公開されていたのは 2 ファイルだった** (`wiki-query` / `wiki-harvest` の VAULT パス、公開値は iCloud Obsidian Vault のパス 1 種のみ)。残る 9 件は `skills/skill-comply/.gitignore` の `results/*.md` で公開 repo 側でも追跡外であり、**commit にも remote にも到達していない** — sync が作業ツリーへ書き込んだだけの状態だった。最初の見立て (11 件公開済み) は git 履歴を確認する前の作業ツリー grep によるもので、誤りだった。
+
+とはいえ配線上の問題は残る。(a) sync script は**ファイルシステムから複製する**ため、正本が gitignore している成果物でも作業ツリーへ載る。今回は受け側の `.gitignore` が偶然同じ名前で拾って救われたが、その `.gitignore` は skill 自身のもので、公開の安全弁として設計されたものではない。(b) secret scan は credential 形状しか見ず、絶対パスを検出しない — 実際に公開された 2 ファイルは複数回の sync を素通りしている。
+
+対処: `results` ディレクトリを prune 対象に加え、staging ペイロード全体に対する `$HOME` 実値の検査を追加して**検出時は abort** する (warning では見落とす — 今回それで見落とした)。`wiki-*` の VAULT は `$HOME` 相対へ書き換える。検査は `/Users/<name>/` という**形**ではなく `$HOME` の**実値**で照合する: 形で照合すると reviewer checklist の `/Users/username/`、test fixture の `/Users/me/`、Homebrew 定数の `/home/linuxbrew/` に発火し、狼少年になった guard は迂回される。守るべきはこのマシンのパスである。
+
+git 履歴には残る (force push はしない)。
+
+**6. 非公開のまま残すものを明示する。**
 
 `harness-lint-precommit.sh` + `harness_lint.py` (`~/.claude` repo 専用発火)、episode-log guards・`contemplative-name-reminder.sh`・`herdr-agent-state.sh` (harness 内部専用)。非 commit 面 (`validate-bash.sh` / `docs-prewrite.sh` / `bats-autorun.sh` / `log-*-usage.sh`) は別判断として今回は見送る。
 
@@ -65,7 +79,7 @@ install 手順・各 hook の発火条件表・bypass 環境変数・`verify_all
 - **抽出器を右端一致にする (単一値のまま)** — 変更が小さく、正当な書き方 (`git -C R add -A && git -C R commit`) と ADR の worked example では確かに改善する。しかし実測の結果、右端は左端と**対称**で、順序を入れ替えるだけで同じ回避が成立した。「修正した」と書いて公開すれば、textconv と同じ構図 (塞いだと書いてある隣に穴) を再生産する。却下。
 - **抽出器の欠陥を直さず、コメントから手法記述だけ削る** — 公開面から exploit の手引きは消えるが、欠陥は残り、台帳も閉じない。ADR-0037 が「redact より修正」を選んだ前例と非整合。却下。
 - **verify-precommit.sh も全ターゲット化する** — 一貫はするが、ゲートの**実行**を複数 repo に広げるのは意味論の変更 (どの repo の verify.sh がどの staged 内容を見るのか曖昧になる) であり、承認台帳という第 2 の防壁が既にある。読み取りと実行で扱いを分けるのは意図的。却下。
-- **未整備の verify / bandit / ruff-format 用 bats を書いてから公開する** — 被覆が揃うが、公開作業に実装タスクが 3 本ぶら下がりスコープが膨らむ。被覆の非対称は `docs/hooks.md` に明記して読者に渡す方が、公開を遅らせるより誠実。却下 (別タスクとして残す)。
+- **未整備の verify / bandit / ruff-format 用 bats を書いてから公開する** — 当初は却下した (公開作業に実装タスクが 3 本ぶら下がりスコープが膨らむ。被覆の非対称は `docs/hooks.md` に明記して読者に渡す方が、公開を遅らせるより誠実)。**同日中に撤回し、3 本とも書いた** — 公開直後に書くのと公開前に書くのとで成果物は変わらず、「無テストのまま公開した」という記述を残す理由が無くなったため。負のコントロールが 2 件の空テストを暴いたので、後回しにしていたら被覆があるつもりの空白が残っていた。
 
 ## Consequences
 
@@ -78,8 +92,10 @@ install 手順・各 hook の発火条件表・bypass 環境変数・`verify_all
 **困難になること / 残余リスク:**
 - **利用者は `settings.json` を手で編集する必要がある。** skills / rules の「コピーすれば効く」と違い、hooks は配線が要る。`docs/hooks.md` の JSON 断片で摩擦は下げたが、ゼロにはならない。
 - **`~/.claude` 固定の再配置制約。** `verify-precommit.sh` は `$HOME/.claude/scripts/hooks/verify_allow.py` をハードコードしており、別の場所に置くと台帳が見つからず**警告だけ出して全 commit を素通しする**。fail-open なので、利用者が「ゲートが効いている」と誤認する余地がある。`docs/hooks.md` に明記したが、コードで担保していない。
-- **5 本中 3 本が無テスト。** verify / bandit / ruff-format には bats が無い。ADR-0037 が残余リスクとして記録したテスト被覆の非対称を、公開面がそのまま引き継ぐ。今回 3 本に入れた全ターゲット化と `--no-textconv` も、抽出器と secret-scan の suite 経由でしか間接的に守られていない。
+- ~~**5 本中 3 本が無テスト。**~~ **解消済み (同日追記)。** verify / bandit / ruff-format にも bats を追加し、5 本すべてが被覆された (bats 162 → 229)。ADR-0037 が残余リスクとして記録したテスト被覆の非対称は閉じた。各テストは**負のコントロール**で検証している — hook から当該性質を取り除いた変異体に対してテストが実際に落ちることを確認した (15 項目)。これは形式ではない: 最初に書いた負のコントロール 3 件のうち 1 件は control 自身の不備 (このマシンには `timeout` があり、変異が分岐 1 に当たっていなかった) で、残り 2 件は**テストが実際に何も pin していない**ことを暴いた。
+- **`--no-textconv` が load-bearing なのは secret-scan だけ。** bandit / ruff-format は `diff --name-only` と `git show :<path>` しか使わず、どちらも内容変換を伴わないため、フラグを外してもテストは通る (負のコントロールで確認)。両者のフラグとテストは、将来これらが内容 diff を持ったときのための defence in depth として残す。ADR-0037 の訂正注記と本 ADR の Context は「クラスとして残っていた」という記述であり、3 hook すべてが到達可能だったという意味ではない。
 - **`.claude/verify.sh` を持つ未承認 repo では Python 系 3 ゲートが同時に黙る。** verify は未承認なので実行せず、bandit / ruff は実行権の有無だけを見て譲る (承認台帳を参照しない)。それぞれ stderr には出るが、どれも block しない。挙動は変えず `docs/hooks.md` に明記する選択を取った — 台帳参照を足すと commit ごとに python3 起動が増え、この 2 hook は元々退役予定だから。
+- **公開済みの 2 ファイル (wiki-*) は HEAD からは消えるが、git 履歴には残る。** force push はしない判断。履歴に残るのは iCloud Vault のパス 1 種で、氏名・メールは元々全 commit の author として公開しているため、巻き戻しに見合わない。台帳 T-PUBLISH-HISTORY-PATHS。
 - **敵対的 `.git/config` クラスは「全掃した」と再び言えるわけではない。** 今回 textconv が出たのは external を塞いだ副作用であり、同じ形 (1 つ塞ぐと兄弟が表に出る) は今後も起こり得る。この層は自分を検査できず、回帰テストが唯一の防壁である (ADR-0034 の指摘) という構造は変わっていない。
 - **抽出器は依然 regex による shell 解析である。** 全ターゲット化はセグメント単位の取りこぼしを閉じたが、shell 文法の完全な解析ではない。実行を伴う経路が承認台帳を第 2 の防壁として持つ設計は、この限界を前提に置いたまま維持する。
 - **公開コードが非公開ファイルを参照する dangling reference が残る。** hook のコメントが `rules/common/security.md` (origin: ECC-customized で非公開) と `.notes/` を指す。公開時に書き換えると**公開版と実働版が乖離する**ため、あえて sanitize せず `docs/hooks.md` に断り書きを置いた。ADR 丸ごと同期のリンク切れ (ADR-0037) と同種の受容。
