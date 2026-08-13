@@ -39,7 +39,7 @@ code reviewer が探す欠陥とは検査対象が直交する。
 検査する層が下流に存在するか** に置く。
 
 1. 下流に意味的検査層が無い、または誤りが不可逆な agent は opus —
-   code-reviewer / python-reviewer / swift-reviewer / security-reviewer / adr-reviewer /
+   code-reviewer / ~~python-reviewer~~（2026-08-13: [ADR-0039](0039-retire-python-reviewer-simplify-in-chain.md) で退役） / swift-reviewer / security-reviewer / adr-reviewer /
    paper-reviewer / architect / source-fidelity-checker
 2. 下流に人間 gate または別 agent の検査がある判断系は sonnet — 記事 / README / 論文の
    レビュアー群（editor / essay-reviewer / readme-reviewer / clarity-reviewer /
@@ -109,7 +109,7 @@ code vs LLM 判定に反し、精度が上がらない箇所に費用を払う�
   静かに崩れるため、両者は同時に見直す必要がある
 - エイリアス表記を lint で強制するため、再現性のために特定世代へ pin したい agent が
   現れた場合は `harness_lint.py` の検査ごと見直す必要がある
-- reviewer 3 種（code-reviewer / python-reviewer / security-reviewer）は feat / fix /
+- reviewer 3 種（code-reviewer / python-reviewer / security-reviewer。2026-08-13: python-reviewer は [ADR-0039](0039-retire-python-reviewer-simplify-in-chain.md) で退役し 2 種）は feat / fix /
   refactor のほぼ全 chain で発火するため、sonnet → opus の引き上げ分だけ Claude 側の
   コストが増える。増加量は未測定。Alternative で否定したのは「頻度が高いから高コスト」
   という見積もりの立て方であって、コストの存在そのものではない

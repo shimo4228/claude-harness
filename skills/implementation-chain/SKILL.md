@@ -36,6 +36,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 | Phase 0 External Research | Y | - | - | - | - |
 | TDD（メインループ、skill: `tdd`） | Y | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
+| Simplify（built-in `/simplify`、quality 軸の cleanup 適用） | Y | C | - | - | - |
 | Code Review | Y | Y | Y | C | - |
 | Security Review | Y | C | - | C | - |
 | Cross-Model Review | Y | Y | C | - | - |
@@ -45,6 +46,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 **条件付き発火 `C` の発動条件**:
 
 - `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y
+- `fix` × Simplify: 新規ロジックを含む fix のみ Y。typo・設定値のみの diff は `-`
 - `fix` × Security Review: 入力検証・認証・秘匿情報を触る fix のみ Y。ロジック誤り単独は `-`
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
 - `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y
@@ -56,7 +58,9 @@ commit / push / 公開の権限は task request と substrate が持つ。この
   - CLI / user-facing 挙動の変更 → README / llms.txt
   - 数値クレームの規律: 集約カウントの正本は 1 箇所のみ（他はポインタ）。機械検証可能な doc↔実体対応は prose 修正でなくテストで固定する（検出は code、削除判断は人間）
 
-ユーザー起動の built-in review は追加 gate ではなく任意の上乗せ。自動 reviewer の代替にしない。
+ユーザー起動の built-in review（`/code-review` 等）は追加 gate ではなく任意の上乗せで、自動 reviewer の
+代替にしない。例外は Simplify — built-in `/simplify` は chain の正規ステップとして quality 軸を担う
+（ADR-0039。T-004「自動枠は変更しない」の部分反転）。
 
 ## Review / Cleanup ステップ（実装直後・Verify 前）
 
@@ -65,11 +69,15 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 | category | 起動先 |
 |---|---|
-| Code Review | `code-reviewer`。Python は `python-reviewer`、Swift は `swift-reviewer` も追加 |
+| Code Review | `code-reviewer`。Swift は `swift-reviewer` も追加 |
 | Security Review | `security-reviewer` |
 | Cross-Model Review | skill: `codex-review` |
 | ADR / Record Review | `adr-reviewer` + skill: `codex-review` |
 
+Simplify は Review 群の**前**に実行する（`/simplify` は fix を working tree に適用するため、
+reviewer には適用後の diff を見せる）。bug 軸は Code Review、quality 軸は Simplify の分担で、
+`python-reviewer` は退役した — 決定論チェックは Verify が、Pythonic idiom は substrate と
+`code-reviewer` が吸収済み（[ADR-0039](../../docs/adr/0039-retire-python-reviewer-simplify-in-chain.md)）。
 Refactor Clean では built-in simplify の後に `refactor-cleaner` agent を起動する。
 TDD は Plan の後、Verify は全レビュー後（この 2 つは逐次必須）。
 

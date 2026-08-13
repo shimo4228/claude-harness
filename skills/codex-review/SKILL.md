@@ -19,7 +19,7 @@ sub-agents / Workflow for parallel throughput; use this only where a second
 ## When to Use
 
 - Before commit on a non-trivial `feat` / `fix`, as a parallel reviewer next to
-  `code-reviewer` / `python-reviewer` and `security-reviewer`.
+  `code-reviewer` and `security-reviewer`.
 - When the user wants a second opinion from a non-Claude model on a diff.
 - High-stakes or error-prone changes where decorrelated review pays off.
 - High-stakes **prose** diffs before publishing/deposit (public-repo README,
@@ -85,6 +85,19 @@ Next action: <continue | stop | re-plan>
 - **Early stop on CRITICAL** — if a confirmed finding is CRITICAL, halt the chain
   and report to the user (planning.md 早期停止条件).
 - Run this **in parallel** with the in-Claude reviewers, then merge verdicts.
+
+### Prose 裁定基準（2026-08-13 追加。エッセイ・記事レビューの fold 用）
+
+Codex は prose に対して系統的な癖を持つ（2026-08-13 の欲望枯渇エッセイで実測 —
+同一箇所のヘッジ済み思弁を 3 回連続で「根拠不足」指摘）。裁定の既定:
+
+| finding の型 | 既定 | 根拠 |
+|---|---|---|
+| ヘッジ済み思弁への「根拠不足」（「私の観察が正しければ」「〜ではないでしょうか」等の仮説明示つき一般化） | **不採用** | エッセイの発見調は仮説明示つきの思弁を許す。学術基準の外挿は channel 誤適用 |
+| カテゴリすり替えの検出（実行↔動機、分量↔価値、活動↔欲望の混同） | **常に採用検討** | Codex の最良の貢献領域。同エッセイで「実行が離れる ≠ 欲望が離れる」を唯一検出 |
+| 歴史的・概念的接続の過大主張（「X は Y の続きを描いた」型） | **常に採用検討** | 帰属の正確性は channel を問わず必須（Fromm ≠ ケインズの続き、の実測例） |
+| 文体規約違反（register 混在・意図外の常体） | **採用**（意図的ブレイク一覧と照合の上で） | 機械的に正しい |
+| 構造再設計の提案（抜本処置） | **著者判断へ昇格** | 二節分割案が著者採用された実績。ただし構成は著者の領分 |
 
 ## Failure Modes
 

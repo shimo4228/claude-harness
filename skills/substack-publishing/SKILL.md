@@ -11,7 +11,7 @@ origin: shimo4228
 
 ## いつ使うか
 
-writing-ecosystem の review（`essay-reviewer` / `fact-checker`）通過後。bilingual なら `ja-to-en-translation` の後。
+writing-ecosystem の review 通過後。**Substack は英語チャンネル**（2026-08-12 改定）: 日本語アイデアエッセイの正本（初出）は content repo の `note/`（note.com へ手動投稿）で、Substack へはその正本を `ja-to-en-translation` で訳した EN 版を出す。旧モデル（Substack 初出 → note 転載）は廃止。
 
 ## defer 先（本 skill では再掲しない）
 
@@ -100,9 +100,9 @@ osascript -e 'set the clipboard to (read (POSIX file "/path/cover.png") as «cla
 
 ## 6. 公開後: LLM corpus へミラー
 
-Substack を canonical にしつつ、LLM クローラーに読ませるため content / corpus repo にミラーする。
+EN 版の初出は Substack、JA 正本は content repo の `note/`（note.com が JA の公開チャンネル）。EN 版も LLM クローラーに読ませるため content / corpus repo にミラーする。
 
-- 置き場は **`substack/` フォルダ**（content repo 内に新設）。
+- 置き場は **`substack/` フォルダ**（content repo 内）。新規ファイルは frontmatter なし・冒頭 `# 見出し` 形式（2026-08-12 著者指示。旧ファイルの Zenn 風 frontmatter は名残）。
   - **`drafts/` には置かない**（"下書き" 扱いで corpus 上 deprioritize されるため）
   - **その repo の記事公開フォルダ（例: Zenn の `articles/`）にも置かない**（媒体への誤公開を避ける）
   - 媒体の「下書きフラグ」frontmatter（例: Zenn `published: false`）は付けない（下書き signal を避ける）
@@ -170,10 +170,10 @@ Substack を canonical にしつつ、LLM クローラーに読ませるため c
 ## ワークフロー上の位置
 
 ```
-draft (article-writing)
-  → review (essay-reviewer / editor + fact-checker)
-  → [translate (ja-to-en-translation)  ※bilingual なら]
+draft (article-writing) — JA 正本は content repo の note/ に置き、note.com へ手動投稿
+  → review (essay-reviewer + fact-checker + 明瞭性レビュー + cross-model レビュー)
   → 出典編入 (writing-ecosystem: Citation & Sources Workflow)
+  → translate (ja-to-en-translation) — note 正本から EN 版を作る（Substack は EN チャンネル）
   → substack-publishing ←ここ
       ├ MD→HTML 変換 → Substack に貼る（Title / Subtitle / body 分け）
       ├ タグ spine + カバー画像プロンプト

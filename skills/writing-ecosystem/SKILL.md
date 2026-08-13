@@ -1,6 +1,6 @@
 ---
 name: writing-ecosystem
-description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。article-writing / editor / essay-reviewer / fact-checker の役割境界と使い分け、Craft 規約（文の技術）、AI slop 禁止リスト（日英）、Voice 規約（だ/である × 発見調）、エッセイ 4 段構成、タイトル規約を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
+description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。article-writing / editor / essay-reviewer / fact-checker の役割境界と使い分け、Craft 規約（文の技術）、AI slop 禁止リスト（日英）、Voice 規約（発見調。語尾は公開チャンネル規約優先 — note/Zenn = ですます、規約のない場は だ/である）、エッセイ 4 段構成、タイトル規約、アイデアエッセイのチャンネル構成（note = JA 正本 / Substack = EN 翻訳）を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
 compatibility: Designed for Claude Code (or similar agent products). Orchestrates Claude Code subagents bundled in this repo's agents/ directory.
 user-invocable: true
 origin: shimo4228
@@ -29,7 +29,9 @@ origin: shimo4228
 | **Review: 品質** | `editor` agent | tech 記事の構造・コード・AI slop・用語 | tech 記事レビュー時 |
 | **Review: 論理** | `essay-reviewer` agent | idea 記事の論理構成・過積載・トーン | idea 記事レビュー時 |
 | **Review: 事実** | `fact-checker` agent | 事実主張の Web 検証 | 公開前検証時 |
-| **Publish** | `substack-publishing` skill | Substack 公開 + LLM corpus ミラー | human essay を Substack に出すとき |
+| **Publish** | `substack-publishing` skill | Substack（EN）公開 + LLM corpus ミラー | note 正本の英訳を Substack に出すとき |
+
+**アイデアエッセイのチャンネル構成（2026-08-12 著者指示で改定）**: 日本語アイデアエッセイの正本（初出）は **note**（content repo の `note/`、ですます調・frontmatter なし）。**Substack は英語チャンネル**で、note 正本を `ja-to-en-translation` で訳した EN 版を出す。旧モデル（Substack 初出 → note 転載）は廃止。エッセイのレビューは実用記事と同じ厚さで回す — `essay-reviewer` + `fact-checker` + 初見読者の明瞭性レビュー + cross-model レビュー（project 側に agent 定義がある場合はそれに従う。例: zenn-content の `zenn-clarity-reviewer` / codex-review）。
 | **Shared** | `writing-ecosystem` skill | AI slop / Voice / エコシステム map | 執筆 + レビュー時（自動発火） |
 | **Overlay** | `<project>/.claude/rules/*.md` | プラットフォーム固有ルール | プロジェクト内作業時のみ |
 
@@ -262,9 +264,9 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 
 ## Voice & Tone Rules
 
-### 文体: だ/である調 × 発見調
+### 文体: 発見調（語尾は公開チャンネル規約が優先）
 
-type（tech / idea）にかかわらず、**だ/である調 × 発見調** で統一する。
+type（tech / idea）にかかわらず **発見調** で書く。語尾は公開チャンネルの文体規約が優先する — note・Zenn は ですます（2026-08-12 時点で JA の公開チャンネルは両方 ですます）。**だ/である調** はチャンネル規約のない場（研究 repo 内エッセイ・ドラフト等）の既定。発見調・未解決の正直さ・結論の問い化は語尾にかかわらず維持する。
 
 | 使う表現（発見調） | 避ける表現（宣言調） |
 |---------------|-------------------|

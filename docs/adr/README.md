@@ -44,6 +44,7 @@
 | [0036](0036-herdr-toolkit-skills-only-plugin.md) | herdr 系スキルは skills-only plugin (herdr-toolkit) として公開する | accepted | 2026-08-03 |
 | [0037](0037-publish-harness-adrs-and-remediate-git-hostile-config.md) | harness ADR を claude-harness へ公開し、前提として commit 面 hook の敵対的 .git/config を無害化する | accepted | 2026-08-08 |
 | [0038](0038-publish-curated-commit-hooks.md) | commit 面 hook を curated allowlist で claude-harness へ公開し、前提として抽出器の 2 経路と textconv を塞ぐ — 公開判定は provenance でなく curation。公開前レビューが secret gate の 2 バイパスと 1 RCE を実測、右端一致は左端と対称のため全ターゲット走査へ | accepted | 2026-08-08 |
+| [0039](0039-retire-python-reviewer-simplify-in-chain.md) | python-reviewer を退役し、chain を bug 軸 (code-reviewer) × quality 軸 (/simplify) に直交化 — 決定論チェックは verify.sh、idiom は substrate が吸収 (Downward dissolution) | accepted | 2026-08-13 |
 
 ## Template
 

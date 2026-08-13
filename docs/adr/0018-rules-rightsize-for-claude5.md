@@ -29,6 +29,7 @@ Anthropic の Thariq (@trq212) が 2026-07-25 に公開した記事「The new ru
 **常駐 5,789 → 2,314 words（-60%）、20 → 14 ファイル**（計測対象は自動ロードされる `rules/**/*.md` と `CLAUDE.md`。`rules/README.md` は常駐しないので含まない）。削減分は消さず、既存 skill へ吸収するか新設 skill へ降格した。判断表そのものは失っていない。
 
 退役させた一般論の**既存の吸収先**（code-reviewer の指摘により明記。いずれも本 diff より前から存在）: Error Handling / Input Validation / File Organization / Code Quality Checklist → `agents/code-reviewer.md`・`agents/architect.md`・`agents/python-reviewer.md` / OWASP チェックリスト → `agents/security-reviewer.md` / Hook Types の定義 → `hooks/README.md` / TDD の RED→GREEN→REFACTOR → `agents/tdd-guide.md`。つまり退役分は「別の場所で決定論的または agent 経由で既に当たる内容の、常駐文章版」である。
+（2026-08-13 注記: 吸収先のうち `agents/python-reviewer.md` は [ADR-0039](0039-retire-python-reviewer-simplify-in-chain.md) で退役した）
 
 Troubleshooting Test Failures（`testing.md`）は当初どこにも着地させずに削除してしまい、code-reviewer が MEDIUM として検出した。`skills/tdd/SKILL.md` に移設して修正済み（テストが落ちたときだけ必要な手順なので常駐から skill への降格が正しい着地）。
 
@@ -82,3 +83,4 @@ Troubleshooting Test Failures（`testing.md`）は当初どこにも着地させ
 - **Chain Matrix が確率発火に変わる**。skill の自発トリガーは実質上限 ≒ 40%（既知の測定値）なので、`implementation-chain` が呼ばれないまま実装が進む可能性がある。→ `planning.md` に 1 行ポインタを残し、`user-invocable: true` で `/implementation-chain` からも到達可能にした。`skill-comply` で発火率を測定し、立たない場合は `planning.md` のポインタを命令形（「chain を組むときは `/implementation-chain` を呼ぶ」）に変える fallback を用意する。
 - **`akc-cycle.md` がローカル版と AKC repo 配布版で乖離する**。配布版は「skill 未導入でも動く自己完結版」という設計意図を持つため、圧縮を上流に同期してはならない。ローカルファイル冒頭にこの区別を明記した。`harness-sync` で公開 repo に同期する際は、この 1 ファイルが差分として扱われることに注意する。
 - Python の慣行が確率発火になる。→ `python-patterns` は Python ファイル編集時の description トリガーを持ち、`python-review` skill / `python-reviewer` agent が review 段で決定論的に当たる。ruff / pyright は hook / LSP で機械強制されており、退役したのは「機械が既に強制している内容の文章版」である。
+  （2026-08-13 注記: `python-review` skill / `python-reviewer` agent は [ADR-0039](0039-retire-python-reviewer-simplify-in-chain.md) で退役し、この反論の agent 経路は失効した。残るのは機械強制層と `code-reviewer` + built-in `/simplify`）
