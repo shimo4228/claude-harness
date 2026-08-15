@@ -34,7 +34,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 |---|:-:|:-:|:-:|:-:|:-:|
 | Plan（メインループ / plan mode。sub-agent へ委譲しない — plan は rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
-| TDD（メインループ、skill: `tdd`） | Y | C | - | - | - |
+| TDD（メインループ、skill: `tdd`） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
 | Simplify（built-in `/simplify`、quality 軸の cleanup 適用） | Y | C | - | - | - |
 | Code Review | Y | Y | Y | C | - |
@@ -45,6 +45,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 **条件付き発火 `C` の発動条件**:
 
+- `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（2026-08-15 に `Y` から降格、[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない。判断に迷ったら Y
 - `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y
 - `fix` × Simplify: 新規ロジックを含む fix のみ Y。typo・設定値のみの diff は `-`
 - `fix` × Security Review: 入力検証・認証・秘匿情報を触る fix のみ Y。ロジック誤り単独は `-`
@@ -79,7 +80,7 @@ reviewer には適用後の diff を見せる）。bug 軸は Code Review、qual
 `python-reviewer` は退役した — 決定論チェックは Verify が、Pythonic idiom は substrate と
 `code-reviewer` が吸収済み（[ADR-0039](../../docs/adr/0039-retire-python-reviewer-simplify-in-chain.md)）。
 Refactor Clean では built-in simplify の後に `refactor-cleaner` agent を起動する。
-TDD は Plan の後、Verify は全レビュー後（この 2 つは逐次必須）。
+TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（順序として逐次必須なのは Verify のみ）。
 
 ## Writing Chain（`writing` 種別のルーティング）
 
