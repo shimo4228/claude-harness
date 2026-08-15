@@ -11,6 +11,7 @@ skill / agent / rule には `origin` を付ける。YAML frontmatter が無い�
 | `shimo4228` | 自作 |
 | `ECC` | ECC 未改変 |
 | `{org/repo}` | 外部 repo |
+| `community` | 出所を特定しない外部導入 |
 | `auto-extracted` | learn-eval 出力 |
 | `{origin}-customized` | 外部由来を内容編集 |
 

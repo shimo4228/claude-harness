@@ -14,7 +14,7 @@
 | Rule | 常駐する情報 |
 |---|---|
 | `agents.md` | agent catalog と外部 agent の境界 |
-| `akc-cycle.md` | Scaffold Dissolution |
+| `akc-cycle.md` | Scaffold Dissolution / ADR は一時的判断（Emptiness） |
 | `coding-style.md` | global harness の変更対象 |
 | `contemplative-axioms.md` | identity / values（verbatim） |
 | `debugging.md` | rate limit の実証済み policy signal |

@@ -96,7 +96,7 @@ Close with a one-line count — total assets, and how many Keep / Update / Retir
 
 **Confirm one by one** (config-gc's confirm-each design). Walk the non-Keep candidates sequentially; show the evidence first, then ask `[y/n/skip]`. **Never batch the approval** — "Retire all 6? [y/n]" defeats the design. `skip` records the verdict without acting.
 
-- **Retire** — soft-delete first, never an autonomous hard-delete (coding-style.md Reversibility Gate). Rename to `<file>.disabled` or move to a repo-local trash; real deletion is a later, separate human step. Offer `adr-writer` when the retirement encodes a decision worth recording.
+- **Retire** — soft-delete first, never an autonomous hard-delete. Rename to `<file>.disabled` or move to a repo-local trash; real deletion is a later, separate human step. Offer `adr-writer` when the retirement encodes a decision worth recording.
 - **Update** — apply mechanical fixes inline after confirm (repair a broken `on:` trigger, fix a dead `uses:` / `run:` ref, delete a stale config key). Flag prose-heavy content rewrites (a runbook describing a changed process) for the user or a writing skill rather than guessing the new content.
 - **Merge** — consolidate into the surviving asset, then soft-delete the absorbed one.
 

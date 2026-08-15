@@ -1,6 +1,6 @@
 ---
 name: hf-sync
-description: Hugging Face Datasets mirror sync for graph.jsonld-bearing research repos. `<Owner/dataset>` を引数に取り、cwd の graph.jsonld を flatten して graph.jsonl と一緒に HF dataset へ upload する。`release-doi` の tag push 後、または ad-hoc resync で起動する。Local の `hf login` token を使うので GitHub Actions / CI auth は不要。
+description: Hugging Face Datasets mirror sync for graph.jsonld-bearing research repos. `<Owner/dataset>` を引数に取り、cwd の graph.jsonld を flatten して graph.jsonl と一緒に HF dataset へ upload する。`release-doi` の tag push 後、または ad-hoc resync で起動する。Local の `hf auth login` token を使うので GitHub Actions / CI auth は不要。
 user-invocable: true
 origin: shimo4228
 ---
@@ -20,7 +20,7 @@ origin: shimo4228
 - `graph.jsonld` を持たない repo（HF mirror が存在しない）
 - HF dataset 自体がまだ作成されていない project（先に `hf repo create <Owner/dataset> --repo-type dataset` で repo を作る）
 - HF clone dir (`$HF_CLONE_BASE/<dataset>/`) が存在しない（先に `mkdir -p ~/MyAI_Lab/hf-datasets/<dataset>` で staging dir を作る。HF 側の README.md と過去 snapshot がここに置かれる)
-- `hf login` していない / token が write scope を持たない（先に `hf auth login` で token を入れ直す）
+- `hf auth login` していない / token が write scope を持たない（先に `hf auth login` で token を入れ直す）
 
 ## Execution
 
@@ -43,13 +43,22 @@ cwd 制約: `graph.jsonld` が存在する project root で実行する。
 
 **Source repo は汚さない**: `graph.jsonl` は HF clone 側でだけ生成・存在し、source の git tree には残らない。
 
-Auth は `~/.cache/huggingface/token`（`hf login` で保存されたもの）を `hf` CLI が自動で読む。
+Auth は `~/.cache/huggingface/token`（`hf auth login` で保存されたもの）を `hf` CLI が自動で読む。
 
 ## Repo mapping
 
 各 project の GitHub repo と HF dataset の対応は project ごとに違う。Skill 本体には embed しない（portability 保持）。Mapping は project の `CLAUDE.md` または同等の場所に記録しておき、起動時にコピペで引数に渡す。
 
 shimo4228 系の現行 mapping は `~/MyAI_Lab/shimo4228/CLAUDE.md` の "HF Datasets mirror" section を参照。
+
+新規 project で記録を起こすときの format（2026-08-15 に `jsonld-knowledge-graph` から移設）:
+
+```markdown
+| GitHub repo | HF dataset |
+|---|---|
+| `owner/project-a` | `Owner/project-a` |
+| `owner/hub` | `Owner/research-program-hub` |
+```
 
 ## Related skills
 

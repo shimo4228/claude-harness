@@ -63,7 +63,7 @@ Before any other detection, verify that `docs/CODEMAPS/` (if present) reflects t
 | Signal | Detection | Threshold |
 |---|---|---|
 | A. Timestamp lag | `git log -1 --format=%ct -- docs/CODEMAPS/` vs source dirs' latest commit ctime | source newer by **≥ 7 days** |
-| B. File count drift | `find <src>/ -type f -name '*.{ts,py,go,rs,swift}' \| wc -l` vs the `Files scanned: N` in the newest CODEMAPS freshness header | **±20%** delta |
+| B. File count drift | `find <src>/ -type f \( -name '*.ts' -o -name '*.py' -o -name '*.go' -o -name '*.rs' -o -name '*.swift' \) \| wc -l` vs the `Files scanned: N` in the newest CODEMAPS freshness header (`find -name` does **not** brace-expand — `'*.{ts,py}'` silently matches 0 files and forces a −100% hit) | **±20%** delta |
 | C. Missing CODEMAPS | `docs/CODEMAPS/INDEX.md` absent, or only `architecture.md` exists | immediate hit |
 
 If `docs/CODEMAPS/` does not exist at all and the project is small (< 30 source files), skip Phase 0 silently — codemaps are optional, not mandatory.

@@ -76,8 +76,9 @@ origin: shimo4228
 対象ディレクトリの導出:
 
 ```bash
-# cwd に対応する projects ディレクトリ（cwd の / を - に変換したスラグ）
-ls ~/.claude/projects/$(pwd | tr '/' '-')/*.jsonl
+# cwd に対応する projects ディレクトリ（Claude Code は / だけでなく _ と . も - に変換する。
+# tr '/' '-' だけだと存在しないパスを見にいく）
+ls ~/.claude/projects/$(pwd | tr '/_.' '-')/*.jsonl
 # 複数 repo にまたがる作業では、関与した各 repo のスラグを対象に加える
 ```
 

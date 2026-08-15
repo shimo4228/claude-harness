@@ -73,7 +73,7 @@ grep に載っていない生態系が出てきたらそれを Step 2 にその�
 | **test** | テストランナーとカバレッジ測定 |
 
 各 category について **`search-first` skill を呼ぶ**（WebSearch を直接叩かない —
-Phase 0 のエントリポイント規約。`rules/common/planning.md`）。問いには必ず
+依存追加・自作 utility の前は search-first、が `rules/common/planning.md` の配線）。問いには必ず
 「**2026 年時点で**」に相当する時点指定と「既存の代替から乗り換えが起きていないか」を含める。
 記憶している定番を答えにしない — この skill が防ごうとしているのはまさにそれ。
 
@@ -186,8 +186,8 @@ tool: pyright ==1.1.x
 2. `.claude/verify.md` の各 category について、**再調査トリガーに該当するものだけ**
    search-first で引き直す（全件引き直すと毎回コストが出る）
 3. 差分を提示: 現行 → 候補、乗り換えコスト、据え置きの理由
-4. 判断はユーザー。**自動で乗り換えない**（ツール変更は repo 全体の diff を生む
-   不可逆に近い変更 — `rules/common/coding-style.md` の Reversibility Gate）
+4. 判断はユーザー。**自動で乗り換えない** — ツール変更は repo 全体の diff を生み、
+   元に戻すコストが導入コストを上回る
 
 ## アンチパターン
 

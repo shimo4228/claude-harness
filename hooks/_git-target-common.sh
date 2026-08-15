@@ -46,6 +46,9 @@ git_target_dirs() {
   # 供給側は `%s\n` であって `%s` ではない: 末尾に改行が無いと read は最終セグメントを
   # 読んだうえで非ゼロを返し、ループ本体が実行されないまま抜ける (単一セグメントのコマンドが
   # 丸ごと取りこぼされ、抽出は常に空になる)
+  # 下の `tr ';&|'` 向けの抑止。ディレクティブは複合コマンド全体の前にしか置けないので
+  # (`done` の直前に置くと SC1123 でパーサが停止する)、`while` の前でループ全体を覆う
+  # shellcheck disable=SC2020  # 意図どおりの文字集合置換 (3 区切り文字 → いずれも改行)
   while IFS= read -r seg; do
     [[ "$seg" =~ $s_re ]] || continue
     dir="${BASH_REMATCH[1]/#\~/$HOME}"
@@ -54,7 +57,6 @@ git_target_dirs() {
       [[ "$d" == "$dir" ]] && { seen=1; break; }
     done
     (( seen )) || found+=("$dir")
-  # shellcheck disable=SC2020  # 意図どおりの文字集合置換 (3 区切り文字 → いずれも改行)
   done < <(printf '%s\n' "$stripped" | tr ';&|' '\n\n\n')
 
   # `-C` が 1 つも無い場合だけ、先頭の `cd <path> &&` を対象と見なす

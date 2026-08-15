@@ -29,7 +29,7 @@ Look for:
    - **Global** (`~/.claude/skills/learned/`): general-purpose patterns useful across 2+ projects (bash compatibility, LLM API behavior, debugging techniques, etc.)
    - **Project** (`.claude/skills/learned/` in current project): knowledge specific to this project (quirks of a particular config file, project-specific architecture decisions, etc.)
    - When in doubt, choose Global (moving it into a project later is easier than the reverse)
-   - 正本: `rules/common/skills.md` の Knowledge Placement「Global vs Project」（ADR-0025）。この節はその learned-skill 向け実例
+   - 正本: [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md)。この節はその learned-skill 向け実例（旧正本の `rules/common/skills.md` は ADR-0035 の rules 縮退で origin schema のみに縮退した）
 
 4. Draft the skill file using this format:
 

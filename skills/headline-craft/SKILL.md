@@ -16,9 +16,7 @@ origin: shimo4228
 
 ## 実証知見（技法の根拠）
 
-- **具体的・直接的が勝つ**: Hacker News 分析では曖昧・一般的なタイトルは伸びず、salesy（売り込み調）は最悪。内容へ直行する具体タイトルが基準線
 - **ポジティブな飾り言葉は CTR を下げる**: Upworthy の約 10.5 万 headline 変種の分析（Robertson et al. 2023, Nature Human Behaviour）で、ポジティブ語の追加は消費率を下げた。「素晴らしい」「強力な」系の形容は削るのが正しい。※同研究はネガティブ語 1 語あたり CTR +2.3% も示したが、**恐怖・怒り駆動は誠実さ規約違反なので採らない**（問題の率直な記述と煽りは別物 — 「壊れている」は禁止、「〜でハマった」は事実なら可）
-- **断定文 ≳ 疑問文**: HN の長期分析で statement が question をわずかに上回る。問いの形は知的関心に訴える場面（why/how）に限定して使う
 - **好奇心ギャップは情報の欠落**: Loewenstein の information gap 理論。知っていることと知りたいことの差が開かせる。ただし**本文が必ずギャップを埋めること** — 埋めない好奇心ギャップがクリックベイトの定義
 - **日本語圏の参考値**: Qiita 全記事分析でバズ記事はタイトル 20–36 字に集中。上限（Zenn 50–60）より短い方に最適帯がある
 - **トピック中心 → 結果駆動への進化**: タイトルは戦いの 90%。詩的タイトル（意味不明で素通り）と教科書調（「〜の分析」= 宿題感）が二大失敗形。具体的数値・明示的な価値・人間の声の 3 点が指を止める（Kaguura 2026, 90 日で 20,585 購読者の実践知）
@@ -71,7 +69,6 @@ origin: shimo4228
 
 - [The Upworthy Research Archive (Matias et al., Nature Scientific Data 2021)](https://www.nature.com/articles/s41597-021-00934-7) — 32,487 headline A/B テストの公開データ
 - [Negativity drives online news consumption (Robertson et al., Nature Human Behaviour 2023)](https://www.nature.com/articles/s41562-023-01538-4) — ネガティブ語 +2.3%/語・ポジティブ語は低下
-- [Words growing or shrinking in Hacker News titles (Variance Explained)](http://varianceexplained.org/r/hn-trends/) / [On Bad Hacker News Titles (HubSpot)](https://product.hubspot.com/blog/on-bad-hacker-new-titles) — HN タイトル傾向の定量分析
 - [Qiita の全記事分析｜バズる投稿を考察する](https://qiita.com/mtitg/items/25e3d0d75429dcfeb199) — 日本語圏のタイトル字数帯
 - Loewenstein, G. (1994). The psychology of curiosity — information gap 理論
 - [How I Got 20,585 Substack Subscribers in 90 Days (Kaguura Gichuru, The Write Path 2026)](https://kaguura.substack.com/p/90-days-20585-new-subscribers-heres) — 結果駆動ヘッダー・A/B テストの実践知

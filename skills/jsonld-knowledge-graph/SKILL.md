@@ -339,32 +339,15 @@ uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph
 
 graph.jsonld を更新したら、Hugging Face Datasets 上の mirror にも同期する。HF は LLM training pipeline / knowledge-graph crawler の primary ingest source として機能する（HF dataset は Auto-converted to Parquet が走り、`pandas` / `Polars` / `Datasets` ライブラリから直接 load 可能になる）。
 
-**正本は [`hf-sync`](../hf-sync/SKILL.md) skill にある**。`/hf-sync <Owner/dataset>` または `bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>` を project root で実行すれば、`graph.jsonld` の structural check → `graph.jsonl` flatten → `hf upload` 2 ファイルが 1 コマンドで走る。Local の `hf login` token を使うので CI auth setup は不要。
+**正本は [`hf-sync`](../hf-sync/SKILL.md) skill にある**。`/hf-sync <Owner/dataset>` または `bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>` を project root で実行すれば、`graph.jsonld` の structural check → `graph.jsonl` flatten → `hf upload` 2 ファイルが 1 コマンドで走る。Local の token を使うので CI auth setup は不要。
+
+前提条件・repo mapping・token scope の扱いは **hf-sync に再掲しない**（2026-08-15 に重複 2 節を削除。正本を直したのにコピーが古いまま残る事故が実際に起きたため — `hf login` → `hf auth login` の改名時、この節のコピーだけ取り残された）。
 
 `release-doi` skill の Phase 5 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
 
 **Wikidata QID の sameAs 編入は行わない — RETIRED (2026-07)**。旧運用（`wikidata-federation` skill による item 作成 → QID アンカー）は、host governance の promotion-only 判定による全 item 一括削除を受け authorship-strategy ADR-0021 で恒久 retire。graph の `sameAs` は self-sovereign または earned な解決先（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）のみに張る。dead QID を検出したら purge する。
 
 HF 側の `README.md` (dataset card) は graph 更新では同期しない。Dataset card は HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えたい場合は手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
-
-### Repo mapping (project-specific)
-
-GitHub repo ↔ HF dataset の mapping は project ごとに違うので、skill invoke 時に参照できる場所（project の `CLAUDE.md`、または skill 同一 dir の `inspiration.md`）に記録する。`hf-sync` 本文には embed しない（portability 確保）。
-
-Mapping の記録 format 例:
-
-```markdown
-| GitHub repo | HF dataset |
-|---|---|
-| `owner/project-a` | `Owner/project-a` |
-| `owner/hub` | `Owner/research-program-hub` |
-```
-
-### When NOT to use this sync
-
-- HF dataset がまだ存在しない project（先に `hf repo create <Owner/dataset> --repo-type dataset` で repo 作成、README.md を draft してから initial upload）
-- そもそも graph.jsonld を持たない project（HF mirror は graph を持つ project のみ）
-- Token が write scope を持たない（HF settings で Fine-grained / Write token を発行し直す）
 
 ## Maintenance Contract
 
@@ -400,7 +383,7 @@ schema に version / count / churning field を持たせていない限り、こ
 - llms.txt / llms-full.txt の文章設計 — use `llms-txt-writer`
 - Project doc role の overlap 検出 / 整理 — use `context-sync`
 - CODEMAPS の生成 / 更新 — use `update-codemaps`
-- Articles / blog post の文体 設計 — use `article-writing` / `writing-ecosystem`
+- Articles / blog post の文体 設計 — use `writing-ecosystem`
 
 ## Related
 

@@ -20,13 +20,20 @@ origin: shimo4228
    git hooks 実行リスクのため。公式 permissions doc 明記）。`Bash(cd:*)` を足しても回避不能
 3. コミットメッセージは `-m "…"` の単純形（複数 `-m` 可）または `-F <file>`。
    バッククォート・`$( )`・heredoc は injection 検出で必ず承認要求になる
-   （v2.1.218 以降は `--dangerously-skip-permissions` でも昇格。無効化オプションなし）
+   （公式 security doc: 「Suspicious bash commands require manual approval even if
+   previously allowlisted」。なお `$( )` を含む **catastrophic removal** は 2.1.208 以降
+   `--dangerously-skip-permissions` でも昇格する — 一般の `$( )` はこの特例の対象外）
 4. `git push` は sandbox の network / credential 制約で失敗するため
    `dangerouslyDisableSandbox: true` を付けて実行する
    （認証は `gh auth setup-git` 済み — memory: github-auth-git-gh-disconnect-2026-06）
 5. commit 前の secret scan は PreToolUse hook が自動実行する（rules/common/security.md）。
    手動で scan を連結する必要はない。連結 commit でも hook は全 git ターゲットを走査する
    （ADR-0038）が、迷ったら commit だけ単発にするのが安全側
+
+規則 2 と 3 は **hook が機械的に強制する**。`hooks/validate-bash.sh`（`settings.json` の
+PreToolUse に配線）が `cd ... && git` 形と `git commit` + `$(` 形を block し、書き直しを
+指示する（テスト: `tests/validate-bash-cd-git.bats` / `tests/validate-bash-heredoc-commit.bats`）。
+覚えていなくても踏み外せないが、block されてから直すと 1 往復損する。
 
 ## 適用外
 

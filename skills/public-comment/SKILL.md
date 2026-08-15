@@ -68,7 +68,8 @@ AI 使用は OSS の前提（手でコードを書く方が珍しい）。読み
 
 ## 投稿手段
 
-- GitHub discussion: `gh api graphql` の `addDiscussionComment` / `addDiscussionCommentReply` mutation
+- GitHub discussion: `gh api graphql` の `addDiscussionComment` mutation。返信は同じ mutation に
+  `replyToId` を渡す（`addDiscussionCommentReply` という mutation は存在しない）
 - GitHub issue / PR: `gh issue comment` / `gh pr comment`
 - HF discussions / フォーラム: ブラウザ経由（ユーザー手動 or Claude in Chrome、いずれも承認後）
 

@@ -1,6 +1,6 @@
 ---
 name: writing-ecosystem
-description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。article-writing / editor / essay-reviewer / fact-checker の役割境界と使い分け、Craft 規約（文の技術）、AI slop 禁止リスト（日英）、Voice 規約（発見調。語尾は公開チャンネル規約優先 — note/Zenn = ですます、規約のない場は だ/である）、エッセイ 4 段構成、タイトル規約、アイデアエッセイのチャンネル構成（note = JA 正本 / Substack = EN 翻訳）を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
+description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。editor / essay-reviewer / fact-checker の役割境界と使い分け、初稿の手順とジャンル別構成、Craft 規約（文の技術）、AI slop 禁止リスト（日英）、Voice 規約（発見調。語尾は公開チャンネル規約優先 — note/Zenn = ですます、規約のない場は だ/である）、エッセイ 4 段構成、タイトル規約、アイデアエッセイのチャンネル構成（note = JA 正本 / Substack = EN 翻訳）を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
 compatibility: Designed for Claude Code (or similar agent products). Orchestrates Claude Code subagents bundled in this repo's agents/ directory.
 user-invocable: true
 origin: shimo4228
@@ -10,7 +10,7 @@ origin: shimo4228
 
 人間読者向けコンテンツ（記事・エッセイ・ブログポスト・ニュースレター等）の執筆とレビューに関わるコンポーネント（skill と agent）の役割境界・使い分け・共通規約をまとめた正本。
 
-> `article-writing` skill の Banned Patterns を **包含する superset**。AI slop / Voice / タイトル規約は本ファイルを正とする。
+> AI slop / Voice / タイトル規約・初稿手順のすべてを本ファイルが正本として持つ（2026-08-15 に `article-writing` skill を吸収・退役）。
 
 ## Scope
 
@@ -24,16 +24,16 @@ origin: shimo4228
 
 | フェーズ | コンポーネント | 軸 | トリガー |
 |---------|---------------|-----|----------|
-| **Write** | `article-writing` skill | 汎用書き方 | 執筆タスク全般（初稿・構造設計） |
+| **Write** | 本 skill「初稿の手順とジャンル別構成」 | 汎用書き方 | 執筆タスク全般（初稿・構造設計） |
 | **Translate** | `ja-to-en-translation` skill | 日本語→英語の voice 保持翻訳 | JA→EN 翻訳タスク時 |
 | **Review: 品質** | `editor` agent | tech 記事の構造・コード・AI slop・用語 | tech 記事レビュー時 |
 | **Review: 論理** | `essay-reviewer` agent | idea 記事の論理構成・過積載・トーン | idea 記事レビュー時 |
 | **Review: 事実** | `fact-checker` agent | 事実主張の Web 検証 | 公開前検証時 |
 | **Publish** | `substack-publishing` skill | Substack（EN）公開 + LLM corpus ミラー | note 正本の英訳を Substack に出すとき |
-
-**アイデアエッセイのチャンネル構成（2026-08-12 著者指示で改定）**: 日本語アイデアエッセイの正本（初出）は **note**（content repo の `note/`、ですます調・frontmatter なし）。**Substack は英語チャンネル**で、note 正本を `ja-to-en-translation` で訳した EN 版を出す。旧モデル（Substack 初出 → note 転載）は廃止。エッセイのレビューは実用記事と同じ厚さで回す — `essay-reviewer` + `fact-checker` + 初見読者の明瞭性レビュー + cross-model レビュー（project 側に agent 定義がある場合はそれに従う。例: zenn-content の `zenn-clarity-reviewer` / codex-review）。
 | **Shared** | `writing-ecosystem` skill | AI slop / Voice / エコシステム map | 執筆 + レビュー時（自動発火） |
 | **Overlay** | `<project>/.claude/rules/*.md` | プラットフォーム固有ルール | プロジェクト内作業時のみ |
+
+**アイデアエッセイのチャンネル構成（2026-08-12 著者指示で改定）**: 日本語アイデアエッセイの正本（初出）は **note**（content repo の `note/`、ですます調・frontmatter なし）。**Substack は英語チャンネル**で、note 正本を `ja-to-en-translation` で訳した EN 版を出す。旧モデル（Substack 初出 → note 転載）は廃止。エッセイのレビューは実用記事と同じ厚さで回す — `essay-reviewer` + `fact-checker` + 初見読者の明瞭性レビュー + cross-model レビュー（project 側に agent 定義がある場合はそれに従う。例: zenn-content の `zenn-clarity-reviewer` / codex-review）。
 
 ---
 
@@ -41,8 +41,8 @@ origin: shimo4228
 
 ```
 ┌─ 初稿作成 ─────────────────────────────────┐
-│ article-writing skill                      │
-│  → 構造・Voice・基本的な禁止表現           │
+│ 本 skill「初稿の手順とジャンル別構成」     │
+│  → 構造・Voice・禁止表現（すべてここが正本）│
 └──┬─────────────────────────────────────────┘
    │
    ▼
@@ -76,7 +76,7 @@ origin: shimo4228
 
 ### 翻訳タスクの場合
 
-日本語記事を英語にするときは、初稿の `article-writing` ではなく `ja-to-en-translation` skill を入口にする。翻訳 → EN 出力を `essay-reviewer`（idea）/ `editor`（tech）でレビュー、という流れ。英語側の AI slop / Voice 規約は本 skill を正本として参照する（翻訳 skill は再掲せず defer する）。
+日本語記事を英語にするときは、初稿の手順ではなく `ja-to-en-translation` skill を入口にする。翻訳 → EN 出力を `essay-reviewer`（idea）/ `editor`（tech）でレビュー、という流れ。英語側の AI slop / Voice 規約は本 skill を正本として参照する（翻訳 skill は再掲せず defer する）。
 
 ### Substack へ公開する場合
 
@@ -187,6 +187,37 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 
 ---
 
+## 初稿の手順とジャンル別構成
+
+2026-08-15 に `article-writing` skill（origin: ECC）を退役させ、固有分をここへ吸収した。
+退役理由は **Voice の前提が本 skill と正面衝突していた**こと — ECC 版は「founder / brand の
+既存 voice を実例から抽出し、参照が無ければ operator-style を既定にする」設計で、本 skill の
+**発見調**（語尾は公開チャンネル規約優先）と矛盾する。著者の voice は固定なので、実例から
+逆算する Voice Capture Workflow はこの harness では構造的に不要だった。ECC 版は defer 行を
+持たなかったため、単独発火すると矛盾する既定だけが載る状態になっていた。
+
+### 初稿の 5 手順
+
+1. 読者と目的を確定する
+2. 1 節 1 目的の骨組みを作る
+3. 各節を**証拠・実例・場面から始める**
+4. 次の文が場所代を払うところだけ広げる
+5. テンプレ臭・自賛の匂うものを落とす
+
+### 具体物を先、説明を後
+
+- 節の入口に置くのは**具体物** — 実例・出力・逸話・数値・画面の描写・コードブロック
+- 説明はその**後**。順序が逆になると、読者は何の話か分からないまま抽象を読まされる
+- 提供された文脈で裏づけられない経歴・実績・数値は書かない
+
+### ジャンル別の構成
+
+| genre | 構成 |
+|---|---|
+| 実用記事 / チュートリアル | 読者が何を得るかで開く。主要節ごとにコードか端末出力を置く。締めは要約でなく具体的な takeaway |
+| エッセイ / オピニオン | **[エッセイの 4 段構成](#エッセイの-4-段構成hero-journey-型) が正本**。1 節 1 論点、意見を支える実例を置く |
+| ニュースレター | 最初の 1 画面を強くする。近況の羅列にせず洞察を混ぜる。節ラベルで走査可能にする |
+
 ## AI Slop 禁止リスト
 
 ### 判定原則
@@ -229,7 +260,7 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 | Moreover / Furthermore | connect ideas directly without filler transition |
 | at the end of the day | cut or rewrite |
 
-*最後の 3 項目は `article-writing` skill の Banned Patterns を包含。本リストは superset。*
+*最後の 3 項目は退役した `article-writing` skill の Banned Patterns を包含している。*
 
 ### 文体・構造 tell（2026-07 追補）
 
@@ -423,7 +454,7 @@ overlay 側のファイル冒頭に「本 skill を base とする」旨を明�
 
 ## Related
 
-- `article-writing` skill — 執筆時の汎用フレームワーク（本 skill の Banned Patterns を包含）
+- `article-writing` skill — 2026-08-15 に退役し本 skill へ吸収（Voice 前提が衝突していたため）
 - `headline-craft` skill — 「開かせる一行」の候補生成技法（タイトル・tagline・subtitle・SNS 告知文）。規範は本 skill の Title Conventions、技法はあちら
 - `ja-to-en-translation` skill — 日本語→英語の voice 保持翻訳（英語 AI-slop / Voice / Title / 出典編入は本 skill に defer）
 - `substack-publishing` skill — Substack 公開 + LLM corpus ミラーのワークフロー（Voice / AI-slop / Title / 出典は本 skill に defer）

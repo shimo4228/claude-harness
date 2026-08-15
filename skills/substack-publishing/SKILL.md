@@ -170,7 +170,7 @@ EN 版の初出は Substack、JA 正本は content repo の `note/`（note.com �
 ## ワークフロー上の位置
 
 ```
-draft (article-writing) — JA 正本は content repo の note/ に置き、note.com へ手動投稿
+draft (writing-ecosystem) — JA 正本は content repo の note/ に置き、note.com へ手動投稿
   → review (essay-reviewer + fact-checker + 明瞭性レビュー + cross-model レビュー)
   → 出典編入 (writing-ecosystem: Citation & Sources Workflow)
   → translate (ja-to-en-translation) — note 正本から EN 版を作る（Substack は EN チャンネル）

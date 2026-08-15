@@ -270,14 +270,18 @@ Paper 全体で **1 つの cite 形式** を選び一貫させる。Style mixing
 
 ### Reference list の必須項目
 
-| Source type | 必須項目 |
-|---|---|
-| Journal article | Author(s). (YEAR). Title. *Journal* Vol(Issue): pages |
-| arXiv preprint | Author(s). (YEAR). Title. arXiv:NNNN.NNNNN |
-| Conference paper | Author(s). (YEAR). Title. *Proceedings* (pages) |
-| Industry / company report | Author / Org. (YEAR). Title. URL |
-| Standard | Org. (YEAR). Standard ID Title. Publisher |
-| Repository / dataset | Author(s). (YEAR). Title (Version). Platform. DOI |
+必須項目と、その組版形（APA-like simplified）を 1 つの表に持つ。組版列は 2026-08-15 に
+`paper-writing` から統合した — 2 箇所に分けていた結果 Industry 行のラベルが doc / report に
+分岐していたため。
+
+| Source type | 必須項目 | 組版 |
+|---|---|---|
+| Journal article | Author(s). (YEAR). Title. *Journal* Vol(Issue): pages | `Author, A. B. (YEAR). Title. *Journal Name* Vol(Issue): pages.` |
+| arXiv preprint | Author(s). (YEAR). Title. arXiv:NNNN.NNNNN | `Author, A. B., & Author, C. D. (YEAR). *Title.* arXiv:NNNN.NNNNN.` |
+| Conference paper | Author(s). (YEAR). Title. *Proceedings* (pages) | `Author, A. B. (YEAR). Title. In *Proceedings Title* (pages). Publisher.` |
+| Industry / company report | Author / Org. (YEAR). Title. URL | `Org. (YEAR). *Title.* URL` |
+| Standard | Org. (YEAR). Standard ID Title. Publisher | `Org. (YEAR). *Standard ID Title.* Publisher.` |
+| Repository / dataset | Author(s). (YEAR). Title (Version). Platform. DOI | `Author, A. B. (YEAR). *Title (Version).* Platform. DOI` |
 
 ### DOI / arXiv ID の inclusion
 

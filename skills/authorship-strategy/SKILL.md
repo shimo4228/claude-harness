@@ -8,6 +8,11 @@ user-invocable: true
 
 # Authorship Strategy
 
+> **ADR 番号の名前空間**: 本 skill 本文の `ADR-NNNN` は断りがない限り
+> **authorship-strategy repo**（`~/MyAI_Lab/authorship-strategy/docs/adr/`）の ADR を指す。
+> harness 側の `~/.claude/docs/adr/` とは番号が全面的に衝突するので、harness の ADR を
+> 指すときだけ `harness ADR-NNNN` と明記する。
+
 maker / 実践者が **AI 時代に著者として知られるための最適戦略を実地で探る**ための戦略フレームワーク。最上位に著者の **stance**（maker / 実践者としての探究、学術 apparatus は道具）を置き、以下の Core Principle・4 層・Tactic・チェックリストはすべてそれを通して読む（→ 次節 **Stance**）。本 skill は abstract な判断軸を提供する。line-specific な適用事例や歴史的文脈は各 repo の project memory に保持されている（著者自身の場合 AKC 等）。
 
 ## Stance（この framework の最上位 — 以下すべてはここを通して読む）

@@ -196,6 +196,6 @@ This is the most important criterion for idea articles.
 - `fact-checker` agent — 事実主張の Web 検証
 - `llms-txt-writer` skill — AI 向けドキュメント（llms.txt / llms-full.txt）専用。本 agent は人間向け idea 記事のレビュー専用
 - `writing-ecosystem` skill — AI slop / Voice / タイトル規約の正本
-- `article-writing` skill — 執筆時の汎用フレームワーク
+- `writing-ecosystem` skill — 執筆時の汎用フレームワーク（初稿手順・Voice・AI slop の正本）
 
 **Your goal:** Ensure every published idea article has a clear thesis, honest tone, appropriate depth, and doesn't try to say everything at once. Be strict about overload — a focused article with 3 strong arguments beats a scattered article with 8.

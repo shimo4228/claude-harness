@@ -11,7 +11,7 @@ origin: shimo4228
 
 各研究 repo の `CLAUDE.md`「Research Wiki Consultation」節に *passive prose* で書かれている還元マップ（4カテゴリ）を、再現可能な能動手続きに形式化したもの。wiki の合成知識を diff → ランク付き候補 → repo 内 ledger に落とす。daily-research → wiki（合成層）→ repo（昇格）という一方向ループの最終辺を1コマンドで回す。
 
-> 兄弟スキル: `wiki-query` = chat 上の自由 Q&A（read-only）。`wiki-harvest` = repo 向け定型抽出 → 台帳。両者とも wiki に対し **read-only**。置き換えではない。
+> 兄弟スキル: `wiki-query` = chat 上の自由 Q&A（良回答は `wiki/concept/` へ書き戻す read-write。2026-08-06 に復活）。`wiki-harvest` = repo 向け定型抽出 → 台帳で、**wiki には書き込まない**。置き換えではない。
 
 ## Vault パス（固定）
 
@@ -63,7 +63,7 @@ VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vaul
 > **CRITICAL — 「ADR 候補」マークを ADR 直行と読まない**: concept ページの「ADR 候補」は *論点の提起*
 > であって *ADR 化の指示ではない*。ADR は「すでに下した決定の記録」であり、決定する装置ではない。
 > ①② は必ず Step 3.5 の response-type triage を通す。ここを飛ばすと「研究知見 → ADR の種」が直結し、
-> 実装判断を飛ばして成果物を先に作る（planning.md の Research Justification サンクコスト罠）。
+> 実装判断を飛ばして成果物を先に作る（調べた労力を回収したくて成果物に走るサンクコスト罠）。
 
 ### Step 3 — signal フィルタ（品質ゲート）
 
@@ -88,7 +88,7 @@ prototype → build 判断、ADR はその後に従属記録）。framing/stance
 | `citation` | ③（機械的） | 一次照合 → citation-sync | 対象外 |
 | `graph-edge` | ④（機械的） | jsonld-knowledge-graph | 対象外 |
 
-判定の 4 問（planning.md「機能要求のチャレンジ」を harvest に適用）:
+判定の 4 問（`architect` agent の build-or-not 判定「複雑性 × 価値 × 使用頻度」を harvest に適用）:
 
 0. **surface-existence check（先に通す dismiss ゲート）** — この候補の元になった外部研究が前提とする surface
    （行動時 retrieval 経路・特定の gate・特定の層）を、repo は**実コードで**持つか？ **wiki concept ページの要約でなく

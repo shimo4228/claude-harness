@@ -168,7 +168,6 @@ in `evidence` are the improvement list handed to the next stage.
 
 ## Related
 
-  this skill assumes the judgment part is already LLM-owned and designs it.
 - `code-and-llm-collaboration` — the architecture-level "LLM judge + Code
   enforce" pattern (judgment never mutates state directly); this skill designs
   the judge's inside.

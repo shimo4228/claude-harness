@@ -94,31 +94,21 @@ Keywords (5-8 個) を abstract 直下に置く。
 
 ---
 
-## References Format (APA-like simplified)
+## References Format
 
-| Source type | Format |
-|---|---|
-| Journal article | `Author, A. B. (YEAR). Title. *Journal Name* Vol(Issue): pages.` |
-| arXiv preprint | `Author, A. B., & Author, C. D. (YEAR). *Title.* arXiv:NNNN.NNNNN.` |
-| Conference paper | `Author, A. B. (YEAR). Title. In *Proceedings Title* (pages). Publisher.` |
-| Industry / company doc | `Org. (YEAR). *Title.* URL` |
-| Standard | `Org. (YEAR). *Standard ID Title.* Publisher.` |
-| Repository / dataset | `Author, A. B. (YEAR). *Title (Version).* Platform. DOI` |
-
-詳細: `paper-ecosystem` skill の Citation Format Rules。
+正本は `paper-ecosystem` skill の **Citation Format Rules**。Source type 別の必須項目と
+組版形を 1 つの表に持つ（2026-08-15 に本 skill から組版列を移設・統合）。DOI / arXiv ID の
+inclusion 規約と orphan citation の禁止も同節。**ここには再掲しない** — 分けていた結果
+Industry 行のラベルが doc / report に分岐していた。
 
 ---
 
 ## Multi-language Convention (任意)
 
-Subordinate 言語版 (例: 日本語訳) を並走作成する場合:
-
-- 英語版が **primary**、subordinate 言語版は **正本ではない**
-- ファイル命名: `<paper-name>.md` (英語) + `<paper-name>.ja.md` (日本語)
-- 内容変更時、英語版が先、subordinate 言語版を逐次反映
-- Technical terms (Quadrant / Phase Separation / artifact name 等) は subordinate 言語版でも英語表記のまま、または英語併記
-
-詳細: `paper-ecosystem` skill の Multi-language Paper Convention。
+正本は `paper-ecosystem` skill の **Multi-language Paper Convention**。**ここには再掲しない** —
+本 skill にあったコピーは 5 項目のうち 2 つを落としており（各ファイル冒頭の `Language:` ヘッダ行と、
+**著者校正は日本語版で行う**という校正フェーズの例外）、ここで止まった読者が校正の運用を
+知らないまま進む状態だった（2026-08-15 に削除）。
 
 ---
 

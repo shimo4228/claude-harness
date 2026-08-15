@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: Cross-model code review — get a read-only second opinion from the OpenAI Codex CLI (a different model family) on the current diff, then fold its findings into the Claude Code review chain. Use when the user says "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", invokes /codex-review, or when the planning.md Review/Cleanup step wants a decorrelated reviewer alongside code-reviewer / security-reviewer. NOT for letting Codex write code (this is review-only) and NOT a replacement for the in-Claude reviewers — it runs in parallel with them.
+description: Cross-model code review — get a read-only second opinion from the OpenAI Codex CLI (a different model family) on the current diff, then fold its findings into the Claude Code review chain. Use when the user says "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", invokes /codex-review, or when the implementation-chain Review / Cleanup step wants a decorrelated reviewer alongside code-reviewer / security-reviewer. NOT for letting Codex write code (this is review-only) and NOT a replacement for the in-Claude reviewers — it runs in parallel with them.
 user-invocable: true
 origin: shimo4228
 ---
@@ -83,7 +83,7 @@ Next action: <continue | stop | re-plan>
 - **Verify each finding before relaying it.** Codex may be wrong; drop findings
   you can disprove, keep the ones you confirm. You own the verdict, not Codex.
 - **Early stop on CRITICAL** — if a confirmed finding is CRITICAL, halt the chain
-  and report to the user (planning.md 早期停止条件).
+  and report to the user (skill: `implementation-chain` の早期停止条件).
 - Run this **in parallel** with the in-Claude reviewers, then merge verdicts.
 
 ### Prose 裁定基準（2026-08-13 追加。エッセイ・記事レビューの fold 用）

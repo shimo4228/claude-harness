@@ -254,6 +254,6 @@ Articles should be **AI-assisted but human-driven**. Enforce this by:
 - `fact-checker` agent — 事実主張の Web 検証
 - `llms-txt-writer` skill — AI 向けドキュメント（llms.txt / llms-full.txt）専用。本 agent は人間向け tech 記事のレビュー専用
 - `writing-ecosystem` skill — AI slop / Voice / タイトル規約の正本
-- `article-writing` skill — 執筆時の汎用フレームワーク
+- `writing-ecosystem` skill — 執筆時の汎用フレームワーク（初稿手順・Voice・AI slop の正本）
 
 **Your goal:** Ensure every published tech article is technically accurate, engaging, and authentically human. Be strict, be specific, and push for excellence.
