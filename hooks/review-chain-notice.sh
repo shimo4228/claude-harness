@@ -11,6 +11,11 @@ COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/nul
 # 実行 segment の先頭にある literal git だけを見る。alias / plumbing の網羅は目的にしない。
 printf '%s' "$COMMAND" | grep -qE '(^|[;|&][[:space:]]*)([A-Za-z_][A-Za-z0-9_]*=[^[:space:];|&]+[[:space:]]+)*git\b[^;|&]*[[:space:]](commit|revert|merge)\b' || exit 0
 
+# 封筒の正本は共有部品。ここで手書きしない（複製が drift したのが T-ADVISORY-ENVELOPE-HELPER）。
+# 安い guard の後に置く — Bash 呼び出しの大半は commit ではないので、その経路で読み込まない。
+# `$(dirname …)` を使わない理由は共有部品のヘッダ参照
+# shellcheck source=hooks/_advisory-common.sh
+source "${BASH_SOURCE[0]%/*}/_advisory-common.sh" || exit 0
+
 msg='Review と Verify は済んでいますか？ 未完了なら skill: implementation-chain を確認して実行してください。'
-jq -n --arg ctx "$msg" \
-  '{hookSpecificOutput: {hookEventName: "PreToolUse", additionalContext: $ctx}}'
+emit_advisory PreToolUse "$msg"

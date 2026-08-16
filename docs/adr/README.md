@@ -46,6 +46,8 @@
 | [0038](0038-publish-curated-commit-hooks.md) | commit 面 hook を curated allowlist で claude-harness へ公開し、前提として抽出器の 2 経路と textconv を塞ぐ — 公開判定は provenance でなく curation。公開前レビューが secret gate の 2 バイパスと 1 RCE を実測、右端一致は左端と対称のため全ターゲット走査へ | accepted | 2026-08-08 |
 | [0039](0039-retire-python-reviewer-simplify-in-chain.md) | python-reviewer を退役し、chain を bug 軸 (code-reviewer) × quality 軸 (/simplify) に直交化 — 決定論チェックは verify.sh、idiom は substrate が吸収 (Downward dissolution) | accepted | 2026-08-13 |
 | [0040](0040-demote-feat-tdd-to-conditional.md) | feat × TDD を必須から条件付き発火へ降格 — 現行世代で残る価値は RED→GREEN の儀式でなく「実装を見る前に振る舞いを固定する」spec pinning だけ。テストの要否は不変 (coverage floor は Verify が担保) | accepted | 2026-08-15 |
+| [0041](0041-file-review-findings-on-a-verified-premise.md) | レビュー指摘の起票条件を severity から前提の検証へ移す — severity は生成器が付ける次元なので受け取り側では濾せない。`claims.py spawn --origin review` に `--producer PATH:LINE` を必須化し、怠けた経路が起票できないようにする。reviewer 定義とルーティング表は変更しない | accepted | 2026-08-16 |
+| [0042](0042-retire-code-reviewer-and-scope-security-review-to-threat-surface.md) | ECC 由来 code-reviewer を退役し Code Review を built-in `/code-review` へ、Security Review を `feat` 無条件から脅威面の変化に紐付ける — トリビアの原因は発火頻度でなく repo と一致しない 固定チェックリストだった。security-reviewer は脅威面の導出手順と判例 prior だけを持つ | accepted | 2026-08-16 |
 
 ## Template
 

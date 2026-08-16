@@ -170,7 +170,7 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, iterative-retrieval, product-lens, python-patterns, refactor-clean, tdd, update-codemaps | architect, code-reviewer, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, iterative-retrieval, product-lens, python-patterns, refactor-clean, tdd, update-codemaps | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
 | [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community + local modifications | scientific-thinking-literature-review | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |

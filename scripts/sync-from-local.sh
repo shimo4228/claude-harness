@@ -54,6 +54,7 @@ SUBTREES=(skills agents rules docs/adr hooks scripts/hooks tests)
 # (docs/hooks.md), or it would be wiped on every run.
 HOOK_ALLOWLIST=(
   hooks/_git-target-common.sh
+  hooks/_advisory-common.sh
   hooks/secret-scan-precommit.sh
   hooks/verify-precommit.sh
   hooks/bandit-precommit.sh
@@ -61,6 +62,7 @@ HOOK_ALLOWLIST=(
   hooks/review-chain-notice.sh
   scripts/hooks/verify_allow.py
   tests/git-target-extraction.bats
+  tests/advisory-envelope.bats
   tests/secret-scan-precommit.bats
   tests/review-chain-notice.bats
   tests/verify-precommit.bats

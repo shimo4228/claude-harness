@@ -113,7 +113,7 @@ repo が持つ **唯一の入口**。ハーネス側の hook はこのファイ�
 | 引数 | `--staged` = commit 境界の高速検査（staged ファイルのみ）。引数なし = repo 全体の完全検査 |
 | 環境 | `$VERIFY_REPO_ROOT` があれば repo root として使う（承認機構が渡す） |
 | exit code | `0` = PASS / `1` = FAIL（commit を止める）/ `2` = 検査不能（ツール不在等、fail-soft） |
-| stdout | FAIL 時は**人間と LLM が読んで直せる検出行**。PASS 時は無音に近く |
+| 出力 | FAIL 時は**人間と LLM が読んで直せる検出行**。PASS 時の出力は **advisory**（commit は止めないが伝えたいこと — 昇格待ちの ratchet、眠っているゲートの通知）として `verify-precommit.sh` が model へ渡す。言うことが無ければ**無出力**（無言 PASS にノイズを足さない）。**stdout と stderr は区別されない** — hook は `2>&1` でまとめて受けるので、成功時に stderr へ出る進捗・非推奨警告も advisory になる。黙っていたいものは黙らせる |
 | 実行時間 | `--staged` は**数秒以内**。超えるものは無引数側にだけ置く |
 
 **速い / 遅いの分離**（これを守らないと bypass の作法が育つ）:

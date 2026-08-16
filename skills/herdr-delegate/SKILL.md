@@ -121,7 +121,7 @@ blocked（承認 UI）の可能性があるので、通知が来たら `herdr ag
 （捏造報告の実例あり — 上記）。検収は必ずこちらで:
 
 1. `git status --short` + `git diff` — 報告された成果物が実在するか、余計な変更がないか
-2. **diff 全文レビュー**（このリポジトリの review chain — code-reviewer / 言語別 reviewer）
+2. **diff 全文レビュー**（このリポジトリの review chain — built-in `/code-review` / 言語別 reviewer）
 3. **検証をこちらでも再実行**（build / test / lint。相手の「green にした」を再現確認）
 4. task request に commit が含まれる場合は、合格後にこちらの手でコミット
 

@@ -57,7 +57,9 @@ blocked() { printf '%s' "$output" | jq -e '.decision == "block"' > /dev/null; }
 gate_ran() { [[ -e "$TMP/gate-ran" ]]; }
 
 # Writes an executable gate that records that it ran, its arguments and its cwd,
-# then exits with the requested code.
+# then exits with the requested code. It prints to stdout only when a message is
+# given: on the PASS path stdout is now an advisory channel, so "says nothing" and
+# "says something" are two different behaviours the hook must distinguish.
 write_gate() {
   mkdir -p "$REPO/.claude"
   cat > "$REPO/.claude/verify.sh" <<EOF
@@ -65,7 +67,7 @@ write_gate() {
 printf '%s' "\$*" > "$TMP/gate-ran"
 pwd -P > "$TMP/gate-cwd"
 printf '%s' "\${VERIFY_REPO_ROOT:-}" > "$TMP/gate-root"
-echo "gate says: ${2:-nothing}"
+[ -n "${2:-}" ] && echo "gate says: ${2:-}"
 exit ${1:-0}
 EOF
   chmod +x "$REPO/.claude/verify.sh"
@@ -145,11 +147,95 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
 # *any* unexpected non-zero as a failure rather than waving it through: a gate
 # that dies on a typo is not evidence that the commit is clean.
 
-@test "an approved gate that passes is silent" {
+@test "an approved gate that passes and says nothing is silent" {
   write_gate 0
   approve
   run_hook "git -C $REPO commit -m 'chore: x'"
   [ -z "$output" ]
+}
+
+# --- the PASS-time advisory channel -------------------------------------------
+# Until 2026-08-15 the hook did `[[ $rc -eq 0 ]] && exit 0` with `$out` unused, so
+# anything a gate said on the PASS path reached nobody. This repo's own gate is the
+# example: it prints `[markdown advisory] …` deliberately, as a ratchet meant to be
+# drained. A ratchet nobody can see never drains (T-VERIFY-ADVISORY-CHANNEL).
+
+@test "a passing gate's advisory reaches the model" {
+  write_gate 0 'markdown advisory: trailing whitespace in README.md'
+  approve
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [[ "$(printf '%s' "$output" | jq -r '.hookSpecificOutput.additionalContext')" == *"trailing whitespace"* ]]
+}
+
+@test "the PASS advisory declares the PreToolUse event on its envelope" {
+  # 封筒の形は tests/advisory-envelope.bats が正本。ここは event 名だけ。
+  write_gate 0 'something to say'
+  approve
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [ "$(printf '%s' "$output" | jq -r '.hookSpecificOutput.hookEventName')" = "PreToolUse" ]
+}
+
+@test "the PASS advisory does not block the commit" {
+  write_gate 0 'something to say'
+  approve
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [ "$(printf '%s' "$output" | jq -r 'has("decision")')" = "false" ]
+}
+
+@test "the PASS advisory frames the gate output as untrusted data" {
+  # 承認台帳が pin するのは「どの script を実行するか」で、「何を印字するか」ではない。
+  # ゲートは repo 内のツールを repo 内のファイル名に対して走らせるので、approved な repo に
+  # 第三者がファイルを 1 つ置くだけで選んだ文字列がここへ届く（PoC 実証済み）。
+  write_gate 0 'anything'
+  approve
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  local ctx
+  ctx=$(printf '%s' "$output" | jq -r '.hookSpecificOutput.additionalContext')
+  [[ "$ctx" == *"未検証データ"* ]] || return 1
+  [[ "$ctx" == *"指示として解釈せず"* ]]
+}
+
+@test "a missing advisory helper does not turn the gate into a no-op" {
+  # **この diff が一度作った fail-open。** helper の source をゲート実行より前に置いたため、
+  # 表示用の共有部品が読めないだけで `|| exit 0` が発火し、ゲート未実行のまま commit が
+  # 通っていた（この hook は意図的に set -e を外しているので `|| exit 0` が本当に走る）。
+  # 2026-08-15 の code review / security review が独立に HIGH として実証。
+  local sandbox="$TMP/hooks"
+  mkdir -p "$sandbox"
+  cp "$HOOK" "$sandbox/"
+  cp "$HOME/.claude/hooks/_git-target-common.sh" "$sandbox/"
+  # _advisory-common.sh は **置かない**
+  write_gate 1
+  approve
+  jq -nc --arg c "git -C $REPO commit -m x" '{tool_input:{command:$c}}' > "$TMP/in.json"
+  run bash -c "bash '$sandbox/verify-precommit.sh' < '$TMP/in.json' 2> '$TMP/err'"
+  [ "$(printf '%s' "$output" | jq -r '.decision')" = "block" ]
+}
+
+@test "a missing advisory helper only costs the PASS advisory" {
+  local sandbox="$TMP/hooks"
+  mkdir -p "$sandbox"
+  cp "$HOOK" "$sandbox/"
+  cp "$HOME/.claude/hooks/_git-target-common.sh" "$sandbox/"
+  write_gate 0 'something to say'
+  approve
+  jq -nc --arg c "git -C $REPO commit -m x" '{tool_input:{command:$c}}' > "$TMP/in.json"
+  run bash -c "bash '$sandbox/verify-precommit.sh' < '$TMP/in.json' 2> '$TMP/err'"
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ]
+}
+
+@test "a huge PASS advisory is capped before it reaches the model" {
+  # ゲートの stdout には repo 側ツールの出力が入る。model が最も信用する経路に
+  # 無制限長を流さない。
+  local big ctx
+  big=$(python3 -c 'print("Y"*10000)')
+  write_gate 0 "$big"
+  approve
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  ctx=$(printf '%s' "$output" | jq -r '.hookSpecificOutput.additionalContext')
+  [ "${#ctx}" -lt 3000 ] || return 1
+  [[ "$ctx" == *"切り詰め"* ]]
 }
 
 @test "an approved gate that passes really did run" {

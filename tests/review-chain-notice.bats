@@ -48,12 +48,16 @@ ctx() {
 @test "reminder contains no duplicated reviewer roster or repository data" {
   local out
   out="$(ctx "git commit -m x")"
-  [[ "$out" != *"code-reviewer"* ]] || return 1
+  # 名簿は ADR-0042 で built-in `/code-review` + `swift-reviewer` になった。
+  # 旧 `code-reviewer` を見る版は、agent 退役後は原理的に真になる空振りだった。
+  [[ "$out" != *"code-review"* ]] || return 1
+  [[ "$out" != *"swift-reviewer"* ]] || return 1
   [[ "$out" != *"security-reviewer"* ]] || return 1
   [[ "$out" != *"/tmp/"* ]]
 }
 
 @test "output is compact PreToolUse context" {
+  # 封筒の形は tests/advisory-envelope.bats が正本。ここは event 名と大きさだけ。
   local out
   out="$(fire "git commit -m x")"
   [ "$(printf '%s' "$out" | jq -r '.hookSpecificOutput.hookEventName')" = "PreToolUse" ] || return 1

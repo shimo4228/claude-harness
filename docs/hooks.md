@@ -30,7 +30,7 @@ silent until a 2026-07-25 scan caught it. The target is now derived from what th
 command is about to commit: staged content, plus tracked modifications when `-a`
 is present, plus untracked files when `add -A` / `add .` / `add <path>` is.
 
-Two shared parts ship alongside:
+Three shared parts ship alongside:
 
 - [`hooks/_git-target-common.sh`](../hooks/_git-target-common.sh) — works out
   which repos a command will commit to. Drops backslash escapes and quoted spans
@@ -40,6 +40,15 @@ Two shared parts ship alongside:
   answer, `git -C a commit … && git -C b commit …` leaves one side unexamined,
   and picking the left or the right just decides which side an attacker puts the
   secret on. The three read-only hooks scan all of them.
+- [`hooks/_advisory-common.sh`](../hooks/_advisory-common.sh) — the single
+  implementation of the envelope a hook uses to pass a string to the model:
+  `{"hookSpecificOutput": {"hookEventName": …, "additionalContext": …}}`. Plain
+  stdout stops at the transcript and a top-level `additionalContext` is not read
+  either — **both fail silently** (the hook exits 0, the tests pass, and only the
+  string disappears), which is why the envelope is a function rather than prose
+  telling you to copy a precedent. `review-chain-notice.sh` and
+  `verify-precommit.sh` source it; `systemMessage` and `decision`/`reason` are
+  separate channels and stay top-level.
 - [`scripts/hooks/verify_allow.py`](../scripts/hooks/verify_allow.py) — the
   approval ledger described below.
 

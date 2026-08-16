@@ -37,7 +37,7 @@ printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
 # 右端固定でも順序を入れ替えるだけで検査されない側へ commit を寄せられる (2026-08-08 の
 # 公開前レビューが両方向を実証)。この hook は読み取りだけなので、全 repo を走査して閉じる。
 # shellcheck source=hooks/_git-target-common.sh
-source "$(dirname "${BASH_SOURCE[0]}")/_git-target-common.sh"
+source "${BASH_SOURCE[0]%/*}/_git-target-common.sh"
 repos=()
 while IFS= read -r d; do
   [[ -n "$d" && -d "$d" ]] && repos+=("$d")

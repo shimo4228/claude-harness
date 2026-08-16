@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: Cross-model code review — get a read-only second opinion from the OpenAI Codex CLI (a different model family) on the current diff, then fold its findings into the Claude Code review chain. Use when the user says "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", invokes /codex-review, or when the implementation-chain Review / Cleanup step wants a decorrelated reviewer alongside code-reviewer / security-reviewer. NOT for letting Codex write code (this is review-only) and NOT a replacement for the in-Claude reviewers — it runs in parallel with them.
+description: Cross-model code review — get a read-only second opinion from the OpenAI Codex CLI (a different model family) on the current diff, then fold its findings into the Claude Code review chain. Use when the user says "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", invokes /codex-review, or when the implementation-chain Review / Cleanup step wants a decorrelated reviewer alongside the built-in /code-review and security-reviewer. NOT for letting Codex write code (this is review-only) and NOT a replacement for the in-Claude reviewers — it runs in parallel with them.
 user-invocable: true
 origin: shimo4228
 ---
@@ -19,7 +19,7 @@ sub-agents / Workflow for parallel throughput; use this only where a second
 ## When to Use
 
 - Before commit on a non-trivial `feat` / `fix`, as a parallel reviewer next to
-  `code-reviewer` and `security-reviewer`.
+  the built-in `/code-review` and `security-reviewer`.
 - When the user wants a second opinion from a non-Claude model on a diff.
 - High-stakes or error-prone changes where decorrelated review pays off.
 - High-stakes **prose** diffs before publishing/deposit (public-repo README,

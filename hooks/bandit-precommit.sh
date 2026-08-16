@@ -45,7 +45,7 @@ printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
 # **単一値でなく全一致を走査する** — 理由は secret-scan-precommit.sh と同じ (順序の入れ替えで
 # 検査されない側へ commit を寄せられる)。この hook も読み取りだけなので全 repo を走査する。
 # shellcheck source=hooks/_git-target-common.sh
-source "$(dirname "${BASH_SOURCE[0]}")/_git-target-common.sh"
+source "${BASH_SOURCE[0]%/*}/_git-target-common.sh"
 repos=()
 while IFS= read -r d; do
   [[ -n "$d" && -d "$d" ]] && repos+=("$d")
