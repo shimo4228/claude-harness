@@ -15,7 +15,7 @@ import pytest
 from scripts import run as run_mod
 from scripts.grader import ComplianceResult
 from scripts.parser import ComplianceSpec, Detector, ObservationEvent, Step
-from scripts.runner import SANDBOX_BASE, ScenarioRun, safe_sandbox_dir
+from scripts.runner import ScenarioRun, safe_sandbox_dir, sandbox_run_root
 from scripts.scenario_generator import Scenario
 
 LEVELS = (("supportive", 1), ("neutral", 2), ("competing", 3))
@@ -312,11 +312,12 @@ def test_ids_that_sanitize_to_the_same_directory_are_separated() -> None:
 
 
 def test_id_with_no_usable_sandbox_name_never_targets_the_sandbox_root() -> None:
-    """An empty id makes the path collapse onto SANDBOX_BASE, which _setup_sandbox rmtree's.
+    """An empty id makes the path collapse onto the run root, which _setup_sandbox rmtree's.
 
     The containment check does not catch it: a directory is trivially inside
     itself. So `shutil.rmtree` would be handed the root holding every other
-    scenario's sandbox.
+    scenario's sandbox. The root in question is now `SANDBOX_BASE/run-<pid>`
+    (test_sandbox_run_scope.py) — one level down, same hazard.
     """
     scenarios = [
         _scenario("supportive", 1, sid=""),
@@ -325,11 +326,12 @@ def test_id_with_no_usable_sandbox_name_never_targets_the_sandbox_root() -> None
 
     deduped = run_mod.ensure_unique_sandbox_ids(scenarios)
 
+    run_root = sandbox_run_root()
     sandboxes = [safe_sandbox_dir(s.id) for s in deduped]
-    assert SANDBOX_BASE not in sandboxes
+    assert run_root not in sandboxes
     assert len(set(sandboxes)) == 2
     for sandbox in sandboxes:
-        assert sandbox.parent == SANDBOX_BASE
+        assert sandbox.parent == run_root
 
 
 def test_every_test_function_is_actually_collected() -> None:

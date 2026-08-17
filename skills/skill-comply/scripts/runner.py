@@ -11,12 +11,16 @@ import subprocess
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 
 from scripts.child_settings import child_settings
 from scripts.parser import ObservationEvent
 from scripts.scenario_generator import Scenario
 
+# この値の複製が ~/.claude/hooks/log-skill-usage.sh にある（子セッションの skill 使用行に
+# `sandbox: true` を付ける判定）。動かすときは向こうも動かす —
+# tests/log-skill-usage.bats が両方を読んで一致を主張する。
 SANDBOX_BASE = Path("/tmp/skill-comply-sandbox")
 ALLOWED_MODELS = frozenset({"haiku", "sonnet", "opus", "fable"})
 DEFAULT_TIMEOUT_SECONDS = 3600
@@ -164,20 +168,80 @@ def sanitize_sandbox_id(scenario_id: str) -> str:
     return re.sub(r"[^a-zA-Z0-9\-_]", "_", scenario_id)
 
 
-def safe_sandbox_dir(scenario_id: str) -> Path:
-    """Give a scenario its own directory under SANDBOX_BASE.
+def _current_pid() -> int:
+    """The pid `sandbox_run_root` keys on — a seam, so tests can fake one process.
 
-    An id that sanitizes to the empty string collapses the path onto
-    SANDBOX_BASE itself, and the containment check below still passes — a
-    directory is trivially inside itself. `_setup_sandbox` would then hand
-    `shutil.rmtree` the root holding every other scenario's sandbox. Reject it
-    here rather than trust each caller to remember.
+    Patching `os.getpid` instead would install the fake process-wide for the
+    duration of a test: `tempfile._RandomNameSequence` reseeds its RNG when the pid
+    it cached changes, and anything deriving a filename or lock from the pid would
+    see it too.
+    """
+    return os.getpid()
+
+
+@cache
+def _resolved_base(base: Path) -> Path:
+    """`base` with every symlink followed, resolved once per process.
+
+    Memoised on purpose, and the memo is the point rather than a speed-up. A
+    shared host or CI image may point `/tmp/skill-comply-sandbox` at scratch
+    storage; resolving on each call would let a base link re-pointed mid-run put
+    scenario 1's sandbox under one target and scenario 2's under another, which is
+    exactly the "one root per run" property this module now rests on. Keyed on the
+    base so a test (or a caller that rebinds `SANDBOX_BASE`) gets its own entry.
+    """
+    return base.resolve()
+
+
+def sandbox_run_root() -> Path:
+    """The directory this process owns: `SANDBOX_BASE/run-<pid>`.
+
+    Scenario ids come from an LLM, and `run.ensure_unique_sandbox_ids` can only
+    make them unique among the scenarios *one* process holds. Two concurrent
+    `run.py` invocations that generated the same id shared one directory, and
+    `_setup_sandbox` deletes before it creates — so one run wiped a sandbox the
+    other's child was still working in. Parallel execution (ADR-0029) made
+    concurrent runs ordinary, so the discriminator is taken from the OS instead of
+    from the generator's habits.
+
+    **What a pid does and does not separate.** It separates live processes on one
+    host, which is the collision this exists for. It does not separate two hosts
+    sharing one directory (an NFS or container-mount `SANDBOX_BASE`), and it does
+    not separate a live process from a finished one whose directory is still on
+    disk: after pid reuse a later run can reclaim an earlier run's root and rmtree
+    the sandboxes left in it. That is strictly narrower than the previous
+    behaviour, where every rerun reclaimed the same directories unconditionally —
+    but these directories are working space that happens to survive the run, not
+    archival storage. Copy a sandbox out before relying on it.
+
+    Nothing prunes old roots, so disk use is now linear in the number of
+    invocations rather than in the number of distinct scenario ids. On macOS
+    `/private/tmp` is only cleaned at boot, so a long-lived machine accumulates
+    them. A retention rule belongs here if that starts to bite; ADR-0029's
+    reasoning applies — machinery waits for the need to show up.
+    """
+    return _resolved_base(SANDBOX_BASE) / f"run-{_current_pid()}"
+
+
+def safe_sandbox_dir(scenario_id: str) -> Path:
+    """Give a scenario its own directory under this run's root.
+
+    An id that sanitizes to the empty string collapses the path onto the run root
+    itself, and the containment check below still passes — a directory is trivially
+    inside itself. `_setup_sandbox` would then hand `shutil.rmtree` the root holding
+    every other scenario's sandbox. Reject it here rather than trust each caller to
+    remember.
+
+    Containment is checked against the run root, so a symlink planted *at* the
+    sandbox name fails closed too: `resolve()` follows it out and `relative_to`
+    raises. Following the base (above) must not become following anything else.
     """
     safe_id = sanitize_sandbox_id(scenario_id)
     if not safe_id:
         raise ValueError(f"scenario id {scenario_id!r} leaves no usable sandbox name")
-    path = SANDBOX_BASE / safe_id
-    path.resolve().relative_to(SANDBOX_BASE.resolve())
+    run_root = sandbox_run_root()
+    path = run_root / safe_id
+    path.resolve().relative_to(run_root)
     return path
 
 

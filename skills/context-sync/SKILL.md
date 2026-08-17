@@ -62,9 +62,26 @@ Before any other detection, verify that `docs/CODEMAPS/` (if present) reflects t
 
 | Signal | Detection | Threshold |
 |---|---|---|
-| A. Timestamp lag | `git log -1 --format=%ct -- docs/CODEMAPS/` vs source dirs' latest commit ctime | source newer by **≥ 7 days** |
+| A0. Source sha lag (**takes precedence over A**) | read `Source: <sha>` from the CODEMAPS freshness header, confirm it resolves (`git cat-file -e "<sha>^{commit}"`), then `git rev-list --count <sha>..HEAD -- <src dirs>` | **≥ 1 commit** on the source dirs |
+| A. Timestamp lag (fallback — only when no header carries `Source`) | `git log -1 --format=%ct -- docs/CODEMAPS/` vs source dirs' latest commit ctime | source newer by **≥ 7 days** |
 | B. File count drift | `find <src>/ -type f \( -name '*.ts' -o -name '*.py' -o -name '*.go' -o -name '*.rs' -o -name '*.swift' \) \| wc -l` vs the `Files scanned: N` in the newest CODEMAPS freshness header (`find -name` does **not** brace-expand — `'*.{ts,py}'` silently matches 0 files and forces a −100% hit) | **±20%** delta |
 | C. Missing CODEMAPS | `docs/CODEMAPS/INDEX.md` absent, or only `architecture.md` exists | immediate hit |
+
+**A0 vs A**: the header format (including `Source`) is defined in
+`~/.claude/agents/codemap-writer.md` — read it, never restate it. When `Source` is present it
+answers the question A only approximates: A measures how recently the codemap *file* was
+touched, so an unrelated one-line edit inside a source-changing commit resets it, while A0
+counts commits on the source dirs since the sha the codemap actually describes. Evaluate A0
+per codemap file and take the maximum. Legacy headers (no `Source`) fall back to A unchanged;
+say which rule fired in the log so a `no hit` can be read back. A0 is more sensitive than A by
+design — one source commit is enough — because the failure this replaces was a stale codemap
+being reported fresh.
+
+**A0 must never fail to `no hit`.** A `Source` that does not resolve in this repo's history
+(squash, rebase, shallow clone) makes `git rev-list` exit 128 with no count — hence the
+`cat-file -e` guard. Treat an unresolvable sha exactly like a missing one: fall back to A for
+that file and log `A0 unresolvable (<sha>) → A`. Silence from a broken check reads identically
+to a clean result, which is the failure mode this whole signal exists to remove.
 
 If `docs/CODEMAPS/` does not exist at all and the project is small (< 30 source files), skip Phase 0 silently — codemaps are optional, not mandatory.
 
@@ -74,7 +91,8 @@ If `docs/CODEMAPS/` does not exist at all and the project is small (< 30 source 
 
    ```
    Phase 0 — Codemap Freshness
-   Signal A (timestamp lag):  CODEMAPS 2026-04-30, src 2026-05-20 → 20 days, HIT
+   Signal A0 (source sha):    Source 3320fd3, 6 commits on src/ since → HIT (A skipped)
+   Signal A (timestamp lag):  n/a — headers carry Source, A0 takes precedence
    Signal B (file count):     CODEMAPS Files: 142, current: 178 → +25%, HIT
    Signal C (missing):        all required files present, no hit
    ```

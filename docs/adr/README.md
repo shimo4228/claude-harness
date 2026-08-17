@@ -48,6 +48,7 @@
 | [0040](0040-demote-feat-tdd-to-conditional.md) | feat × TDD を必須から条件付き発火へ降格 — 現行世代で残る価値は RED→GREEN の儀式でなく「実装を見る前に振る舞いを固定する」spec pinning だけ。テストの要否は不変 (coverage floor は Verify が担保) | accepted | 2026-08-15 |
 | [0041](0041-file-review-findings-on-a-verified-premise.md) | レビュー指摘の起票条件を severity から前提の検証へ移す — severity は生成器が付ける次元なので受け取り側では濾せない。`claims.py spawn --origin review` に `--producer PATH:LINE` を必須化し、怠けた経路が起票できないようにする。reviewer 定義とルーティング表は変更しない | accepted | 2026-08-16 |
 | [0042](0042-retire-code-reviewer-and-scope-security-review-to-threat-surface.md) | ECC 由来 code-reviewer を退役し Code Review を built-in `/code-review` へ、Security Review を `feat` 無条件から脅威面の変化に紐付ける — トリビアの原因は発火頻度でなく repo と一致しない 固定チェックリストだった。security-reviewer は脅威面の導出手順と判例 prior だけを持つ | accepted | 2026-08-16 |
+| [0043](0043-task-triage-loop-judge-build-human.md) | タスク台帳を回す loop — 判断は強い階層のセッション、実装は新セッション、最後のスイッチは人間（PR 無し、語彙・機構は増やさない、harvest、1 判断 1 メッセージ） | accepted | 2026-08-17 |
 
 ## Template
 

@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import subprocess
-from pathlib import Path
 
 import pytest
 
 from scripts import runner as runner_mod
-from scripts.runner import ScenarioExecutionError, _parse_stream_json, run_scenario
+from scripts.runner import (
+    ScenarioExecutionError,
+    _parse_stream_json,
+    run_scenario,
+    sandbox_run_root,
+)
 from scripts.scenario_generator import Scenario
 
 TRACE_LINE = (
@@ -126,7 +130,9 @@ def test_clean_exit_is_unaffected(monkeypatch: pytest.MonkeyPatch) -> None:
     run = run_scenario(_scenario())
 
     assert len(run.observations) == 1
-    assert run.sandbox_dir == Path("/tmp/skill-comply-sandbox/probe")
+    # Per-run scoping: `SANDBOX_BASE/run-<pid>/<id>`, resolved (macOS resolves
+    # /tmp itself). The layout is pinned in test_sandbox_run_scope.py.
+    assert run.sandbox_dir == sandbox_run_root() / "probe"
 
 
 def test_extracts_tool_use_events() -> None:

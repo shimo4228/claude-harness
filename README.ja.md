@@ -65,6 +65,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [session-judgment-mining](skills/session-judgment-mining/SKILL.md) | 過去のセッション記録から、ユーザーが繰り返し下した判断を発掘し、再出現するものを skill / rule に正本化する |
 | [verify-bootstrap](skills/verify-bootstrap/SKILL.md) | repo の機械ゲート（format / lint / type check / security / dependency / test）を立てる、または古びたゲートを棚卸しする。ツール選定は skill に焼き込まず、その時点で調べ直す |
 | [x-draft](skills/x-draft/SKILL.md) | リサーチレポートを長文 1 ポストの下書きにする。pull 型で、通知もノルマもなく、投稿したいと思ったときだけ呼ぶ。一次ソースの再確認と陳腐化ゲートを通し、AI tell を落として下書きで止まる（投稿は人間） |
+| [task-triage](skills/task-triage/SKILL.md) | タスク台帳を回す loop の 1 周: 開いている全タスクを判定（前提・着手条件・価値）し、ready を新しい build セッションへ dispatch、成果を独立に検収 — merge の言葉は人間が持つ |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。

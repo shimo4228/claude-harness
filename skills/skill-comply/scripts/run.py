@@ -116,9 +116,14 @@ def ensure_unique_sandbox_ids(scenarios: list[Scenario]) -> list[Scenario]:
     - macOS APFS and Windows are case-insensitive, so `fix-bug` and `Fix-Bug` are
       two `Path` objects and one inode (verified 2026-08-01: three case variants
       produced three distinct `Path`s and a single directory on disk)
-    - an id that sanitizes to nothing collapses the path onto SANDBOX_BASE itself,
-      which passes the containment check — a directory is inside itself — and
-      would hand `shutil.rmtree` the root holding every scenario's sandbox
+    - an id that sanitizes to nothing collapses the path onto this run's root
+      (`SANDBOX_BASE/run-<pid>`, see `runner.sandbox_run_root`), which passes the
+      containment check — a directory is inside itself — and would hand
+      `shutil.rmtree` the root holding every scenario's sandbox
+
+    Per-run roots make the collision *across* processes harmless, which is what
+    they are for. Within one process this dedup is still the only thing keeping two
+    workers out of one directory.
 
     Isolation therefore cannot rest on the generator's habit of suffixing the
     level name. It is enforced here, and `execute_scenarios` calls it so no caller

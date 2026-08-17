@@ -39,13 +39,40 @@ code. Compress by raising the altitude of the description — never by dropping 
 A codemap that omits a component is worse than a long one, because the reader cannot tell
 the difference between "absent" and "not documented".
 
-**Freshness header** (top of every file):
+**Freshness header** (top of every file). This section is the **single source of truth for the
+header format** — `update-codemaps` and `context-sync` read these fields but must not redefine
+them:
 
 ```markdown
-<!-- Generated: YYYY-MM-DD | Files scanned: N | Tokens: ~M -->
+<!-- Generated: YYYY-MM-DD | Source: <short-sha> | Files scanned: N | Tokens: ~M -->
 ```
 
-`Files scanned` counts source files (not docs / tests / generated). `Tokens` is `wc -c` divided by 4, rounded.
+| Field | Value |
+|---|---|
+| `Generated` | the date you write the file (`date +%F`) |
+| `Source` | `git rev-parse --short HEAD` **in the repo being scanned**, captured at scan start (step 1) — the commit this codemap describes |
+| `Files scanned` | source files only (not docs / tests / generated) |
+| `Tokens` | `wc -c` divided by 4, rounded |
+
+`INDEX.md` carries `Source` too, alongside its own aggregate fields (`Total codemaps` /
+`Total tokens` instead of the per-file ones). Field order is fixed; `Source` sits directly
+after `Generated`.
+
+**Why `Source` exists**: a date says how old the file is, a sha says *what it describes*. With
+it, any downstream check can compute the exact distance from live code —
+`git rev-list --count <Source>..HEAD -- <src dirs>` — instead of guessing from timestamps. The
+date alone cannot distinguish "regenerated against current source" from "touched by an
+unrelated one-line edit", and mtime-based freshness checks have silently passed stale codemaps
+because of exactly that (harness `update-codemaps` step 2).
+
+Two rules:
+
+- **Never carry a `Source` forward** from the previous version of the file — re-read HEAD at
+  every generation (same discipline as *Numeric Claims Discipline* below). The sha describes
+  committed state only; uncommitted source edits in the worktree are not represented.
+- If the repo has no commits yet (`git rev-parse HEAD` fails), **omit the `Source` field
+  entirely** rather than writing a placeholder. Readers fall back to date-based checks when it
+  is absent.
 
 ## Numeric Claims Discipline
 
@@ -60,6 +87,11 @@ A count written in prose is a cache with no invalidation — it starts drifting 
 
 ```bash
 cd <repo-root>
+# 0. Capture the commit this generation describes — do this FIRST, before reading any file,
+#    so the sha cannot drift ahead of what you actually scanned. Empty if the repo has no
+#    commits yet; in that case omit the Source field from every header.
+SOURCE_SHA=$(git rev-parse --short HEAD 2>/dev/null) || SOURCE_SHA=
+
 # 1. Detect project type
 ls package.json pyproject.toml Cargo.toml go.mod Package.swift 2>/dev/null
 
@@ -88,7 +120,7 @@ When in doubt, **omit** — empty codemaps hurt downstream LLM context more than
 Use this pattern (example for `backend.md`):
 
 ```markdown
-<!-- Generated: 2026-05-22 | Files scanned: 142 | Tokens: ~780 -->
+<!-- Generated: 2026-05-22 | Source: 3320fd3 | Files scanned: 142 | Tokens: ~780 -->
 
 # Backend
 
@@ -116,7 +148,7 @@ src/middleware/auth.ts (JWT verification, 60 lines)
 `INDEX.md` minimum content:
 
 ```markdown
-<!-- Generated: 2026-05-22 | Total codemaps: 4 | Total tokens: ~3200 -->
+<!-- Generated: 2026-05-22 | Source: 3320fd3 | Total codemaps: 4 | Total tokens: ~3200 -->
 
 # Codemaps Index
 
@@ -169,11 +201,15 @@ After writing, return to the caller:
 ```
 codemap-writer summary
 ---
+Source sha:     3320fd3 (stamped into every header)
 Files produced: INDEX.md, architecture.md, backend.md, data.md
 Files skipped:  frontend.md (no UI code), dependencies.md (<3 external deps)
 Token totals:   INDEX 240, architecture 720, backend 880, data 410 → total ~2250
 Change ratio vs previous: architecture 12%, backend 41% (>30%, needs review)
 ```
+
+If `SOURCE_SHA` was empty (repo with no commits), say so on the `Source sha:` line instead of
+omitting it — the caller's freshness gate needs to know why the field is missing.
 
 ## Boundaries
 

@@ -130,7 +130,12 @@ For the scanned skills, surface the existing signals so the report is a single
 health view — **labelling each value's source**, never recomputing it:
 
 - **Utility** — read `~/.claude/metrics/skill-usage.jsonl` for 7/30/90-day
-  counts (the same log `skill-stocktake` uses). Where a skill is rarely or never
+  counts (the same log `skill-stocktake` uses). Apply the same corrections as
+  `skill-stocktake`'s "Four corrections" (that section is canonical) — in
+  particular drop `sandbox: true` rows and, for windows reaching before
+  2026-08-17, rows whose `project` is under `/tmp/skill-comply-sandbox` /
+  `/private/tmp/skill-comply-sandbox`: those are skill-comply's compliance test
+  calling the skill, not use. Where a skill is rarely or never
   triggered, judge **[LLM]** whether the cause is *over-specialized* scope (a
   trigger so narrow it never fires) versus simply *new*. If the log's first
   event is younger than 90 days, render usage as `unmeasured` — never `0`.
