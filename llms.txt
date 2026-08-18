@@ -83,7 +83,7 @@ Specialized agents in `agents/`, each with its own tool allowlist.
 - [editor](agents/editor.md): strict technical article editor — reviews tutorials, implementation guides, and debugging stories for code accuracy, AI slop, narrative flow, and terminology consistency
 - [essay-reviewer](agents/essay-reviewer.md): strict essay editor for idea/opinion articles mixing social theory, organizational analysis, design philosophy, historical perspective, and personal narrative
 - [fact-checker](agents/fact-checker.md): fact verification specialist — extracts verifiable factual claims from articles, searches web sources to verify them, reports per-claim verdicts (accurate, inaccurate, unverifiable)
-- [adr-writer](agents/adr-writer.md): generates the 6-section ADR body (Status / Date / Context / Decision / Alternatives / Consequences) from supplied input only — never invents content
+- [adr-writer](agents/adr-writer.md): generates the 7-section ADR body (Status / Date / Context / Decision / Review-when / Alternatives / Consequences) from supplied input only — never invents content
 - [codemap-writer](agents/codemap-writer.md): generates and refreshes docs/CODEMAPS/ — token-lean architecture documentation capped at ~1000 tokens per map
 - [paper-reviewer](agents/paper-reviewer.md): academic paper structure review — argument flow, section transitions, claim sharpness, evidence-claim alignment
 - [source-fidelity-checker](agents/source-fidelity-checker.md): reads each cited primary source directly and flags drift between paper claims and source content
@@ -119,7 +119,7 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 
 ## Design decisions (ADRs)
 
-- [ADR index](docs/adr/README.md): dated Architecture Decision Records for the harness itself — why each skill, agent, and rule was adopted, retired, or reversed, including superseded decisions. The audit trail that makes the harness's evolution (and its value layer) inspectable rather than merely declared. Written in Japanese; each follows a fixed 6-section template (Status / Date / Context / Decision / Alternatives Considered / Consequences)
+- [ADR index](docs/adr/README.md): dated Architecture Decision Records for the harness itself — why each skill, agent, and rule was adopted, retired, or reversed, including superseded decisions. The audit trail that makes the harness's evolution (and its value layer) inspectable rather than merely declared. Written in Japanese; each follows a fixed template (Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences — `Review-when` holds the expiry conditions and is required from ADR-0044 on; an ADR is a dated hypothesis, not a permanent constraint)
 
 ## Related repositories
 

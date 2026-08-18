@@ -1,6 +1,6 @@
 ---
 name: adr-writer
-description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, delegates 6-section body generation to the adr-writer agent, and updates the ADR index. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
+description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, delegates 7-section body generation (incl. `Review-when` expiry conditions) to the adr-writer agent, and updates the ADR index. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
 user-invocable: true
 origin: shimo4228
 ---
@@ -49,8 +49,9 @@ git makes it reversible. Mention the creation in your final report. Write a mini
 
 ## Template
 
-ADRs in this repository use the 6-section template:
-Status / Date / Context / Decision / Alternatives Considered / Consequences.
+ADRs in this repository use the 7-section template:
+Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences.
+`Review-when` holds the expiry conditions — an ADR is a dated hypothesis, not a permanent constraint.
 
 File name: `NNNN-kebab-case-title.md` (zero-padded 4-digit sequence).
 ```
@@ -76,7 +77,7 @@ Verify uniqueness right before writing (race safety):
 
 If `COLLISION`, recompute `NEXT_NUM` from the latest state.
 
-### Step 3: Gather the 6 inputs
+### Step 3: Gather the 7 inputs
 
 Ask the user (or accept from caller) for:
 
@@ -84,12 +85,13 @@ Ask the user (or accept from caller) for:
 2. **Status** — `proposed | accepted | superseded | deprecated`. Default `accepted`.
 3. **Context** — what problem prompted this decision (raw text OK).
 4. **Decision** — what was decided (raw text OK).
-5. **Alternatives** — what else was considered and why rejected (raw text or list).
-6. **Consequences** — what becomes easier / harder (raw text or list).
+5. **Review-when** — the expiry conditions (失効条件): which observation or premise failure would void or weaken this decision, 1-3 lines. It can only be captured at write time (ADR-0021); an ADR without it reads as permanent. If there genuinely is none, say so explicitly — the agent renders 「無し — 恒久判断ではなく記録」.
+6. **Alternatives** — what else was considered and why rejected, or, for an alternative that stays live, 「未決 — 再訪条件: …」 (raw text or list). Keeping a rival open is allowed; a straw man is not.
+7. **Consequences** — what becomes easier / harder (raw text or list).
 
-If 3-6 are missing, request them — do not proceed. ADRs without these sections are noise.
+If 3-7 are missing, request them — do not proceed. ADRs without these sections are noise.
 
-**Assemble and approve the decision packet before delegating.** The main loop holds the semantic authority for this ADR, so it — not the agent — must settle the actual content: the real Context, the decision as decided, why each Alternative was rejected, which Consequences genuinely follow. Confirm this packet with the user (especially the rejection reasons and both sides of Consequences) *before* Step 4. The agent that follows only renders what you hand it; it will not fill a gap you leave. If the decision is still fuzzy, resolve it here in the main loop — do not expect the agent to infer it.
+**Assemble and approve the decision packet before delegating.** The main loop holds the semantic authority for this ADR, so it — not the agent — must settle the actual content: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4. The agent that follows only renders what you hand it; it will not fill a gap you leave. If the decision is still fuzzy, resolve it here in the main loop — do not expect the agent to infer it.
 
 ### Step 4: Delegate body generation to the adr-writer agent
 
@@ -99,11 +101,11 @@ Invoke the `adr-writer` agent via the Agent tool with:
 - Repo root (`$REPO_ROOT`)
 - ADR directory (`$ADR_DIR`)
 - Title (kebab-case slug)
-- Status / Date / Context / Decision / Alternatives / Consequences
+- Status / Date / Context / Decision / Review-when / Alternatives / Consequences
 
 The agent will:
 - Read the 2 most recent ADRs in `$ADR_DIR` for style calibration
-- Fill the 6 sections from your input (no invention)
+- Fill the 7 sections from your input (no invention)
 - Write the file at `$ADR_DIR/$NEXT_NUM-<title>.md`
 - Return a summary block
 
@@ -154,12 +156,13 @@ Index:   updated (+1 row)
 | Not a git repo | Fall back to cwd, warn the user that they should `git init` |
 | ADR number was reserved verbally but not yet written ("I'll write ADR-0010 later") | Skill cannot know; ask the user whether to take the next free number or the reserved one |
 | User wants to supersede an existing ADR | Update the old ADR's Status to `superseded by ADR-NNNN`, then create the new one. Two file writes. |
+| New ADR **partially weakens** an old one (a premise expired, a Review-when trigger fired) but does not supersede it | Do not flip Status. Append under the affected section of the old ADR: `> **注記（YYYY-MM-DD, ADR-NNNN）**: <what changed and what still stands>`. Never delete the original text — the strength history stays readable in place (precedents: ADR-0018 §Consequences, ADR-0028). This is a main-loop step after the agent has written the new file. |
 | Title contains spaces or non-ASCII | Skill normalizes to kebab-case ASCII for the filename; preserves original in the `# ADR-NNNN: ...` heading |
 
 ## Boundaries
 
 - **Do not** invent missing sections. Refuse to write an ADR with `Context: [TBD]` or similar placeholders.
-- **Do not** modify ADRs other than the new one and (optionally) the index. If a supersede chain needs an old ADR updated, do it in a separate explicit step.
+- **Do not** modify ADRs other than the new one and (optionally) the index, except the two explicit main-loop steps above (Status flip on full supersede; dated 注記 on partial weakening). The `adr-writer` agent itself never touches an existing ADR (ADR-0016).
 - **Do not** infer the user's decision from chat history without confirming. Ask, even if the answer feels obvious.
 - **Do not** commit the file. The user owns the commit step.
 

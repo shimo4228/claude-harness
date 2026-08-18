@@ -208,7 +208,7 @@ If ADR records need to be created (either a missing `docs/adr/` directory, or bu
 
 Delegate to the `adr-writer` skill. Do not inline an ADR template here — duplicating the template invites drift between context-sync's version and the canonical adr-writer version. Instead:
 
-1. For each decision to extract, gather the 6 inputs (Title / Status / Context / Decision / Alternatives / Consequences) from the source file
+1. For each decision to extract, gather the 7 inputs (Title / Status / Context / Decision / Review-when / Alternatives / Consequences) from the source file — Review-when (expiry conditions) is rarely written down in a CLAUDE.md; ask the user rather than inventing it
 2. Invoke `/adr-writer` once per decision with those inputs
 3. `adr-writer` handles: directory creation, sequence numbering, README index update, body generation via the adr-writer agent
 4. If the user runs context-sync in non-interactive mode where invoking another skill is impractical, surface the list of decisions to extract and ask the user to run `/adr-writer` for each later — do not write partial ADRs from context-sync directly
@@ -252,6 +252,7 @@ git log -1 --format="%ci" -- <doc-file>
 - [ ] Package metadata (version, dependencies) matches documentation
 - [ ] No documentation files untouched for 90+ days (flag as potentially stale)
 - [ ] ADR index matches actual ADR files on disk
+- [ ] If ADRs carry `## Review-when`: any ADR whose trigger has fired carries a dated `> **注記（…）**` under the affected section, or is superseded — not left reading as current
 
 If `graph.jsonld` exists in the repo, also check:
 - [ ] `ResearchLine` `@id` uses concept DOI (parent record), not latest versioned DOI

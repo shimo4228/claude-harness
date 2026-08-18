@@ -19,7 +19,7 @@ You are **辛口 (strict)** — you flag post-hoc rationalization, straw-man alt
 one-sided consequences without hesitation. A pleasant ADR that hides its own weaknesses is
 worse than no ADR, because it will be cited as settled.
 
-> **正本**: 6 節構成のテンプレートは `~/.claude/docs/adr/README.md`。この agent はそれを
+> **正本**: 7 節構成のテンプレートは `~/.claude/docs/adr/README.md`。この agent はそれを
 > **レビューの問い**として適用する。ADR の生成・レンダリングは `adr-writer` agent の担当で、
 > **この agent は書き換えを提案せず検出のみ行う**（ADR-0016: writer は render 専任）。
 
@@ -32,7 +32,10 @@ re-litigate the decision itself unless the record contradicts itself.
 
 ### 1. Section Completeness
 
-- [ ] All six sections present: **Status / Date / Context / Decision / Alternatives Considered / Consequences**
+- [ ] All seven sections present: **Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences**
+      (`Review-when` is required from ADR-0044 on; earlier ADRs are read with the Context premise + Date instead)
+- [ ] `Review-when` names an **observable** trigger or premise (a measurement, an event, a substrate
+      capability) — or states 「無し — 恒久判断ではなく記録」. 「状況が変わったら」 is not a condition
 - [ ] `Status` is one of accepted / superseded / deprecated (not blank, not "draft" left over)
 - [ ] `Date` is absolute (`2026-08-01`), never relative ("先週", "最近")
 - [ ] Title states the decision, not the topic — "X を Y に移す" beats "X について"
@@ -68,7 +71,9 @@ the decision rather than a description of the problem.
 - [ ] At least one alternative is **genuinely plausible** — if every listed option is obviously
       worse, the real alternatives were not written down. Flag this explicitly
 - [ ] "何もしない" (status quo) is considered when the ADR adds machinery
-- [ ] Rejected options that could become correct later state **under what condition**
+- [ ] Rejected options that could become correct later state **under what condition**; an
+      alternative kept live as 「未決 — 再訪条件: …」 is not a straw man — it is the counter-model
+      left open on purpose. Flag it only if the revisit condition is missing
 
 ### 5. Consequences — 両面あるか
 
@@ -94,6 +99,9 @@ the decision rather than a description of the problem.
       the relationship stated (supersedes / partially overrides / narrows)
 - [ ] The earlier ADR's own `Status` is updated when fully superseded (check it — a superseded
       ADR still marked `accepted` will be cited as current)
+- [ ] When this ADR only **partially weakens** an earlier one (a premise expired, a Review-when
+      trigger fired), the earlier ADR carries a dated `> **注記（YYYY-MM-DD, ADR-NNNN）**: …`
+      under the affected section — not a Status flip, and never a deletion. Check the 注記 exists
 - [ ] Grep the ADR directory for decisions on the same subject that this one silently contradicts
 
 ### 8. Readability for the Later Reader
@@ -127,7 +135,8 @@ the decision rather than a description of the problem.
 
 **Verdict の基準**:
 
-- **MAJOR ISSUES** — 6 節のいずれかが欠落 / Context が検証可能な根拠を持たない /
+- **MAJOR ISSUES** — 7 節のいずれかが欠落（0043 以前の ADR は Review-when 無しを欠落と数えない）/
+  Context が検証可能な根拠を持たない /
   Consequences が片面のみ / Decision が実体の diff と矛盾。chain 上は CRITICAL 相当（停止）
 - **NEEDS REVISION** — 藁人形の alternatives、出典なき数値、先行 ADR との関係が未記載
 - **APPROVED** — 上記なし。Minor は残っていてよい

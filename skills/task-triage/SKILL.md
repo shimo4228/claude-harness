@@ -115,14 +115,23 @@ Per task or bundle:
    because the packet had not named it), and the **commit-message report** (the only evidence
    that survives the pane). State the default plainly: *what the packet does not mention is
    governed by the harness rules, not waived by silence.*
-4. Start the session: this harness uses `spawn-session` (Herdr, Remote Control) so the
-   owner can watch or approve from the phone: `bash ~/.claude/skills/spawn-session/spawn.sh
-   <worktree> "<repo>/s<n>-<slug>"` → `herdr agent prompt "<agent-name>" "$(cat packet)"
-   --wait --timeout 60000` — the first prompt often returns `timeout` while landing fine;
-   confirm with `herdr agent read`. `agent_status: done` means the REPL is idle, **not** that
-   the work is done — a background shell may still run. Alternatives: `Agent(model: opus,
-   isolation: worktree)` when the result should return in-process; `claude --bg -w <name>
-   --model opus "<prompt>"` for a detached pty session (completion via `claude agents --json`).
+4. Start the build — **pick the mechanism by the kind of work**:
+   - *Measurement / read-only / docs-only* → `Agent(model: opus, isolation: worktree)`; three or
+     more with one setup → the Workflow tool (`pipeline`, build and judge as separate `agent()`
+     calls, `schema` for the reading). The result returns in-process, no pane, no cleanup.
+   - *Implementation that must run the full review chain, may run long, or may hit permission
+     prompts* → an interactive session via `spawn-session` (Herdr, Remote Control) so hooks,
+     skills and the chain run in the normal environment and the owner can approve from the
+     phone: `bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>"` →
+     `herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000` — the first
+     prompt often returns `timeout` while landing fine; confirm with `herdr agent read`.
+     `agent_status: done` means the REPL is idle, **not** that the work is done — a background
+     shell may still run. `claude --bg -w <name> --model opus "<prompt>"` is the detached
+     alternative (completion via `claude agents --json`).
+   Unverified as of 2026-08-17 (test on a measurement batch first, where failure is free):
+   whether hooks fire identically inside subagents, whether the chain's skills are equally
+   available there, and how permission prompts surface — if all three hold, implementations
+   can move to Workflow too.
 5. Watch for **artifacts**, not status: a commit on the task branch, the reading file, a
    section in the memo. `Monitor` with a poll loop, exit when all artifacts exist.
 
@@ -159,7 +168,9 @@ The build session's report is a claim. Before asking for the merge word:
 
 - `git -C <repo> merge --ff-only task/<name>` → run verify on `main` again → `claims.py
   release T-XXX --outcome done --commit <sha>` → state `done <date>` in the ledger (store:
-  `mv` to `.notes/archive/tasks/`) → `git worktree remove` + `git branch -d`.
+  `mv` to `.notes/archive/tasks/`) → `git worktree remove` + `git branch -d` → close the build
+  session's pane (`herdr pane close <pane_id>`; the pane is not evidence — the commit body is).
+  Never close panes you did not spawn.
 - If the merge changed a pinned gate script (`.claude/verify.sh`), the approval ledger needs
   the human's `verify_allow.py approve <repo>` **after** the merge — say so explicitly, once
   per such merge, and check with `verify_allow.py check` that it happened. A gate that quietly

@@ -4,20 +4,24 @@
     {
       "id": 1,
       "name": "new-adr-happy-path",
-      "prompt": "Record an ADR for our team. We decided to adopt PostgreSQL as the primary datastore. Context: we were on SQLite and hit concurrency limits during the last load test (450 concurrent writes, lock contention killed throughput). Decision: migrate to PostgreSQL 16 on managed RDS. Alternatives: MySQL 8 (team has no operational experience), CockroachDB (overkill for our scale, +40% cost), stay on SQLite (already proven to fail). Consequences: positive — concurrency headroom, mature tooling; negative — ops complexity, monthly bill +$120; neutral — supersedes our 'SQLite forever' decision in ADR-0003.",
-      "expected_output": "A new ADR file at <repo>/docs/adr/NNNN-postgresql-primary-datastore.md (or similar slug) with all 6 sections filled. The ADR README.md index gets a new row. ADR-0003 should NOT be modified by this run (supersede chain is a separate step per skill boundaries).",
+      "prompt": "Record an ADR for our team. We decided to adopt PostgreSQL as the primary datastore. Context: we were on SQLite and hit concurrency limits during the last load test (450 concurrent writes, lock contention killed throughput). Decision: migrate to PostgreSQL 16 on managed RDS. Alternatives: MySQL 8 (team has no operational experience), CockroachDB (overkill for our scale, +40% cost), stay on SQLite (already proven to fail). Review-when: revisit if write concurrency stays under 50 for two quarters, or if the managed-RDS bill exceeds $300/month. Consequences: positive — concurrency headroom, mature tooling; negative — ops complexity, monthly bill +$120; neutral — supersedes our 'SQLite forever' decision in ADR-0003.",
+      "expected_output": "A new ADR file at <repo>/docs/adr/NNNN-postgresql-primary-datastore.md (or similar slug) with all 7 sections filled. The ADR README.md index gets a new row. ADR-0003 should NOT be modified by this run (supersede chain is a separate step per skill boundaries).",
       "assertions": [
         {
           "text": "File exists at docs/adr/NNNN-*.md with NNNN matching the next sequence number",
           "kind": "file_exists_glob"
         },
         {
-          "text": "File contains all 6 section headings (## Status / ## Date / ## Context / ## Decision / ## Alternatives Considered / ## Consequences)",
+          "text": "File contains all 7 section headings (## Status / ## Date / ## Context / ## Decision / ## Review-when / ## Alternatives Considered / ## Consequences)",
           "kind": "all_headings_present"
         },
         {
           "text": "Decision section uses imperative voice (contains 'Adopt' or 'Migrate' or 'Replace', not 'We should')",
           "kind": "voice_check"
+        },
+        {
+          "text": "Review-when section carries the supplied expiry conditions verbatim (concurrency under 50 / bill over $300), nothing invented",
+          "kind": "verbatim_check"
         },
         {
           "text": "Alternatives Considered has at least 3 labeled blocks (MySQL, CockroachDB, SQLite)",
@@ -37,7 +41,7 @@
     {
       "id": 2,
       "name": "missing-adr-directory",
-      "prompt": "Let's ADR this: we're going to use Tailwind for styling because our designer wants utility classes. Alternatives: CSS modules (too much boilerplate). Consequences: positive — faster iteration; negative — purge config maintenance.",
+      "prompt": "Let's ADR this: we're going to use Tailwind for styling because our designer wants utility classes. Alternatives: CSS modules (too much boilerplate). Review-when: none, plain record. Consequences: positive — faster iteration; negative — purge config maintenance.",
       "expected_output": "Repo has no docs/adr/ directory. The skill should ASK once before creating it. If the user confirms, create docs/adr/ with a README.md index template, then write ADR-0001. If declined, stop with a clear message.",
       "assertions": [
         {
@@ -63,10 +67,10 @@
       "id": 3,
       "name": "sequence-collision-and-incomplete-input",
       "prompt": "Write ADR-0010 about our decision to switch from npm to pnpm.",
-      "expected_output": "Two distinct concerns to test: (a) the user only supplied a Decision (no Context, no Alternatives, no Consequences) — the agent must refuse with a 'needs more input' block and not write a partial ADR. (b) If we pre-populate the directory with 0010-*.md before running, the skill must detect the collision and refuse to overwrite — it should suggest the next available number instead.",
+      "expected_output": "Two distinct concerns to test: (a) the user only supplied a Decision (no Context, no Review-when, no Alternatives, no Consequences) — the agent must refuse with a 'needs more input' block and not write a partial ADR. (b) If we pre-populate the directory with 0010-*.md before running, the skill must detect the collision and refuse to overwrite — it should suggest the next available number instead.",
       "assertions": [
         {
-          "text": "Skill identifies missing sections (Context, Alternatives, Consequences) and asks for them before any file write",
+          "text": "Skill identifies missing sections (Context, Review-when, Alternatives, Consequences) and asks for them before any file write",
           "kind": "missing_sections_detected"
         },
         {

@@ -80,7 +80,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [editor](agents/editor.md) | Strict technical article editor。コード正確性、AI slop、narrative flow、用語一貫性を厳格にレビュー |
 | [essay-reviewer](agents/essay-reviewer.md) | Strict essay editor。社会理論 / 組織論 / デザイン哲学 / 個人ナラティブが混ざる idea 記事を対象 |
 | [fact-checker](agents/fact-checker.md) | 事実検証スペシャリスト。記事から検証可能な claim を抽出し web で verify |
-| [adr-writer](agents/adr-writer.md) | ADR 6 セクション本文を入力のみから生成 — context や代替案の invention 禁止 |
+| [adr-writer](agents/adr-writer.md) | ADR 7 セクション本文（`Review-when` 失効条件を含む）を入力のみから生成 — context・失効条件・代替案の invention 禁止 |
 | [codemap-writer](agents/codemap-writer.md) | `docs/CODEMAPS/` の生成・refresh — 各 map ~1000 token の token-lean アーキテクチャ文書 |
 | [paper-reviewer](agents/paper-reviewer.md) | 学術論文の構造 review — argument flow / section transition / claim sharpness / evidence-claim alignment |
 | [source-fidelity-checker](agents/source-fidelity-checker.md) | 引用された一次ソースを直接読み、論文 claim との drift を検出 |
@@ -89,7 +89,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [citation-formatter](agents/citation-formatter.md) | In-text citation と reference list の整合・format・DOI / arXiv ID 検証 |
 | [readme-reviewer](agents/readme-reviewer.md) | README / repo トップページの厳格レビュアー — LLM 読解フロア / lead 明瞭性 / human hook / 走査性 / 長さ規律 / 視覚効果。readme-writer の companion |
 | [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | README の初見読者目線レビュー — 造語予算 / 内部文脈依存 / 日本語 register（ですます）。readme-reviewer の並列相方 |
-| [adr-reviewer](agents/adr-reviewer.md) | ADR の「決定」ではなく「記録」を検査する — Context が検証可能な根拠を持つか、Alternatives が藁人形でないか、Consequences が両面あるか、先行 ADR との override 関係が明示されているか |
+| [adr-reviewer](agents/adr-reviewer.md) | ADR の「決定」ではなく「記録」を検査する — Context が検証可能な根拠を持つか、`Review-when` が観測可能な失効条件か、Alternatives が藁人形でないか（「未決 — 再訪条件」付きの対抗案は可）、Consequences が両面あるか、先行 ADR との関係（部分弱化は日付つき注記）が明示されているか |
 | [prompt-forager](agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI レビュー — Swift 6 strict concurrency、値セマンティクス、SwiftUI の状態所有、retain cycle、HIG 準拠 |
 <!-- END GENERATED: agents-table -->

@@ -49,10 +49,13 @@
 | [0041](0041-file-review-findings-on-a-verified-premise.md) | レビュー指摘の起票条件を severity から前提の検証へ移す — severity は生成器が付ける次元なので受け取り側では濾せない。`claims.py spawn --origin review` に `--producer PATH:LINE` を必須化し、怠けた経路が起票できないようにする。reviewer 定義とルーティング表は変更しない | accepted | 2026-08-16 |
 | [0042](0042-retire-code-reviewer-and-scope-security-review-to-threat-surface.md) | ECC 由来 code-reviewer を退役し Code Review を built-in `/code-review` へ、Security Review を `feat` 無条件から脅威面の変化に紐付ける — トリビアの原因は発火頻度でなく repo と一致しない 固定チェックリストだった。security-reviewer は脅威面の導出手順と判例 prior だけを持つ | accepted | 2026-08-16 |
 | [0043](0043-task-triage-loop-judge-build-human.md) | タスク台帳を回す loop — 判断は強い階層のセッション、実装は新セッション、最後のスイッチは人間（PR 無し、語彙・機構は増やさない、harvest、1 判断 1 メッセージ） | accepted | 2026-08-17 |
+| [0044](0044-adr-review-when-and-dated-annotation.md) | ADR を日付つき仮説として持つ — `## Review-when`（失効条件）節を 0044 以降必須にし、旧 ADR の部分弱化は Status でなく日付つき注記、読み方 protocol（Date / Review-when を先に見る、失効した ADR に拘束力無し）を akc-cycle / grill-me / architect へ。desire-frontier の機構の移植 | accepted | 2026-08-19 |
 
 ## Template
 
-新しい ADR を追加する際は以下のフォーマットに従う:
+新しい ADR を追加する際は以下のフォーマットに従う。`## Review-when` は ADR-0044 以降必須
+（`harness_lint.py` が存在を検査）。それ以前の ADR には無いので、読むときは Context の前提と
+Date で重みを決める。ADR は日付つき仮説であって恒久的な拘束ではない（`rules/common/akc-cycle.md`）:
 
 ```markdown
 # ADR-NNNN: [Title]
@@ -69,9 +72,16 @@ YYYY-MM-DD
 ## Decision
 [何を決めたか]
 
+## Review-when
+[失効条件 — この判断を反故にする、または弱める観測・前提の失効を 1〜3 行。
+書けなければ「無し — 恒久判断ではなく記録」と明記する]
+
 ## Alternatives Considered
-[他に検討した選択肢]
+[他に検討した選択肢。却下理由、または生きている対抗案なら「未決 — 再訪条件: …」]
 
 ## Consequences
 [この判断の結果、何が容易/困難になるか]
 ```
+
+旧 ADR を新しい観測が**部分的に弱める**（supersede しない）ときは、旧 ADR の該当節の下に
+`> **注記（YYYY-MM-DD, ADR-NNNN）**: …` を追記する。削除も Status の変更もしない。

@@ -80,7 +80,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [editor](agents/editor.md) | Strict technical article editor. Rigorously reviews code accuracy, AI slop, narrative flow, and terminology consistency |
 | [essay-reviewer](agents/essay-reviewer.md) | Strict essay editor. Targets idea pieces mixing social theory / organizational analysis / design philosophy / personal narrative |
 | [fact-checker](agents/fact-checker.md) | Fact verification specialist. Extracts verifiable claims from articles and verifies them via web sources |
-| [adr-writer](agents/adr-writer.md) | Generates the 6-section ADR body from supplied input only — never invents context or alternatives |
+| [adr-writer](agents/adr-writer.md) | Generates the 7-section ADR body (incl. `Review-when` expiry conditions) from supplied input only — never invents context, expiry conditions, or alternatives |
 | [codemap-writer](agents/codemap-writer.md) | Generates / refreshes `docs/CODEMAPS/` — token-lean architecture documentation, ~1000 tokens per map |
 | [paper-reviewer](agents/paper-reviewer.md) | Academic paper structure review — argument flow, section transitions, claim sharpness, evidence-claim alignment |
 | [source-fidelity-checker](agents/source-fidelity-checker.md) | Reads each cited primary source directly and flags drift between paper claims and source content |
@@ -89,7 +89,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [citation-formatter](agents/citation-formatter.md) | Verifies in-text citations against the reference list — format consistency, DOI / arXiv ID validity |
 | [readme-reviewer](agents/readme-reviewer.md) | Strict README / repo top-page review — LLM-read floor, lead clarity, human hook, scannability, length discipline, visual effectiveness. Companion to readme-writer |
 | [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | First-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register (ですます). Parallel partner of readme-reviewer |
-| [adr-reviewer](agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, Alternatives are real rather than straw men, Consequences show both sides, and override relations with prior ADRs are stated |
+| [adr-reviewer](agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, `Review-when` names an observable expiry trigger, Alternatives are real rather than straw men (a live 「未決」 rival is allowed), Consequences show both sides, and override relations with prior ADRs are stated (dated 注記 on partial weakening) |
 | [prompt-forager](agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance |
 <!-- END GENERATED: agents-table -->
