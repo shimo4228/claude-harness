@@ -43,7 +43,7 @@ _BASH_RE = re.compile(r"\bbash\s+(\S+\.sh)\b")
 # harness convention; both are valid agent filenames on disk.
 _AGENT_RE = re.compile(r"~/\.claude/agents/([\w-]+)\.md")
 
-# Markdown link parsing, mirrored from readme-writer/scripts/readme_lint.py so
+# Markdown link parsing, mirrored from readme-writer/scripts/readme_evidence.py (ex readme_lint.py) so
 # the harness has one consistent treatment of fences and local links.
 _FENCE_RE = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})(?P<rest>.*)$")
 _MD_LINK_RE = re.compile(
@@ -321,7 +321,7 @@ def extract_md_links(markdown: str, skill: str, skill_dir: Path) -> list[Referen
     """Find Markdown links to local files, resolved relative to the skill dir.
 
     External URLs, in-page anchors, and site-absolute (`/…`) targets are skipped,
-    matching readme_lint's local-link semantics. Only lines outside fenced code
+    matching readme_evidence's local-link semantics. Only lines outside fenced code
     blocks are considered.
     """
     refs: list[Reference] = []

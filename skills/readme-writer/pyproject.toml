@@ -1,7 +1,7 @@
 [project]
 name = "readme-writer"
-version = "0.1.0"
-description = "Human-facing README structural linter (deterministic, structural-only). Semantic quality review is delegated to a holistic LLM pass per AKC ADR-0008 Code-LLM Layering (Agent Knowledge Cycle research line)."
+version = "0.2.0"
+description = "Human-facing README evidence extractor (deterministic counts and listings, no verdict). The verdict belongs to the fresh-context readme-judge agent, per AKC ADR-0008 Code-LLM Layering (Agent Knowledge Cycle research line)."
 requires-python = ">=3.11"
 dependencies = []
 

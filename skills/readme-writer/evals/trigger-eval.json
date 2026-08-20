@@ -15,7 +15,7 @@
   {"query": "このプロジェクトの CLAUDE.md を整理して、エージェント向けの作業ルールとビルド手順を書きたい", "should_trigger": false},
   {"query": "README と llms.txt と graph.jsonld の事実がズレてないか cross-surface で同期チェックしたい", "should_trigger": false},
   {"query": "contemplative-agent を新バージョンで Zenodo にリリースして DOI 採番して CHANGELOG も更新したい", "should_trigger": false},
-  {"query": "scripts/readme_lint.py の関数に docstring と type hint を足して PEP8 整えたい", "should_trigger": false},
+  {"query": "scripts/readme_evidence.py の関数に docstring と type hint を足して PEP8 整えたい", "should_trigger": false},
   {"query": "先週の設計 MTG の議事録 markdown、見出しを整えて読みやすくして", "should_trigger": false},
   {"query": "API リファレンスのドキュメントサイトを Docusaurus で立てたい", "should_trigger": false},
   {"query": "essay-reviewer に渡す前に、社会論エッセイのドラフトのトーンと論理構造を見てほしい", "should_trigger": false}

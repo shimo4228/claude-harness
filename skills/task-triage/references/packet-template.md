@@ -54,6 +54,9 @@ branch 上の commit だけで返し、判断役が検収、オーナーの「me
 - <files / dirs that may not change> ; テストを弱めない・消さない・設定で黙らせない
 - `git add -A` を使わない ; main への merge・push・台帳の状態変更はしない
 - <time cap> を超えたら打ち切って、そこまでの diff とテスト状況で報告
+- shell ループで複数 path / repo を回すときは **zsh の word-split 罠**を踏まない: 未クオートの `$files` は
+  1 語のまま渡る（`git add -- $files` が 1 つの長い pathspec になる）。`while read` でファイルから回すか
+  `${=files}` で明示 split する（2026-06-28 / 08-19 ×2 の実測）
 
 ## Report（最終 commit の message 本文 = pane が閉じても残る唯一の証拠）
 <type>(<scope>): <summary> (<T-IDs>)
@@ -81,6 +84,10 @@ Out-of-diff findings (for the judge): <severity + 1 行ずつ、HIGH は produce
 - **Bundles**: several tasks with one setup cost → one packet, one branch, one commit that
   names all task IDs. Three README notes across three repos also fit one session (three
   branches, three commits).
+- **zsh does not word-split unquoted parameters** — `for r in $repos` / `git add -- $files` silently
+  pass one long string; three packets tripped on it (2026-06-28 badge push, 2026-08-19 B1 commit
+  loop, 2026-08-19 judge push loop — the last pushed 0/40 before the retry). The Must-not line above
+  is the standing fix: `while read` over a list file, or `${=var}`.
 - **Escalation is a valid ending**: a build that finds a bigger hole (an out-of-diff HIGH) leaves
   it out of the diff, documents the PoC in the commit body, and reports; the judge files it
   with `--producer` after the human agrees. Do not let a build widen its own scope.

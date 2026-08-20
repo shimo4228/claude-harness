@@ -10,7 +10,7 @@
 
 ## Overview
 
-This file deliberately contains issues for `readme_lint` to catch. There is no
+This file deliberately contains evidence for `readme_evidence` to count. There is no
 plain identity sentence between the H1 and this first section (identity_lead),
 a badge wall above (badge_budget), a duplicate H1 below (single_h1), a skipped
 heading level (heading_levels), an image with no alt text (alt_text), a broken

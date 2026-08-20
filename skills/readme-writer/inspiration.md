@@ -35,6 +35,32 @@ Grounded in:
 So the skill splits: a thin deterministic `readme_lint.py` for structural
 hygiene, and a holistic LLM review (rubric-as-lens, never scored) for meaning.
 
+### 2026-08-19: lint → evidence, review → judge loop
+
+The structural lint was retired. In practice its four error checks duplicated
+what markdownlint and each repo's link scan already enforce, and its five
+warnings never touched the actual failure mode of a mature README — context
+density (ADR references, sibling repos, coined terms, internal history piling up
+commit after commit). It was replaced by `scripts/readme_evidence.py`, modeled on
+zenn-content's `mechanical_checks.py`: a script that **counts and lists** but
+never decides (no severity, no threshold, exit 0 regardless of content). The
+verdict moved to a fresh-context judge agent (`readme-judge`, modeled on
+zenn-content's `article-judge`) inside a revision loop capped at two rounds, with
+a binding final judgment on the frozen candidate and the author's read-through as
+the top gate. The Code-LLM Layering rationale above still holds — code owns
+counting, LLM owns meaning — only the code's output changed from "gate" to
+"evidence for the judge".
+
+Calibration carried over from the retired SKILL.md body: "LLMs read only the
+README" is too strong. The precise claim is that README is the only surface a
+*generic* paste-URL or search-grounding path can *reliably* assume; other paths
+exist (search indexes that already chunked other files, link-following, GitHub
+connectors / API exposing the file tree, pretraining). The conclusion is
+strongest for anonymous live-web grounding and direct landing fetch. Routed
+coding agents (Claude Code / Cursor) do read llms.txt on demand, so llms.txt
+remains useful as an agentic-channel backstop — but it is not the entrance for
+AI search.
+
 ## 2026-06 extension: visual-first + the LLM-read floor
 
 A follow-up investigation (three decorrelated evidence streams: external web

@@ -181,7 +181,7 @@ Doctrine 単独だと「概念はわかるが実装イメージできない」�
 
   同 family には **2 つの面型**があり補完的に併置できる:
   - **型 (a) AI 生成 wiki + ask 面**（現行インスタンス: DeepWiki）—— repo を AI が paraphrase して合成 wiki を作り、MCP の ask 系で任意 agent が repo の合成理解を引く。**signature drift のリスクがあり**（固有用語が paraphrase で薄まる）、初回 index 起動を要し（通知 email 入力 + Index ボタン送信 = 訪問だけでは起動しない、生成 2-10 分、email は personal-data 判断で著者本人が行う）、README badge は **refresh 鮮度**を上げる。だからこそ **regurgitation-test の診断面**にもなる（drift を検知できる）。
-  - **型 (b) zero-config MCP doc-hub badge 面**（現行インスタンス: GitMCP）—— 任意の public repo を **submission・index 起動なしで即** MCP doc hub 化し、repo 自身の llms.txt（優先）/ README を **paraphrase せずそのまま** 配信する。合成を経ないので **signature drift が無く**、regurgitation 診断は不要（その代わり drift 観測点にもならない）。README badge は refresh 用でなく **LLM 経由 access-count の計測器**で、star でなく LLM-mediated 引用を測る原則（上の LLM-mediated targeting / clone-not-star）と直結する。
+  - **型 (b) zero-config MCP doc-hub badge 面 —— ⚠️ retired 2026-08-19（実測: access counter が全 repo・対照群とも 0 で計測器として死亡 / host referrer 0 / semantic 層非提供を 30 日隔てた 2 回の probe で確定 → ecosystem 全 41 repo から badge 撤去、ADR-0020 Status 注記）。以下は歴史記述として保持、新規 onboard はしない** —— （旧現行インスタンス: GitMCP）任意の public repo を **submission・index 起動なしで即** MCP doc hub 化し、repo 自身の llms.txt（優先）/ README を **paraphrase せずそのまま** 配信する。合成を経ないので **signature drift が無く**、regurgitation 診断は不要（その代わり drift 観測点にもならない）。README badge は refresh 用でなく **LLM 経由 access-count の計測器**で、star でなく LLM-mediated 引用を測る原則（上の LLM-mediated targeting / clone-not-star）と直結する。
 
   両面とも third-party hosted・自前 infra ゼロ・public repo 限定で friction-minimization と crawler 開放に整合する。隣接サービス調査で「Index（公開ディレクトリ）+ README badge」の両軸を満たすのは型 (a) のフラッグシップ面のみで、index-only 面（コードライブラリ索引型）は doctrine/spec repo に artifact-type mismatch で **fit しない**（onboard 候補から外す）—— badge 面 (b) と wiki 面 (a) の二刀流が idea/research repo の最適配置
 
@@ -255,7 +255,7 @@ strategy の運用は **open inquiry の運用**である。Stance が言うと�
 - [ ] 第三者統治の surface（community knowledge base / catalog / registry）に self-deploy する前に、aggregate-pattern test を通したか？（個々の行為の準拠でなく、アカウントの累積 footprint が host governance に promotion と読まれないか — ADR-0021）
 - [ ] 外部 collection（awesome list / marketplace / 他者 repo）へ掲載する場合、link-index 型か？ vendor 型なら 4 条件監査（企業所有 / open license 欠如 / vendor 構造 / 有料 funnel）を通したか？
 - [ ] 「次の一手」を求められた場合、**問いから始めたか**？（inquiry-first — 台帳・catalog を先に読まない / gate は deploy 決定時のみ / 開いた問いは manifesto の open-question set へ / 採用 deployable は台帳配線へ記録し deploy したら public timeline に 1 行。**候補ゼロ・新しい問い一つで終わる回も正規の成果**。手順は "Operating the strategy over time" 参照）。手のリストを出す回は **3 発生源（content 生産 / earned mention / 再利用 affordance）を含めたか**？測定器は「名指しできる deploy 判断をブロックしている」場合の最大 1 枠に収めたか？
-- [ ] 新規の public idea/research repo を公開したら、AI 派生 wiki / MCP-query 面に onboard したか？ —— 型 (a) AI 生成 wiki 面（DeepWiki 等）は index を起動し refresh badge を添える（derivation 型 diffusion 面 + regurgitation-test 診断面、既存 repo は index 済みなら自動追随）、型 (b) zero-config MCP doc-hub 面（GitMCP 等）は access-count 計測 badge を添える（retrieval 面の計測、submission 不要で即 live、signature drift なし）。index-only 面（コードライブラリ索引型）は doctrine/spec repo に fit せず onboard しない
+- [ ] 新規の public idea/research repo を公開したら、AI 派生 wiki / MCP-query 面に onboard したか？ —— 型 (a) AI 生成 wiki 面（DeepWiki 等）は index を起動し refresh badge を添える（derivation 型 diffusion 面 + regurgitation-test 診断面、既存 repo は index 済みなら自動追随）、型 (b) zero-config MCP doc-hub 面は **2026-08-19 に retired（計測器死亡・読まれた証拠ゼロ）— badge を添えない**。index-only 面（コードライブラリ索引型）は doctrine/spec repo に fit せず onboard しない
 
 ## 禁止事項（trigger 条件下のみ）
 

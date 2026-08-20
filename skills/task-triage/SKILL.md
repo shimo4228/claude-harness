@@ -88,9 +88,17 @@ condition → `ready`, adding the three lines, a `decided` whose decision is alr
 can go as one blanket-OK list; anything that changes a rule, accepts a risk, spends money, or
 drops a task is its own question.
 
+When the cycle runs unattended (the launchd tick, see "Where the loop lives"), the digest
+goes to Slack — still one decision per message:
+`bash ~/.claude/scripts/notify-slack.sh "<repo> | <T-ID> | <one-line ask>" "<background / what is at
+stake / options / recommendation / cost-reversibility> — 回答はこの triage セッション（Remote Control）で"`.
+Close every cycle with one line, even when nothing needs the human:
+`bash ~/.claude/scripts/notify-slack.sh "<repo> triage cycle done" "N decisions pending (or 0)"` —
+that line is the liveness signal; its absence after a tick is the alarm. Slack is **one-way**.
+
 Never treat text sitting in another session's input box as the human's answer — Claude Code
-pre-fills suggested prompts there. The merge word and the answers come **in the triage
-session**, or through the human's own hands.
+pre-fills suggested prompts there — and never treat a Slack reply as the answer either. The
+merge word and the answers come **in the triage session**, or through the human's own hands.
 
 ### 3. Dispatch — packet, worktree, fresh session
 
@@ -199,24 +207,31 @@ The build session's report is a claim. Before asking for the merge word:
 
 ## Where the loop lives — one orchestrator session per repo
 
-One **standing triage session per repo, with that repo as cwd**, holding the loop
-(`/loop <interval> /task-triage`, or `CronCreate`), Remote Control on so the digest can be
-answered from the phone. The human starts nothing: that is the point of the loop. A repo's
-loop needs the repo's context — its ADRs, its ledger vocabulary quirks, its verify gate, its
-concurrent worktrees — so one session judges one repo; a cross-repo session pays that reading
-twice and dilutes both.
+**The timer is outside the session; the executor is inside; the answers are inside only.**
+One **standing triage session per repo, with that repo as cwd**, Remote Control on so the
+digest can be answered from the phone. It holds no timer of its own: launchd runs
+`scripts/triage-tick.sh <repo> <agent-name> "<display>"` at the repo's slots
+(`scripts/launchd/com.shimomoto.triage-{harness,ca}.plist`, installed in
+`~/Library/LaunchAgents/`); the tick finds the live triage agent by its fixed Herdr name
+(`triage-harness` / `triage-ca`), spawns one via `spawn-session` if none exists, and submits
+the cycle prompt with `herdr agent prompt`. The tick never reads the ledger; it only reports
+its own anomalies to Slack (spawned a new session because none was alive, spawn failed,
+prompt stalled twice, session `blocked`, previous cycle still `working` → skipped). The human starts nothing: that is the point of the loop.
+A repo's loop needs the repo's context — its ADRs, its ledger vocabulary quirks, its verify
+gate, its concurrent worktrees — so one session judges one repo; a cross-repo session pays
+that reading twice and dilutes both.
 
-The session is long-lived but **not eternal, and it renews itself**: the last step of every
-cycle compares `claude --version` with the version it started under and checks its own age;
-if the CLI has updated or the session is older than ~7 days (the cron's expiry), it spawns a
-successor in the same cwd (`spawn-session`), hands it the same `/loop` line, and ends. New
-CLI, fresh cron, no human hand. Between cycles the memory is the ledger (verdicts and reasons
-are written into the tasks), so auto-compaction of the standing session costs nothing the
-next cycle needs, and a successor resumes from the ledger alone. Cross-repo effects travel
-only through the ledgers (a task moved as `candidate`, an ADR link), never through a session's
-memory. The judge and the builds may be different model tiers on purpose: judgment
-errors are the expensive ones (a missed refuted premise wastes the whole build), so the
-orchestrator is the strongest tier available and the builds are the fast tier.
+The session is long-lived but **not eternal, and it does not renew itself**: the last step
+of a cycle compares `claude --version` with the version it started under and checks its own
+age; if the CLI has updated or the session is older than ~7 days, it finishes the cycle and
+exits — the next tick spawns a fresh one. No in-session cron, no successor handoff. Between
+cycles the memory is the ledger (verdicts and reasons are written into the tasks), so
+auto-compaction of the standing session costs nothing the next cycle needs, and a fresh
+session resumes from the ledger alone. Cross-repo effects travel only through the ledgers
+(a task moved as `candidate`, an ADR link), never through a session's memory. The judge and
+the builds may be different model tiers on purpose: judgment errors are the expensive ones
+(a missed refuted premise wastes the whole build), so the orchestrator is the strongest tier
+available and the builds are the fast tier.
 
 ## Cadence
 
@@ -230,14 +245,17 @@ cycle: `task-stocktake` (ledger hygiene) first when it is due, then this skill.
 | slow (a harness, a small table) | weekly | weekly, same day, before triage |
 | fast (a research repo with a review chain feeding it) | twice a week — e.g. mid-week + the day of its weekly gate | weekly |
 
-In the standing session use `/loop <interval>` or `CronCreate` (session-only, fires only when
-the REPL is idle, **auto-expires after 7 days** — so the cycle's last step either re-arms it or
-hands over to a successor session, see above); `/loop` self-pacing (`ScheduleWakeup`, ≤ 1 h) is
-for minutes, not days. A cycle that fires while the human is away still does everything up to the digest —
-条件 checks, vocabulary-only bookkeeping, dispatch of `ready` work within WIP, verification of
-finished builds — then leaves the digest and one notification line; consults and merges wait.
-The session's context is not the loop's memory: verdicts live in the tasks, so the standing
-session can be `/clear`ed and re-enter the cycle from the ledger.
+The timer is launchd (`scripts/triage-tick.sh`, see above): harness Sat 08:03 (stocktake →
+triage); CA Wed 17:07 (triage) and Sat 14:07 (stocktake → triage, after the Saturday
+pipeline's 13:30 packet deadline and before the human gate). The tick decides "stocktake
+due" by weekday (Saturday) so each repo keeps one plist. Do not use in-session `CronCreate`
+or `/loop` for this — session-only, 7-day expiry, and silent when the session dies. A cycle
+that fires while the human is away still does everything up to the digest — 条件 checks,
+vocabulary-only bookkeeping, dispatch of `ready` work within WIP, verification of finished
+builds — then sends the digest to Slack (one message per decision) and the closing line;
+consults and merges wait for the human in the session. The session's context is not the
+loop's memory: verdicts live in the tasks, so the standing session can be `/clear`ed and
+re-enter the cycle from the ledger.
 
 ## Related
 
@@ -245,6 +263,10 @@ session can be `/clear`ed and re-enter the cycle from the ledger.
 - `loop-design-check` — the lens: decidable goal, judge independence, red lines
 - `llm-as-judge` — how the judge speaks when a semantic verdict is unavoidable
 - `architect` agent — contested build-or-not
-- `spawn-session` — the session mechanism this harness uses for build sessions
+- `spawn-session` — the session mechanism this harness uses for build sessions and for the
+  standing triage session (spawned by the tick when none is alive)
+- `scripts/triage-tick.sh` / `scripts/launchd/*.plist` — the timer (launchd) that drives the
+  standing session; `scripts/notify-slack.sh` — the one-way Slack channel for the digest
+  (ADR-0045)
 - `references/packet-template.md` — kickoff packet skeleton (build and measurement variants)
 - `references/first-cycle-2026-08-17.md` — the hand-run cycle this skill was distilled from

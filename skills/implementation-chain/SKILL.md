@@ -120,12 +120,12 @@ TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（
 | ❌ INACCURATE（fact-checker） | CRITICAL → 停止 |
 | DRIFT（source-fidelity-checker） | CRITICAL → 停止 |
 | NEEDS REVISION（editor / essay-reviewer / readme-reviewer） | HIGH → 継続 + 修正 |
-| readme_lint exit 1 / geo_check FAIL | Verify FAIL → 停止 |
+| readme-judge Rewrite / geo_check FAIL | Verify FAIL → 停止 |
 
 **Cross-Model Review（条件付き）**: 公開・deposit 前の高 stakes 文書のみ実行する。
 prose は prompt-driven、private ドラフト・下書き段階は `-`。
 
-**Verify 相当（writing 版）**: build / types / tests は非該当。代わりに (1) 決定論 lint（readme_lint.py / geo_check.py / textlint 等、doc 分類に該当するもの） (2) fact / citation gate（fact-checker verdict の出典編入、paper なら citation-formatter） (3) `git status` 確認。
+**Verify 相当（writing 版）**: build / types / tests は非該当。代わりに (1) 決定論 lint または証拠（README は readme_evidence.py の JSON + readme-judge の binding 判定、llms.txt は geo_check.py、記事は mechanical_checks 等、doc 分類に該当するもの） (2) fact / citation gate（fact-checker verdict の出典編入、paper なら citation-formatter） (3) `git status` 確認。
 
 **公開権限**: task request が commit / publish / deposit を含むかをそのまま使う。
 この skill 固有の確認形式や追加 gate は設けない。

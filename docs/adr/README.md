@@ -50,6 +50,7 @@
 | [0042](0042-retire-code-reviewer-and-scope-security-review-to-threat-surface.md) | ECC 由来 code-reviewer を退役し Code Review を built-in `/code-review` へ、Security Review を `feat` 無条件から脅威面の変化に紐付ける — トリビアの原因は発火頻度でなく repo と一致しない 固定チェックリストだった。security-reviewer は脅威面の導出手順と判例 prior だけを持つ | accepted | 2026-08-16 |
 | [0043](0043-task-triage-loop-judge-build-human.md) | タスク台帳を回す loop — 判断は強い階層のセッション、実装は新セッション、最後のスイッチは人間（PR 無し、語彙・機構は増やさない、harvest、1 判断 1 メッセージ） | accepted | 2026-08-17 |
 | [0044](0044-adr-review-when-and-dated-annotation.md) | ADR を日付つき仮説として持つ — `## Review-when`（失効条件）節を 0044 以降必須にし、旧 ADR の部分弱化は Status でなく日付つき注記、読み方 protocol（Date / Review-when を先に見る、失効した ADR に拘束力無し）を akc-cycle / grill-me / architect へ。desire-frontier の機構の移植 | accepted | 2026-08-19 |
+| [0045](0045-triage-loop-launchd-tick-and-slack-digest.md) | triage loop の timer を session の外（launchd `triage-tick.sh` → `herdr agent prompt`）へ、digest は Slack 片方向（1 判断 1 通 + cycle 末尾 1 行、既存 webhook 流用）、答えは triage セッションの中だけ。session 内 CronCreate / 自己更新は skill から外す。harness 土 08:03、CA 水 17:07 + 土 14:07 | accepted | 2026-08-19 |
 
 ## Template
 

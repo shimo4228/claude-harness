@@ -54,6 +54,11 @@ accepted
    無視で消える経路を作らないが、注意を余計に使わせもしない。
 7. **cadence** は on-demand → 判定が安定したら週 1（repo 既存の週次ゲートに揃える）。repo ごとの
    常駐 triage セッションで `CronCreate` / `/loop`、headless 化するときは digest を file + 通知 1 行に。
+
+   > **注記（2026-08-19, ADR-0045）**: 駆動は session 内 `CronCreate` / `/loop` から **launchd tick
+   > （`scripts/triage-tick.sh` → `herdr agent prompt`）** に置き換え、digest は file でなく Slack 片方向
+   > （1 判断 1 通 + cycle 末尾 1 行）にした。session 内 cron は 7 日で失効し session 死亡時に沈黙する
+   > ため。三役・red line・「答えは triage セッションの中」は不変。
 8. **packet は仮説であり、規約の代替ではない。** packet は種別を名指しして review chain を
    `implementation-chain` に委ね、reviewer を手で列挙しない（列挙漏れが省略許可に読まれ、Simplify が
    飛んだ）。packet に無いことは harness の規約が既定。実装役の逸脱は「何を・なぜ」の名指し付き

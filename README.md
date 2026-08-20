@@ -92,6 +92,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [adr-reviewer](agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, `Review-when` names an observable expiry trigger, Alternatives are real rather than straw men (a live 「未決」 rival is allowed), Consequences show both sides, and override relations with prior ADRs are stated (dated 注記 on partial weakening) |
 | [prompt-forager](agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance |
+| [readme-judge](agents/readme-judge.md) | Fresh-context README judge: reads evidence JSON + the README once, answers a fixed checklist with quoted evidence, returns a named verdict (Publishable / Fix / Rewrite) |
 <!-- END GENERATED: agents-table -->
 
 ### Rules
