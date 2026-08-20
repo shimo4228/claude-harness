@@ -1,6 +1,6 @@
 ---
 name: authorship-strategy
-description: maker / 実践者が AI 時代の著者戦略を実地で探るための判断フレームワーク。あなた自身の DOI-registered idea-rescue repo 群（著者自身の例は AKC, Contemplative Agent）で適用する。core principle は「AI 時代のオーセンシティ inversion」— 3 軸（scarcity → diffusion / exclusivity → derivation / enclosure → openness）の反転。主 audience は層別（ADR-0022 二層会計）— doctrine 層 = LLM-mediated channels（LLM 直接 + LLM 経由で情報を得る人間）、essay 層 = 同時代の human reader（同時代 KPI の観測+操舵可）。creative reuse > training > investigation の preference 階層。4 層 framework (authenticity → diffusion → idea/scaffold 判別 → tactics) で判断軸を提供。マネタイズ禁止、tool-agnostic、any-usage 容認、permissive license 原則
+description: maker / 実践者が AI 時代の著者戦略を実地で探るための判断フレームワーク。あなた自身の DOI-registered idea-rescue repo 群（著者自身の例は AKC, Contemplative Agent）で適用する。core principle は「AI 時代のオーセンティシティ inversion」— 3 軸（scarcity → diffusion / exclusivity → derivation / enclosure → openness）の反転。主 audience は層別（ADR-0022 二層会計）— doctrine 層 = LLM-mediated channels（LLM 直接 + LLM 経由で情報を得る人間）、essay 層 = 同時代の human reader（同時代 KPI の観測+操舵可）。creative reuse > training > investigation の preference 階層。4 層 framework (authenticity → diffusion → idea/scaffold 判別 → tactics) で判断軸を提供。マネタイズ禁止、tool-agnostic、any-usage 容認、permissive license 原則
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -26,9 +26,9 @@ maker / 実践者が **AI 時代に著者として知られるための最適戦
 
 以下の各節に現れる audience・scope の記述は、この stance の**帰結**であって、前提そのものはここにある。
 
-## Core Principle: AI 時代のオーセンシティ Inversion
+## Core Principle: AI 時代のオーセンティシティ Inversion
 
-旧時代と AI 時代で、オーセンシティの根拠・防御戦略・network effect は**3 軸すべてで反転する**:
+旧時代と AI 時代で、オーセンティシティの根拠・防御戦略・network effect は**3 軸すべてで反転する**:
 
 | 軸 | 旧時代 | AI 時代 |
 |---|--------|--------|

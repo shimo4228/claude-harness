@@ -63,7 +63,7 @@ rule を 41 行 → 6-8 行（トリガー条件 1 行 + 禁止事項の要 1 �
 
 ## Note (2026-08-21)
 
-オーセンシティを**戦略的価値**として `rules/common/practitioner-identity.md` に著者の言葉で復帰させた。
+オーセンティシティを**戦略的価値**として `rules/common/practitioner-identity.md` に著者の言葉で復帰させた。
 本 ADR の判断は変わらない — 戻したのは価値の表明のみで、trigger 判定・framework・tactics・禁止事項は
 skill `authorship-strategy` に一本化したまま。値を基準に翻訳した形（「変形されず残る」「収益は規準外」等）も
 置かない — 置けば本 ADR が退役させたゲートの再現になる。定義せず自問自答を誘う形だけを常駐させる。
