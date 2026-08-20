@@ -60,3 +60,10 @@ rule を 41 行 → 6-8 行（トリガー条件 1 行 + 禁止事項の要 1 �
 
 - 禁止事項（特に Wikidata self-registration 禁止）を毎セッション決定論ロードする安全機構が無くなる。→ ただし対象 repo は各々 CLAUDE.md / memory / ADR-0021 に guardrail を持ち、skill description は常時カタログに在る。無関係セッションで禁止事項が問題になる場面は構造上ほぼ生じないと判断。
 - always-loaded rule によるトリガーが確率発火（skill description ベース）に変わる。→ skill description がトリガー条件を明示保持し、slash 発火も可能なため、実務上の到達性は維持される。
+
+## Note (2026-08-21)
+
+オーセンシティを**戦略的価値**として `rules/common/practitioner-identity.md` に著者の言葉で復帰させた。
+本 ADR の判断は変わらない — 戻したのは価値の表明のみで、trigger 判定・framework・tactics・禁止事項は
+skill `authorship-strategy` に一本化したまま。値を基準に翻訳した形（「変形されず残る」「収益は規準外」等）も
+置かない — 置けば本 ADR が退役させたゲートの再現になる。定義せず自問自答を誘う形だけを常駐させる。
