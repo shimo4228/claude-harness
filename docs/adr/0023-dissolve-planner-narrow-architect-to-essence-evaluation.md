@@ -46,6 +46,11 @@ architect も同じ再評価にかけた結果、役割が二分された。gene
    可能）。参照 3 箇所を書き換える。
    - implementation-chain の Chain Matrix「Plan (planner)」→「Plan（メインループ /
      plan mode。sub-agent へ委譲しない — plan は rich context と介入点 1 の対話が要件）」
+
+     > **注記（2026-08-22）**: 「sub-agent へ委譲しない」は plan 本文と採否について維持。
+     > 探索（Explore の並列）と設計代替案の生成（Plan agent の観点違い並列）は委譲してよい
+     > と Matrix の Plan 行を改め、Plan 段の cross-model 前提反証（Premise Challenge 行、
+     > skill: `codex-review` plan mode）を追加した。介入点 1 がメインループにある要件は不変。
    - council の When NOT to Use 2 行（implementation steps → main-loop plan mode、
      system architecture → main-loop plan mode）
    - e2e の「Use the planner agent to identify critical journeys」→ メインループの

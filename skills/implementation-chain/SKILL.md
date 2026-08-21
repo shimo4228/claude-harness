@@ -24,7 +24,14 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 `prototype` を選ぶ場合は **「prototype として扱う理由」を plan に必須記載**（fix/feat の悪用防止）。
 
+**harness 自体の変更**: 対象が `~/.claude` の rules / skills / hooks / agents / settings なら、種別に関わらず Plan で skill: `harness-boundary` を 1 回通す（どの層に置くか・モデルに任せられないか・runtime 交換後も残すか。1 行の判断で足りる）。
+
 **README の種別判定**: README 自体の改善・書き直しが目的なら `writing`（Writing Chain → readme-writer）。コード変更に付随する README 追従更新ならコードチェーンの Doc Sync 内で扱う。
+
+**大きい feat の Plan の補助**（2026-08-22、公式 feature-dev plugin の型だけ吸収）: ① Explore agent を
+2〜3 並列・別角度（類似機能 / 構造 / 拡張点）で走らせ、各 agent に「主ループが読むべきファイル 5〜10」を
+返させて読む ② 設計代替は Plan agent を観点違い（最小変更 / クリーン / 実用）で並列し、主ループが
+比較して推奨・ユーザー選択（収束の所在は Matrix の Plan 行）。
 
 ## Chain Matrix（種別 × ステップ）
 
@@ -37,13 +44,15 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 | ステップ | feat | fix | refactor | chore | prototype |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Plan（メインループ / plan mode。sub-agent へ委譲しない — plan は rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
+| Plan（メインループ / plan mode。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
+| Premise Challenge（Plan 段の cross-model 反証、skill: `codex-review` plan mode） | C | - | - | - | - |
 | TDD（メインループ、skill: `tdd`） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
 | Simplify（built-in `/simplify`、quality 軸の cleanup 適用） | Y | C | ↑ | - | - |
 | Code Review | Y | Y | Y | C | - |
 | Security Review | C | C | - | C | - |
+| Silent-Failure Review | C | C | C | - | - |
 | Cross-Model Review | Y | Y | C | - | - |
 | Doc Sync (context files) | C | C | C | C | - |
 | Verify (build / types / lint / tests / secrets / deps / doc sync / git status) | Y | Y | Y | Y | - |
@@ -51,6 +60,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 **条件付き発火 `C` の発動条件**:
 
 - `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（2026-08-15 に `Y` から降格、[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない。判断に迷ったら Y
+- `feat` × Premise Challenge: **新規機構・不可逆・公開面に触れる feat のみ Y**（2026-08-22 追加）。設計パケット確定前に `codex-plan-challenge.sh --plan` を 1 回。歯止めと fold は skill: `codex-review` が正本
 - `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y
 - `fix` × Simplify: 新規ロジックを含む fix のみ Y。typo・設定値のみの diff は `-`
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（2026-08-16 に `Y` から降格、ADR-0042）。
@@ -58,6 +68,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
   無人実行の起動経路とブラスト半径 / 外部コンテンツを LLM 文脈へ取り込む経路 / 権限と bypass の境界。
   内部ロジックの追加のみ、既存経路の内側で完結する feat は `-`
 - `fix` × Security Review: 入力検証・認証・秘匿情報を触る fix のみ Y。ロジック誤り単独は `-`
+- `feat` / `fix` / `refactor` × Silent-Failure Review: **diff が catch / except / fallback / retry / 既定値での握り潰しを追加・変更するときのみ Y**（2026-08-22 追加。bug 軸 = Code Review、quality 軸 = Simplify、security 軸 = Security Review のどれにも無い「エラーを黙って飲む」軸）。2 週間で発火 0 なら行ごと外す
 - 全種別 × Code Review の effort: `feat` / `refactor` は `high`、`fix` / `chore` は `medium` を明示して起動する。
   無指定だと `/code-review` は「最後に打ったレベル」を再利用するので、chain がセッション状態に依存する
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
@@ -84,6 +95,7 @@ built-in review は chain の正規ステップである（ADR-0039 → ADR-0042
 | 1 | **Simplify** | built-in `/simplify`（Review 群より**前**。該当種別は Matrix の Simplify 行が正本 — `feat` = Y、`fix` = C、`refactor` = `↑`（Refactor Clean の中で）、`chore` / `prototype` = 非該当） |
 | 2 | Code Review | built-in `/code-review`（**effort を明示する** — 種別ごとの値は Matrix 下の 「全種別 × Code Review の effort」）。Swift は `swift-reviewer` も追加 |
 | 2 | Security Review | `security-reviewer`（発火は Matrix の Security Review 行が正本。agent 側は自発起動しない） |
+| 2 | Silent-Failure Review | `pr-review-toolkit:silent-failure-hunter`（公式 plugin `pr-review-toolkit@claude-plugins-official`。同 plugin の他 5 agent と `/review-pr` は chain に組み込まない — code-reviewer / code-simplifier は built-in と重複） |
 | 2 | Cross-Model Review | skill: `codex-review` |
 | 2 | ADR / Record Review | `adr-reviewer` + skill: `codex-review` |
 

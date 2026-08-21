@@ -27,7 +27,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [rules-stocktake](skills/rules-stocktake/SKILL.md) | Rules の品質監査 — residency cost（全行が毎セッションの token 税）モデル、staleness / substrate absorption 検査、Keep/Improve/Update/Merge/Demote/Dissolve/Retire 判定。rules-distill の逆方向 |
 | [skill-comply](skills/skill-comply/SKILL.md) | Skill / rule / agent の実際の遵守率を計測。3 段階 prompt で行動シーケンスを分類 |
 | [context-sync](skills/context-sync/SKILL.md) | プロジェクト documentation を監査・修正。役割重複検出、鮮度チェック、欠損作成 |
-| [codex-review](skills/codex-review/SKILL.md) | クロスモデルのコードレビュー — 現在の diff に対し OpenAI Codex CLI (別モデルファミリ) の read-only セカンドオピニオンを取り、code-reviewer / security-reviewer と並行して Claude Code review chain に統合 |
+| [codex-review](skills/codex-review/SKILL.md) | OpenAI Codex CLI（別モデルファミリ）の read-only セカンドオピニオン（argv と config の両面で pin）— (1) 現在の diff のコードレビューを review chain に統合、(2) plan 段で設計パケットの前提を反証（反証 / 欠落制約 / 代替のみ、設計はさせない） |
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | llms.txt / llms-full.txt 等の AI 向けドキュメントを書く。Answer.AI 標準 + GEO/AEO 静的解析 |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | `llms.txt` の companion となる JSON-LD ナレッジグラフ (`graph.jsonld`) を設計・出荷。ドメインエンティティと関係を schema.org triple として encode して LLM 引用を最適化 |
 | [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | 人間向け執筆・レビューの orchestrator。editor / essay-reviewer / fact-checker の使い分け |
@@ -66,6 +66,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [verify-bootstrap](skills/verify-bootstrap/SKILL.md) | repo の機械ゲート（format / lint / type check / security / dependency / test）を立てる、または古びたゲートを棚卸しする。ツール選定は skill に焼き込まず、その時点で調べ直す |
 | [x-draft](skills/x-draft/SKILL.md) | リサーチレポートを長文 1 ポストの下書きにする。pull 型で、通知もノルマもなく、投稿したいと思ったときだけ呼ぶ。一次ソースの再確認と陳腐化ゲートを通し、AI tell を落として下書きで止まる（投稿は人間） |
 | [task-triage](skills/task-triage/SKILL.md) | タスク台帳を回す loop の 1 周: 開いている全タスクを判定（前提・着手条件・価値）し、ready を新しい build セッションへ dispatch、成果を独立に検収 — merge の言葉は人間が持つ |
+| [harness-boundary](skills/harness-boundary/SKILL.md) | mechanism（rule / skill / hook / agent / workflow）を足す前の設計レンズ — 6 層のどこに置くか、モデルに任せられないか、runtime 交換後も残るか。harness を捨てても残るものだけを資産にする |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。

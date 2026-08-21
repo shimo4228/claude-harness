@@ -222,6 +222,7 @@ not a script. Created on the first run — do not pre-seed an empty file.
 - `skill-creator` — handoff target for the skill-creation half of Demote.
 - `adr-writer` — records the why of a Dissolve.
 - `harness-sync` — syncs surviving `origin: shimo4228` rules to the public repo after edits/retirements.
+- `harness-boundary` — design-time lens (layer / portability / obsolescence) applied when a mechanism is proposed; when it is applied to an installed rule its Delete / Move become Stage 2 evidence here (read, never require).
 
 ## References
 

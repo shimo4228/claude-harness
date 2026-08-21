@@ -114,6 +114,8 @@ Scaffold Dissolution（`rules/common/akc-cycle.md`）の**第 3 トリガー = �
 - `skill-comply` — 遵守測定（動的）。本スキルは静的照合 — 両者の証拠は stocktake の
   Stage 2 で合流する
 - ADR-0018 — 前回（Claude 5 世代交代時）の実施記録。手順の実証元
+- `harness-boundary` — 設計時の事前判断（層・可搬性・次世代での陳腐化予測）。本スキルは
+  世代交代後の事後照合
 
 ## References
 

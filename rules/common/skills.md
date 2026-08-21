@@ -14,6 +14,7 @@ skill / agent / rule には `origin` を付ける。YAML frontmatter が無い�
 | `community` | 出所を特定しない外部導入 |
 | `auto-extracted` | learn-eval 出力 |
 | `{origin}-customized` | 外部由来を内容編集 |
+| （symlink、repo 外） | 外部ツール同梱 skill。origin は link 先が担い frontmatter には書かない（例: `hunk-review`） |
 
 skill の正本は `skills/<name>/SKILL.md`。`commands/` は使わない。配置・作成・公開手順は
 skills: `skill-creator` / `harness-sync` が持つ。

@@ -60,7 +60,9 @@ if [[ $rc -eq 3 ]]; then ok "missing codex exits 3"; else bad "missing codex exi
 # 2. default mode on a feature branch injects --base <detected>
 out="$(runa FAKE_CURRENT=feature FAKE_BRANCHES=main 2>/dev/null)"
 if grep -q -- '--base main' <<<"$out"; then ok "default mode injects --base main"; else bad "default mode injects --base main" "$out"; fi
-if grep -q '^CODEX_ARGV: review' <<<"$out"; then ok "calls 'codex review'"; else bad "calls 'codex review'" "$out"; fi
+if grep -q '^CODEX_ARGV: -c sandbox_mode="read-only" -c approval_policy="never" review' <<<"$out"; then
+  ok "calls 'codex review' with read-only sandbox and approvals pinned via -c"
+else bad "calls 'codex review' with read-only sandbox and approvals pinned via -c" "$out"; fi
 
 # 3. same-branch (HEAD==base) falls back to --uncommitted, no --base (code#1 guard)
 out="$(runa FAKE_CURRENT=main FAKE_BRANCHES=main 2>/dev/null)"

@@ -237,6 +237,8 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
 - `adr-writer` — records the why of a Dissolve.
 - `config-gc` — whole-config GC; this skill judges agent *quality*.
 - `harness-sync` — syncs surviving `origin: shimo4228` agents to the public repo.
+- `harness-boundary` — design-time lens (layer / portability / obsolescence) for proposed
+  mechanisms; applied to an installed agent, its Delete / Move are Stage 2 evidence only.
 - Usage measurement: `~/.claude/hooks/log-agent-usage.sh` →
   `~/.claude/metrics/agent-usage.jsonl` (a measurement layer independent of stocktake,
   mirroring skill-stocktake's `log-skill-usage.sh`).

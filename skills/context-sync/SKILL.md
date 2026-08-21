@@ -254,6 +254,14 @@ git log -1 --format="%ci" -- <doc-file>
 - [ ] ADR index matches actual ADR files on disk
 - [ ] If ADRs carry `## Review-when`: any ADR whose trigger has fired carries a dated `> **注記（…）**` under the affected section, or is superseded — not left reading as current
 
+For CLAUDE.md / AGENTS.md specifically (binary red flags, absorbed 2026-08-22 from the official
+`claude-md-management` plugin's quality-criteria before retiring it — its numeric rubric was not
+adopted, see skill: `llm-as-judge`):
+- [ ] No generic advice that is not specific to this project (template copy-paste without customization)
+- [ ] No paths or commands that point at deleted files / missing deps (each referenced path exists)
+- [ ] No `TODO` left in the context file itself
+- [ ] With multiple CLAUDE.md files (root + subdirs): no duplicated instruction across them
+
 If `graph.jsonld` exists in the repo, also check:
 - [ ] `ResearchLine` `@id` uses concept DOI (parent record), not latest versioned DOI
 - [ ] `EcosystemRepo` URLs resolve (not 404; `curl -sI <url> | head -1`)

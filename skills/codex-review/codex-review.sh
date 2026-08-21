@@ -21,13 +21,15 @@ err() { printf '%s\n' "$*" >&2; }
 # (codex-cli 0.142: `-m/--model` is not a `review` option), so they go BEFORE
 # the `review` subcommand. Branch on count to stay safe under `set -u` on the
 # stock macOS bash 3.2 (where "${empty[@]}" would be an unbound-variable error).
+# `codex review` has no --sandbox flag and inherits ~/.codex/config.toml
+# (sandbox_mode=workspace-write, network on, approvals_reviewer=auto_review,
+# execpolicy pre-approving git push). Pin read-only on the config face with -c
+# (2026-08-22 security-reviewer, HIGH) — the argv allowlist alone does not
+# make this read-only. ${arr[@]+"${arr[@]}"} is bash-3.2-safe under set -u.
+readonly_pins=(-c 'sandbox_mode="read-only"' -c 'approval_policy="never"')
 run_codex() {
-  if [[ ${#model_args[@]} -gt 0 ]]; then
-    err "+ codex ${model_args[*]} review $(printf '%q ' "${codex_args[@]}")"
-    exec env NO_COLOR=1 codex "${model_args[@]}" review "${codex_args[@]}"
-  fi
-  err "+ codex review $(printf '%q ' "${codex_args[@]}")"
-  exec env NO_COLOR=1 codex review "${codex_args[@]}"
+  err "+ codex $(printf '%q ' "${readonly_pins[@]}" ${model_args[@]+"${model_args[@]}"}) review $(printf '%q ' "${codex_args[@]}")"
+  exec env NO_COLOR=1 codex "${readonly_pins[@]}" ${model_args[@]+"${model_args[@]}"} review "${codex_args[@]}"
 }
 
 # --- preconditions -----------------------------------------------------------
