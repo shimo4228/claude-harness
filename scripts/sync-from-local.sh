@@ -236,6 +236,42 @@ END = "<!-- END GENERATED: upstream-components -->"
 SELF = {"shimo4228", "auto-extracted", "skill-create"}
 
 
+GITHUB_RE = re.compile(r"https?://github\.com/([^/]+/[^/]+?)(?:\.git|/|$)")
+KEG_RE = re.compile(
+    r"^(?:/opt/homebrew|/usr/local|/home/linuxbrew/\.linuxbrew)/(?:opt|Cellar)/([^/]+)/"
+)
+
+
+def brew_origin(target):
+    """Derive org/repo for a skill symlinked into a Homebrew keg
+    (/opt/homebrew/{opt,Cellar}/<formula>/...). The bundled SKILL.md carries no
+    origin line (hunk 0.19.0 dropped it), so provenance comes from the formula's
+    stable URL / homepage. None when the path is not a keg or brew is absent."""
+    import json
+    import subprocess
+
+    # /opt/homebrew (Apple Silicon) / /usr/local (Intel) / linuxbrew, then
+    # opt/<formula> or Cellar/<formula>/<version>. Anchored so the leading
+    # "/opt" of the prefix itself cannot be mistaken for the keg marker.
+    m = KEG_RE.match(str(target))
+    if not m:
+        return None
+    formula = m.group(1)
+    try:
+        out = subprocess.run(
+            ["brew", "info", "--json=v2", formula],
+            capture_output=True, text=True, timeout=60, check=True,
+        ).stdout
+        f = json.loads(out)["formulae"][0]
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError, IndexError):
+        return None
+    for url in (f.get("urls", {}).get("stable", {}).get("url", ""), f.get("homepage", "")):
+        m = GITHUB_RE.search(url or "")
+        if m:
+            return m.group(1)
+    return None
+
+
 def origin_of(path):
     try:
         head = "".join(path.read_text(encoding="utf-8").splitlines(keepends=True)[:15])
@@ -244,7 +280,14 @@ def origin_of(path):
     m = re.search(r"^origin:\s*(\S+)", head, re.M) or re.search(
         r"<!--\s*origin:\s*(\S+)\s*-->", head
     )
-    return m.group(1) if m else None
+    if m:
+        return m.group(1)
+    # skills/<name> symlinked out of the repo: origin is the link target
+    # (~/.claude rules/common/skills.md, symlink row).
+    d = path.parent
+    if d.is_symlink():
+        return brew_origin(d.resolve())
+    return None
 
 
 items = []
@@ -260,7 +303,12 @@ for p in sorted(src.glob("rules/*/*.md")):
 SUFFIX = "-customized"
 rows = {}  # (base, modified) -> {kind: [names]}
 for kind, name, o in items:
-    if o is None or o in SELF:
+    if o is None:
+        # Unknown provenance is not "self": say so instead of silently dropping
+        # the credit (2026-08-22 hunk-review regression).
+        print(f"[credits] origin unknown, not credited: {kind}/{name}", file=sys.stderr)
+        continue
+    if o in SELF:
         continue
     base, modified = (o[: -len(SUFFIX)], True) if o.endswith(SUFFIX) else (o, False)
     rows.setdefault((base, modified), {}).setdefault(kind, []).append(name)
