@@ -22,6 +22,6 @@
 | `planning.md` | search / chain / verify の入口 |
 | `practitioner-identity.md` | 著者の自己定義（verbatim）— DOI は手段、研究者ではない |
 | `security.md` | commit hook と trust boundary |
-| `skills.md` | origin schema と skill path |
+| `skills.md` | origin schema と skill path、skill-creator への命令形配線 |
 | `task-tracking.md` | repo ごとの task ledger path |
 | `testing.md` | coverage と production 境界 |

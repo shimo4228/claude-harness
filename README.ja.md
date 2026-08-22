@@ -67,6 +67,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [x-draft](skills/x-draft/SKILL.md) | リサーチレポートを長文 1 ポストの下書きにする。pull 型で、通知もノルマもなく、投稿したいと思ったときだけ呼ぶ。一次ソースの再確認と陳腐化ゲートを通し、AI tell を落として下書きで止まる（投稿は人間） |
 | [task-triage](skills/task-triage/SKILL.md) | タスク台帳を回す loop の 1 周: 開いている全タスクを判定（前提・着手条件・価値）し、ready を新しい build セッションへ dispatch、成果を独立に検収 — merge の言葉は人間が持つ |
 | [harness-boundary](skills/harness-boundary/SKILL.md) | mechanism（rule / skill / hook / agent / workflow）を足す前の設計レンズ — 6 層のどこに置くか、モデルに任せられないか、runtime 交換後も残るか。harness を捨てても残るものだけを資産にする |
+| [skill-creator](skills/skill-creator/SKILL.md) | skill / agent 定義を書く・書き直す入口 — intent packet、library 全体での境界確認、Fable 向けの書き方、fresh-context の草稿ゲート（Publishable / Fix / Drop、集計なし）、著者通読。upstream の anthropics skill-creator をその場で置換（ADR-0046） |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。

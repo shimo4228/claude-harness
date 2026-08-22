@@ -51,6 +51,7 @@
 | [0043](0043-task-triage-loop-judge-build-human.md) | タスク台帳を回す loop — 判断は強い階層のセッション、実装は新セッション、最後のスイッチは人間（PR 無し、語彙・機構は増やさない、harvest、1 判断 1 メッセージ） | accepted | 2026-08-17 |
 | [0044](0044-adr-review-when-and-dated-annotation.md) | ADR を日付つき仮説として持つ — `## Review-when`（失効条件）節を 0044 以降必須にし、旧 ADR の部分弱化は Status でなく日付つき注記、読み方 protocol（Date / Review-when を先に見る、失効した ADR に拘束力無し）を akc-cycle / grill-me / architect へ。desire-frontier の機構の移植 | accepted | 2026-08-19 |
 | [0045](0045-triage-loop-launchd-tick-and-slack-digest.md) | triage loop の timer を session の外（launchd `triage-tick.sh` → `herdr agent prompt`）へ、digest は Slack 片方向（1 判断 1 通 + cycle 末尾 1 行、既存 webhook 流用）、答えは triage セッションの中だけ。session 内 CronCreate / 自己更新は skill から外す。harness 土 08:03、CA 水 17:07 + 土 14:07 | accepted | 2026-08-19 |
+| [0046](0046-skill-creator-shrink-in-place-and-creation-gate.md) | skill-creator をその場で縮退（5,826→96 行）し、作成時ゲート（草稿 subagent + skill-stocktake Phase 2 checklist）と命令形配線（rule + PreToolUse hook `skill-create-notice.sh`）に置き換え。skill-writer/skill-judge 新設と NVIDIA SkillEvaluator 導入は棄却 | accepted | 2026-08-22 |
 
 ## Template
 

@@ -143,8 +143,9 @@ health view — **labelling each value's source**, never recomputing it:
   if present; if none/stale, recommend running `/claude-security`. Do not
   re-scan for vulnerabilities here.
 - **Validation** — note (**missing validators** debt) which scanned skills have
-  no `skill-comply` spec and no `skill-creator` benchmark, i.e. no way to verify
-  their behaviour. Judge **[LLM]** trigger↔body consistency only where it is in
+  no `skill-comply` spec and no record of passing `skill-creator`'s draft gate (the
+  fresh-context verdict in its §4; the with/without benchmark was retired 2026-08-22),
+  i.e. no way to verify their behaviour. Judge **[LLM]** trigger↔body consistency only where it is in
   doubt.
 
 > Not measured: skill *success rate* (did using the skill improve the outcome,

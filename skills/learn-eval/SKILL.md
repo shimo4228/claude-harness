@@ -138,7 +138,7 @@ origin: auto-extracted
    grep. After the save completes, ask the user exactly once:
 
    - **Leave it in learned/** (default) — sufficient as reference material / a grep target. If the confirmation gets no response, choose this
-   - **Promote to an active skill** — when description-triggered automatic application should apply in future sessions. In Claude Code, best practice is to run Anthropic's official **skill-creator** skill on the learned draft, structuring it as `~/.claude/skills/<name>/SKILL.md` with description optimization and evals (learn-eval = extraction and quality gate / skill-creator = structuring and eval — a deliberate role split). After promotion, delete the `learned/` file so nothing is managed twice
+   - **Promote to an active skill** — when description-triggered automatic application should apply in future sessions. Run skill: **skill-creator** on the learned draft — it fixes the intent packet, draws the boundary against neighbouring skills, structures it as `~/.claude/skills/<name>/SKILL.md`, and passes it through a fresh-context draft gate (learn-eval = extraction and Save/Drop judgment / skill-creator = shape, boundary and gate — a deliberate role split). After promotion, delete the `learned/` file so nothing is managed twice
 
 ## Output Format for Step 5
 

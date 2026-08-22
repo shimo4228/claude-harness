@@ -175,6 +175,8 @@ in `evidence` are the improvement list handed to the next stage.
   pressure-test → holistic verdict, deterministic pre-pass, overlap probe).
 - `learn-eval` — worked implementation at N=1 (unconditional dynamic questions,
   same-question-set re-judge).
+- `skill-creator` §4 — creation-time draft gate: one fresh subagent without Bash,
+  named verdict Publishable / Fix / Drop, same-question re-judge once.
 
 ## References
 

@@ -67,6 +67,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [x-draft](skills/x-draft/SKILL.md) | Turn a research report into one long-form social post. Pull-only — no quota, no notification, invoked only when the author already wants to post. Rechecks the primary source, gates on staleness, strips the AI tells, and stops at the draft |
 | [task-triage](skills/task-triage/SKILL.md) | One cycle of the task-triage loop: judge every open ledger task (premise, start condition, worth), dispatch the ready ones to fresh build sessions, verify their output independently — the human keeps the merge word |
 | [harness-boundary](skills/harness-boundary/SKILL.md) | Design-time lens for any proposed mechanism (rule / skill / hook / agent / workflow): which of 6 layers it belongs to, whether the model could own it instead, and whether it survives a runtime swap — keep only what outlives the harness |
+| [skill-creator](skills/skill-creator/SKILL.md) | Write or rewrite a skill / agent definition — intent packet, library-wide boundary check, Fable-era writing rules, a fresh-context draft gate (Publishable / Fix / Drop, no scoring), author read-through. Replaces the upstream anthropics skill-creator in place (ADR-0046) |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
@@ -174,7 +175,6 @@ The live harness also runs components from external upstreams. Their content —
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
 | ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, iterative-retrieval, loop-design-check, product-lens, python-patterns, refactor-clean, tdd, update-codemaps | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
-| [anthropics/skills](https://github.com/anthropics/skills) + local modifications | skill-creator | — | — |
 | community + local modifications | scientific-thinking-literature-review | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
