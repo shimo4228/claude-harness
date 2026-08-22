@@ -33,6 +33,19 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 返させて読む ② 設計代替は Plan agent を観点違い（最小変更 / クリーン / 実用）で並列し、主ループが
 比較して推奨・ユーザー選択（収束の所在は Matrix の Plan 行）。
 
+**実行者の決定**（Plan の最後、必須。2026-08-22 追加）: plan が固まったら「このセッションが
+実装するか」を 1 行で決める。判断が要るのは judge-tier のセッション（Fable）で走っているとき —
+そのまま実装に入ると、Review 群まで judge-tier を消費する（built-in `/code-review` と `/simplify`
+はセッションのモデルを継いで走り、モデル引数は無い。pin できるのは自作 agent と plugin agent の
+`model:` だけ）。skill: `task-triage` の dispatch 条件（前提が `file:line` で検証済み / worktree で
+可逆 / 受け入れ条件が判定可能 / 1 セッションに収まる / rule 変更を含まない）を満たすなら、実装は
+build-tier の新規セッション（skill: `spawn-session`、または Agent tool / `claude --bg -w <name>
+--model opus`）へ渡し、本セッションは packet を書いて検証側に残る。**三役とティアの正本は
+task-triage の役割表**（ここには複製しない）。条件を満たさない・分割できないなら、このセッションで
+実装してよい — その場合は Review 群を起動する前に実行モデルを build-tier へ切り替える。
+（失効条件: モデルのティア区別と使用限度が消えた、または substrate がセッション単位の model
+routing を自発的に行うようになったら、この段落を外す。）
+
 ## Chain Matrix（種別 × ステップ）
 
 各セルの値: `Y` 必須 / `C` 条件付き / `-` 省略可 / `↑` 上の行のステップの中で実行する。

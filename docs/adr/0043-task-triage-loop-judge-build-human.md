@@ -101,3 +101,15 @@ accepted
 - 失効条件: substrate が「台帳を読んで judge → build → human gate」を native に持ったとき
   （Workflow の常駐化、agents 系サブコマンドの成熟）は本 ADR の機構部分を downward dissolution
   で縮める。三役と red line は残る。
+
+## 注記 2026-08-22 — ad-hoc 入口を implementation-chain 側に生やした
+
+本 ADR の三役（judge = Fable / build = Opus セッション / merge = 人間）は、台帳経由の入口
+（skill: `task-triage`）でしか通らなかった。judge-tier のセッションで台帳を介さずそのまま
+プランして実装に入る経路が残っており、2026-08-22 に実測で踏んだ — Fable セッションで重めの
+実装を続けた結果、Review 群（built-in `/code-review` / `/simplify` はセッションのモデルを継ぐ。
+モデル引数は無い）まで judge-tier を消費し、使用限度に到達した。
+
+対応として skill: `implementation-chain` の Plan 段に「実行者の決定」を必須ステップとして
+足した。dispatch 条件と三役の**正本は本 ADR と `task-triage` のまま**で、増えたのは ad-hoc 入口
+から同じ判断へ入る導線だけ。本 ADR の決定内容は変えない。
