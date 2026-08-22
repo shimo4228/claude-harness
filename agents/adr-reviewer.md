@@ -36,6 +36,11 @@ re-litigate the decision itself unless the record contradicts itself.
       (`Review-when` is required from ADR-0044 on; earlier ADRs are read with the Context premise + Date instead)
 - [ ] `Review-when` names an **observable** trigger or premise (a measurement, an event, a substrate
       capability) — or states 「無し — 恒久判断ではなく記録」. 「状況が変わったら」 is not a condition
+- [ ] A **count or period** condition (「N 回連続」「30 日で M 件」) names what must stay fixed for
+      the count to be comparable — the body section under test, the judge, or the slot (name /
+      description). If nothing can be named, the count is not measurable: rewrite it as an event
+      condition or author judgment (2026-08-22: ADR-0046's gate had 0 observations while the subject
+      and the judge both changed within the window)
 - [ ] `Status` is one of accepted / superseded / deprecated (not blank, not "draft" left over)
 - [ ] `Date` is absolute (`2026-08-01`), never relative ("先週", "最近")
 - [ ] Title states the decision, not the topic — "X を Y に移す" beats "X について"

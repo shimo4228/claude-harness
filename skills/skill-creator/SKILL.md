@@ -32,7 +32,7 @@ skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全�
 | 判断 | 問い | 出所 |
 |---|---|---|
 | Abstraction trap | 一般化しても次回の行動が変わるか。具体的な Before/After が書けないなら抽象化しすぎ | 2026-03-15 ai-tool-design: 議論を経て「当たり前」に劣化 |
-| Trigger ceiling | 自発発火は ≒40% が天井。description を磨いて超えようとしない。`user-invocable: true` を既定にし、確実性が要る場面は rule の命令形か hook で配線する | 2026-04-11 search-first: text 編集で 27%→8%、revert |
+| Trigger ceiling | 自発発火は description を磨いても伸びない（1 件の実測。天井の数値は未確定）。`user-invocable: true` を既定にし、確実性が要る場面は rule の命令形か hook で配線する | 2026-04-11 search-first: text 編集で 27%→8%、revert |
 | Redundant channel | 既存チャネル（CLI 出力・他 skill・rule）が運ぶ情報を複製しない。複製は観測性でなく視線分散を増やす | 2026-04-12 Zed 追従 hook の棄却 |
 | Recommender 不適合 | 「推奨する」型の skill は成熟 harness で空振り → 暴走（新規作成を提案）する。空の出力を出せる設計か | 2026-04-07 workspace-surface-audit |
 
@@ -84,14 +84,14 @@ skill の本文は渡さない（anchoring）。
 
 ## 7. ⏸ 著者通読 GO
 
-ゲート通過後に著者が見つけた指摘数を commit message に `skill-creator-gate: N 件` の形で 1 行残す
-（`git log --grep` で数える）。**3 回連続で平均 2 件以上**
-なら、inline subagent では足りない — 専用 judge agent + checklist（readme-judge 型）を
-Build する根拠になる。それまでは作らない。
+ゲート通過後の著者通読が最上位のゲート。専用 judge agent + checklist（readme-judge 型）は
+**著者が通読で「inline subagent では足りない」と感じたときだけ** Build する。件数で決めない —
+本文も判定器（著者）も窓の間に変わるので「N 回連続」は測れない（ADR-0046 Review-when 注記
+2026-08-22）。
 
 ## 持たないもの
 
-description 最適化 loop（40% 上限の実測後は磨く先が壁。計器も 2026-06-29 に定数 0 を出した —
+description 最適化 loop（文言改良で発火が伸びない実測後は磨く先が壁。計器も 2026-06-29 に定数 0 を出した —
 memory `reference_skill_creator_loop_gotchas`）、eval viewer / feedback.json、grader・
 analyzer・comparator agent、packaging script（harness-sync）、quick_validate（harness_lint）。
 `references/portability.md`（人間可搬性の基準）は残す — harness-boundary が参照する。

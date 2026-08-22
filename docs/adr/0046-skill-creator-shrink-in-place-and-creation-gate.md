@@ -93,12 +93,24 @@ commit は `b81683e`（hook + rule。**旧資産の削除 5,363 行もここに�
   置き換える（台帳 T-SKILL-CREATOR-EVAL-NATIVE）。
 - 3 回連続の skill 作成で著者の通読指摘数が平均 2 件以上になったら、inline subagent では足りず
   専用 judge agent + checklist を Build する（Decision 5）。
+
+  > **注記（2026-08-22）— 撤回**: この数値ゲートと、下の「KPI の数え方」は測定不能として
+  > 撤回する。gate 観測 0 件の時点で、対象（§4 の本文）は週単位で改稿され、判定器は版を持たない
+  > 著者。3 件が同じ対象・同じ判定器で揃う見込みが無い。`git log --grep='skill-creator-gate:'`
+  > も既に定義 commit（2b2de30）自身を拾う。Decision 5 は「著者が通読で足りないと感じたら
+  > Build」の著者判断に戻す。件数条件の書き方は `agents/adr-reviewer.md` §1 の項目が検査する。
 - 30 日間で skill / agent の新規作成（`git log --diff-filter=A --since=30.days -- 'skills/*/SKILL.md'
   'agents/*.md'`）があるのに、同窓の `metrics/skill-usage.jsonl` に skill-creator の read / invoke が
   無ければ、配線が失効している（hook 自体はログを持たない — 代理指標で見る）。
-- KPI の数え方: 作成 commit の message に `skill-creator-gate: N 件` を残す（SKILL.md §7）。
-  `git log --grep='skill-creator-gate:'` で 3 件集まったら判定。
-- skill-creator の自発発火が 40% を安定して超えたら、`rules/common/skills.md` の命令形配線を外す。
+- ~~KPI の数え方: 作成 commit の message に `skill-creator-gate: N 件` を残す（SKILL.md §7）。
+  `git log --grep='skill-creator-gate:'` で 3 件集まったら判定。~~（2026-08-22 撤回、上の注記）
+- ~~skill-creator の自発発火が 40% を安定して超えたら、`rules/common/skills.md` の命令形配線を外す。~~
+  > **注記（2026-08-22）— 書き直し**: 40% は自発発火の天井（Context）であり、届いた時点で配線を
+  > 外せば天井以下へ戻るだけなので閾値として低すぎる。計器は `skill-comply` Tier 1（ADR-0032、
+  > 「skill に手を伸ばしたか」）で、測る契機が無かっただけ。改める条件: skill-creator 本文を次に
+  > 改稿したとき、skill-comply Tier 1 を **rule 配線あり / なしの 2 arm** で回し、なし arm が
+  > あり arm と同等（差 ≤ 10 pt）かつ 80% 以上なら配線を外す。固定 % 単独では判定しない。
+  > `hooks/skill-create-notice.sh` はこの条件の対象外（Consequences の 30 日実績で別途判断）。
 
 ## Alternatives Considered
 
