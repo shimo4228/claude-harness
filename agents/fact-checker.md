@@ -88,7 +88,7 @@ Output format for each claim:
 
 After the per-claim verdicts, compile every source that PASSED (✅ ACCURATE / ⚠️ PARTIALLY) into a **paste-ready sources block** for the article's 出典 / References section:
 
-- Group by **theme**, not by claim
+- Group by **theme**, not by claim  ← 本 agent が持つ実値（`writing-ecosystem` の Citation & Sources Workflow が由来）
 - **Deduplicate** — a URL cited for several claims appears once
 - **Prefer primary sources** (official / 原典 / academic) over secondary reporting
 - Format as a markdown list the author can drop in directly
@@ -184,8 +184,8 @@ Fact-checker runs in **parallel** with the structural reviewers when possible �
 
 ## Related
 
-- `editor` agent — tech 記事の構造・コード品質レビュー
-- `essay-reviewer` agent — idea 記事の論理構成・過積載レビュー
+- `editor` agent — 実用チャンネルの構造・コード品質レビュー
+- `essay-reviewer` agent — エッセイチャンネルの論理構成・過積載レビュー
 - `writing-ecosystem` skill — AI slop / Voice / タイトル規約の正本。出典の本文編入は同 skill の **Citation & Sources Workflow** が所有（本 agent は paste-ready ブロックを返すのみ）
 
 **Your goal:** Surface factual errors before publication, so the author can fix them or the article can be withdrawn. Verify, don't debunk.

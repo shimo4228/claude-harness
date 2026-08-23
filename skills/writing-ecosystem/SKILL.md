@@ -1,6 +1,6 @@
 ---
 name: writing-ecosystem
-description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。editor / essay-reviewer / fact-checker の役割境界と使い分け、初稿の手順とジャンル別構成、Craft 規約（文の技術）、AI slop 禁止リスト（日英）、Voice 規約（発見調。語尾は公開チャンネル規約優先 — note/Zenn = ですます、規約のない場は だ/である）、エッセイ 4 段構成、タイトル規約、アイデアエッセイのチャンネル構成（note = JA 正本 / Substack = EN 翻訳）を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
+description: 人間向け執筆・レビューエコシステムの orchestrator。記事・エッセイ・ブログポスト・ニュースレター等の **人間 primary** コンテンツを書く / レビューするときに使う。editor / essay-reviewer / fact-checker の役割境界と使い分け、初稿の手順とジャンル別構成、Craft 規約（文の技術）、AI slop 禁止リスト（日英）、Voice 規約（発見調。語尾など文体の実値は project rules のチャンネル表が正本で、本 skill は持たない）、エッセイ 4 段構成、タイトル規約を正本として保持する。AI 向けドキュメント（llms.txt 等）には `llms-txt-writer` を使う。
 compatibility: Designed for Claude Code (or similar agent products). Orchestrates Claude Code subagents bundled in this repo's agents/ directory.
 user-invocable: true
 origin: shimo4228
@@ -24,18 +24,51 @@ origin: shimo4228
 
 | フェーズ | コンポーネント | 軸 | トリガー |
 |---------|---------------|-----|----------|
+| **Pre-write** | `collect-context` skill | 素材収集と証拠台帳（Claims Register / 一次・⚠未検証の tier）。編集判断はしない | 執筆前に素材を集めるとき |
 | **Write** | 本 skill「初稿の手順とジャンル別構成」 | 汎用書き方 | 執筆タスク全般（初稿・構造設計） |
-| **Translate** | `ja-to-en-translation` skill | 日本語→英語の voice 保持翻訳 | JA→EN 翻訳タスク時 |
-| **Review: 品質** | `editor` agent | tech 記事の構造・コード・AI slop・用語 | tech 記事レビュー時 |
-| **Review: 論理** | `essay-reviewer` agent | idea 記事の論理構成・過積載・トーン | idea 記事レビュー時 |
+| **Title** | `headline-craft` skill | 「開かせる一行」の候補生成技法 | タイトル・tagline・subtitle が要るとき |
+| **Translate** | `ja-to-en-translation` skill | 日英**双方向**の voice 保持翻訳（EN→JA は訳す-by-default の term policy と脱翻訳調 pass を追加適用） | JA→EN / EN→JA 翻訳タスク時 |
+| **Review: 品質** | `editor` agent | 記事の構造・コード・AI slop・用語 | 実用チャンネルのレビュー時 |
+| **Review: 論理** | `essay-reviewer` agent | エッセイの論理構成・過積載・トーン | エッセイチャンネルのレビュー時 |
 | **Review: 事実** | `fact-checker` agent | 事実主張の Web 検証 | 公開前検証時 |
-| **Publish** | `substack-publishing` skill | Substack（EN）公開 + LLM corpus ミラー | note 正本の英訳を Substack に出すとき |
+| **Publish: Substack** | `substack-publishing`（**project skill**。content repo に置く） | Substack（EN）公開 + LLM corpus ミラー | note 正本の英訳を Substack に出すとき |
+| **Publish: SNS** | `x-draft` skill | リサーチレポート → X 長文下書き | X に投稿したいとき |
+| **Publish: 公開スレッド** | `public-comment` skill | 技術ピア議論への返信 | GitHub / HF discussions に返信するとき |
 | **Shared** | `writing-ecosystem` skill | AI slop / Voice / エコシステム map | 執筆 + レビュー時（自動発火） |
-| **Overlay** | `<project>/.claude/rules/*.md` | プラットフォーム固有ルール | プロジェクト内作業時のみ |
+| **Overlay** | `<project>/.claude/rules/*.md` | チャンネル固有の事実・配線 | プロジェクト内作業時のみ |
 
-**アイデアエッセイのチャンネル構成（2026-08-12 著者指示で改定）**: 日本語アイデアエッセイの正本（初出）は **note**（content repo の `note/`、ですます調・frontmatter なし）。**Substack は英語チャンネル**で、note 正本を `ja-to-en-translation` で訳した EN 版を出す。旧モデル（Substack 初出 → note 転載）は廃止。エッセイのレビューは実用記事と同じ厚さで回す — `essay-reviewer` + `fact-checker` + 初見読者の明瞭性レビュー + cross-model レビュー（project 側に agent 定義がある場合はそれに従う。例: zenn-content の `zenn-clarity-reviewer` / codex-review）。
+### 値の所在マップ（2026-08-23 の整理後）
 
----
+**この節は「どこに実値があるか」だけを示す。値そのものは書かない** — 地図が値を持ったら
+それ自体が次の重複源になる。
+
+**project 固有の対応表はここに置かない。** 「どの判断がどのファイルにあるか」の一覧は
+その content repo の rules が持つ（zenn-content では `.claude/rules/zenn-writing.md`
+「値の所在マップ」）。global な本 skill が特定 repo の資産名（`theme-eval`・`title-eval`・
+`refs/kaguura-craft-checklist.md` 等）を列挙すると、2 つ目の content repo ができた日に
+この表が嘘になる（2026-08-23 移設）。本節が持つのは、下の**層の梯子と例外の類型**だけ。
+
+**層の意味**（保証の梯子。上ほど確実に届く）:
+
+1. `rules/*.md`・`CLAUDE.md` — main loop **と全 agent プロセス**に常駐
+2. skill / agent の `description:` — 常駐（**ここに値を書かない** — 短く目立たないのに必ず効くので、最も安く矛盾を仕込める）
+3. agent 本文 — その agent には必ず全文載る
+4. skill 本文 — description 競合に勝った 1 本だけ
+5. `refs/` ・他 skill — 誰も自動では読まない（**ポインタは命令形で書く**。「参照」は読まれない）
+
+**意図的な分岐（正本とわざと違う値を持つ稀なケース）**:
+
+- `readme-writer` の日本語 README は ですます（本 skill の Voice 規約からの意図的分岐。
+  README は「初対面の案内」で、である調の断定連打が入口では威圧になるため）。
+  **将来の stocktake がこれを「不整合」として逆修正しないこと。**
+
+**例外（1 箇所化できない類型）**:
+
+- **コードの実行時リテラル** — 実行にリテラルが要る。doc 側は「等」「目安」とヘッジして
+  説明に徹する（`mechanical_checks.py` ⇄ `kaguura-craft-checklist §A`）
+- **ADR の履歴記述** — 記録なので旧値を持つのが正常。運用が ADR を正本として引かないこと
+- **cross-model の consumer** — `codex-review` は別 CLI で走り rules も CLAUDE.md もロードしない。
+  守らせたい値は呼び出し prompt が明示的に指す
 
 ## When to Use What
 
@@ -46,16 +79,14 @@ origin: shimo4228
 └──┬─────────────────────────────────────────┘
    │
    ▼
-┌─ 記事の type で分岐 ───────────────────────┐
+┌─ 出力先チャンネルで分岐 ───────────────────┐
 │                                            │
-│  tech 記事（code/tutorial）                │
-│   → editor agent                           │
+│  実用チャンネル → editor agent             │
+│  エッセイチャンネル → essay-reviewer agent │
 │                                            │
-│  idea 記事（essay/opinion）                │
-│   → essay-reviewer agent                   │
-│                                            │
-│  両方含む mixed                            │
-│   → 両方並列で実行                         │
+│  ※ 記事の type（tech/idea）では分岐しない  │
+│  ※ どのチャンネルがどちらかは、project の  │
+│     rules のチャンネル表が正本             │
 │                                            │
 └──┬─────────────────────────────────────────┘
    │
@@ -72,15 +103,15 @@ origin: shimo4228
 
 ### エージェント並列実行の原則
 
-`editor` と `essay-reviewer` は **観点が異なる** ので、mixed 記事では両方並列実行したほうがカバレッジが高い。`fact-checker` は常に並列で回せる。
+`editor` と `essay-reviewer` は **観点が異なる**。どちらを使うかはチャンネルで決まる（project の rules のチャンネル表が正本）。両方を並列で回すのは、1 本が複数チャンネルへ出る例外的なときだけ。`fact-checker` は常に並列で回せる。
 
 ### 翻訳タスクの場合
 
-日本語記事を英語にするときは、初稿の手順ではなく `ja-to-en-translation` skill を入口にする。翻訳 → EN 出力を `essay-reviewer`（idea）/ `editor`（tech）でレビュー、という流れ。英語側の AI slop / Voice 規約は本 skill を正本として参照する（翻訳 skill は再掲せず defer する）。
+日本語記事を英語にするときは、初稿の手順ではなく `ja-to-en-translation` skill を入口にする。翻訳 → EN 出力を 出力先チャンネルのレビュー agent（正本: project の rules のチャンネル表）でレビュー、という流れ。英語側の AI slop / Voice 規約は本 skill を正本として参照する（翻訳 skill は再掲せず defer する）。
 
 ### Substack へ公開する場合
 
-レビュー（+ 必要なら翻訳・出典編入）が済んだ human essay を Substack に出すときは `substack-publishing` skill を使う。Substack は raw Markdown 非対応なので MD→HTML 変換して貼る、Title / Subtitle / body をフィールド分けする、タグ spine とカバー画像、公開後に LLM corpus（content repo の `substack/`）へミラーする、までを扱う。
+レビュー（+ 必要なら翻訳・出典編入）が済んだ human essay を Substack に出すときは `substack-publishing`（**project skill**。content repo 内）を使う。Substack は raw Markdown 非対応なので MD→HTML 変換して貼る、Title / Subtitle / body をフィールド分けする、タグ spine とカバー画像、公開後に LLM corpus（content repo の `substack/`）へミラーする、までを扱う。
 
 ---
 
@@ -96,7 +127,7 @@ fact-check で確定した一次資料を、**本文の出典セクションに�
 ### 手順
 
 1. fact-check 通過後、verdict が ✅ ACCURATE / ⚠️ PARTIALLY のソースを集める（❌ / ❓ のソースは載せない）。
-2. **テーマ別にグループ化**し、重複 URL を排除、**一次資料を優先**（official / 原典 / academic > 二次報道）。
+2. ブロックの構成規則（テーマ別グループ化・重複 URL 排除・一次資料優先）は **`fact-checker` agent が持つ**（report を出す側が実値を持つ）。ここでは再掲しない。
 3. 本文末に出典セクションを作る。
 4. 本文で著者自身の既発表（DOI / repo / 論文）に言及していれば、それも出典に含める。
 
@@ -104,8 +135,8 @@ fact-check で確定した一次資料を、**本文の出典セクションに�
 
 | 媒体 | 出典の置き方 |
 |---|---|
-| idea / opinion essay | 末尾に `## 出典・参考文献`。テーマ別グループ、一次資料優先 |
-| tech 記事 / tutorial | 本文中の inline link を基本に、必要なら末尾に補助的な References |
+| エッセイチャンネル | 末尾に `## 出典・参考文献`（ブロック構成は `fact-checker` の出力に従う） |
+| 実用チャンネルの記事 / tutorial | 本文中の inline link を基本に、必要なら末尾に補助的な References |
 | 学術 paper | 本ワークフローではなく `citation-formatter` agent（in-text ↔ reference の 1:1・format・DOI 検証） |
 
 ### 引用の検証水準（citation tier）
@@ -153,7 +184,7 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 - **能動態を既定にする** — 「〜が注目された」→「X が〜に注目した」。文に勢いが出る。受動態は行為者を意図的に伏せたいときだけ
 - **平易語 > 格式語** — 知的に見せるための硬い語を使わない（「活用する」→「使う」、「実施する」→「やる」）。抽象語は絵になる具体イメージに置き換える（「低賃金労働」→「日給 10 ドルで土を掘る」）
 - **10% 編集ルール** — 第 2 稿 = 第 1 稿 − 10%。削る対象: 冒頭の warm-up（執筆理由・背景説明の前置き）、中盤の繰り返し、つなぎ語。判定: その文は論点を前に進めているか。進めない文は読者のリテンションを削る
-- **スペーシング = 視覚的句読点** — 文の壁は「宿題」に見えて離脱される。ただし全行独立（LinkedIn 型の 1 行 1 段落）はロボット臭。短い文で加速し、3-4 文の段落で減速する — このばらつきがリズムを作る（構造 tell の「等間隔リズム」回避と同根）
+- **スペーシング = 視覚的句読点** — 文の壁は「宿題」に見えて離脱される。ただし全行独立（LinkedIn 型の 1 行 1 段落）はロボット臭。長さをばらつかせてリズムを作る（構造 tell の「等間隔リズム」回避と同根）。**段落長の閾値は下記「段落密度の機械的閾値」が持つ — ここには書かない**
 - **密度 > 字数** — word count は vanity metric。指標は 1 文あたりの情報量（intellectual density）。目安 800-2,000 語で、複雑なアイデアの説明と読者の時間の尊重を両立する
 - **Input エンジン** — 浅い input からは浅い執筆しか出ない。深い読書（書籍・歴史・一次資料）を執筆の前提にする
 
@@ -165,7 +196,7 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 - **判定基準は「真に迫っているか」** — 読者が「自分のことを言われている」と感じるか。それを作るのは文型ではなく、読者の状況の**名指しの正確さ**。誰にでも当てはまる一般論の問い（「効率化したいと思いませんか」）は、語りかけの形をした集団呼びかけでしかない
 - **「あなた」の連発は不要** — 日本語は主語省略のまま二人称に語れる（問い・指示・約束はどれも主語なしで読者に向く）
 - **全文に機械的に散らさない** — 語りかけの量産は over-editing で声を殺す（Kaguura 7.2）。掴み・結論・節の転換点など、読者の注意を取り直す場所に絞る
-- **チャンネル差** — 実用記事（ですます × 直接指示）は指示形が自然に多い。essay（だ/である × 発見調）では「〜ではないか」の問い化が語りかけを兼ねるので、マーカーが少なくても手紙として読めれば足りる
+- **チャンネル差** — 実用記事（直接指示）は指示形が自然に多い。essay（発見調）では「〜ではないか」の問い化が語りかけを兼ねるので、マーカーが少なくても手紙として読めれば足りる
 
 判定: 完成後、掴みと結論を読み、読者に向いた文（問い・指示・約束）があるか、その文が読者の具体的状況を名指しているか（一般論なら書き直し）を確認する。
 
@@ -177,6 +208,7 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 - **1 文段落を積極的に使う** — 問い・場面転換・結論は 1 文で独立させる
 - **段落間は空行 1 行**。連続空行でテンポを崩さない。段落内の強制改行（文の途中の手動改行）はしない — 折り返しは画面幅に任せる
 - **2 つ以上の対象を比較・対比する文は、箇条書き化を優先**（並列構造は箇条書きの方が一読で伝わる）
+- **em dash（——）で従属節を 1 つの文に埋め込んでいたら、2 文に割れないか確認する**
 - **文長をばらつかせる** — 短文で加速し、2 文段落で減速する。等間隔リズムは構造 tell
 
 判定: 完成後、各段落を上から数え、3 文以上（断片の畳みかけを除く）・比較の地の文埋め込みのいずれかに該当する段落がないか通し読みで確認する。
@@ -189,7 +221,7 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 2. **見出しには専門用語を出さない** — 見出しは離脱の分岐点。難語は本文に落とす
 3. **具体→抽象の順で出す** — 先に具体的な現象・実例を見せ、名前は後からつける
 4. **反復して意味を定着させる** — 一度定義したら同じ語を使い続ける（類義語に逃げない）
-5. **用語自体を捨てる** — 1 回しか使わないなら、その場で平易に言い換えて済ませる
+5. **用語自体を捨てる** — 使い回さない造語は、定義するコストをかけるより平易に言い換える方が安い（**回数の閾値は持たない** — binding な判定を出す clarity reviewer 側が持つ）
 6. **既存概念の系譜に anchor する** — 確立済みの概念に由来するなら初出で系譜を明示する。逆に定着語を和語に言い換えると独自機構に見える — 界隈の定着語をそのまま使う
 7. **英語直訳語を警戒する** — floor →「床」のような直訳は違和感を生む。意味の通る日本語の技術語に置き換える
 
@@ -301,15 +333,19 @@ genre 中立 — essay / 実用記事の両チャンネルに適用する。出�
 - 英: delve / multifaceted / holistic / transformative / ever-evolving / testament to / dive into / deep dive / pivotal / landscape（比喩用法）/ tapestry / boasts / meticulous / unlock / harness / unleash / empower / paradigm
 - 日: 「〜と言えるでしょう」/「〜ではないでしょうか」（修辞疑問の乱用）/「深掘り」
 
-網羅リストの正本は複製しない。コミュニティリスト [AlpinDale/gptslop](https://github.com/AlpinDale/gptslop)（GPT/Claude 頻出句、~800 句規模の Antislop 系評価の基盤）を参照。
+網羅リストの正本は複製しない。コミュニティリスト [AlpinDale/gptslop](https://github.com/AlpinDale/gptslop)（GPT/Claude 頻出句。**実測 53 句** — `gptslop.yaml` 5 + `claudeslop.yaml` 48、2026-08-23 に raw 取得して計数。以前ここに書かれていた「~800 句規模」は誤り）を参照。網羅性を期待せず、種として使う。
 
 ---
 
 ## Voice & Tone Rules
 
-### 文体: 発見調（語尾は公開チャンネル規約が優先）
+### 文体: 発見調（語尾はチャンネル規約が持つ）
 
-type（tech / idea）にかかわらず **発見調** で書く。語尾は公開チャンネルの文体規約が優先する — note・Zenn は ですます（2026-08-12 時点で JA の公開チャンネルは両方 ですます）。**だ/である調** はチャンネル規約のない場（研究 repo 内エッセイ・ドラフト等）の既定。発見調・未解決の正直さ・結論の問い化は語尾にかかわらず維持する。
+genre にかかわらず **発見調** で書く。発見調・未解決の正直さ・結論の問い化は、語尾にかかわらず維持する。
+
+**語尾（ですます / だ・である）の実値は本 skill が持たない。** project の rules に置かれた
+チャンネル表が正本（zenn-content では `.claude/rules/zenn-writing.md`「チャンネル表」）。
+チャンネル規約のない場（研究 repo 内の下書き等）でのみ だ/である を既定とする。
 
 | 使う表現（発見調） | 避ける表現（宣言調） |
 |---------------|-------------------|
@@ -417,7 +453,7 @@ essay の既定構成（出典: Kaguura 2026。Craft 規約と同じ取り込み
 - **挑発・断定**: 「〇〇の真価は△△ではない」式の論争誘発をしない
 - **過度な省略**: 概念を犠牲にして短くしない
 
-*文字数上限はプラットフォーム依存。プロジェクト overlay で定義する（例: Zenn は 50–60 字）。*
+*文字数上限はプラットフォーム依存。実値は各 project overlay の rules が正本で、ここには書かない。*
 
 *この節は**規範**（何を禁止するか）の正本。候補を**作る技法**（具体性・ベネフィット前置・誠実な好奇心ギャップ・流入経路 2 軸評価）は skill: `headline-craft` が正本 — 生成された候補は必ずこの節のフィルタを通す。*
 
@@ -444,7 +480,7 @@ essay の既定構成（出典: Kaguura 2026。Craft 規約と同じ取り込み
 
 - 1 つのセクションが記事全体の 30% を超える場合は、分割を検討する（ハードルールではなく目安）
 - セクション長は重要度に比例させる。主要な論点に厚く、補足に薄く
-- 1 つの記事に独立した論点が 4 つを超える場合は、記事の分割を検討する
+- 独立した論点が多すぎる記事は分割を検討する（**上限の数値は判定を出す側（`essay-reviewer`）が持つ** — ここには書かない）
 
 ---
 
@@ -466,11 +502,10 @@ overlay 側のファイル冒頭に「本 skill を base とする」旨を明�
 
 ## Related
 
-- `article-writing` skill — 2026-08-15 に退役し本 skill へ吸収（Voice 前提が衝突していたため）
 - `headline-craft` skill — 「開かせる一行」の候補生成技法（タイトル・tagline・subtitle・SNS 告知文）。規範は本 skill の Title Conventions、技法はあちら
 - `ja-to-en-translation` skill — 日本語→英語の voice 保持翻訳（英語 AI-slop / Voice / Title / 出典編入は本 skill に defer）
-- `substack-publishing` skill — Substack 公開 + LLM corpus ミラーのワークフロー（Voice / AI-slop / Title / 出典は本 skill に defer）
-- `editor` agent — tech 記事レビュー（構造・コード・AI slop・用語）
-- `essay-reviewer` agent — idea 記事レビュー（論理構成・過積載・トーン）
+- `substack-publishing`（**project skill**。content repo 内）— Substack 公開 + LLM corpus ミラーのワークフロー（Voice / AI-slop / Title / 出典は本 skill に defer）
+- `editor` agent — 実用チャンネルのレビュー（構造・コード・AI slop・用語）
+- `essay-reviewer` agent — エッセイチャンネルのレビュー（論理構成・過積載・トーン）
 - `fact-checker` agent — 事実主張の Web 検証
 - `llms-txt-writer` skill — **AI 向けドキュメント（llms.txt / llms-full.txt / FAQ 等）専用**。audience が AI なら本 skill ではなくあちらを使う

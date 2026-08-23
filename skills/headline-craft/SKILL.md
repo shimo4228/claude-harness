@@ -11,14 +11,14 @@ origin: shimo4228
 
 **役割分担（defer 宣言）**:
 - 誠実さ規約・AI slop 禁止リスト → `writing-ecosystem` の Title Conventions が正本。本スキルの全候補はあのフィルタを通ってから提示する
-- platform 文字数・記法 → 各 project overlay（例: Zenn 50–60 字は `zenn-content/.claude/rules/zenn-writing.md`）
+- platform 文字数・記法 → 各 project overlay の rules が正本（zenn-content なら `.claude/rules/zenn-writing.md`）。実値はここに書かない
 - Zenn の topics / emoji / キーワード含有 → project skill `seo-optimizer`（本スキルはそこから候補生成部として呼ばれる）
 
 ## 実証知見（技法の根拠）
 
 - **ポジティブな飾り言葉は CTR を下げる**: Upworthy の約 10.5 万 headline 変種の分析（Robertson et al. 2023, Nature Human Behaviour）で、ポジティブ語の追加は消費率を下げた。「素晴らしい」「強力な」系の形容は削るのが正しい。※同研究はネガティブ語 1 語あたり CTR +2.3% も示したが、**恐怖・怒り駆動は誠実さ規約違反なので採らない**（問題の率直な記述と煽りは別物 — 「壊れている」は禁止、「〜でハマった」は事実なら可）
 - **好奇心ギャップは情報の欠落**: Loewenstein の information gap 理論。知っていることと知りたいことの差が開かせる。ただし**本文が必ずギャップを埋めること** — 埋めない好奇心ギャップがクリックベイトの定義
-- **日本語圏の参考値**: Qiita 全記事分析でバズ記事はタイトル 20–36 字に集中。上限（Zenn 50–60）より短い方に最適帯がある
+- **日本語圏の参考値**: Qiita 全記事分析でバズ記事はタイトル 20–36 字に集中。各 platform の上限より短い方に最適帯がある
 - **トピック中心 → 結果駆動への進化**: タイトルは戦いの 90%。詩的タイトル（意味不明で素通り）と教科書調（「〜の分析」= 宿題感）が二大失敗形。具体的数値・明示的な価値・人間の声の 3 点が指を止める（Kaguura 2026, 90 日で 20,585 購読者の実践知）
 - **タイトル A/B テストは読者関心の学習装置**: Substack はタイトル A/B テストを機構として持つ。目的は釣りの最適化ではなく「読者が実際に何に関心があるか」を学ぶこと（明快な解決型 vs 興味深いパラドックス型、等）。内容を変えず語選びを検証するのは Distribution 層で、Content Integrity（zenn-content ADR-0001）に適合する
 

@@ -122,7 +122,7 @@ Industry 行のラベルが doc / report に分岐していた。
 4. **Section transition** を section 末尾で明示: 次 section に何を渡すか、現 section の何が前提として持ち越されるか
 5. **Subordinate paragraphs** は claim を分解する direction か、counter / alternative を treat する direction、いずれかに揃える (両方混在は flow を弱める)
 
-各 section draft 完了後、`paper-reviewer` agent + `source-fidelity-checker` agent + `vocabulary-consistency-checker` agent を **並列** で起動して review する (詳細: `paper-ecosystem` skill の When to Use What flowchart)。
+各 section draft 完了後、`paper-reviewer` agent + `source-fidelity-checker` agent + `vocabulary-consistency-checker` agent + `clarity-reviewer` agent を **並列** で起動して review する（正本の `paper-ecosystem` が定める 4 agent。2026-08-23 まで本 skill は 3 つしか列挙しておらず、この skill だけを読む書き手は 4 分の 3 しか回していなかった）。
 
 ---
 
@@ -133,7 +133,9 @@ Deposit 直前に次を確認:
 - [ ] 全 section が `paper-reviewer` を pass している
 - [ ] 全 claim が `source-fidelity-checker` で ALIGNED または PARTIAL 判定 (DRIFT は残っていない)
 - [ ] 全 term が `vocabulary-consistency-checker` を pass している (sub-classification の introduction 明示済み)
+- [ ] `clarity-reviewer` の verdict が PASS（初見読者の明瞭性。造語過多・タイトル軸ずれ・編集メタ語り・内部文脈依存）
 - [ ] `citation-formatter` で orphan citation 0、cite ↔ references 1:1
+- [ ] 脚注の 1:1 marker 検証（`paper-ecosystem` の Two-Layer Density Rules）
 - [ ] Abstract の word count が venue 標準範囲内
 - [ ] DOI / arXiv ID / URL がすべて valid
 - [ ] Multi-language 版がある場合、英語版と内容で乖離していない
@@ -148,6 +150,8 @@ Deposit 直前に次を確認:
 - `paper-reviewer` agent — Section draft 完了後の structure review
 - `source-fidelity-checker` agent — Section draft 完了後の cite-claim 整合 verify
 - `vocabulary-consistency-checker` agent — Section draft 完了後の term 一貫性 verify
+- `clarity-reviewer` agent — 初見読者の明瞭性（`paper-ecosystem` が定める 4 agent panel の 1 つ）
 - `citation-formatter` agent — Deposit 直前の cite ↔ references final gate
+- `paper-deposit` skill — citation gate 通過後の Zenodo deposit 手順
 - `writing-ecosystem` skill — Blog post / essay 用、本 skill ではなくあちら
 - `llms-txt-writer` skill — AI 向け doc 用、本 skill ではなくあちら

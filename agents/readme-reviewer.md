@@ -175,8 +175,8 @@ The floor is a *small* non-negotiable core — everything else must earn its pla
 
 - `readme-writer` skill — 執筆原則の正本（フロア / two-sided rule / Visual-first / Length budget / Voice-Register）と `scripts/readme_evidence.py`（証拠 JSON）。本 agent はその panel 段
 - `readme-clarity-reviewer` agent — 並列相方（初見読者の読書体験・造語予算・日本語 register）
-- `editor` agent — tech 記事レビュー
-- `essay-reviewer` agent — idea 記事レビュー
+- `editor` agent — 実用チャンネルのレビュー
+- `essay-reviewer` agent — エッセイチャンネルのレビュー
 - `context-sync` skill — README ↔ 機械層（llms.txt / graph.jsonld）の fact 一致検証
 - `codex-review` skill — 公開前の高 stakes README への cross-model 並列レビュー（prompt-driven）
 

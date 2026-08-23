@@ -1,6 +1,6 @@
 ---
 name: collect-context
-description: "セッション内外のコンテキストを収集し、全項目ソース付きの記事執筆用の証拠台帳（evidence dossier）を生成する。テーマ・構成・タイトル等の編集判断はしない（受け側 repo の責務）"
+description: "記事・エッセイを書く前の素材収集。セッション内外のコンテキストを集め、全項目ソース付きの証拠台帳（evidence dossier）— Claims Register・一次/⚠未検証の tier・セッションログ索引 — を生成する。Use when — 「素材を集めて」「証拠台帳を作って」「この作業の記事コンテキストをまとめて」、執筆に着手する前、fact-checker に渡す主張リストが要るとき。NOT for — テーマ・構成・タイトル等の編集判断（受け側 repo の責務。→ theme-eval / zenn-practical-writing / writing-ecosystem）、事実の検証そのもの（→ fact-checker agent）。収集者は推薦・提案・方向性メモを出力に書かない"
 user-invocable: true
 origin: shimo4228
 ---
@@ -31,7 +31,8 @@ origin: shimo4228
 ```
 
 - `収集スコープ`: 収集対象の範囲・キーワード（省略時はセッション内容から自動推定）
-- `--out <path>`: 出力先パス（省略時は `~/MyAI_Lab/zenn-content/drafts/article-context_<slug>_<date>.md` に自動命名）
+- `--out <path>`: 出力先パス（省略時は**呼び出し元 repo の `drafts/`** に `article-context_<slug>_<date>.md` で自動命名。
+  置き場所の規約は各 project の overlay が持つ — global な本 skill が特定 repo の絶対パスを既定にしない）
 
 ## Source Provenance（全 Phase 共通の規律）
 

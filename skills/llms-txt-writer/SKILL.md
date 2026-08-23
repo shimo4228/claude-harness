@@ -41,16 +41,29 @@ AI 検索エンジン（ChatGPT / Perplexity / Gemini）と AI エージェン�
 
 ---
 
-## Answer.AI llms.txt Standard
+## Answer.AI llms.txt Standard（**v2** — as-of 2026-08-23 に一次ソース確認）
 
-[llmstxt.org](https://llmstxt.org/)（Jeremy Howard / Answer.AI 2024 提案）の 2 ファイル構成を採用する。repo root に配置すると AI 検索エンジンが優先的に参照する。
+[llmstxt.org](https://llmstxt.org/)（Jeremy Howard / Answer.AI。2024-09-03 公開、**v2 は 2026-08-10 更新**）。
 
-### 2 ファイルの役割分担
+**spec が定めるのは `llms.txt` だけ**:
+
+- **必須は H1（プロジェクト名）のみ**。順序は BOM（任意）→ H1 → 要約 blockquote →
+  見出し以外の詳細 markdown → H2 区切りのファイルリスト
+- **`Optional` セクション** = 二次情報。「より短い context が要るときエージェントが
+  スキップしてよいリンク」という意味（機械的な必須/任意の区別ではない）
+- **発見用の link relation**（HTTP `Link` ヘッダまたは HTML `<link>` で提供する）:
+  `rel="describedby"` → llms.txt 本体、`rel="alternate" type="text/markdown"` → markdown 版ページ
+- **`.md` URL 規約**: `page.html.md`（付加）/ `page.md`（置換）/ ルートは `index.html.md` または `index.md`
+- **サブパスの llms.txt**: 「A file covers the URLs under its path」。複数該当するときは
+  **最も具体的なもの**を使う
+
+**`llms-full.txt` は spec に無い**（`llms_txt2ctx` の context expansion も v2 の本文に記載なし）。
+以下の 2 ファイル構成は**コミュニティ慣行**として本 skill が採る運用であって、標準準拠ではない:
 
 | ファイル | 役割 | 内容 | サイズ目安 |
 |---------|------|------|-----------|
-| `llms.txt` | **Navigator**（robots.txt の AI 版） | H1 + 要約 blockquote + H2 カテゴリ + bullet リンク列 | ~5 KB |
-| `llms-full.txt` | **自己完結型コンテンツ** | FAQ + 用語集 + 引用参照などの full content | ~20 KB |
+| `llms.txt` | **Navigator**（spec 準拠） | H1 + 要約 blockquote + H2 カテゴリ + bullet リンク列 | ~5 KB |
+| `llms-full.txt` | **自己完結型コンテンツ**（spec 外の慣行） | FAQ + 用語集 + 引用参照などの full content | ~20 KB |
 
 ### llms.txt（Navigator）の標準フォーマット
 

@@ -27,6 +27,7 @@ accepted
 1. **他モデル試用（Kimi / GLM / Qwen）は claude-code-router を使う**。Claude Code ハーネスそのものを維持したままモデルだけ差し替えるため、rules 共有問題自体が発生しない。
 2. **Codex CLI** は `~/.codex/AGENTS.md` 末尾にマーカーブロック（`<!-- BEGIN shared-rules -->`）を追加し、「`~/.claude/rules/common/*.md`（Python 案件なら `python/*.md` も）を読んで従え」と指示する。
 3. **Antigravity CLI** は `~/.gemini/config/rules/shared-claude-rules.md` に同じ指示を置く。Antigravity の仕様上 frontmatter に `trigger: always_on` が必須なため、この指示ファイル自体には frontmatter を付与する（`~/.claude/rules` 側のファイルには一切手を入れない）。
+4. **opencode**（2026-08-22 追加、v1.18.21 で実測）は他 2 ツールと異なり、config の `instructions` が絶対パス・`~` 展開・glob を受ける。`~/.config/opencode/opencode.json` に `"instructions": ["~/.claude/rules/common/*.md"]` を置いて**決定論的に注入**し、glob で表現できない 2 点 — Python タスク時の `rules/python/*.md` 追加読み込みと「`~/.claude` を編集しない」境界 — だけを `~/.config/opencode/AGENTS.md` のマーカーブロック（Codex と同形式）に置く。`common/*.md` の内容自体は指示文側に複製しない。
 
 ## Alternatives Considered
 
@@ -57,11 +58,13 @@ Antigravity で実測棄却。rules ファイルは frontmatter（`trigger`）�
 ### Negative
 
 - Codex・Antigravity での rules ロードは確率的（指示に従って読むかどうかはモデル次第）。決定論的注入が保証されるのは Claude Code のみ。
+  - 2026-08-22 追記: opencode は `instructions` glob が `common/*.md` を必ず注入するため、この Negative は Codex・Antigravity のみに残る。決定論的注入が可能なツールでは指示文方式を採らない。
 - 毎セッション、rules 読み込みの tool call とトークンを消費する（Codex で実測 約 29k トークン）。
 
 ### Neutral / Follow-ups
 
 - skills 層の共有は [ADR-0012](./0012-cross-tool-skill-sharing-via-agents-skills.md) が正本、本 ADR は rules 層のみを扱う。両者は独立した ADR として残す。
+- skills 層は opencode でも追加配線なしで効く。opencode は `~/.claude/skills/` と `~/.agents/skills/` の双方を native な探索パスに持つ（2026-08-22 実測: `opencode debug skill` で 66 skill が名前重複なしで列挙された）。
 - 連結スクリプト生成（Alternatives の 4 番目）は、指示文方式の遵守率が不十分と判明した場合の切替候補として保留する。
 
 ## Related

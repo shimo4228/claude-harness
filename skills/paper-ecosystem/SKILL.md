@@ -166,7 +166,7 @@ Journal-style article では venue の慣行に従う (一部 venue は 1st-pers
 
 ### AI slop / over-hedging / under-claiming / over-claiming
 
-- **AI slop**: writing-ecosystem の Banned Patterns (日英) を継承する。Academic paper でも「revolutionary」「paradigm shift」「powerful」「seamless」等は禁止
+- **AI slop**: writing-ecosystem の Banned Patterns (日英) を継承する（語の実値はあちらが持つ — ここには書かない）
 - **Over-hedging**: 「It might possibly be the case that ...」のような 3 重 hedge を 1 つに減らす
 - **Under-claiming**: Evidence が claim を支持しているなら、weakened form で書かない (修辞的疑問は writing-ecosystem では推奨だが、academic paper では evidence を伴う断定が中心)
 - **Over-claiming**: Evidence が支持しない強い断定を避ける。「This proves X」より「This is consistent with X」「The evidence supports X」

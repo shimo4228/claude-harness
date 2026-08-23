@@ -42,7 +42,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md) | Submits a deposited paper to AI-native preprint platforms (aiXiv / AiraXiv) — Web UI browser automation with human gates, or author-delegated API/MCP submission |
 | [readme-writer](skills/readme-writer/SKILL.md) | Writes human-facing READMEs — deterministic structural lint plus holistic LLM review (no scores) |
 | [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | Voice-preserving JA→EN translation for essays, research docs, and READMEs — term-lock, 2-pass, back-translation QA |
-| [substack-publishing](skills/substack-publishing/SKILL.md) | Publishes reviewed essays to Substack and mirrors them to a corpus repo for LLM discovery |
 | [hf-sync](skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
 | [citation-sync](skills/citation-sync/SKILL.md) | Audits the three citation layers of a research repo (docs / .zenodo.json / graph.jsonld) and syncs them bottom-up |
 | [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session in a Herdr pane, visible in the mobile app session list |
@@ -52,7 +51,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [wiki-query](skills/wiki-query/SKILL.md) | Read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis |
 | [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | Audits a project repo's non-code assets (tool configs, CI workflows, runbooks) for diminished value — flags assets whose consumer has vanished, with Keep/Update/Retire/Merge verdicts |
 | [task-stocktake](skills/task-stocktake/SKILL.md) | Audits and consolidates a repo's pending-task tracking into its single task ledger — bootstraps the ledger, sweeps stray task lines, verifies entries against git log and actual code |
-| [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md) | 英語→日本語の voice 保持翻訳スキル。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な日本語にする。逐語訳でも MT でもなく、term-lock（訳す-by-default／英語保持は明示 |
 | [llm-as-judge](skills/llm-as-judge/SKILL.md) | Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation |
 | [implementation-chain](skills/implementation-chain/SKILL.md) | Decides the task type (feat / fix / refactor / chore / prototype / writing) and front-loads its agent chain into the plan — Chain Matrix, reviewer routing, early-stop conditions |
 | [public-comment](skills/public-comment/SKILL.md) | Replies in public technical threads (GitHub discussions / issues / PRs, HF discussions) — AI-slop tell removal, thread grounding, and a human gate with a Japanese translation before posting |

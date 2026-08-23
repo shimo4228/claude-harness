@@ -42,7 +42,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md) | deposit 済み論文を AI-native preprint プラットフォーム (aiXiv / AiraXiv) へ投稿 — 人間ゲート付き browser automation または著者委任の API/MCP 投稿 |
 | [readme-writer](skills/readme-writer/SKILL.md) | 人間向け README を書く — 決定論的な構造 lint + スコアなしのホリスティック LLM review |
 | [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | voice 保持の日英翻訳 — term-lock + 2-pass + back-translation QA |
-| [substack-publishing](skills/substack-publishing/SKILL.md) | レビュー済み essay の Substack 公開と LLM 発見用 corpus へのミラー |
 | [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
 | [citation-sync](skills/citation-sync/SKILL.md) | 研究 repo の引用 4 層 (docs / .zenodo.json / graph.jsonld / Wikidata P2860) を監査し下層から同期 |
 | [spawn-session](skills/spawn-session/SKILL.md) | Herdr の pane に detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
@@ -52,7 +51,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [wiki-query](skills/wiki-query/SKILL.md) | Obsidian LLM wiki (wiki/concept/) への read-only クエリ。`[[ ]]` 出典付きで合成回答 |
 | [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md) | プロジェクト repo の非コード資産（ツール設定・CI workflow・runbook）の価値劣化を監査 — 消費者が消えた資産を検出し Keep/Update/Retire/Merge 判定 |
 | [task-stocktake](skills/task-stocktake/SKILL.md) | repo の pending タスク追跡を単一台帳へ棚卸し・統合 — 台帳の bootstrap、散在タスク行の収集、git log・実コードとの既済照合 |
-| [en-to-ja-translation](skills/en-to-ja-translation/SKILL.md) | 英語→日本語の voice 保持翻訳スキル。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な日本語にする。逐語訳でも MT でもなく、term-lock（訳す-by-default／英語保持は明示 |
 | [llm-as-judge](skills/llm-as-judge/SKILL.md) | Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation |
 | [implementation-chain](skills/implementation-chain/SKILL.md) | task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、対応する agent chain を plan に front-load する判断表 — Chain Matrix、レビュアー routing、早期停止条件 |
 | [public-comment](skills/public-comment/SKILL.md) | 公開技術スレッドへの返信 — AI slop tell の除去、スレッド接地、投稿前の日本語訳併記による人間 gate |
