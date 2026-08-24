@@ -168,9 +168,11 @@ in `evidence` are the improvement list handed to the next stage.
 
 ## Related
 
-- `code-and-llm-collaboration` — the architecture-level "LLM judge + Code
-  enforce" pattern (judgment never mutates state directly); this skill designs
-  the judge's inside.
+- **Code-LLM layering** ([AKC ADR-0008](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0008-code-and-llm-collaboration.md))
+  — the architecture-level "LLM judge + Code enforce" pattern (judgment never
+  mutates state directly); this skill designs the judge's inside. Not an
+  installed skill: it lives in the AKC repo (and as a public skill repo that
+  `harness-sync` publishes to), so cite the ADR rather than a `skills/` path.
 - `skill-stocktake` — worked implementation at library scale (binary screen →
   pressure-test → holistic verdict, deterministic pre-pass, overlap probe).
 - `learn-eval` — worked implementation at N=1 (unconditional dynamic questions,

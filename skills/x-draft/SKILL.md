@@ -71,7 +71,9 @@ config が読めない環境では auto-memory の vault パスを使う。
   (見本の場所・特徴・却下された register) がそこにある。無い環境では、ユーザーの
   過去ポストやブログを 1〜2 本読んで register を写し取るか、ユーザーに 1 回聞く。
   記事の文体と SNS の文体は別物として扱う
-- AI slop 禁止リスト・Voice 規約 → skill: `writing-ecosystem`
+- AI slop 禁止リスト・Craft 規約 → skill: `writing-ecosystem`。ただし **Voice は defer しない** —
+  SNS の register はチャンネル固有で、あちらの発見調をそのまま持ち込むと投稿として不自然になる。
+  この分岐は writing-ecosystem の「意図的な分岐」に登録済み（逆修正されない）
 - 脱 AI-tell (em-dash・対比構文・triad は「未レビュー生ダンプ」のシグナルとして
   読まれる) → skill: `public-comment` の改稿規律を公開ポストにも適用する
 
@@ -80,7 +82,7 @@ config が読めない環境では auto-memory の vault パスを使う。
 - 下書きをコードブロックで提示する (コピペ 1 回で X の compose に貼れる形)
 - 続けて: 使ったソース・鮮度判定・(あれば) レポートとの差異を 2〜3 行で報告
 - ユーザーの改稿指示 (短く / 硬く / 英語版も 等) には対話で応じる。英語版を求められたら
-  skill: `ja-to-en-translation` の voice 保持規律に従う
+  skill: `prose-translation` の voice 保持規律に従う
 
 ## 例
 

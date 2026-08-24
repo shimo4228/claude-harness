@@ -60,11 +60,22 @@ Herdr の pane に Codex 等の対話セッションを立て、指示書ファ�
 ```bash
 herdr pane split --current --direction right --cwd "$PWD" --no-focus
 # → .result.pane.pane_id を読む
-herdr agent start <name> --kind codex --pane <pane-id> -- -s workspace-write
+herdr agent start <name> --kind codex --pane <pane-id> \
+  -- --ignore-user-config --ignore-rules -s workspace-write
 herdr agent prompt <name> "指示書が <指示書の絶対パス> にある。読んでそのとおり実装し、検証を自分で回して green にしてから完了報告。git commit はしないこと。"
 ```
 
+`--ignore-user-config --ignore-rules` を外さない。`~/.codex/config.toml` の
+`approvals_reviewer=auto_review` と `.rules` の `git push` / `uv run` pre-approve が
+sandbox escalation を自動承認しうる（2026-08-22 security-reviewer HIGH。`codex-review` が
+read-only seam に同じ pin を入れた根拠と同一で、write 権限を渡すここでは効き方がより大きい）。
+
 `--wait` は使わない（foreground の Bash が待ち続ける形になり、途中経過に手を出せなくなる）。
+**vendor skill `herdr` は「For normal agent work, `--wait` is enough」と書いているが、
+それは実測で否定されている** — `agent start` の `interactive_ready: true` も
+`agent_status` も信用しない（2026-08-01 に `agent prompt` 成功直後の `agent read` が
+`agent_not_found` を返した）。確実な信号は「esc to interrupt」表示の消失。
+vendor file は origin を反転させずに編集できないので、反証はここに置く。
 監視は次項の形で行う。
 
 **prompt を送ったら、必ず `herdr agent read` で着弾を目視する。** レスポンスは成功を保証しない

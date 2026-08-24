@@ -229,7 +229,7 @@ rule 自身が常駐と形式強制でモデル・人間の注意を消費して
 
 - **ADR-0018 の rightsize 直後に常駐が +145 words 増える**（`common/` は 2,252 → 2,397 words）。
   この内容は決定論ゲートに落とせない（提示物の選択は意味的判断であり、
-  現在の [`documented-invariant-lint-gates`](../../skills/learned/documented-invariant-lint-gates.md) の
+  当時の `skills/learned/documented-invariant-lint-gates.md`（2026-08-23 に learned/ ごと退役、[ADR-0047](./0047-retire-learned-notes-directory.md)）の
   「文書化された不変条件はゲートに落とす」を適用できない）ため、
   rule に置く以外の選択肢がない。
 - **「behavior-shaping artifact か否か」の判定自体が意味的**であり、境界事例（生成ドキュメント、

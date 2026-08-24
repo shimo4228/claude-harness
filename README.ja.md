@@ -31,7 +31,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | llms.txt / llms-full.txt 等の AI 向けドキュメントを書く。Answer.AI 標準 + GEO/AEO 静的解析 |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | `llms.txt` の companion となる JSON-LD ナレッジグラフ (`graph.jsonld`) を設計・出荷。ドメインエンティティと関係を schema.org triple として encode して LLM 引用を最適化 |
 | [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | 人間向け執筆・レビューの orchestrator。editor / essay-reviewer / fact-checker の使い分け |
-| [write-prompt](skills/write-prompt/SKILL.md) | 軽量モデル設定の prompt-writer agent で簡潔な prompt を生成 |
 | [collect-context](skills/collect-context/SKILL.md) | セッション内外のコンテキストを集めて記事執筆用の素材を作る |
 | [authorship-strategy](skills/authorship-strategy/SKILL.md) | DOI 登録された idea-rescue 研究 repo 向けの 4 層 framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) |
 | [release-doi](skills/release-doi/SKILL.md) | DOI 登録された研究 repo のバージョン release を切る (Zenodo concept DOI 意味論、CHANGELOG / tag / asset packaging) |
@@ -41,7 +40,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [paper-deposit](skills/paper-deposit/SKILL.md) | レビュー済み論文を Zenodo に単独 DOI record として登録、SSRN cross-post と研究 repo への DOI 編入まで |
 | [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md) | deposit 済み論文を AI-native preprint プラットフォーム (aiXiv / AiraXiv) へ投稿 — 人間ゲート付き browser automation または著者委任の API/MCP 投稿 |
 | [readme-writer](skills/readme-writer/SKILL.md) | 人間向け README を書く — 決定論的な構造 lint + スコアなしのホリスティック LLM review |
-| [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | voice 保持の日英翻訳 — term-lock + 2-pass + back-translation QA |
 | [hf-sync](skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
 | [citation-sync](skills/citation-sync/SKILL.md) | 研究 repo の引用 4 層 (docs / .zenodo.json / graph.jsonld / Wikidata P2860) を監査し下層から同期 |
 | [spawn-session](skills/spawn-session/SKILL.md) | Herdr の pane に detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
@@ -66,6 +64,11 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [task-triage](skills/task-triage/SKILL.md) | タスク台帳を回す loop の 1 周: 開いている全タスクを判定（前提・着手条件・価値）し、ready を新しい build セッションへ dispatch、成果を独立に検収 — merge の言葉は人間が持つ |
 | [harness-boundary](skills/harness-boundary/SKILL.md) | mechanism（rule / skill / hook / agent / workflow）を足す前の設計レンズ — 6 層のどこに置くか、モデルに任せられないか、runtime 交換後も残るか。harness を捨てても残るものだけを資産にする |
 | [skill-creator](skills/skill-creator/SKILL.md) | skill / agent 定義を書く・書き直す入口 — intent packet、library 全体での境界確認、Fable 向けの書き方、fresh-context の草稿ゲート（Publishable / Fix / Drop、集計なし）、著者通読。upstream の anthropics skill-creator をその場で置換（ADR-0046） |
+| [measurement-discipline](skills/measurement-discipline/SKILL.md) | 測定に基づく主張・閾値・ガード・実験結果を設計または評価するときの規律。Use when the user says 「この実験結果で判断していい？」「閾値を決めたい」「ガード/検査を足したい」「1 回通ったから大丈夫」, when a design places a numer |
+| [prose-translation](skills/prose-translation/SKILL.md) | 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・記事・README・ADR 等の人間向け prose を、出力先の publication channel contract が宣言する register と原文の確度を保って自然に訳す。逐語訳でも MT で |
+| [quality-gate](skills/quality-gate/SKILL.md) | 人間向け公開物の受け入れゲート。完成稿と project の publication channel contract を読み、必須 reviewer verdict・機械検査・最新 title-reviewer findings が揃ったかを集約して PASS / FAIL / |
+| [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
+| [session-theme-mining](skills/session-theme-mining/SKILL.md) | 過去の Claude Code / Codex セッションを横断し、記事になりうる未解決の問いを 0〜3 件の同格な候補カードとして発見する。Use when — 「過去セッションから記事テーマを探して」「まだ書いていない問いを発掘して」「セッション履歴から collect-co |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
@@ -93,6 +96,9 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [prompt-forager](agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI レビュー — Swift 6 strict concurrency、値セマンティクス、SwiftUI の状態所有、retain cycle、HIG 準拠 |
 | [readme-judge](agents/readme-judge.md) | README の fresh-context 判定器。証拠 JSON と README を 1 回読み、固定チェックリストに引用付きで答えて named verdict（Publishable / Fix / Rewrite）を返す |
+| [prose-clarity-reviewer](agents/prose-clarity-reviewer.md) | First-contact reader clarity reviewer for human-primary articles, essays, blog posts, and newsletters |
+| [theme-reviewer](agents/theme-reviewer.md) | 人間向け記事・エッセイの執筆前テーマレビュアー。選択済みの問い一文と素材を fresh context で読み、非自明性・一次アクセス・読者接続・外部言説との差分を点検して findings と深化の問いだけを返す。Use before editorial brief |
+| [title-reviewer](agents/title-reviewer.md) | 凍結した人間向け原稿のタイトルレビュアー。headline-craft の候補と現行タイトルを fresh context で読み、中心命題との軸一致・誠実さ・具体性・好奇心の回収・channel 制約を点検して findings だけを返す。Use after 本文の構造凍結、 |
 <!-- END GENERATED: agents-table -->
 
 ### Rules

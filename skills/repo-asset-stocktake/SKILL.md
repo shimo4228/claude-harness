@@ -78,7 +78,7 @@ For each surfaced asset, ask 1–3 refutation questions before committing a verd
 | **Retire** | Consumer gone or content vestigial — the asset no longer earns its place | soft-delete (Phase 4) |
 | **Merge into [X]** | Superseded by / duplicate of another asset | consolidate into X, then retire this |
 
-**Mandatory-surface rule.** Any asset whose tier-1 reachability is **zero** (0 invocation sites / all references dead / 0 inbound links) MUST be surfaced as at least a Retire candidate — reachability zero is never silently a Keep. (Same shape as `skill-stocktake`'s zero-usage rule and `rules-stocktake`'s absorption rule.)
+**Mandatory-surface rule.** Any asset whose tier-1 reachability is **zero** (0 invocation sites / all references dead / 0 inbound links) MUST be surfaced as at least a Retire candidate — reachability zero is never silently a Keep. **This is the opposite of `skill-stocktake`'s stance, deliberately:** there, zero *usage* never creates a candidate, because a skill can be valid and simply unfired. Here the measure is *reachability* — no invocation site, every reference dead — which is a structural fact about the repo, not a behavioural one about the model, so it does create a candidate. (`rules-stocktake`'s absorption rule is the same kind of structural test.)
 
 Evaluate **origin-blind** — who wrote the asset, or how long it took, does not bear on whether it still earns its place.
 

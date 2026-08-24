@@ -30,25 +30,11 @@ CA ADR-0095）。肥大した台帳は機構でなく archive で解く（`.note
 lease（既定 24h）が切れた claim は `--force` なしで引き継げる。**期限切れ（STEALABLE）と
 期限の宣言が無い古い claim（STALE）は別物** — 後者を奪う根拠にしない。
 
-## レビュー指摘の扱い（CA 2026-08-15〜16 の実測から）
+## レビュー指摘の扱い
 
-fix commit ごとに reviewer が隣接コードの既存問題を平均 1.3 件出し、全部起票すると
-台帳は減らない。**diff の外の指摘は HIGH 以上だけ起票し、それ未満は commit message に
-1 行残して捨てる**。起票する側は「所有者の判断が要る」なら `state: candidate`。
+台帳が純増する最大の入口。**diff の外の指摘は HIGH 以上だけ起票**し、それ未満は commit
+message に 1 行残して捨てる。**severity だけでは濾せない**ので、起票にも修理にも
+producer→sink の `file:line` 引用（前提の検証）を先に置く — `spawn --origin review` は
+`--producer PATH:LINE` が無ければ起票を拒否する。
 
-**severity だけでは濾せない。** severity を付けるのは reviewer で、濾す側は同じ次元で
-測っている。CA 2026-08-16 に T-PACKET-FLOOR-BYPASS が HIGH として起票され、**その 1 件が
-束ねていた 4 つの主張は全部 producer が machine-fixed**、うち 1 つは**誰も読んでいない
-producer** だった（`weekly-pipeline.sh:850` を 1 回 grep すれば消えていた）。
-上の規則は守られていた。
-
-**severity での足切りは残す**（上の HIGH 以上）。そのうえで、残った指摘に
-**前提の検証**を重ねる:
-
-- **起票にも修理にも、前提の検証を先に置く。** 「この値は X を含みうる」型の指摘なら、
-  X を入れられる producer から sink までを `file:line` で引用する。
-  `spawn --origin review` は `--producer PATH:LINE` を要求し、無ければ起票を拒否する
-  （形だけの検査。真偽は引用する側の責任）
-- **検証が長引くなら破棄する。修理は逃げ道にならない** — 未検証のまま直すと投機的な
-  コード変更になり、起票より証拠が少なく残る
-- 捨てた指摘は severity に関わらず commit message に 1 行残す
+実測の根拠・判断手順・破棄の基準は skill: `task-stocktake`「レビュー指摘の起票規律」が正本。

@@ -43,10 +43,12 @@ this skill is the mechanical how, not the should.
 
 ## Preconditions (do not skip)
 
-1. The paper is **final and review-passed** — `paper-ecosystem` agents
-   (source-fidelity-checker, vocabulary-consistency-checker, citation-formatter)
-   have run and their findings are resolved. Do not re-run them here unless the
-   content changed.
+1. The paper is **final and review-passed** — every item in `paper-writing`'s
+   "Quality Gate (deposit 前)" checklist is satisfied and the findings are
+   resolved. Do not enumerate the panel here: `paper-ecosystem` owns it (four
+   orthogonal reviewers plus `citation-formatter` run sequentially), and an
+   out-of-date copy in this file is exactly how a writer ends up running three
+   of the four. Do not re-run the panel here unless the content changed.
 2. The title-page metadata is settled: author, ORCID, version, date, license.
    Fill any `(to be added at deposit)` placeholders now. If the filename still
    carries an abandoned channel name (e.g. an `ssrn-` prefix from an earlier
@@ -125,13 +127,19 @@ The script prints the **reserved version DOI** and the draft URL. Tell the user
 to review the draft (files, metadata, related identifiers, license, Public
 visibility) and click **Publish**. On publish Zenodo mints two DOIs: a
 **version DOI** (this v1) and a **concept DOI** (all-versions, always resolves
-to the latest) — the concept DOI is the one to cite and to use in cross-links.
+to the latest). Split them by role — `release-doi`'s "Concept DOI vs Version DOI
+— 役割分離 policy" table is canonical, and `paper-ecosystem` states the paper-side
+half: **cite the version DOI** (a citation must say which version it read), and
+use the **concept DOI** for display links and cross-links (badges, homepages,
+`isSupplementTo`). Conflating them leaves either a badge pinned to a stale
+version or a citation whose version is unknowable.
 
 After publish, delete the token file.
 
 ## Step 3 — Stamp the DOI back onto the paper
 
-Add the minted **concept DOI** to the paper's title page (a `**DOI:**` line) and
+Add the minted **concept DOI** to the paper's title page (a `**DOI:**` line — the
+title page is a display pointer that must keep resolving as versions accrue) and
 regenerate the PDF (Step 1). This gives any downstream channel (SSRN, a personal
 site) a self-referencing open-access pointer. The already-published Zenodo PDF
 is immutable and does not need this — it is for the copies that go elsewhere.

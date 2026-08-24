@@ -30,7 +30,7 @@ candidates and verdicts; it **never edits rules without your approval**.
 
 Enumerate with Glob (no script):
 
-- Skills: `~/.claude/skills/*/SKILL.md` + `~/.claude/skills/learned/*.md`
+- Skills: `~/.claude/skills/*/SKILL.md`
 - Rules: read every `~/.claude/rules/**/*.md` in full — the corpus is small (measure live with `wc -l`; do not hardcode the count here, it drifts every time a rule is added or rightsized), so no grep pre-filter is needed
 
 > Glob targets only skill definition files, so dependency markdown under `.venv` /
@@ -108,9 +108,12 @@ Append to security.md: Add LLM security principle
 > **例は書き換えない** — 実際の昇格根拠でなかった skill 名に差し替えると、記録が事実と
 > ずれる（`skill-comply/results/` の過去測定を書き換えない方針と同じ。ADR-0024）。
 > なお同じ原則は現在 4 つの生きた資産が保持しており、証拠としてはむしろ厚くなっている:
-> `learned/llm-memory-trust-boundary` / `collect-context:135-137`（セッションログは
-> untrusted） / `skill-comply:133-137`（監査対象ファイルは untrusted） /
-> `codex-review:71-72`（agent output is untrusted、ADR-0013）。
+> `collect-context` §「Security 注記（untrusted 規律）」（セッションログは untrusted） /
+> `skill-comply` §「信頼境界 — 監査対象ファイルは untrusted」 / `codex-review` §Report
+> の untrusted 扱い（ADR-0013）。**節見出しで引く** — 行番号は参照先が伸びるたびに
+> ずれ、2026-08-23 の stocktake では 4 本中 2 本が無関係な行を指していた。
+> なお `learned/llm-memory-trust-boundary` は同 stocktake で退役した（原則が
+> security.md に常駐した後の昇格残渣）。
 
 現行フィルタの形で書いた Good 例（証拠は出現回数でなく、テスト 1–3 の通過理由）:
 

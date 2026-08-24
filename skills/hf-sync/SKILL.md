@@ -1,6 +1,6 @@
 ---
 name: hf-sync
-description: Hugging Face Datasets mirror sync for graph.jsonld-bearing research repos. `<Owner/dataset>` を引数に取り、cwd の graph.jsonld を flatten して graph.jsonl と一緒に HF dataset へ upload する。`release-doi` の tag push 後、または ad-hoc resync で起動する。Local の `hf auth login` token を使うので GitHub Actions / CI auth は不要。
+description: Hugging Face Datasets mirror sync for graph.jsonld-bearing research repos. `<Owner/dataset>` を引数に取り、cwd の graph.jsonld を flatten して graph.jsonl と一緒に HF dataset へ upload する。`release-doi` Phase 5 末尾の `gh release create` 後、または ad-hoc resync で起動する（tag push は webhook を発火させないので契機にしない）。Local の `hf auth login` token を使うので GitHub Actions / CI auth は不要。
 user-invocable: true
 origin: shimo4228
 ---

@@ -46,7 +46,7 @@ Run BEFORE any LLM judgment. These checks never ride on per-item attention:
    verification showed exactly these defects slipping through judgment-owned checks.
 2. **Ledger hygiene** — for every `results.json` entry: the path must exist on disk and
    the key must follow the canonical rule below. Dedup violations (same path under two
-   keys → keep `learned/<name>`, delete the bare key). Entries whose path no longer
+   keys → keep the canonical key, delete the duplicate). Entries whose path no longer
    exists are removed (note them in the report as retired-from-disk).
 3. **Existence before judgment** — a skill that fails the existence check never reaches
    Phase 2. Do not let an LLM assign Keep to a file that is not there (this happened:
@@ -67,12 +67,11 @@ Run BEFORE any LLM judgment. These checks never ride on per-item attention:
 Enumerate skill definition files with Glob (no script needed):
 
 - `~/.claude/skills/*/SKILL.md`
-- `~/.claude/skills/learned/*.md`
 - if cwd has `.claude/skills/`, also `{cwd}/.claude/skills/*/SKILL.md` (project skills)
 
-**Canonical ledger keys**: a skill under `learned/` is keyed `learned/<name>` in
-`results.json` — never bare `<name>`. A rule or skill referencing a learned note by
-bare name does NOT make it a top-level skill.
+**Canonical ledger keys**: one key per skill directory name, matching the path on disk.
+(`skills/learned/` was retired on 2026-08-23, ADR-0047 — the `learned/<name>` key form no
+longer applies. A rule or skill referencing a name in prose does NOT make it a skill.)
 
 **Usage evidence** (parent-owned; batch agents never see it): read
 `~/.claude/metrics/skill-usage.jsonl` inline (the hook `log-skill-usage.sh` appends to
@@ -104,8 +103,7 @@ whether usage is measurable.
 
 ## Phase 2 — Per-item scrutiny (parallel small batches, fresh contexts)
 
-Split the target set into batches of **10–12 files**, interleaving `learned/` notes
-across batches, and launch **one subagent per batch in parallel**. Small batches are
+Split the target set into batches of **10–12 files** and launch **one subagent per batch in parallel**. Small batches are
 the point: per-item attention dilutes as a context fills. Do NOT pass prior verdicts or
 the ledger to batch agents (anchoring); do NOT pass usage data (parent-owned dimension).
 
@@ -176,8 +174,8 @@ finds nothing wrong with any of them individually. One agent, whole library:
    - `ADJACENT_BUT_DISTINCT` — near domain, different job; name one concrete independent
      user request that each member handles
 4. One extra pass over `~/.claude/rules/` and MEMORY.md: is a rule re-stating a skill
-   (or vice versa) beyond a declared pointer? Flag promotion residue (a learned note
-   whose content a rule has fully absorbed) as Retire/Merge candidates.
+   (or vice versa) beyond a declared pointer? Flag promotion residue (a skill whose
+   content a rule has fully absorbed) as Retire/Merge candidates.
 
 ### Contradiction checks (a declared boundary is a claim, not evidence)
 

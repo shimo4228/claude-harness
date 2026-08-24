@@ -19,7 +19,8 @@ AI 検索エンジン（ChatGPT / Perplexity / Gemini）と AI エージェン�
 - 既存の AI-facing 文書の GEO スコアを診断・改善する
 
 **使わない場面**:
-- README / 記事 / ブログポスト等の人間向けコンテンツ（`writing-ecosystem` を使う）
+- README / repo のトップページ（`readme-writer` を使う — 証拠スクリプト + fresh context の判定器 + review panel を持つ）
+- 記事 / エッセイ / ブログポスト等の人間向けコンテンツ（`writing-ecosystem` を使う）
 - 人間可読性を最優先したいドキュメント
 
 ---
@@ -255,8 +256,8 @@ llms.txt / llms-full.txt 側でやること:
 - `llms.txt` 冒頭に Graph-first reading order block 追加（`> AI agents should read graph.jsonld first` blockquote + numbered "Recommended reading order" section）
 - `## Core documentation` の **最上位** に navigator entry を追加（"Read first" qualifier 推奨）
 - `llms-full.txt` 末尾に question-form H2（"How do X and Y relate as a graph?"）を追加し graph.jsonld を参照（question-form は 2.8x citation boost）
-- README.md（人間向け）冒頭に `<details><summary>AI-facing reading order</summary>` 折りたたみ block。追加の language mirror がある場合は summary tag と intro 行のみ localize、bullet list は paths なので en 共通でよい。ja を超える mirror を維持するかは traffic data に基づき判断（human viewers が統計的にゼロなら performative になりがち）
-- hub-and-spoke topology の場合、line 側 README から hub graph への reverse-link を上記 block 内に追加
+- **README 側の置き方は `readme-writer` が正本**（本 skill は README に手を入れない）。あちらの規約は「AI 向けの機械可読導線（graph.jsonld / llms.txt）は `<details>` に入れず、**末尾に平文 1–2 行**」で、理由は rendered-HTML の crawler と HTML ブロックを不透明扱いする抽出器に折りたたみが見えないこと。冒頭の `<details>` block を README に足さない
+- hub-and-spoke topology の場合、line 側 README から hub graph への reverse-link を上記の平文行に含める（配置の判断は `readme-writer`）
 
 graph 自体の設計、schema vocabulary、cross-graph @id 規約、CODEMAPS との役割境界、verification workflow は別 skill が正本を持つ。
 

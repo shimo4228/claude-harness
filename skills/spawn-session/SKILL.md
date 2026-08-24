@@ -125,4 +125,4 @@ origin: shimo4228
 - `spawn.sh` は解決済みの dir と名前を受け取るだけの dumb な起動器（プロジェクト解決の知能はこの SKILL.md 側に置く＝エイリアス表をハードコードしないことで移植性を保つ）。
 - プロジェクト群が `~/MyAI_Lab` 以外にある環境では `CC_PROJECTS_ROOT` を設定して上書きする。
 - ターミナルからは `cc-spawn <dir> [name]`（`~/bin/cc-spawn` → 本 `spawn.sh` への symlink）でも同じことができる。
-- **herdr skill の `HERDR_ENV=1` ゲートとの整合**: あのゲートは既存 pane の inspect/control 用。spawn-session は **create-only**（新 workspace/tab の作成と、自分が作った pane への `pane run` のみ）+ `--no-focus` の socket 利用で、既存の pane・focus・他クライアントに触れないため、HERDR_ENV 外からの実行を認めた sanctioned exception（前提は server 稼働のみ。2026-07-21 の tmux → herdr 乗り換えで決定）。
+- **herdr skill の `HERDR_ENV=1` ゲートとの整合**: 例外は `rules/common/agents.md` の canon 行に記載済み（そちらが正本）。根拠は本 skill が **create-only** であること — 新 workspace/tab の作成と自分が作った pane への `pane run` のみ、`--no-focus` の socket 利用で既存の pane・focus・他クライアントに触れない。前提は server 稼働のみ（2026-07-21 の tmux → herdr 乗り換えで決定）。

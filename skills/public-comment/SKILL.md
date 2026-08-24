@@ -57,7 +57,8 @@ AI 使用は OSS の前提（手でコードを書く方が珍しい）。読み
    - bold 見出しリード: スレッド register の範囲内（目安 ≤ 2）
    - 文中コロン（リスト・例示前を除く）: 0 件
 2. **意味チェック**:
-   - 「It's not X, it's Y」構文・予告つき 3 点列挙・等間隔リズムが無いか
+   - writing-ecosystem の「文体・構造 tell」を 1 本ずつ当てる（構文の列挙はあちらが正本。
+     ここに写すと片方だけ更新されて分岐する）
    - 別スレッドに貼っても通じるコメントになっていないか（接地不足）
    - 全 claim にユーザーの実感・検証が対応しているか（content ownership）
 3. **人間 gate**（外部書き込み、承認必須）:
@@ -77,4 +78,4 @@ AI 使用は OSS の前提（手でコードを書く方が珍しい）。読み
 
 - 語彙・構造 tell の正本: `writing-ecosystem`（AI Slop 禁止リスト + 文体・構造 tell）
 - 記事・エッセイ: `writing-ecosystem` / AI 向け doc: `llms-txt-writer`
-- EN 起草時の翻訳品質: `ja-to-en-translation`（長文の場合のみ。コメントは本 skill の日本語訳併記で足りる）
+- EN 起草時の翻訳品質: `prose-translation`（長文の場合のみ。コメントは本 skill の日本語訳併記で足りる）

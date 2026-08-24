@@ -1,6 +1,6 @@
 <!-- origin: shimo4228 -->
 <!-- rationale: ADR-0018 + ADR-0035 — skill 群が import する Scaffold Dissolution のローカル正本だけを常駐 -->
-<!-- review-when: import 元 skill が消えた時 / substrate が knowledge cycle を native 化した時 / モデル世代交代時 -->
+<!-- review-when: import 元 skill が消えた時 / substrate が knowledge cycle を native 化した時 / モデル世代交代時 / 発散と照合の分離が会話パターンに吸収された時（却下記録の読み方節を溶かす） -->
 # AKC Rules (local edition)
 
 6 phase の手順は各 skill が持つ。skill 未導入環境向けの自己完結版は AKC repo が正本。
@@ -27,3 +27,14 @@ ADR はその時点の一時的判断の記録であって、恒久的な拘束�
 必須、無い旧 ADR は Context の前提と Date で重みを決める）を先に見る。失効条件が発火した・
 前提が消えた ADR に拘束力は無い — 衝突は「supersede 候補」として提示し、旧 ADR には削除で
 なく日付つき注記を残す。
+
+## 却下記録の読み方（2026-08-24 著者指示）
+
+memory の「再提案しない」ガードにも上と同じ読み方を適用する — 日付つき仮説であり、
+失効条件の無いガードは弱い推定として扱う（knowledge-staleness の受け側。却下判断だけ
+陳腐化しない扱いにしない）。
+
+**発散と照合を分離する**: 新アイデアの発散段階では ADR・memory の却下記録を反証に
+使わない。照合は採用判断の段で初めて行い、衝突は却下理由でなく supersede 候補として
+提示する。「再提案しない」は re-deploy の禁止であって問い空間には適用しない
+（具体手順の先例: skill `authorship-strategy` の inquiry-first）。

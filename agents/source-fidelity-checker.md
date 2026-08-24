@@ -110,6 +110,11 @@ Do not apply modifications. Output the candidates only.
 - Cite "Smith (2024)" at §3 ¶3: source PDF not accessible from current environment
 ```
 
+**UNCHECKED は verdict の終点ではない。** 1 件でも残ったら、次の手順は skill:
+`cited-source-mirror-verification`（web archive / 機関リポジトリ / preprint mirror を
+当たって一次ソースに到達し、到達できないものだけを最終的な UNCHECKED として確定する）。
+UNCHECKED を残したまま deposit しない。
+
 ---
 
 ## When NOT to Use This Agent

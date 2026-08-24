@@ -62,36 +62,23 @@ filing するのは、**複数の concept ページ / ソースを横断して�
 5. **log 追記**: `wiki/log.md` に `## [YYYY-MM-DD] query-filing | <問い> → [[<concept>]]` を 1 行追記。
 6. **index 再生成 + 検証**: `cd "$VAULT" && /opt/homebrew/bin/python3 scripts/wiki_index.py --apply && /opt/homebrew/bin/python3 scripts/wiki_lint.py`。lint がエラーを出したら自分の filing 分を修正する。
 
-### 骨格（正本は vault CLAUDE.md §5 — 変更時はここも同期）
+### 骨格
 
-```markdown
----
-category: concept
-type: permanent
-status: draft
-tags: [<正規タグ＝ファイル名と一致>]
-aliases: [<表記揺れ>, <English>]
-topic: "<1行サマリ>"
-source: ""
----
+**正本は vault `CLAUDE.md` §5。複製を置かない** — 研究 repo セッションからは vault の
+canon が自動ロードされないので写したくなるが、写した版は必ず drift する（2026-08-23 の
+stocktake 時点で、この節の旧複製は `## 矛盾・論争` を落としており、それは `wiki-harvest`
+Step 2 category ② が収穫する節だった。この skill 経由で filing したページが収穫面を
+欠いたまま生まれていた）。filing の直前に読む:
 
-# <概念名>
-
-## 定義
-> 1〜3文。何であるか。出典付き。
-
-## 主要な主張 (Key Claims)
-- 主張 …（出典: [[daily-research/...]]）
-
-## 関連概念
-- [[<別の概念>]] — 関係を1行
-
-## オープンクエスチョン
-- …
-
-## 言及ソース
-<!-- wiki_index.py が自動生成・更新。手で編集しない -->
+```bash
+sed -n '/^## 5\./,/^## 6\./p' "$VAULT/CLAUDE.md"
 ```
+
+節構成の要点だけ（値は上のコマンドが正）: frontmatter（`category` / `type` / `status` /
+`tags` / `aliases` / `topic` / `source`）→ `# 概念名` → `## 定義` → `## 主要な主張 (Key Claims)`
+→ `## 関連概念` → `## オープンクエスチョン` → `## 矛盾・論争`（無ければ節ごと省略可）→
+`## 言及ソース`（`wiki_index.py` が自動生成。手で編集しない）。
+**ファイル名 = `# 見出し` = `tags` の正規タグ**を一致させる。
 
 ## 研究 repo からの利用
 
@@ -99,3 +86,8 @@ source: ""
 
 - 回答を repo の docs / ADR に取り込む際は、wiki の concept ページではなく**一次出典（daily-research ノートが引く元文献）まで遡って**引用する（wiki は二次合成であり drift しうる）。
 - 研究 repo の文脈で合成された理解は **filing の最有力候補**（最も文脈豊富なセッションで生まれた接続を chat history に消さない）。repo 固有の実装詳細そのものは filing せず、概念レベルの合成だけを filing する。
+- **repo 側に還元したいのが「1 問の答え」でなく「wiki 全体から拾える候補」なら
+  `wiki-harvest`**。あちらは read-only で走査して一次出典つきのランク付き台帳を
+  `.notes/` に生成する（本 skill は chat 上の自由質問 + filing で read-write）。
+  filing した節は harvest の入力になる — 特に `## 矛盾・論争` は category ② として
+  収穫されるので、埋めておくと後で効く。

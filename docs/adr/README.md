@@ -52,6 +52,7 @@
 | [0044](0044-adr-review-when-and-dated-annotation.md) | ADR を日付つき仮説として持つ — `## Review-when`（失効条件）節を 0044 以降必須にし、旧 ADR の部分弱化は Status でなく日付つき注記、読み方 protocol（Date / Review-when を先に見る、失効した ADR に拘束力無し）を akc-cycle / grill-me / architect へ。desire-frontier の機構の移植 | accepted | 2026-08-19 |
 | [0045](0045-triage-loop-launchd-tick-and-slack-digest.md) | triage loop の timer を session の外（launchd `triage-tick.sh` → `herdr agent prompt`）へ、digest は Slack 片方向（1 判断 1 通 + cycle 末尾 1 行、既存 webhook 流用）、答えは triage セッションの中だけ。session 内 CronCreate / 自己更新は skill から外す。harness 土 08:03、CA 水 17:07 + 土 14:07 | accepted | 2026-08-19 |
 | [0046](0046-skill-creator-shrink-in-place-and-creation-gate.md) | skill-creator をその場で縮退（5,826→96 行）し、作成時ゲート（草稿 subagent + skill-stocktake Phase 2 checklist）と命令形配線（rule + PreToolUse hook `skill-create-notice.sh`）に置き換え。skill-writer/skill-judge 新設と NVIDIA SkillEvaluator 導入は棄却 | accepted | 2026-08-22 |
+| [0047](0047-retire-learned-notes-directory.md) | `skills/learned/` を全件退役（11 件）し、learn-eval の Save 先を Absorb / Promote の 2 択 + Drop に限定。実測で 184 read 中 161 が監査日集中、実作業 read は 74 日で 12 回。reachability はディレクトリの定数なので判定軸にならないと確認 | accepted | 2026-08-23 |
 
 ## Template
 

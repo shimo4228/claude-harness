@@ -1,6 +1,6 @@
 ---
 name: learn-eval
-description: "Extract reusable patterns from the session, self-evaluate quality before saving, and determine the right save location (Global vs Project)."
+description: "Extract a reusable pattern from the current session, judge it Save / Improve then Save / Absorb / Drop against a grounding checklist, and route every Save to a destination something actually reaches — absorbed into an existing skill / rule / doc section, or promoted to a real skill via skill-creator. Use when the user says 「今回の学びを残して」「learn-eval して」 or /learn-eval. There is no notes parking lot: if nothing would route to it, the verdict is Drop. NOT for mining past sessions (session-judgment-mining), auditing skills (skill-stocktake), or distilling rules (rules-distill)."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -24,12 +24,26 @@ Look for:
 1. Review the session for extractable patterns
 2. Identify the most valuable/reusable insight
 
-3. **Determine save location:**
-   - Ask: "Would this pattern be useful in a different project?"
-   - **Global** (`~/.claude/skills/learned/`): general-purpose patterns useful across 2+ projects (bash compatibility, LLM API behavior, debugging techniques, etc.)
-   - **Project** (`.claude/skills/learned/` in current project): knowledge specific to this project (quirks of a particular config file, project-specific architecture decisions, etc.)
-   - When in doubt, choose Global (moving it into a project later is easier than the reverse)
-   - 正本: [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md)。この節はその learned-skill 向け実例（旧正本の `rules/common/skills.md` は ADR-0035 の rules 縮退で origin schema のみに縮退した）
+3. **Determine the destination — there is no parking lot.**
+
+   `learned/` was retired on 2026-08-23 (ADR-0047). Every Save must land somewhere that
+   something actually routes to, so pick one of exactly two:
+
+   - **Absorb into an existing asset** — the pattern belongs inside a skill, rule, or
+     `hooks/README.md` section that already owns the topic. Name the file and the section.
+     This is the default: an addition to a reachable asset beats a new file.
+   - **Promote to a skill** — the pattern has its own independent trigger (a user request
+     that no installed skill answers). Run skill: **skill-creator** (required by
+     `rules/common/skills.md` before writing any skill).
+
+   If neither fits, the verdict is **Drop**, not "park it somewhere for now". A note that
+   nothing points at is reachable only by grep, and grep requires already knowing the
+   content exists — measured over 74 days, the retired `learned/` directory was read
+   during real work 12 times across 8 notes, while the audits that judged whether to keep
+   it accounted for 161 of its 184 reads.
+
+   Global vs project placement (once a destination type is chosen): 正本は
+   [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md)。
 
 4. Draft the skill file using this format:
 
@@ -128,17 +142,21 @@ origin: auto-extracted
    - **Absorb into [X]**: present the target path + the content to add (as a diff) + checklist results + verdict rationale → append after `[y/n/skip]` confirmation
    - **Drop**: show the checklist results + reason only (no confirmation needed; stop)
 
-7. Save / Absorb to the determined location
+7. Save to the destination chosen in Step 3
 
-8. **Promotion check (after a Save only)**
+   - **Absorb**: edit the named asset in place and show the diff. Do not create a file.
+   - **Promote**: hand the draft to skill: **skill-creator** — it fixes the intent packet,
+     draws the boundary against neighbouring skills, structures it as
+     `~/.claude/skills/<name>/SKILL.md`, and passes it through a fresh-context draft gate
+     (learn-eval = extraction and Save/Drop judgment / skill-creator = shape, boundary and
+     gate — a deliberate role split).
 
-   `learned/` is a flat directory of `.md` files and does not participate in
-   `skills/<name>/SKILL.md`-style discovery. That means description-based automatic
-   triggering never fires — the file remains a passive reference note found only by
-   grep. After the save completes, ask the user exactly once:
+8. **Reachability check (after a Save only)**
 
-   - **Leave it in learned/** (default) — sufficient as reference material / a grep target. If the confirmation gets no response, choose this
-   - **Promote to an active skill** — when description-triggered automatic application should apply in future sessions. Run skill: **skill-creator** on the learned draft — it fixes the intent packet, draws the boundary against neighbouring skills, structures it as `~/.claude/skills/<name>/SKILL.md`, and passes it through a fresh-context draft gate (learn-eval = extraction and Save/Drop judgment / skill-creator = shape, boundary and gate — a deliberate role split). After promotion, delete the `learned/` file so nothing is managed twice
+   State in one line what will route to the saved content in a future session: the section
+   it now lives in, or the skill description that will select it. **If the honest answer is
+   "nothing — someone would have to grep for it", the Save was wrong**; go back to Step 3
+   and either absorb it into a reachable asset or Drop it.
 
 ## Output Format for Step 5
 

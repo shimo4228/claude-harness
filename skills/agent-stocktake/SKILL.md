@@ -212,8 +212,8 @@ cite the No answers (question + one-line evidence):
   "evaluated_at": "2026-07-26T00:00:00Z",
   "total_desc_words": 0,
   "agents": {
-    "code-reviewer": {
-      "path": "~/.claude/agents/code-reviewer.md",
+    "security-reviewer": {
+      "path": "~/.claude/agents/security-reviewer.md",
       "desc_words": 38,
       "body_lines": 120,
       "verdict": "Keep",

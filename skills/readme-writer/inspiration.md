@@ -44,8 +44,7 @@ density (ADR references, sibling repos, coined terms, internal history piling up
 commit after commit). It was replaced by `scripts/readme_evidence.py`, modeled on
 zenn-content's `mechanical_checks.py`: a script that **counts and lists** but
 never decides (no severity, no threshold, exit 0 regardless of content). The
-verdict moved to a fresh-context judge agent (`readme-judge`, modeled on
-zenn-content's `article-judge`) inside a revision loop capped at two rounds, with
+verdict moved to a fresh-context judge agent (`readme-judge`) inside a revision loop capped at two rounds, with
 a binding final judgment on the frozen candidate and the author's read-through as
 the top gate. The Code-LLM Layering rationale above still holds — code owns
 counting, LLM owns meaning — only the code's output changed from "gate" to

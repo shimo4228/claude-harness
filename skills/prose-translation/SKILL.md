@@ -1,22 +1,21 @@
 ---
-name: ja-to-en-translation
-description: 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・研究ドキュメント・README・ADR 等の人間向け prose を、著者の声・register・発見調を保ったまま自然な訳文にする。逐語訳でも MT でもなく、term-lock + 2-pass（訳→自己添削）+ back-translation QA で品質を担保する。JA→EN は英語 AI-slop の自己添削、EN→JA は訳す-by-default の term policy と脱翻訳調 pass（英語語順残存・冗長受動態・カタカナ乱用・「の」連鎖・直訳 idiom・接続の機械訳）を追加で適用する。日本語記事を英語にするとき、英語記事・EN 正本 README を日本語にするときに使う。AI 向け doc は llms-txt-writer、学術 citation format は citation-formatter、AI-slop / Voice / Title 規約と出典編入は writing-ecosystem、出力先の語尾はチャンネル表に defer。
+name: prose-translation
+description: 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・記事・README・ADR 等の人間向け prose を、出力先の publication channel contract が宣言する register と原文の確度を保って自然に訳す。逐語訳でも MT でもなく、term-lock + 2-pass（訳→自己添削）+ back-translation QA で品質を担保する。JA→EN は英語 AI-slop の自己添削、EN→JA は訳す-by-default の term policy と脱翻訳調 passを追加する。AI 向け doc は llms-txt-writer、学術 citation format は citation-formatter、shared craft は writing-ecosystemへ defer。
 user-invocable: true
 origin: shimo4228
 ---
 
-# ja-to-en-translation — 日本語⇄英語 voice 保持翻訳（両方向）
+# prose-translation — 日本語⇄英語 voice 保持翻訳（両方向）
 
-日本語の人間向け prose を、**著者の声を保ったまま**自然な英語に訳すためのスキル。直訳でも DeepL 等の MT でもなく、LLM + voice ルーブリックで訳す（MT は register / 発見調 / 修辞を保てない）。
+人間向け prose を、**著者の声と出力先channelのregisterを保ったまま**自然に訳すためのスキル。
 
 **voice 非収束な prose の翻訳本体は、メインループ（最上位モデル）が本方法論に従って実行する。**
-理由は [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md): 翻訳の変換ステップは
-非収束な著者 voice を狙うため意味的権限が高く、サブエージェントへの lossy handoff（会話文脈・
-声の制約の喪失）で品質が落ちる。これは両方向に等しく効く。
+翻訳は意味的権限が高く、サブエージェントへのlossy handoffで会話文脈とvoice制約を失いやすいため、
+メインループが最終的なsemantic commitmentを握る。
 
-**定型 pipeline の venue 翻訳はこの限りではない**（2026-08-23 追記）。用語集・タグ規約・投稿までを
-一体で回すクロスポスト（例: zenn-content の `devto-translator`）は project agent が担ってよい。
-その場合も**訳出の方法論は本 skill が正本**で、agent は起動時に本 skill を先に読む。
+**定型 pipeline の venue 翻訳はこの限りではない**。用語集・タグ規約を使う宛先稿の準備は
+project agent が担ってよい。その場合も**訳出の方法論は本 skill が正本**で、agent は起動時に
+本 skill を先に読む。agent は準備で停止し、投稿は宛先稿自身のgate / 著者GO後にproject publisherが行う。
 
 ## Scope
 
@@ -27,8 +26,9 @@ origin: shimo4228
 - **対象外**:
   - AI 向け doc（`llms.txt` / `llms-full.txt` / FAQ）→ `llms-txt-writer`
   - 学術 citation / reference list の format 検証 → `citation-formatter`
-- **defer**: 英語の AI-slop 禁止リスト・Voice 規約・Title 規約・出典編入（Citation & Sources Workflow）は `~/.claude/skills/writing-ecosystem/SKILL.md` を正本とする。本 skill では再掲しない。
-- **defer**: 出力先チャンネルの**語尾（文体）の実値**も本 skill は持たない。その project のチャンネル表（zenn-content では `.claude/rules/zenn-writing.md`「チャンネル表」）を正本として引く — 語尾を持つファイルが増えるほど、片方だけ更新されて分岐する
+- **defer**: AI-slop原則・Title規約・出典編入は`writing-ecosystem`、言語別slop診断は同skillの
+  `references/style-diagnostics.md`を正本とする。
+- **defer**: 出力先channelのvoice / register / 語尾の実値は、そのprojectのpublication channel contractを正本として引く。
 
 ## 絶対ルール（そのまま保持するもの）
 
@@ -53,22 +53,21 @@ origin: shimo4228
 
 **voice fingerprint**（著者の声を英語に写す指標）:
 
-- register: **原文の語尾は前提にしない** — 原稿の出力元チャンネルを、その project の
-  チャンネル表（zenn-content なら `.claude/rules/zenn-writing.md`）で引いてから訳す。
-  規約のある日本語チャンネルは ですます（だ/である は規約のない場だけ）。どちらであっても
-  英語側の狙いは essayistic だが corporate でない register で、硬くしすぎない
-- 発見調: 「〜のではないか」→ "I suspect" / "it may be that" / 修辞疑問。「〜に見える」→ "seems" / "reads as"。**断定に倒さない**
+- register: 原文の語尾を機械転写せず、出力先のpublication channel contractを引く。
+- stance: 原文とtarget contractが発見調なら推論・修辞疑問を保持し、実用の直接指示ならhedgeへ弱めない。
 - 文長リズム: 短い断定文の連打は英語でも短文で写す
 - 修辞疑問: 原文の問いは英語でも問いで残す（結論を叩きつけない）
 - 未解決の正直さ: 「まだわからない」は smooth に解決させず正直に訳す
 
 ### 2. Pass 1 — 意味 + voice 訳
 
-逐語でなく、英語として自然に。段落・見出し構造は保つ。発見調・修辞疑問・未解決の正直さを保持。日本固有参照は inline gloss か軽い訳注を添える（例: Minamata, Japan's 1950s industrial mercury-poisoning disaster）。
+逐語でなく、出力言語として自然にする。段落・見出し構造、原文の確度、target contractのvoiceを保つ。
+日本固有参照はinline glossか軽い訳注を添える。
 
 ### 3. Pass 2 — self-edit
 
-writing-ecosystem の English AI-slop list（powerful tool / leverage / robust / "In today's rapidly evolving landscape" / Moreover 等）と Voice 規約で自己添削。corporate 調・宣言調に倒れていないか、発見調が保てているかを確認。日本語の謙遜・婉曲表現は、英語エッセイ/技術文の慣習に合わせて調整する。
+writing-ecosystemのAI-slop原則と、兆候がある場合のstyle diagnosticsで自己添削する。target contractの
+direct / discoveryその他のvoiceを保ち、日本語の謙遜・婉曲表現は英語圏の該当channel慣習に合わせる。
 
 ### 4. QA — back-translation spot-check
 
@@ -111,12 +110,12 @@ writing-ecosystem の English AI-slop list（powerful tool / leverage / robust /
 - **直訳された idiom / 定型句** — "at the end of the day" 等の字義訳
 - **接続の機械訳** — "Moreover" → 「さらに」の惰性連発
 
-writing-ecosystem の日本語 Voice 規約・AI-slop リストで自己添削し、著者の既存日本語 prose が
+writing-ecosystemのAI-slop原則とtarget contractのvoiceで自己添削し、著者の既存日本語 prose が
 あればそれにキャリブレートする。
 
 ### voice fingerprint の写し方
 
-- 発見調: "I suspect" / "it may be that" / 修辞疑問 → 「〜ではないか」「〜のように見える」。**断定に倒さない**
+- stance: 原文とtarget contractが発見調なら推論・修辞疑問を保持し、direct voiceなら不要な弱化をしない
 - 文長リズム: 英語の長い複文を「〜であり、〜だが、〜という」で 1 文に潰さない
 - 未解決の正直さ: "still unclear" は smooth に解決させず「まだわからない」と正直に訳す
 - 語尾は上の defer に従う（チャンネル表を引く）
@@ -138,29 +137,34 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 
 **所有権を明確にする**: サブエージェントの出力は**ドラフト扱い**で、確定訳ではない。
 メインループが必ず (a) Pass 2 (b) back-translation QA (c) 最終承認 を行い、**最終的な voice の
-確定と semantic commitment はメインループが握る**（[ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md)）。
-この finalization を省いてサブエージェント出力をそのまま確定訳にしてはならない（ADR 違反）。
+確定と semantic commitment はメインループが握る**。このfinalizationを省いてサブエージェント
+出力をそのまま確定訳にしてはならない。
 
 機械的前処理（term 候補の抽出・保護スパン検出・訳語一貫性 grep）は、ドラフト生成とは別に
 軽量モデルへ委譲してよい。
 
 ## Review（翻訳後）
 
-EN 出力を既存の review agent にかける（**新規 reviewer agent は作らない**）:
+訳文を既存の review agent にかける（**新規 reviewer agent は作らない**）。
+**出力言語で分岐する** — 両方向のスキルなので、EN 出力だけを想定した導線にしない:
 
-- **出力先チャンネルの review agent に defer する**（記事の type では分岐しない）。どのチャンネルがどの agent かは、その project の rules のチャンネル表が正本（zenn-content では `.claude/rules/zenn-writing.md`）
+- **JA→EN（EN 出力）** — 出力先チャンネルの review agent に defer する（記事の type では
+  分岐しない）。どのチャンネルがどの agent かは、その project の rules のチャンネル表が正本
+- **EN→JA（JA 出力）** — 同じチャンネル表を JA 側の行で引く。README を訳したなら
+  `readme-reviewer` + `readme-clarity-reviewer`（後者は日本語版も対象）、記事なら
+  `editor` / `essay-reviewer`。チャンネル表に JA 行が無い出力先なら、脱翻訳調 pass の
+  自己添削を 1 周増やして著者通読で閉じる
 
 原文との fidelity は step 4 の back-translation spot-check が担う。
 
 ## 出力
 
-- 翻訳は**別ファイル**に出す（原文を上書きしない）。命名は対象 repo の規約に従う（例: AAP は EN 正本 + `*.ja.md`、Substack draft は `*.en.md`）。
-- venue 固有規約（dev.to のタグ・frontmatter、Substack の体裁等）は project overlay（`<project>/.claude/rules/*.md`）に置き、本 skill には入れない。
+- 翻訳は**別ファイル**に出す（原文を上書きしない）。命名は対象repoの規約に従う。
+- venue固有規約（tags、frontmatter、投稿体裁等）はproject overlay（`<project>/.claude/rules/*.md`）に置き、本skillには入れない。
 
 ## Related
 
-- `writing-ecosystem` skill — 英語 AI-slop / Voice / Title / 出典編入の正本（本 skill が defer する先）
+- `writing-ecosystem` skill — shared AI-slop / Title / 出典編入の正本（本 skill が defer する先）
 - `essay-reviewer` / `editor` agent — 翻訳後の EN review
 - `citation-formatter` agent — 学術 citation の format 検証（本 skill の対象外）
 - `llms-txt-writer` skill — AI 向け doc（本 skill の対象外）
-- [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) — writer agent は render 専任・翻訳は skill-only（メインループ実行、専用エージェントを作らない）の設計根拠。本 skill はその適用先

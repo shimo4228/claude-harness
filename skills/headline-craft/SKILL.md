@@ -1,18 +1,20 @@
 ---
 name: headline-craft
-description: 「開かせる一行」を作る craft スキル — 記事タイトル・README tagline・Substack subtitle・SNS 告知文など、読者が開くかどうかを数秒で決める短文の候補生成と評価。Use when the user asks for タイトル案・キャッチコピー・タグライン・見出し候補・headline / title suggestions, or when a writing flow needs title candidates before publication. 技法カタログ（具体性・ベネフィット前置・誠実な好奇心ギャップ）× 流入経路 2 軸評価（検索/フィード）で候補を作り、最終判断はユーザーに委ねる。NOT for — 煽り・クリックベイトの生成（誠実さ規約は writing-ecosystem が正本）、Zenn の topics/emoji 最適化（→ project skill seo-optimizer）、platform 文字数制限の定義（→ 各 project overlay）。
+description: 「開かせる一行」を作る候補生成スキル。記事タイトル・README tagline・subtitle・SNS告知文を、具体性・ベネフィット・誠実な好奇心ギャップ・検索/フィードの技法から生成する。Use when the user asks for タイトル案・キャッチコピー・タグライン・見出し候補、or a frozen draft needs title candidates. NOT for — 公開記事候補の点検（→ title-reviewer）、煽り・クリックベイト、topics / emoji、platform文字数の定義。
 user-invocable: true
 origin: shimo4228
 ---
 
 # Headline Craft — 開かせる一行を作る
 
-読者は本文を読む前にタイトルで開くかどうかを決める。このスキルは「何を書いてはいけないか」（規範）ではなく「どう作るか」（技法）を担う。
+読者は本文を読む前にタイトルで開くかどうかを決める。このスキルは「何を書いてはいけないか」
+（規範）でも「どれを採るか」（判定）でもなく、「どう候補を作るか」（生成）だけを担う。
 
 **役割分担（defer 宣言）**:
 - 誠実さ規約・AI slop 禁止リスト → `writing-ecosystem` の Title Conventions が正本。本スキルの全候補はあのフィルタを通ってから提示する
-- platform 文字数・記法 → 各 project overlay の rules が正本（zenn-content なら `.claude/rules/zenn-writing.md`）。実値はここに書かない
-- Zenn の topics / emoji / キーワード含有 → project skill `seo-optimizer`（本スキルはそこから候補生成部として呼ばれる）
+- platform 文字数・記法 → 各 project の publication channel contract。実値はここに書かない
+- 公開記事候補の点検 → global `title-reviewer`。本 skill 自身の候補を自己採点しない
+- topics / emoji → platform を所有する project-local skill
 
 ## 実証知見（技法の根拠）
 
@@ -39,9 +41,10 @@ origin: shimo4228
 
 **削る技法（追加ではなく除去）**: ポジティブ形容詞（素晴らしい・強力な・完全な）、ヘッジ（〜について・〜の話・〜メモ）、冗長な前置き。削った字数を具体性に回す。
 
-## 流入経路の 2 軸評価
+## 流入経路の 2 軸ラベル
 
-候補は必ず両軸でラベル付けする。1 本のタイトルが両方を最大化することは稀で、どちらに寄せるかは記事の性質で決める。
+候補は両軸でラベル付けする。これは判定スコアではなく、候補の生成意図を `title-reviewer` と著者へ
+伝える metadata である。
 
 | 軸 | 開く人 | 効く形 |
 |---|---|---|
@@ -56,8 +59,8 @@ origin: shimo4228
 2. **技法別に候補生成** — 技法カタログから適用条件を満たすものを選び、5 本以上生成。機械的に全技法を当てない（条件未達の技法はスキップ）
 3. **誠実さフィルタ** — writing-ecosystem の Title Conventions（煽り・N 選・挑発・過度な省略の禁止）に全候補を照合し、違反を落とす
 4. **platform 制約チェック** — 対象 platform の overlay（文字数等）に照合
-5. **3 候補に絞って提示** — 各候補に (a) 使った技法、(b) 検索/フィードのどちら寄せか、(c) core claim をどう圧縮したか、を 1 行ずつ添える。現行タイトルがあれば比較を付す
-6. **最終判断はユーザー** — 選択も混合（候補 A の前半 + B の後半）も可。勝手に確定しない
+5. **3〜6候補を提示** — 各候補に (a) 技法、(b) 検索/フィードのラベル、(c) core claim の圧縮方法を 1 行添える。優劣は付けない
+6. 公開記事は候補群と現行タイトルを `title-reviewer` へ渡す。tagline / SNS など専用 reviewer が無い成果物はユーザー選択で止まる
 
 ## タイトル以外への適用
 

@@ -63,17 +63,16 @@ def rotate_token(session: Session) -> Token:
 
 ### 3. Narrative Flow and Engagement
 
-> **構成の実値は本 agent が持たない。** 出力先チャンネルの既定構成は、その project の
-> 執筆正本を引く（zenn-content の実用チャンネルなら `zenn-practical-writing`「導入の設計」=
-> 一瞬でわかる → 掴み → 緊張 → 解決 → Higher Ground）。**節名の一覧を検査項目にしない** —
-> 2026-08-23 まで本節は Introduction / Context / Implementation / Lessons Learned /
-> Conclusion の 5 部構成を要求しており、その `Context`（背景説明）は正本側が warm-up fluff
-> として禁止している側だった。正本どおりに書かれた記事を CRITICAL で弾いていた。
+> **構成の実値は本 agent が持たない。** `writing-ecosystem` の承認済み editorial brief と
+> project の publication channel contract を読む。節名のテンプレートを要求せず、central thesis、
+> causal spine、selected evidence、out-of-scope が完成稿へ反映されているかを検査する。
 
 チャンネルの正本を読んだうえで、構成そのものではなく**機能**を検査する:
 
 - [ ] 第一画面で「これは何の記事で、読むと何ができるようになるか」が伝わる
 - [ ] 読者の問題が、著者の事情より先に立っている
+- [ ] 中心命題が一つで、各主要節が因果線上の役割を一つだけ持つ
+- [ ] 証拠が網羅ではなく、中心命題を成立させる役割で選ばれている
 - [ ] 各節が次の節へ動機を渡している（唐突な転換がない）
 - [ ] 主張に「なぜ」がある（何をしたかだけで終わっていない）
 - [ ] 結びが要約で終わらず、読者が持ち帰るものを残す
@@ -100,7 +99,8 @@ Check for consistent use of key terms throughout the article. Look for:
 
 ### 5. AI Slop Detection
 
-> **正本**: `~/.claude/skills/writing-ecosystem/SKILL.md` の AI Slop 禁止リスト（日英）を参照。
+> **正本**: `~/.claude/skills/writing-ecosystem/SKILL.md` の AI Slop 原則を参照。兆候があるときだけ
+> `~/.claude/skills/writing-ecosystem/references/style-diagnostics.md` の言語別診断表を読む。
 
 Flag and suggest replacements for **generic AI-generated phrases**. The core principle:
 
@@ -110,7 +110,7 @@ Push for **specificity** and **concrete examples**.
 
 ### 6. Audience Appropriateness
 
-Target audience: **Software engineers** interested in the article's topic.
+Target audience: the reader declared by the project's publication channel contract.
 
 - [ ] Assumes reader has **basic programming knowledge**
 - [ ] Explains domain-specific concepts on first use
@@ -122,6 +122,27 @@ Target audience: **Software engineers** interested in the article's topic.
 - Over-explaining basic programming (e.g., "A function is a reusable block of code...")
 - Under-explaining domain-specific concepts
 - Assuming reader knows internal project architecture without explanation
+
+### 7. Canonical Output Compliance
+
+Before writing the report, read global `writing-ecosystem`, the approved editorial brief, and the project's
+publication channel contract. Inspect every requirement observable in the finished draft. **Do not copy
+thresholds or lists into this agent**; the canonical sources own their current values.
+The review prompt must state whether AI generated any of the prose so disclosure applicability is known.
+If that input is missing, report the disclosure check as unverified.
+
+Check with line-level evidence: the single central thesis, causal-spine progression, selected-evidence roles,
+out-of-scope discipline, one purpose per section, outcome-oriented headings where the channel requires them,
+forward-reference avoidance, active/plain prose, warm-up or repetition, paragraph density, terminology relief,
+self-link discipline, and the AI-mediated-writing disclosure when applicable.
+
+Do not claim that an unobservable process happened (for example, that the author performed a 10% edit).
+Review the remaining prose instead. Report a requirement as not applicable only when the supplied channel
+contract establishes the exemption.
+
+Classify violations with the existing CRITICAL / MEDIUM / MINOR scale. Rules that the project quality
+gate explicitly names as publication blockers remain CRITICAL; canonical coverage does not otherwise
+promote an advisory issue to a publication blocker.
 
 ## Output Format
 
@@ -162,13 +183,22 @@ Target audience: **Software engineers** interested in the article's topic.
 
 ---
 
+## Canonical coverage
+
+- Applied canon: [source section names]
+- Not applicable: [requirement + reason]
+- Pending / unverified: [missing inputs or checks, or none]
+- Must-fix violations: [CRITICAL finding references, or none]
+- Advisory findings: [MEDIUM/MINOR finding references, or none]
+
+---
+
 ## パネル所見（公開可否ではない）
 
 [NO BLOCKERS / CRITICAL あり — 解消が必要]
 
-> **本 agent は公開可否を出さない。** 公開を担保する binding な判定は、凍結候補に対する
-> `article-judge` の最終判定だけで、受け入れゲートが引けるのはその verdict のみ
-> （正本: `writing-team`「改稿ループ」+ project の受け入れゲート skill）。ここで
+> **本 agent は公開可否を出さない。** project の受け入れゲートは本 report の CRITICAL と
+> canonical coverage の実施を他の panel 結果と照合し、最終的な公開 GO は著者が出す。ここで
 > READY TO PUBLISH 相当を出すと、単独起動時に二つ目の公開判定面ができる。
 ```
 
@@ -218,7 +248,7 @@ Suggested addition:
 Articles should be **AI-assisted but human-driven**. Enforce this by:
 
 - Pushing back on purely generic content
-- Requiring **personal insights** in "Lessons Learned" sections
+- Requiring **specific lived evidence** where the article relies on the author's experience
 - Demanding **specific examples** from actual development
 - Flagging content that sounds like it could be written without actually building the project
 

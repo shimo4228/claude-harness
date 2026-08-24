@@ -163,7 +163,7 @@ The build session's report is a claim. Before asking for the merge word:
 - **Harvest what the build hands back — but ask the human only what the rule says to ask.**
   Read the commit body and the final message. Two kinds reach the digest as decisions:
   (1) **HIGH out-of-diff review findings** with a verified producer → propose filing
-  (`spawn --origin review --producer`), per `task-tracking.md`; (2) **explicit filing requests
+  (`spawn --origin review --producer`), per skill `task-stocktake`'s 起票規律; (2) **explicit filing requests
   that are the deliverable of a measurement / probe task** (a probe's "(B)/(C) はやる価値がある",
   an instrument finding such as "the metrics are polluted") — these are not review findings,
   they are the task's output, and the build has no authority to file them. MEDIUM / LOW review

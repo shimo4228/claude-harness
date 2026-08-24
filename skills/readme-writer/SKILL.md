@@ -160,8 +160,8 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 
 ## Workflow（証拠 → fresh 判定器の改稿ループ → panel → binding 最終判定 → 著者通読 GO）
 
-zenn-content の記事 eval 体制（`article-judge` + 改稿ループ + panel）と同型。**判定器は fresh context
-の別 agent プロセスで起動し、執筆セッションの文脈を渡さない**（自己批評は検出率が落ちる）。
+**判定器は fresh contextの別agent processで起動し、執筆セッションの文脈を渡さない**
+（自己批評は検出率が落ちる）。
 
 ```
 1. 入口の設計 — フロア 5 要素の確定 + 造語予算表（残す語 / 平易化する語 / docs へ落とす語）

@@ -97,6 +97,9 @@ Paper の audience は次の 2 層を同時に想定する:
 ## Source Fidelity Rules
 
 > Paper の draft drift を構造的に防ぐ正本。`source-fidelity-checker` agent が verify するルール集。
+> **agent が `UNCHECKED` を返したら次は skill: `cited-source-mirror-verification`** —
+> mirror / archive を当たって一次ソースに到達し、到達不能なものだけを確定 UNCHECKED にする。
+> deposit gate は UNCHECKED を残したまま通さない。
 
 ### Primary source は直接読む
 

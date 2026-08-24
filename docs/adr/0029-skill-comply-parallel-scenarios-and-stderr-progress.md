@@ -142,8 +142,10 @@ skeleton 作成が壊れる。代わりに生成器プロンプト側を相対�
 `_apply_setup_commands`）を触らずに済むのが決め手。
 
 **レートリミットで自動リトライ** — 却下。`rules/common/debugging.md` と
-[platform-governance-aggregate-pattern](../../skills/learned/platform-governance-aggregate-pattern.md)
-のとおり、連発は substrate からの policy シグナル。停止して報告する。
+`skills/learned/platform-governance-aggregate-pattern.md`（2026-08-23 の skill-stocktake で
+退役。内容は `skills/authorship-strategy/SKILL.md` に吸収済み — aggregate-pattern test と
+2026-07-16 の全損事例を L255,272 が保持）のとおり、連発は substrate からの policy シグナル。
+停止して報告する。
 
 ## Consequences
 

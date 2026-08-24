@@ -96,8 +96,8 @@
 
 ## 改定履歴
 
-- 2026-08-19 初版。CA README 作り直し（187 commit の継ぎ足し）と zenn-content の
-  `kaguura-craft-checklist.md` / `article-judge.md` の移植から起こした。Codex の plan review
+- 2026-08-19 初版。CA README 作り直し（187 commit の継ぎ足し）と既存のarticle review
+  checklistの移植から起こした。Codex の plan review
   で §R-D を判定器コアから外し、Step 0 を README-only pass に限定
 - 2026-08-20 K5 / K6 追加。CA README に「なぜ存在するか」が無いという著者指摘から。第一画面に
   why 段落を足したら、判定器が (a) 旧段落との同一主張の重複 (b) lead が約束した「履歴」の行き先欠如

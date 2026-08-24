@@ -1,9 +1,12 @@
 <!-- origin: shimo4228 -->
 <!-- rationale: ADR-0035 — 思考手順と reviewer 名簿を skill へ移し、実行入口と機械ゲートの配線だけ常駐 -->
-<!-- review-when: search-first / implementation-chain / verify hook の入口を変えた時 -->
+<!-- review-when: search-first / implementation-chain / architect / verify hook の入口を変えた時 -->
 # Planning Wiring
 
 - 既存解がありうる新機能・依存追加・自作 utility の前は skill: `search-first`
+- インフラ・機構・計器を新設/拡張する前は存在と大きさを問う（Build-or-not 4 問。
+  judge-tier は plan 本文で自答、build-tier は agent: `architect` — 正本は
+  skill: `implementation-chain` の Build-or-not 行。実測根拠: CA ADR-0095）
 - 実装 chain の種別と reviewer 条件は skill: `implementation-chain`
 - commit 前は `hooks/review-chain-notice.sh` が Review / Verify の実行確認だけを通知する
 

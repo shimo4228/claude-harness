@@ -318,6 +318,8 @@ If Phase 0 ended with **acknowledged drift** (user declined to cascade update-co
 ## What This Skill Does NOT Do
 
 - Code quality checks (linting, testing, building) — use the Verify gate in
-  `rules/common/planning.md`, or `/code-review` for review（`/review` は GitHub PR 専用 — implementation-chain 参照）
+  `rules/common/planning.md`, or `/code-review` for review（PR を対象に取るときは
+  `/code-review <PR#>`、plugin 経由なら `pr-review-toolkit:review-pr`。発火条件の正本は
+  skill: `implementation-chain`）
 - Agent-specific memory management (e.g., auto-memory systems)
 - `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`

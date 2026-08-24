@@ -119,6 +119,6 @@ Dominant No: <あれば 1 行、なければ「なし」>
 
 ## When NOT to Use This Agent
 
-- 記事・エッセイ（→ `article-judge` は zenn-content の project agent、一般は `editor` / `essay-reviewer`）
+- 記事・エッセイ（→ `writing-ecosystem`がchannel reviewerと`quality-gate`へrouteする）
 - llms.txt 等の AI 専用 doc（→ `llms-txt-writer`）
 - README の事実が llms.txt / graph.jsonld と一致するかの照合（read-only の allowlist 照合。この agent は README だけを読む）

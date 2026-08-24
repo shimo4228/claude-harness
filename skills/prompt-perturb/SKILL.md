@@ -1,6 +1,6 @@
 ---
 name: prompt-perturb
-description: 同じ手筋・いつもの skill ばかりで進む作業に、文脈を持たない検索者（prompt-forager agent）が外部の創造技法カタログ・プロンプト集から異角度プロンプトを取ってきて注入する多様性注入 skill。ブレインストーミングしたい、いつもと違う角度のアイデアが欲しい、発想がマンネリ・局所解に嵌っている、同じようなアプローチばかり出てくる、と感じたとき、または /prompt-perturb <目的の一行> で使う。正解・最適解の探索には使わない（それは search-first / scout）、プロンプトの品質改善にも使わない（それは write-prompt）。
+description: 同じ手筋・いつもの skill ばかりで進む作業に、文脈を持たない検索者（prompt-forager agent）が外部の創造技法カタログ・プロンプト集から異角度プロンプトを取ってきて注入する多様性注入 skill。ブレインストーミングしたい、いつもと違う角度のアイデアが欲しい、発想がマンネリ・局所解に嵌っている、同じようなアプローチばかり出てくる、と感じたとき、または /prompt-perturb <目的の一行> で使う。正解・最適解の探索には使わない（それは search-first / scout）、プロンプトの品質改善にも使わない（それは prompt-writer agent）。
 user-invocable: true
 origin: shimo4228
 ---

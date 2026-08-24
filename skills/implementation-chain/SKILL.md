@@ -42,7 +42,8 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 build-tier の新規セッション（skill: `spawn-session`、または Agent tool / `claude --bg -w <name>
 --model opus`）へ渡し、本セッションは packet を書いて検証側に残る。**三役とティアの正本は
 task-triage の役割表**（ここには複製しない）。条件を満たさない・分割できないなら、このセッションで
-実装してよい — その場合は Review 群を起動する前に実行モデルを build-tier へ切り替える。
+実装してよい — その場合も Review 群は下の「Review の実行モデル pin」で build-tier に降ろす
+（人間の `/model` 切替を待たない）。
 （失効条件: モデルのティア区別と使用限度が消えた、または substrate がセッション単位の model
 routing を自発的に行うようになったら、この段落を外す。）
 
@@ -68,13 +69,18 @@ routing を自発的に行うようになったら、この段落を外す。）
 | Silent-Failure Review | C | C | C | - | - |
 | Cross-Model Review | Y | Y | C | - | - |
 | Doc Sync (context files) | C | C | C | C | - |
+| E2E / 回帰テスト（skills: `e2e` / `ai-regression-testing`） | C | C | C | - | - |
 | Verify (build / types / lint / tests / secrets / deps / doc sync / git status) | Y | Y | Y | Y | - |
 
 **条件付き発火 `C` の発動条件**:
 
 - `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（2026-08-15 に `Y` から降格、[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない。判断に迷ったら Y
-- `feat` × Premise Challenge: **新規機構・不可逆・公開面に触れる feat のみ Y**（2026-08-22 追加）。設計パケット確定前に `codex-plan-challenge.sh --plan` を 1 回。歯止めと fold は skill: `codex-review` が正本
-- `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y
+- 全種別 × E2E / 回帰テスト: **ユーザー可視のフロー（画面遷移・API の外形）を変えたら `e2e`**、**AI に広く編集させた diff で同種のバグが再発しうるなら `ai-regression-testing`** を Y。いずれも Verify の coverage floor（`rules/common/testing.md`）の**上に足す**もので、置き換えではない。純粋な内部リファクタや設定変更だけなら `-`
+- `feat` / `chore` × Build-or-not（2026-08-25 追加、Premise Challenge の**前段**）: **新規機構・計器・常駐資産（skill / rule / hook / agent）・依存の追加を含む plan のみ Y**。plan 本文に 4 問の答えを必須で書く — ①存在すべきか（削除・既存流用で解けないか）②適正な大きさ（行数・段数の上限を先に宣言）③誰が消費するか（読み手のいない出力は建てない）④失効条件。**セッションが judge-tier ならこの自答で足りる（agent 呼び出しは冗長 — 同一モデル）。build-tier セッションのみ agent: `architect`（model: fable）を必須**とし、verdict が Don't build なら chain はそこで止まる。実測根拠: CA ADR-0095（この問いを持たない無人 chain が 30 時間で 5,000 行）
+- `feat` × Premise Challenge: **新規機構・不可逆・公開面に触れる feat のみ Y**（2026-08-22 追加）。設計パケット確定前に `codex-plan-challenge.sh --plan` を 1 回。歯止めと fold は skill: `codex-review` が正本。順序は 存在（Build-or-not）→ 前提（ここ）→ 実装
+- `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y。着手時の照合規律（既済照合・schema 変更の全消費者棚卸し等）は skill: `repair-discipline`
+- 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
+- `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら上の Build-or-not 行に従う（judge-tier は 4 問自答、build-tier は agent: `architect`。実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
 - `fix` × Simplify: 新規ロジックを含む fix のみ Y。typo・設定値のみの diff は `-`
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（2026-08-16 に `Y` から降格、ADR-0042）。
   脅威面 = 資格情報の取得・保管・送出 / 外部 IO / 公開経路（外部に出るデータの内容と範囲）/
@@ -105,12 +111,19 @@ built-in review は chain の正規ステップである（ADR-0039 → ADR-0042
 
 | 順 | category | 起動先 |
 |:-:|---|---|
-| 1 | **Simplify** | built-in `/simplify`（Review 群より**前**。該当種別は Matrix の Simplify 行が正本 — `feat` = Y、`fix` = C、`refactor` = `↑`（Refactor Clean の中で）、`chore` / `prototype` = 非該当） |
-| 2 | Code Review | built-in `/code-review`（**effort を明示する** — 種別ごとの値は Matrix 下の 「全種別 × Code Review の effort」）。Swift は `swift-reviewer` も追加 |
+| 1 | **Simplify** | built-in `/simplify`（judge-tier セッションでは表の下「Review の実行モデル pin」経由。Review 群より**前**。該当種別は Matrix の Simplify 行が正本 — `feat` = Y、`fix` = C、`refactor` = `↑`（Refactor Clean の中で）、`chore` / `prototype` = 非該当） |
+| 2 | Code Review | built-in `/code-review`（judge-tier セッションでは「Review の実行モデル pin」経由。**effort を明示する** — 種別ごとの値は Matrix 下の 「全種別 × Code Review の effort」）。Swift は `swift-reviewer` も追加 |
 | 2 | Security Review | `security-reviewer`（発火は Matrix の Security Review 行が正本。agent 側は自発起動しない） |
 | 2 | Silent-Failure Review | `pr-review-toolkit:silent-failure-hunter`（公式 plugin `pr-review-toolkit@claude-plugins-official`。同 plugin の他 5 agent と `/review-pr` は chain に組み込まない — code-reviewer / code-simplifier は built-in と重複） |
 | 2 | Cross-Model Review | skill: `codex-review` |
 | 2 | ADR / Record Review | `adr-reviewer` + skill: `codex-review` |
+
+**Review の実行モデル pin（2026-08-24 追加）**: judge-tier のセッション（Fable）で chain を回すとき、
+built-in `/simplify` と `/code-review` を主ループで直接呼ばない — セッションのモデルを継いで
+judge-tier トークンを消費する。代わりに `Agent(subagent_type: "general-purpose", model: "opus")` の
+サブエージェント内で当該 skill を起動する（prompt に skill 名・effort・対象 diff の範囲を書く。
+`/simplify` の working-tree への fix 適用はサブエージェントでも同じに機能する）。自作 reviewer
+agent は frontmatter の `model:` が正本。build-tier のセッションでは直接呼んでよい。
 
 Simplify を Review 群の前に置くのは、`/simplify` が fix を working tree に適用するため
 （reviewer には適用後の diff を見せる）。**この順序は逆にすると Review のやり直しが要るので、

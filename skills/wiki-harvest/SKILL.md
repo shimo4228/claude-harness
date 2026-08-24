@@ -40,7 +40,9 @@ VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vaul
 
 1. cwd / git remote から現在の研究 repo を判定（`agent-knowledge-cycle` / `agent-attribution-practice` / `contemplative-agent` / `authorship-strategy` 等）。
 2. その repo の `CLAUDE.md` 内「Research Wiki Consultation」節を Read し、`主担当ページ` + `隣接` に挙がっている concept 名を取得する。**マッピングはここ（repo 側）が正本**。skill にハードコードしない。
-3. 節が無い repo（現状 AKC）は fallback: `$VAULT/wiki/graph.jsonld` の `track` 値（akc / aap / contemplative / authorship）と repo 名から対象 concept を推定し、**「consultation 節が欠落している」ことを報告**する（後で節を backfill すべき signal）。
+3. 節が無い repo は fallback（節を持つ repo のほうが少ない — 実測 2026-08-23 では
+   agent-attribution-practice と authorship-strategy のみ。repo 名の列挙はすぐ腐るので
+   `grep 'Research Wiki Consultation' <repo>/CLAUDE.md` で毎回確かめる）: `$VAULT/wiki/graph.jsonld` の `track` 値（akc / aap / contemplative / authorship）と repo 名から対象 concept を推定し、**「consultation 節が欠落している」ことを報告**する（後で節を backfill すべき signal）。
 
 ### Step 2 — wiki 走査（read-only）
 

@@ -31,7 +31,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | Writes AI-facing docs (llms.txt / llms-full.txt). Answer.AI standard + GEO/AEO static analysis |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | Designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt. Encodes domain entities and relationships as schema.org triples for LLM citation |
 | [writing-ecosystem](skills/writing-ecosystem/SKILL.md) | Orchestrator for human-facing writing & review. Coordinates editor / essay-reviewer / fact-checker |
-| [write-prompt](skills/write-prompt/SKILL.md) | Generates concise prompts via the lightweight prompt-writer agent |
 | [collect-context](skills/collect-context/SKILL.md) | Gathers in-session and external context into source material for article writing |
 | [authorship-strategy](skills/authorship-strategy/SKILL.md) | 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos |
 | [release-doi](skills/release-doi/SKILL.md) | Cuts a versioned release of a DOI-registered research repo (Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging) |
@@ -41,7 +40,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [paper-deposit](skills/paper-deposit/SKILL.md) | Deposits a finished, reviewed paper to Zenodo as a standalone DOI record, optionally cross-posts to SSRN, cross-links the DOI back into the research repo |
 | [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md) | Submits a deposited paper to AI-native preprint platforms (aiXiv / AiraXiv) — Web UI browser automation with human gates, or author-delegated API/MCP submission |
 | [readme-writer](skills/readme-writer/SKILL.md) | Writes human-facing READMEs — deterministic structural lint plus holistic LLM review (no scores) |
-| [ja-to-en-translation](skills/ja-to-en-translation/SKILL.md) | Voice-preserving JA→EN translation for essays, research docs, and READMEs — term-lock, 2-pass, back-translation QA |
 | [hf-sync](skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
 | [citation-sync](skills/citation-sync/SKILL.md) | Audits the three citation layers of a research repo (docs / .zenodo.json / graph.jsonld) and syncs them bottom-up |
 | [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session in a Herdr pane, visible in the mobile app session list |
@@ -66,6 +64,11 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [task-triage](skills/task-triage/SKILL.md) | One cycle of the task-triage loop: judge every open ledger task (premise, start condition, worth), dispatch the ready ones to fresh build sessions, verify their output independently — the human keeps the merge word |
 | [harness-boundary](skills/harness-boundary/SKILL.md) | Design-time lens for any proposed mechanism (rule / skill / hook / agent / workflow): which of 6 layers it belongs to, whether the model could own it instead, and whether it survives a runtime swap — keep only what outlives the harness |
 | [skill-creator](skills/skill-creator/SKILL.md) | Write or rewrite a skill / agent definition — intent packet, library-wide boundary check, Fable-era writing rules, a fresh-context draft gate (Publishable / Fix / Drop, no scoring), author read-through. Replaces the upstream anthropics skill-creator in place (ADR-0046) |
+| [measurement-discipline](skills/measurement-discipline/SKILL.md) | 測定に基づく主張・閾値・ガード・実験結果を設計または評価するときの規律。Use when the user says 「この実験結果で判断していい？」「閾値を決めたい」「ガード/検査を足したい」「1 回通ったから大丈夫」, when a design places a numer |
+| [prose-translation](skills/prose-translation/SKILL.md) | 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・記事・README・ADR 等の人間向け prose を、出力先の publication channel contract が宣言する register と原文の確度を保って自然に訳す。逐語訳でも MT で |
+| [quality-gate](skills/quality-gate/SKILL.md) | 人間向け公開物の受け入れゲート。完成稿と project の publication channel contract を読み、必須 reviewer verdict・機械検査・最新 title-reviewer findings が揃ったかを集約して PASS / FAIL / |
+| [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
+| [session-theme-mining](skills/session-theme-mining/SKILL.md) | 過去の Claude Code / Codex セッションを横断し、記事になりうる未解決の問いを 0〜3 件の同格な候補カードとして発見する。Use when — 「過去セッションから記事テーマを探して」「まだ書いていない問いを発掘して」「セッション履歴から collect-co |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
@@ -93,6 +96,9 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [prompt-forager](agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance |
 | [readme-judge](agents/readme-judge.md) | Fresh-context README judge: reads evidence JSON + the README once, answers a fixed checklist with quoted evidence, returns a named verdict (Publishable / Fix / Rewrite) |
+| [prose-clarity-reviewer](agents/prose-clarity-reviewer.md) | First-contact reader clarity reviewer for human-primary articles, essays, blog posts, and newsletters |
+| [theme-reviewer](agents/theme-reviewer.md) | 人間向け記事・エッセイの執筆前テーマレビュアー。選択済みの問い一文と素材を fresh context で読み、非自明性・一次アクセス・読者接続・外部言説との差分を点検して findings と深化の問いだけを返す。Use before editorial brief |
+| [title-reviewer](agents/title-reviewer.md) | 凍結した人間向け原稿のタイトルレビュアー。headline-craft の候補と現行タイトルを fresh context で読み、中心命題との軸一致・誠実さ・具体性・好奇心の回収・channel 制約を点検して findings だけを返す。Use after 本文の構造凍結、 |
 <!-- END GENERATED: agents-table -->
 
 ### Rules
@@ -172,8 +178,7 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, iterative-retrieval, loop-design-check, product-lens, python-patterns, refactor-clean, tdd, update-codemaps | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
-| community + local modifications | scientific-thinking-literature-review | — | — |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, loop-design-check, python-patterns, refactor-clean, tdd, update-codemaps | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |
