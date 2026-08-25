@@ -92,6 +92,11 @@ README を丸コピしない（規約本文の複製を作らない）。単一�
 
 ## 境界
 
+- plan ファイル（`plans/`、gitignored）はセッションの作業状態であって記録層ではない。
+  紐付けはリンクでなく**昇格**で行う — durable な内容を RFC / ADR / commit へ移したら
+  plan の役目は終わり。RFC・ADR から `plans/` へリンクしない（superseded な設計案への
+  参照経路になり、公開側では dead link）
+
 - 終端エントリの残置（archive しない）・終端語の使い分け・棚卸しは task-stocktake
 - 採用判断が出たら ADR が Rationale and alternatives を引き取る（→ adr-writer）。
   rfcs 側は state を進めて Status を更新するだけ
