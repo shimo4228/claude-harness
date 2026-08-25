@@ -66,6 +66,12 @@ rule の対象であり、改版されうる。
    作らない。intent.md ↔ RFC 節 ↔ 台帳の三語彙対応表は skill:
    `task-stocktake` を正本とし、本 ADR には複製しない。
 
+   > **注記（2026-08-25, skill: rfc-writer 新設）**: 三語彙対応表の正本は
+   > `task-stocktake` から `rfc-writer` へ移管した — 対応表は起票時の翻訳であって
+   > 棚卸しの判定材料ではないため。起票の手順・様式・足切り・公開規約も同 skill が
+   > 正本になった（rfcs/README ×3 への規約複製が即日 drift 源になった著者指摘を受けた
+   > 一元化。README は薄いポインタ + index のみ）。
+
 4. **付表 1（product loop 機構マップ、as-of 2026-08-25 の snapshot —
    living doc にはしない）を次の表に収録する。**
 

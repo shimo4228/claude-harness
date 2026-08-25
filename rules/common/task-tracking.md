@@ -12,9 +12,10 @@ skill: `task-stocktake` が持つ。形は 2 つ:
   （開: `draft` / `accepted` / `in_progress` / `blocked`、終端: `done` / `resolved` /
   `rejected` / `withdrawn` / `obsoleted` — 標準語彙、ADR-0050。日付を続けてよい）、
   本文は自由記述（推奨様式は Rust RFC
-  テンプレ準拠）。**語彙・様式・rfcs/ 規約の正本は skill: `task-stocktake`**（各語の
-  定義・`blocked` の入場条件・終端語の使い分け・公開規約）。ここには複製しない —
-  分散した版は誰も刈らず肥大する。並行セッションが別タスクを消せない置き方
+  テンプレ準拠）。**語彙の正本は skill: `task-stocktake`**（各語の定義・`blocked` の
+  入場条件・終端語の使い分け）、**起票の正本は skill: `rfc-writer`**（足切り・採番・
+  様式・公開規約・index 規約）。ここには複製しない — 分散した版は誰も刈らず肥大する。
+  並行セッションが別タスクを消せない置き方
   （先例: contemplative-agent、2026-08-15）。旧 store `.notes/tasks/` は 2026-08-25 に
   廃止（全 repo 移送完了、dual-read も畳んだ — RFC-0001）
 

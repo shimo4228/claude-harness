@@ -69,6 +69,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [quality-gate](skills/quality-gate/SKILL.md) | 人間向け公開物の受け入れゲート。完成稿と project の publication channel contract を読み、必須 reviewer verdict・機械検査・最新 title-reviewer findings が揃ったかを集約して PASS / FAIL / |
 | [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
 | [session-theme-mining](skills/session-theme-mining/SKILL.md) | 過去の Claude Code / Codex セッションを横断し、記事になりうる未解決の問いを 0〜3 件の同格な候補カードとして発見する。Use when — 「過去セッションから記事テーマを探して」「まだ書いていない問いを発掘して」「セッション履歴から collect-co |
+| [rfc-writer](skills/rfc-writer/SKILL.md) | 公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。

@@ -142,80 +142,18 @@ RFC-0001。`.notes/archive/tasks/` は歴史記録としてそのまま残る。
 archive しない）。この skill が担うのは意味的な判定（散在タスク行の sweep、着手条件が
 開いたかの解釈、単一表 repo の archive 候補の選定）。
 
-## store の家 rfcs/ と本文様式（この skill が正本、ADR-0049）
+## store の家 rfcs/（棚卸し側の規定）
 
-store 形の家は repo トップレベルの**公開 `rfcs/`**。1 エントリ 1 ファイル
-`rfcs/NNNN-slug.md`（4 桁採番・欠番不再利用 — docs/adr と同じ規約）、ID は stem 先頭
-4 桁から `RFC-NNNN`。index は `rfcs/README.md`（`| # | Title |` の表 +
-「提案から小さな作業項目まで同居する」旨の 1 行。**state は各ファイルの frontmatter が
-唯一の正本 — index に複製しない**。二重記録は drift する）。提案もタスクも 1 店舗 —
-提案だけの別置き場を作らない（分散した台帳は誰も刈らない）。
+store 形の家は repo トップレベルの**公開 `rfcs/`**（1 エントリ 1 ファイル
+`NNNN-slug.md`、ID は `RFC-NNNN`。ADR-0049）。**起票の手順と規約（足切り・採番・
+本文様式・公開規約・index 規約）の正本は skill: `rfc-writer`** — ここには複製しない。
+本 skill が rfcs/ について持つのは棚卸し側の 2 つだけ:
 
-- **状態は上の語彙 9 語をそのまま**（第二語彙を作らない。2026-08-25 に標準語へ全域移行 —
-  ADR-0050、RFC-0003 実装済み。語が標準になったため per-entry の gloss 運用は廃止）。
-  入場条件・終端の使い分け・blocked 3 行・obsoleted 引用の規定もそのまま適用する
+- **状態は上の語彙 9 語をそのまま**（第二語彙を作らない。入場条件・終端の使い分け・
+  blocked 3 行・obsoleted 引用の規定もそのまま適用する）
 - **終端エントリは archive しない**: 削除も退避もせずその場に残す（RFC 慣行。`rejected` /
   `withdrawn` も公開判断記録 — 却下理由ごと残るのが価値）。pending の視界は
   `claims.py ready` の state フィルタが保つ
-- **公開が既定**: 本文は公開可能な書き方をし、機微（内部事情・非公開 repo のパス等）は
-  本文に書かずリンク先へ逃がす（「詳細はリンク先」の既存規約と同じ）
-- **その場で終わる仕事は起票しない**（起票の足切り、2026-08-25 著者規約）:
-  "Do not create an RFC for work that can be safely completed in the current session
-  without preserving intent or state." — 台帳は seam（セッション境界・判断待ち・
-  条件待ち）へ intent と state を運ぶ器で、運ぶものが無い起票は純コスト（GTD の
-  2 分ルールの台帳版）。逆は成り立つ: 今すぐ却下できる提案でも**却下理由を残す価値が
-  あるなら**起票してよい — それは intent の保存に当たる（公開判断記録が rfcs/ の
-  存在理由）。review 指摘の足切り（HIGH + producer、下節）と便乗型の禁止は別軸のまま
-- **接続**: 起票したら `claims.py spawn RFC-NNNN --origin …`（review 由来は `--producer`
-  必須 — 下節）。着手時の claim も T-XXX と同じ
-
-**本文の推奨様式 — Rust RFC 0000-template 完全準拠**（推奨であって強制ではない。
-自由記述は引き続き有効。小さな作業項目は該当なし節を省き Summary / Motivation 中心で
-よい — 起票摩擦の低さを RFC 純度より優先する）:
-
-```markdown
----
-state: draft 2026-08-25
-review-when: <失効条件（無ければ省略）>
----
-## Summary
-## Motivation
-## Guide-level explanation
-## Reference-level explanation
-## Drawbacks
-## Rationale and alternatives
-## Prior art
-## Unresolved questions
-## Future possibilities
-## Status
-## Next action
-```
-
-末尾 2 節は Rust テンプレ外の**独自追加**（2026-08-25 著者採用）で、一元化の tracking 層を
-本文に持たせる — Rust では tracking issue に住む情報の家。前例は IETF の
-「Status of This Memo」（標準 RFC も本文に prose の status 節を持つ）:
-
-- **`## Status`** — 現在地 1〜3 行。**state 語 + 現在地の要約 + 日付**
-  （例:「blocked — CA pipeline の書き先判断待ち（2026-08-25）」）。
-  state 遷移のたびにここも更新する
-- **`## Next action`** — 何があれば動くか。`blocked` の 3 行（再開条件 / 照合先 / 成立時）は
-  ここが家（Unresolved questions ではない — あちらは提案内容の未解決問）
-
-- Rust の preamble（Feature Name / Start Date / RFC PR / Issue）は metadata なので
-  frontmatter で表す。見出しは EN 準拠、本文の言語は自由。失効条件の frontmatter key は
-  `review-when:` — ADR の `## Review-when`（harness ADR-0044）・rules の `review-when`
-  ヘッダと同一概念に同一の語を使う（第 3 の名前を作らない）
-- 機械契約は 1 つだけ: **本文の最初の非見出し行**が `claims.py ready` の要約表示になる
-  （`## Summary` の 1 行目がそのまま出る）。frontmatter で機械が読むのは `state:` のみ
-- `blocked` の 3 行（再開条件 / 照合先 / 成立時）の家は `## Next action`（上の節）
-- 標準語彙との対応（翻訳可能性の担保 — ADR-0048）: intent.md problem → Motivation /
-  proposed outcome → Summary / affected users and systems → Guide-level（users）・
-  Reference-level explanation（systems）/ constraints → Reference-level explanation /
-  open questions → Unresolved questions。Build-or-not
-  ①既存流用の検討 → Rationale and alternatives、③誰が消費するか → Motivation。
-  **Prior art は search-first / Phase 0 の結果の置き場**（AKC Research phase の受け皿）
-- ADR との境界: rfcs/ のエントリ = 提案・作業・未決。ADR = 決定記録。採用判断が出たら
-  ADR が Rationale and alternatives を引き取り、エントリは state だけ進める
 
 ## レビュー指摘の起票規律（この skill が正本）
 
