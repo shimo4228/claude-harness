@@ -42,15 +42,19 @@ bash <公開repo>/scripts/sync-from-local.sh
 
 script は staging 収集 → runtime artifact 除去 (results.json, __pycache__ 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
-secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ hooks/ scripts/hooks/ tests/
-subtree の置換、まで行う。origin filter が効くのは skills/ agents/ rules/ だけで、
-残り 2 系統は別の規則で決まる (いずれも集約 repo のみ、2026-08-08 追加):
+secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ rfcs/ hooks/ scripts/hooks/
+tests/ subtree の置換、まで行う。origin filter が効くのは skills/ agents/ rules/ だけで、
+残り 3 系統は別の規則で決まる (いずれも集約 repo のみ):
 
 - `docs/adr/` — ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、origin filter を
-  掛けずディレクトリ丸ごとが対象。以後の ADR は公開される前提で書く。
+  掛けずディレクトリ丸ごとが対象。以後の ADR は公開される前提で書く。(2026-08-08 追加)
+- `rfcs/` — 台帳エントリも自作の判断記録なので ADR と同じく丸ごと (ADR-0049、2026-08-25
+  追加)。起票は公開可能な書き方が既定 — 機微はリンク先へ (task-stocktake の公開規約)。
 - `hooks/` `scripts/hooks/` `tests/` — script 内の `HOOK_ALLOWLIST` に列挙したファイルだけ。
-  公開は provenance でなく curation の判断 (ADR-0038)。commit 面 hook を追加・rename したら
-  allowlist を更新する — source に無い entry があると sync は abort する。install 手順の正本は
+  公開は provenance でなく curation の判断 (ADR-0038)。公開対象の hook を追加・rename したら
+  allowlist を更新する — source に無い entry があると sync は abort する。`scripts/claims.py`
+  (台帳 CLI、rfcs/ の消費側) も allowlist 経由 — subtree 外に置かれるため削除は伝播しない
+  (delist したら公開 repo 側で手動削除)。install 手順の正本は
   公開 repo の `docs/hooks.md` で、これは subtree の**外**にある (中に置くと sync で消える)。
 script は commit しない。LLM 側で diff と secret scan の結果を確認してから次へ進む。
 

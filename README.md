@@ -121,11 +121,13 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 
 ### Hooks
 
-`hooks/` carries five PreToolUse hooks that run at the `git commit` boundary — a secret scan, a runner for the repo's own machine gate, a bandit scan, a `ruff format --check`, and a review reminder — plus the two parts they need. Several ADRs argue about their internals, so the code lives here rather than leaving those decisions pointing at nothing. Unlike skills and rules, hooks need manual wiring into `settings.json`. All five carry bats tests, each checked with a negative control — the hook mutated to remove the property, the test confirmed to fail against the mutant. Install steps, the approval model behind the verify gate, and what is deliberately left out: [docs/hooks.md](docs/hooks.md).
+`hooks/` carries five PreToolUse hooks that run at the `git commit` boundary — a secret scan, a runner for the repo's own machine gate, a bandit scan, a `ruff format --check`, and a review reminder — plus the two parts they need, and two session-surface hooks published with the `rfcs/` ledger: a ledger-etiquette reminder (with `scripts/claims.py`, the ledger CLI) and a judge-tier review-routing guard. Several ADRs argue about their internals, so the code lives here rather than leaving those decisions pointing at nothing. Unlike skills and rules, hooks need manual wiring into `settings.json`. All carry bats tests, each checked with a negative control — the hook mutated to remove the property, the test confirmed to fail against the mutant. Install steps, the approval model behind the verify gate, and what is deliberately left out: [docs/hooks.md](docs/hooks.md).
 
-### Design decisions (ADRs)
+### Design decisions (ADRs) and proposals (RFCs)
 
 `docs/adr/` records why this harness is shaped the way it is: adoptions, retirements, and reversals, each as a dated Architecture Decision Record synced from the live harness alongside the components. The skills, agents, and rules above are the *what*; the ADRs are the *why* — the audit trail behind the harness, failures included. Start from the [ADR index](docs/adr/README.md). ADRs are written in Japanese.
+
+`rfcs/` is the harness's public task-and-proposal ledger ([ADR-0049](docs/adr/0049-unify-task-ledger-into-public-rfcs.md)): one entry per proposal or work item, body in Rust-RFC-template form, state in the frontmatter, terminal entries left in place so rejected proposals stay readable with their reasons. ADRs record decisions; `rfcs/` holds what is still open — including the entries that will never be built, which is the point.
 
 ## Usage
 

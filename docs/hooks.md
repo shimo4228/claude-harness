@@ -1,9 +1,11 @@
-# Commit-surface hooks
+# Published hooks
 
 Five PreToolUse hooks that run at the `git commit` boundary, plus the two parts
-they need to work. Several ADRs in [docs/adr/](adr/README.md) argue about the
-internals of these scripts — ADR-0027, 0028, 0034, 0035 — so the code is
-published here rather than leaving those decisions pointing at nothing.
+they need to work — and, since 2026-08-25, two session-surface hooks published
+alongside the `rfcs/` ledger (see below). Several ADRs in
+[docs/adr/](adr/README.md) argue about the internals of these scripts —
+ADR-0027, 0028, 0034, 0035, 0049 — so the code is published here rather than
+leaving those decisions pointing at nothing.
 
 These are not a framework. They are the hooks one person actually runs, warts
 included: the inline comments are in Japanese, so are the stderr messages you
@@ -60,6 +62,29 @@ approved, all three Python-side gates are off at once — verify because it will
 not run an unapproved gate, bandit and ruff because they defer on the mere
 presence of one. Each says so on stderr; none of them blocks.
 
+## Session-surface hooks
+
+Two hooks that fire during normal session work rather than at the commit
+boundary, published with the public task-and-proposal ledger
+([`rfcs/`](../rfcs/README.md), [ADR-0049](adr/0049-unify-task-ledger-into-public-rfcs.md)):
+
+| Script | Fires on | Does | Blocks when |
+|---|---|---|---|
+| [`task-claims-reminder.sh`](../hooks/task-claims-reminder.sh) | PostToolUse `Read\|Grep\|Bash` touching `TASKS.md` or `rfcs/` | Prints the open claims and the ledger etiquette (claim before starting, spawn on filing) | Never — advisory only |
+| [`review-model-notice.sh`](../hooks/review-model-notice.sh) | PreToolUse `Task\|Agent\|Skill` mentioning `code-review` / `simplify` | Routes review invocations off a judge-tier session: a direct Skill call is refused with a reason that tells the model to relaunch via a build-tier subagent; a missing `model` pin on an Agent launch gets an advisory | Skill-path only, and only when the session model is the judge tier — mechanical check, no heuristics in the blocking path |
+
+`task-claims-reminder.sh` needs
+[`scripts/claims.py`](../scripts/claims.py) — the ledger CLI itself
+(`claim` / `release` / `spawn` / `open` / `ready`), which is also how a
+`rfcs/`-style ledger is read without opening every file. Both degrade to
+silence when their inputs are missing: the reminder skips the claims line if
+the CLI is absent, and the notice stays quiet when it cannot read the session
+model from the transcript.
+
+`review-model-notice.sh` encodes one setup's model-tier routing (a strongest
+"judge" model that should not spend its budget running mechanical review
+skills inline). If you run a single model tier, it simply never fires.
+
 ## Requirements
 
 - `git` and `jq` — every hook parses its stdin with `jq`.
@@ -94,6 +119,7 @@ git clone https://github.com/shimo4228/claude-harness.git ~/.claude-harness
 mkdir -p ~/.claude/hooks ~/.claude/scripts/hooks ~/.claude/tests
 cp ~/.claude-harness/hooks/*.sh          ~/.claude/hooks/
 cp ~/.claude-harness/scripts/hooks/*.py  ~/.claude/scripts/hooks/
+cp ~/.claude-harness/scripts/claims.py   ~/.claude/scripts/   # ledger CLI (session-surface)
 cp ~/.claude-harness/tests/*.bats        ~/.claude/tests/   # optional
 ```
 
@@ -114,6 +140,32 @@ is machine-specific — the paths are `~`-relative and work as written. If a
           { "type": "command", "command": "bash ~/.claude/hooks/bandit-precommit.sh" },
           { "type": "command", "command": "bash ~/.claude/hooks/ruff-format-precommit.sh" },
           { "type": "command", "command": "bash ~/.claude/hooks/review-chain-notice.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The two session-surface hooks use different matchers — merge these as separate
+entries (or append to existing ones with the same matcher):
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          { "type": "command", "command": "bash ~/.claude/hooks/task-claims-reminder.sh", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Task|Agent|Skill",
+        "hooks": [
+          { "type": "command", "command": "bash ~/.claude/hooks/review-model-notice.sh", "timeout": 10 }
         ]
       }
     ]
@@ -180,6 +232,8 @@ depending on a mode bit that production never consults.
 | `bandit-precommit.bats` | That the **index** is scanned rather than the working tree; that MEDIUM+ blocks while LOW does not; that an executable `.claude/verify.sh` triggers the stand-down and a non-executable one does not; fail-soft when no scanner resolves |
 | `ruff-format-precommit.bats` | That a blocked commit leaves the working tree and index byte-identical (check only, never rewrite); that the repo's own `ruff.toml` / `pyproject.toml` is honoured; that each repo of a compound commit is judged by its own config |
 | `review-chain-notice.bats` | Which command shapes trigger the advisory |
+| `task-claims.bats` | The ledger CLI end to end (claim/release fold, fail-closed cross-session refusal, lease takeover marks, producer citation gate, `RFC-NNNN` ids and `rfcs/` dual-read) plus all three hook trigger paths — and that a populated single-table ledger is never silently hidden when `rfcs/` exists |
+| `review-model-notice.bats` | That the Skill path blocks only on the judge tier, the Agent path never blocks, `codex-review` is not mistaken for `code-review`, and an unreadable transcript keeps the hook silent |
 
 Every claim above was checked with a negative control — the hook was mutated to
 remove the property, and the test confirmed to fail against the mutant. A test
@@ -199,9 +253,10 @@ test does pin the fix.
 The live harness runs other hooks that are omitted on purpose, because they only
 fire inside `~/.claude` itself or encode this setup's private wiring: a harness
 config linter, episode-log read guards, a terminal-multiplexer state hook, and a
-naming reminder. The non-commit surface (bash-command validation, docs
-pre-write checks, test auto-run, usage logging) is a separate judgement and is
-not published yet. The reasoning is [ADR-0038](adr/0038-publish-curated-commit-hooks.md).
+naming reminder. Of the non-commit surface, only the two ledger-adjacent hooks
+above are published; the rest (bash-command validation, docs pre-write checks,
+test auto-run, usage logging) stays a separate judgement. The reasoning is
+[ADR-0038](adr/0038-publish-curated-commit-hooks.md).
 
 Some published comments still point at files that stay private: a security rule
 under `rules/common/` that carries no reusable content, working notes under

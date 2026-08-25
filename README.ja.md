@@ -121,11 +121,13 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 
 ### Hooks
 
-`hooks/` には `git commit` 境界で走る PreToolUse hook 5 本 — secret scan、repo 自身の機械ゲートの起動、bandit scan、`ruff format --check`、レビュー確認 — と、それらが必要とする共有部品 2 つが入っています。複数の ADR がこれらの内部挙動を論じているため、判断だけが宙に浮かないようコードも置いています。skills / rules と違い hooks は `settings.json` への手動配線が要ります。5 本すべてに bats があり、いずれも負のコントロール（性質を壊した hook に対してテストが実際に落ちること）で確認済みです。導入手順・verify ゲートの承認モデル・意図的に公開していないものは [docs/hooks.md](docs/hooks.md) にあります。
+`hooks/` には `git commit` 境界で走る PreToolUse hook 5 本 — secret scan、repo 自身の機械ゲートの起動、bandit scan、`ruff format --check`、レビュー確認 — と、それらが必要とする共有部品 2 つ、そして `rfcs/` 台帳とともに公開した session 面の hook 2 本（台帳作法のリマインダー + 台帳 CLI `scripts/claims.py`、judge-tier のレビュー起動ガード）が入っています。複数の ADR がこれらの内部挙動を論じているため、判断だけが宙に浮かないようコードも置いています。skills / rules と違い hooks は `settings.json` への手動配線が要ります。すべてに bats があり、いずれも負のコントロール（性質を壊した hook に対してテストが実際に落ちること）で確認済みです。導入手順・verify ゲートの承認モデル・意図的に公開していないものは [docs/hooks.md](docs/hooks.md) にあります。
 
-### 設計判断 (ADR)
+### 設計判断 (ADR) と提案 (RFC)
 
 `docs/adr/` には、このハーネスがなぜ今の形なのか — 採用・退役・方針転換 — を日付付きの Architecture Decision Record として記録し、コンポーネントと一緒に実働ハーネスから同期しています。上の skills / agents / rules が「何があるか」だとすれば、ADR は「なぜそうなったか」— 失敗も含めた監査証跡です。[ADR index](docs/adr/README.md) から読めます。
+
+`rfcs/` はハーネスの公開タスク・提案台帳です（[ADR-0049](docs/adr/0049-unify-task-ledger-into-public-rfcs.md)）。1 エントリ 1 ファイル、本文は Rust RFC テンプレ準拠、状態は frontmatter。終端エントリも残置するので、却下された提案が理由ごと読めます。ADR が「決めたこと」、`rfcs/` が「まだ開いていること」— 建てないと決めたものが残るのが要点です。
 
 ## 使い方
 

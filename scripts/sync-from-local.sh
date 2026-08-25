@@ -5,11 +5,15 @@
 # Collects components whose origin marker matches ORIGIN (frontmatter
 # `origin: <value>` or HTML comment `<!-- origin: <value> -->`), stages
 # them, runs a secret scan, then replaces the managed subtrees
-# (skills/ agents/ rules/ docs/adr/ hooks/ scripts/hooks/ tests/) wholesale.
+# (skills/ agents/ rules/ docs/adr/ rfcs/ hooks/ scripts/hooks/ tests/) wholesale.
 #
-# Two subtrees are NOT origin-filtered:
+# Three subtree groups are NOT origin-filtered:
 #   docs/adr/  — ADRs record this harness's own design decisions and are
 #     self-authored by definition, so the whole directory is synced.
+#   rfcs/  — the task-and-proposal ledger (ADR-0049): every entry is a
+#     self-authored judgement record, published wholesale for the same reason
+#     as ADRs. Entries are written publishable by default; sensitive detail
+#     lives behind links, never in the body.
 #   hooks/ scripts/hooks/ tests/  — membership comes from HOOK_ALLOWLIST below.
 #     Publication here is a *curation* judgement (is this reusable outside this
 #     machine?), not a *provenance* fact (who wrote it). Most hooks in the live
@@ -37,15 +41,20 @@ set -euo pipefail
 SOURCE_DIR="${HARNESS_SYNC_SOURCE:-$HOME/.claude}"
 ORIGIN="${HARNESS_SYNC_ORIGIN:-shimo4228}"
 TARGET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBTREES=(skills agents rules docs/adr hooks scripts/hooks tests)
+SUBTREES=(skills agents rules docs/adr rfcs hooks scripts/hooks tests)
 
-# Commit-surface hooks that are useful in any repo, plus the parts they need to
-# run and be verified. Paths are relative to SOURCE_DIR and land at the same
-# relative path in the publication repo. Deliberately excluded: hooks that only
+# Hooks that are useful in any repo, plus the parts they need to run and be
+# verified: the commit surface (git-commit gates), and — since 2026-08-25 —
+# two session-surface hooks published alongside the rfcs/ ledger:
+# task-claims-reminder.sh (ledger etiquette on read; needs scripts/claims.py,
+# which lands OUTSIDE the wholesale-replaced subtrees — delisting it needs a
+# manual delete in this repo) and review-model-notice.sh (judge-tier review
+# routing). Paths are relative to SOURCE_DIR and land at the same relative
+# path in the publication repo. Deliberately excluded: hooks that only
 # ever fire inside ~/.claude (harness-lint-precommit.sh + harness_lint.py),
 # harness-internal automations (episode-log guards, contemplative-name-reminder,
-# herdr-agent-state), and the non-commit surface (validate-bash, docs-prewrite,
-# bats-autorun, log-*-usage) which is a separate publication judgement.
+# herdr-agent-state), and the rest of the non-commit surface (validate-bash,
+# docs-prewrite, bats-autorun, log-*-usage) which stays a separate judgement.
 #
 # Because these live in wholesale-replaced subtrees, dropping an entry here makes
 # the file disappear from the publication repo on the next sync, showing up as a
@@ -60,7 +69,10 @@ HOOK_ALLOWLIST=(
   hooks/bandit-precommit.sh
   hooks/ruff-format-precommit.sh
   hooks/review-chain-notice.sh
+  hooks/task-claims-reminder.sh
+  hooks/review-model-notice.sh
   scripts/hooks/verify_allow.py
+  scripts/claims.py
   tests/git-target-extraction.bats
   tests/advisory-envelope.bats
   tests/secret-scan-precommit.bats
@@ -68,6 +80,8 @@ HOOK_ALLOWLIST=(
   tests/verify-precommit.bats
   tests/bandit-precommit.bats
   tests/ruff-format-precommit.bats
+  tests/task-claims.bats
+  tests/review-model-notice.bats
 )
 
 DRY_RUN=0
@@ -87,7 +101,7 @@ fi
 STAGING="$(mktemp -d)"
 trap 'rm -rf "$STAGING"' EXIT
 mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/adr" \
-  "$STAGING/hooks" "$STAGING/scripts/hooks" "$STAGING/tests"
+  "$STAGING/rfcs" "$STAGING/hooks" "$STAGING/scripts/hooks" "$STAGING/tests"
 
 has_origin() { head -15 "$1" | grep -q "origin: $ORIGIN"; }
 
@@ -117,6 +131,13 @@ done < <(grep -rl "origin: $ORIGIN" "$SOURCE_DIR/rules/" 2>/dev/null || true)
 for adr in "$SOURCE_DIR"/docs/adr/*.md; do
   [[ -f "$adr" ]] || continue
   cp "$adr" "$STAGING/docs/adr/"
+done
+
+# rfcs/: the public task-and-proposal ledger (ADR-0049) — same rationale as
+# ADRs: self-authored judgement records, synced wholesale (index included)
+for rfc in "$SOURCE_DIR"/rfcs/*.md; do
+  [[ -f "$rfc" ]] || continue
+  cp "$rfc" "$STAGING/rfcs/"
 done
 
 # hooks + their shared parts + their bats: explicit allowlist, no origin filter.

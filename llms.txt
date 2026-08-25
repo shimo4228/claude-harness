@@ -1,11 +1,13 @@
 # claude-harness
 
 > Public snapshot of the Claude Code harness (skills, agents, rules,
-> commit-boundary hooks, and the harness's own ADRs) used day-to-day by
+> commit-boundary and session-surface hooks, the harness's own ADRs, and
+> its public task-and-proposal ledger `rfcs/`) used day-to-day by
 > shimo4228. Skills, agents, and rules are mechanically aggregated from
 > `~/.claude/` for assets tagged `origin: shimo4228`, excluding
 > ECC-derived material (`origin: ECC` / `ECC-customized`) and
-> auto-extracted artifacts. ADRs sync wholesale; hooks come from a
+> auto-extracted artifacts. ADRs and rfcs sync wholesale (both are
+> self-authored judgement records); hooks come from a
 > curated allowlist, since publishing a hook is a judgement about reuse
 > outside this machine rather than about who wrote it.
 >
@@ -111,7 +113,7 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 
 ## Hooks
 
-- [Hook guide](docs/hooks.md): install and operating guide for the commit-boundary hooks — per-hook firing conditions, block conditions, bypass environment variables, the copy-pasteable `settings.json` fragment, the content-hash approval model behind the verify gate, what each bats suite pins (and which pinned claims were verified by negative control), and what is deliberately not published
+- [Hook guide](docs/hooks.md): install and operating guide for the published hooks — the five commit-boundary gates plus two session-surface hooks (ledger-etiquette reminder with the `scripts/claims.py` ledger CLI, judge-tier review routing) — per-hook firing conditions, block conditions, bypass environment variables, the copy-pasteable `settings.json` fragments, the content-hash approval model behind the verify gate, what each bats suite pins (and which pinned claims were verified by negative control), and what is deliberately not published
 - [secret-scan-precommit.sh](hooks/secret-scan-precommit.sh): PreToolUse hook that scans what a `git commit` command will actually commit (not merely what is staged when the hook fires) for credentials, preferring detect-secrets over a regex fallback
 - [verify-precommit.sh](hooks/verify-precommit.sh): PreToolUse hook that runs the repo's own `.claude/verify.sh --staged` and reads only its exit code — the harness knows no languages and no tools, so it cannot go stale as tooling turns over
 - [bandit-precommit.sh](hooks/bandit-precommit.sh): PreToolUse hook running bandit at MEDIUM severity + MEDIUM confidence over the staged (index) content of `.py` files; stands down if the repo owns a `.claude/verify.sh`
@@ -120,9 +122,10 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [_git-target-common.sh](hooks/_git-target-common.sh): shared extractor for which repositories a command will commit to — drops backslash escapes and quoted spans before segment parsing so a commit message cannot redirect the scan, and returns every matching repo rather than one, since a single answer leaves one half of a compound commit unexamined
 - [verify_allow.py](scripts/hooks/verify_allow.py): direnv-style approval ledger — only a human-approved content hash of a repo's gate is executed, and the checked bytes are the executed bytes
 
-## Design decisions (ADRs)
+## Design decisions (ADRs) and proposals (RFCs)
 
 - [ADR index](docs/adr/README.md): dated Architecture Decision Records for the harness itself — why each skill, agent, and rule was adopted, retired, or reversed, including superseded decisions. The audit trail that makes the harness's evolution (and its value layer) inspectable rather than merely declared. Written in Japanese; each follows a fixed template (Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences — `Review-when` holds the expiry conditions and is required from ADR-0044 on; an ADR is a dated hypothesis, not a permanent constraint)
+- [RFC ledger](rfcs/README.md): the harness's public task-and-proposal ledger (ADR-0049) — one entry per proposal or work item in Rust-RFC-template form, state in the frontmatter (candidate / ready / in_progress / blocked / done / decided / dropped / retired), terminal entries left in place so rejected proposals stay readable with their reasons. The operator-scale counterpart of the AI-native SDLC playbook's "intent home"; read with `scripts/claims.py ready`
 
 ## Related repositories
 
