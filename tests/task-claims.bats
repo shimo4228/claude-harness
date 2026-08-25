@@ -314,14 +314,6 @@ claims() { python3 "$HELPER" "$@"; }
   [[ "$output" != *"着手中"* ]] || return 1
 }
 
-@test "hook points at the store and claims.py ready once a store exists" {
-  mkdir -p "$REPO/.notes/tasks"
-  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
-  [ "$status" -eq 0 ]
-  [[ "$output" == *".notes/tasks/"* ]] || return 1
-  [[ "$output" == *"claims.py ready"* ]] || return 1
-}
-
 @test "hook stays quiet about the store when there is none" {
   # store が無い repo (= 単一表が正本) で store の案内を出すと嘘になる。
   run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
@@ -339,34 +331,16 @@ claims() { python3 "$HELPER" "$@"; }
   [ "$(printf '%s' "$output" | jq -r '.hookSpecificOutput.hookEventName')" = "PostToolUse" ]
 }
 
-@test "known_tasks reads the store, not only the generated table" {
-  # TASKS.md は生成物 (ADR-0094)。render 前に起票したタスクを台帳だけで見ると
-  # 「台帳に見当たりません」と嘘の警告が出て、警告自体が信用されなくなる。
-  mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nid: T-NEW\nstate: accepted\n---\n' > "$REPO/.notes/tasks/T-NEW.md"
-  run claims claim T-NEW
-  [ "$status" -eq 0 ]
-  [[ "$output" != *"台帳に見当たりません"* ]] || return 1
-}
-
-@test "a store does not suppress the typo warning for an unknown id" {
-  mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nid: T-NEW\nstate: accepted\n---\n' > "$REPO/.notes/tasks/T-NEW.md"
-  run claims claim T-TYPOO
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"台帳に見当たりません"* ]] || return 1
-}
-
 @test "the hook never hands the agent a repo-relative command to run" {
   # hook は tool 出力より信用される経路で、発火条件は「$ROOT/.notes/tasks/ が
   # ディレクトリ」だけ — 敵対的 repo はそれを同梱できる。かつてここで
   # `python3 scripts/tasks.py ready` を渡しており、閉じたはずの RCE の 1 段先に
   # 同じ境界が開いていた (2026-08-15 security review HIGH、実証済み)。
-  mkdir -p "$REPO/.notes/tasks"
+  mkdir -p "$REPO/rfcs"
   run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
   [ "$status" -eq 0 ]
   ctx=$(printf '%s' "$output" | jq -r '.hookSpecificOutput.additionalContext')
-  [[ "$ctx" == *".notes/tasks/"* ]] || return 1
+  [[ "$ctx" == *"rfcs/"* ]] || return 1
   # repo 相対のパスを名指ししない。~/.claude/ の絶対パスは harness 所有なので別。
   [[ "$ctx" != *"scripts/tasks.py"* ]] || return 1
   [[ "$ctx" != *"python3 scripts/"* ]] || return 1
@@ -379,19 +353,6 @@ claims() { python3 "$HELPER" "$@"; }
   [ "$status" -eq 0 ]
 }
 
-@test "ready lists store tasks with state ready and marks claimed ones" {
-  mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nid: T-ONE\nstate: accepted\n---\n\n## タスク\n\nfirst thing to do\n' > "$REPO/.notes/tasks/T-ONE.md"
-  printf -- '---\nid: T-TWO\nstate: done 2026-08-16\n---\n\ndone thing\n' > "$REPO/.notes/tasks/T-TWO.md"
-  printf -- '---\nid: T-THREE\nstate: accepted\n---\n\nsecond thing\n' > "$REPO/.notes/tasks/T-THREE.md"
-  claims claim T-THREE
-  run claims ready
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"T-ONE"*"first thing to do"* ]] || return 1
-  [[ "$output" != *"T-TWO"* ]] || return 1
-  [[ "$output" == *"T-THREE"*"[claimed"* ]] || return 1
-}
-
 @test "ready on a single-table repo says so and exits 0" {
   run claims ready
   [ "$status" -eq 0 ]
@@ -399,11 +360,11 @@ claims() { python3 "$HELPER" "$@"; }
 }
 
 @test "ready --state filters by the leading state word" {
-  mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nstate: blocked\n---\n\nwaiting on x\n' > "$REPO/.notes/tasks/T-B.md"
+  mkdir -p "$REPO/rfcs"
+  printf -- '---\nstate: blocked\n---\n\nwaiting on x\n' > "$REPO/rfcs/0004-b.md"
   run claims ready --state blocked
   [ "$status" -eq 0 ]
-  [[ "$output" == *"T-B"*"waiting on x"* ]] || return 1
+  [[ "$output" == *"RFC-0004"*"waiting on x"* ]] || return 1
 }
 
 # --- rfcs/ 一元台帳 (ADR-0049) ---------------------------------------------
@@ -448,16 +409,6 @@ claims() { python3 "$HELPER" "$@"; }
   run claims ready
   [ "$status" -eq 0 ]
   [[ "$output" == *"RFC-0003"*"[claimed"* ]] || return 1
-}
-
-@test "ready dual-reads rfcs and the legacy store during migration" {
-  mkdir -p "$REPO/rfcs" "$REPO/.notes/tasks"
-  printf -- '---\nstate: accepted\n---\n\nnew style\n' > "$REPO/rfcs/0001-one.md"
-  printf -- '---\nstate: accepted\n---\n\nold style\n' > "$REPO/.notes/tasks/T-OLD.md"
-  run claims ready
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"RFC-0001"* ]] || return 1
-  [[ "$output" == *"T-OLD"* ]] || return 1
 }
 
 @test "the rfcs index README is not mistaken for an entry" {

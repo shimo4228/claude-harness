@@ -137,10 +137,10 @@ ADR-0082 が観察対象アームを退役させたので `obsoleted`（当時�
 **store 形式の repo**（1 タスク 1 ファイル、frontmatter の `state:` が状態。配線の正本は
 rule `common/task-tracking.md`）では、状態別の列挙は
 `python3 ~/.claude/scripts/claims.py ready --state <state>` で引く。store の家は下節の
-`rfcs/`。旧 `.notes/tasks/T-XXX.md` は移行期間中 dual-read され、その終端ファイルだけは
-従来通り `.notes/archive/tasks/` へ `mv` するのが archive（機構は無い — CA ADR-0095。
-rfcs/ 側は下節の通り archive しない）。この skill が担うのは意味的な判定（散在タスク行の
-sweep、着手条件が開いたかの解釈、archive 候補の選定）。
+`rfcs/`（旧 `.notes/tasks/` は 2026-08-25 に全 repo 移送完了で廃止 — dual-read も畳んだ。
+RFC-0001。`.notes/archive/tasks/` は歴史記録としてそのまま残る。rfcs/ 側は下節の通り
+archive しない）。この skill が担うのは意味的な判定（散在タスク行の sweep、着手条件が
+開いたかの解釈、単一表 repo の archive 候補の選定）。
 
 ## store の家 rfcs/ と本文様式（この skill が正本、ADR-0049）
 

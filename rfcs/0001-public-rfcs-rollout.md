@@ -1,6 +1,6 @@
 ---
-state: blocked 2026-08-25
-review-when: 対象 repo すべてで展開が完了し dual-read を畳んだ時、または ADR-0049 が supersede された時
+state: done 2026-08-25
+review-when: ADR-0049 が supersede された時
 ---
 
 ## Summary
@@ -84,13 +84,13 @@ minor: AKC 単一表の残行 `T3` は ID 形式が claims 正規表現に元々
 
 ## Status
 
-blocked（≈ issue-tracker 標準の blocked。RFC 標準に state 語彙は無い）— harness 分と
-CA / AKC の移送は検収済み（2026-08-25）。CA weekly-pipeline の書き先判断待ち。
+done — 展開完了（2026-08-25）。経過: harness 初設 + 公開経路接続 → CA store 18 件・
+AKC T-003 の移送（検収済み）→ 書き先判断は A 案で決着（著者 2026-08-25）: CA
+weekly-pipeline の起票先を rfcs/ へ変更（採番 `NNNN-slug`、`state: draft` 正規化、
+無人は working tree に書くだけで公開 commit は weekly-gate — CA `4a292ae`）→ 旧
+`.notes/tasks/` を再生成する経路ゼロを確認し、claims.py / hook の **dual-read を畳んだ**。
+単一表のみの repo は対象外のまま（本 RFC の規則どおり）。
 
 ## Next action
 
-- 再開条件: CA の weekly-pipeline が書く新規タスクの置き先（`.notes/tasks/` のまま
-  = dual-read 継続、または rfcs/ へ向ける = 無人セッションが公開 tracked ディレクトリに
-  書く境界判断 — ADR-0043/0049 の交差）が決まる
-- 照合先: CA `scripts/weekly-pipeline.sh:71`（`TASKS_DIR` の既定値）
-- 成立時: in_progress（判断に沿って pipeline 追随 → 全 repo 空で dual-read を畳む）
+無し — 終端。`.notes/archive/tasks/` は歴史記録として残置。

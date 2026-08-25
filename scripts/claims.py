@@ -16,9 +16,9 @@ read-modify-write すると後から書いた方が黙って前の編集を消�
 store（frontmatter に `state:`、本文は自由。並行編集で他タスクが消えない置き方 —
 2026-08-16 に contemplative-agent の 3 層機構を退役してこの形だけを残した）。
 store の家は公開 `rfcs/NNNN-slug.md`（ID は stem 先頭 4 桁から `RFC-NNNN`。本文の推奨
-様式は Rust RFC テンプレ準拠 — 正本は skill: task-stocktake、判断は ADR-0049）。
-旧 `.notes/tasks/T-XXX.md` は移行期間中 dual-read する。`ready` は store を読んで
-着手可能なものだけを列挙する。台帳を読む機能はこれで全部で、描画も読み戻しも
+様式は Rust RFC テンプレ準拠 — 正本は skill: task-stocktake、判断は ADR-0049/0050）。
+旧 `.notes/tasks/` の dual-read は 2026-08-25 に畳んだ（RFC-0001 完了）。`ready` は
+store を読んで着手可能なものだけを列挙する。台帳を読む機能はこれで全部で、描画も読み戻しも
 状態機械も持たない（それらを持った版が 2 日で 5,000 行になり、そのバグを
 直し続ける形になった）。
 
@@ -280,10 +280,6 @@ def fmt_age(hours: float | None) -> str:
     return f"{int(hours / 24)}d"
 
 
-def store_path(root: Path) -> Path:
-    return root / ".notes" / "tasks"
-
-
 def rfc_store_path(root: Path) -> Path:
     return root / "rfcs"
 
@@ -294,7 +290,8 @@ _RFC_FILE_RE = re.compile(r"^(\d{4})-")
 
 
 def _rfc_entries(root: Path) -> list[tuple[str, Path]]:
-    """(RFC-NNNN, path)。symlink の store を辿らないのは store_path 側と同じ理由。"""
+    """(RFC-NNNN, path)。symlink の store は辿らない — repo 外へ向けられると glob が
+    そちらを列挙し、typo 警告や ready の判断材料が repo 外になるため（security review LOW）。"""
     rfcs = rfc_store_path(root)
     if not rfcs.is_dir() or rfcs.is_symlink():
         return []
@@ -309,21 +306,13 @@ def _rfc_entries(root: Path) -> list[tuple[str, Path]]:
 def known_tasks(root: Path) -> set[str]:
     """起票済みの ID。claim 時の typo を捕まえるためだけに使う。
 
-    3 層台帳の repo では store（`.notes/tasks/T-*.md`）が正本で、`TASKS.md` は
-    `tasks.py render` の生成物（ADR-0094）。台帳だけを見ると render 前に起票された
-    タスクが「台帳に見当たりません」になる — 正しく起票した相手に嘘の警告を出す形で、
-    警告そのものが信用されなくなる。store を先に見て台帳との**和**を取る:
-    store を持たない repo（単一台帳のまま）では台帳だけが答え、移行途中の repo では
-    どちらか一方にしかない ID も既知として通る。
+    store（rfcs/）を先に見て単一表（TASKS.md）との**和**を取る: store を持たない
+    repo（単一表のまま）では表だけが答え、どちらか一方にしかない ID も既知として通る。
+    旧 store `.notes/tasks/` の dual-read は 2026-08-25 に畳んだ（全 repo で移送完了 +
+    CA weekly-pipeline の書き先を rfcs/ へ変更 — RFC-0001）。
     """
     known: set[str] = set()
     known |= {task for task, _path in _rfc_entries(root)}
-    store = store_path(root)
-    # `is_dir()` は symlink を辿るので、store を repo 外へ向けられると glob が
-    # そちらを列挙する。読むのはファイル名だけで内容は出さないが、typo 警告の
-    # 判断材料が repo 外になるのは意図でない（security review LOW）。
-    if store.is_dir() and not store.is_symlink():
-        known |= {p.stem for p in store.glob("T-*.md") if _TASK_RE.match(p.stem)}
     path = ledger_path(root)
     if not path.is_file():
         return known
@@ -565,18 +554,11 @@ def task_head(text: str) -> tuple[str, str]:
 
 
 def cmd_ready(args, root: Path) -> int:
-    store = store_path(root)
     rfcs = rfc_store_path(root)
-    has_store = store.is_dir() and not store.is_symlink()
-    has_rfcs = rfcs.is_dir() and not rfcs.is_symlink()
-    if not has_store and not has_rfcs:
-        print(f"rfcs/ も {store} も無い。この repo は単一表（.notes/TASKS.md）— 直接読む。")
+    if not rfcs.is_dir() or rfcs.is_symlink():
+        print("rfcs/ が無い。この repo は単一表（.notes/TASKS.md）— 直接読む。")
         return 0
     entries: list[tuple[str, Path]] = _rfc_entries(root)
-    if has_store:
-        entries += [
-            (path.stem, path) for path in sorted(store.glob("T-*.md")) if _TASK_RE.match(path.stem)
-        ]
     held = open_claims(root)
     wanted = args.state
     rows: list[tuple[str, str, str]] = []

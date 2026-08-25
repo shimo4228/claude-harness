@@ -59,7 +59,6 @@ esac
 # `scripts/hooks/verify_allow.py` の内容 hash 承認 (rules/common/security.md) を通す。
 ROOT="${CLAUDE_PROJECT_DIR:-}"
 [ -d "$ROOT" ] || ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || ROOT="$PWD"
-STORE="$ROOT/.notes/tasks"
 RFCS="$ROOT/rfcs"
 
 OUT=""
@@ -81,11 +80,9 @@ fi
 # 開いていた（2026-08-15 security review HIGH、実証済み）。コマンド名の正本は
 # 常駐 rule `common/task-tracking.md` 側にあるので、ここからは指さない。
 # `~/.claude/…` の絶対パス（下の claims.py）は harness 所有なのでこの制約の外。
+# 旧 store .notes/tasks/ の案内は 2026-08-25 に畳んだ（全 repo 移送完了、RFC-0001）。
 if [ -d "$RFCS" ]; then
   add "[tasks] store 形の台帳は rfcs/NNNN-slug.md（1 タスク 1 ファイル、ID は RFC-NNNN。ADR-0049）。全件を開かず python3 ~/.claude/scripts/claims.py ready で問う"
-  [ -d "$STORE" ] && add "[tasks] 旧 store .notes/tasks/T-XXX.md も移行期間中は台帳（ready が dual-read する）"
-elif [ -d "$STORE" ]; then
-  add "[tasks] 台帳は .notes/tasks/T-XXX.md（1 タスク 1 ファイル）。全件を開かず python3 ~/.claude/scripts/claims.py ready で問う"
 fi
 if [ -f "$HELPER" ]; then
   add "[claims] 着手するなら先に claim を積む: python3 ~/.claude/scripts/claims.py claim T-XXX --label \"...\""

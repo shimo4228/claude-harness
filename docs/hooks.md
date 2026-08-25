@@ -232,7 +232,7 @@ depending on a mode bit that production never consults.
 | `bandit-precommit.bats` | That the **index** is scanned rather than the working tree; that MEDIUM+ blocks while LOW does not; that an executable `.claude/verify.sh` triggers the stand-down and a non-executable one does not; fail-soft when no scanner resolves |
 | `ruff-format-precommit.bats` | That a blocked commit leaves the working tree and index byte-identical (check only, never rewrite); that the repo's own `ruff.toml` / `pyproject.toml` is honoured; that each repo of a compound commit is judged by its own config |
 | `review-chain-notice.bats` | Which command shapes trigger the advisory |
-| `task-claims.bats` | The ledger CLI end to end (claim/release fold, fail-closed cross-session refusal, lease takeover marks, producer citation gate, `RFC-NNNN` ids and `rfcs/` dual-read) plus all three hook trigger paths — and that a populated single-table ledger is never silently hidden when `rfcs/` exists |
+| `task-claims.bats` | The ledger CLI end to end (claim/release fold, fail-closed cross-session refusal, lease takeover marks, producer citation gate, `RFC-NNNN` ids) plus all three hook trigger paths — and that a populated single-table ledger is never silently hidden when `rfcs/` exists |
 | `review-model-notice.bats` | That the Skill path blocks only on the judge tier, the Agent path never blocks, `codex-review` is not mistaken for `code-review`, and an unreadable transcript keeps the hook silent |
 
 Every claim above was checked with a negative control — the hook was mutated to
