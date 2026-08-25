@@ -55,6 +55,7 @@
 | [0047](0047-retire-learned-notes-directory.md) | `skills/learned/` を全件退役（11 件）し、learn-eval の Save 先を Absorb / Promote の 2 択 + Drop に限定。実測で 184 read 中 161 が監査日集中、実作業 read は 74 日で 12 回。reachability はディレクトリの定数なので判定軸にならないと確認 | accepted | 2026-08-23 |
 | [0048](0048-sdlc-playbook-translation-and-rfc-conformance.md) | AI-native SDLC playbook（2026-08-21）は改名でなく翻訳で取り込む — 対応の主役は AKC の二重ループ（product loop ↔ harness loop、stage↔phase 1:1 は誤り）、提案本文は Rust RFC 0000-template 完全準拠（preamble は frontmatter へ）。付表: product loop 機構マップ snapshot + 採用しないもの（control bands / LLM-judge evals ゲート / 3 artifact 分離 / DORA） | accepted | 2026-08-25 |
 | [0049](0049-unify-task-ledger-into-public-rfcs.md) | store 形タスク台帳を公開 `rfcs/NNNN-slug.md` に一元化（提案も作業も 1 店舗、ID RFC-NNNN、状態語彙 8 語流用）。archive 機構は持たず終端エントリは公開判断記録として残置。claims.py は正規表現 + 走査パスの最小改修のみ。全 repo 展開は RFC-0001 が追跡 | accepted | 2026-08-25 |
+| [0050](0050-standardize-ledger-state-vocabulary.md) | 台帳の状態語彙を標準語彙 9 語へ全域移行（draft / accepted / in_progress / blocked / done / resolved / rejected / withdrawn / obsoleted）— 非標準語彙はセッション間で写像がずれる実証（同日 2 通りに書いた）。分担線: 提案 lifecycle は RFC 標準語、RFC に無い実行系は issue-tracker 標準語。dropped は rejected / withdrawn に分裂、gloss 運用は廃止 | accepted | 2026-08-25 |
 
 ## Template
 

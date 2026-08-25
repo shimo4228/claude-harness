@@ -1,6 +1,6 @@
 ---
 name: task-triage
-description: "Run one cycle of the task-triage loop over a repo's task ledger — judge every open task (verify its premise in code, check its start condition against the 照合先, decide whether it is still worth doing, look for a better solution), then dispatch the ready ones to fresh implementation sessions and act as their independent judge until the human merges. Use when the user says 「残タスクを見て」「タスクを整理して」「台帳を回して」「dispatch して」「未マージある？」, invokes /task-triage, or when a task ledger has grown and nobody can say what is dispatchable. This skill is the judgment layer of the loop (Fable = judge, Opus sessions = build, human = last switch); the vocabulary of ledger states is owned by task-stocktake and is not redefined here. NOT for consolidating scattered task files into a ledger (task-stocktake), NOT for deciding a single build-or-not question (architect), and NOT for running a task yourself — a triage session reads, judges, dispatches and verifies; it does not implement."
+description: "Run one cycle of the task-triage loop over a repo's task ledger — judge every open task (verify its premise in code, check its start condition against the 照合先, decide whether it is still worth doing, look for a better solution), then dispatch the accepted ones to fresh implementation sessions and act as their independent judge until the human merges. Use when the user says 「残タスクを見て」「タスクを整理して」「台帳を回して」「dispatch して」「未マージある？」, invokes /task-triage, or when a task ledger has grown and nobody can say what is dispatchable. This skill is the judgment layer of the loop (Fable = judge, Opus sessions = build, human = last switch); the vocabulary of ledger states is owned by task-stocktake and is not redefined here. NOT for consolidating scattered task files into a ledger (task-stocktake), NOT for deciding a single build-or-not question (architect), and NOT for running a task yourself — a triage session reads, judges, dispatches and verifies; it does not implement."
 license: MIT
 origin: shimo4228
 compatibility: Developed on Claude Code with Herdr as the session multiplexer; the dispatch mechanics section names the alternatives (Agent tool, `claude --bg`) for other setups.
@@ -11,8 +11,8 @@ compatibility: Developed on Claude Code with Herdr as the session multiplexer; t
 A task ledger grows faster than it drains because filing is the cheapest action anyone can
 take. This skill is one **cycle** of a loop that drains it — not by implementing faster, but
 by putting judgment first: every open task is re-read against the code and its own start
-condition, and only what survives is dispatched. `dropped` / `decided` / `retired` count as
-success exactly like `done`.
+condition, and only what survives is dispatched. `resolved` / `rejected` / `withdrawn` /
+`obsoleted` count as success exactly like `done`.
 
 Roles (decided 2026-08-17, ADR-0043):
 
@@ -28,8 +28,10 @@ lens it was designed with).
 
 ## Vocabulary — do not invent states
 
-Ledger states are `candidate` / `ready` / `in_progress` / `blocked` and the terminals
-`done` / `decided` / `dropped` / `retired`; `blocked` requires 再開条件 / 照合先 / 成立時,
+Ledger states are `draft` / `accepted` / `in_progress` / `blocked` and the terminals
+`done` / `resolved` / `rejected` / `withdrawn` / `obsoleted` (standardized 2026-08-25,
+ADR-0050; old words candidate/ready/decided/dropped/retired map 1:1, dropped splitting into
+rejected/withdrawn); `blocked` requires 再開条件 / 照合先 / 成立時,
 便乗型 rows ("次に X を触るとき") do not belong in a ledger. The definitions live in
 `task-stocktake` — read that section before the first triage. There is no "defer".
 
@@ -37,17 +39,17 @@ The verdicts of a triage are the states themselves:
 
 | Verdict | Meaning | Who decides |
 |---|---|---|
-| `candidate` | adoption still undecided → **consult** the human (one question at a time, see Digest) | human |
-| `ready` → dispatch | premise verified `file:line`, condition met, acceptance decidable, reversible in a worktree, no rule change, fits one session | judge (dispatch), human (merge) |
+| `draft` | adoption still undecided → **consult** the human (one question at a time, see Digest) | human |
+| `accepted` → dispatch | premise verified `file:line`, condition met, acceptance decidable, reversible in a worktree, no rule change, fits one session | judge (dispatch), human (merge) |
 | `blocked` | adopted, and the three lines can be written; if the 照合先 can never fire (structurally unobservable), it is not `blocked` — re-ask | judge writes the lines |
-| terminal proposal | premise gone / substrate now native / value < complexity (`architect` lens) / event source deleted (`retired`) | proposed by judge, **confirmed by human** |
+| terminal proposal | premise gone / substrate now native / value < complexity (`architect` lens) / event source deleted (`obsoleted`) | proposed by judge, **confirmed by human** |
 | 台帳外 | 便乗 → a note at the code site, row closed | judge proposes |
 
 ## The cycle
 
 ### 0. Read the ledger without reading everything
 
-Store repos: `python3 ~/.claude/scripts/claims.py ready` (and `--state blocked|candidate`)
+Store repos: `python3 ~/.claude/scripts/claims.py ready` (and `--state blocked|draft`)
 gives one line per task; open the file only for the ones you will judge. Single-table repos:
 read the Pending table. Check `claims.py open` first — another session may hold a task.
 
@@ -61,10 +63,10 @@ dependency's state) — many fire mechanically (`gh pr view`, `grep -c`, `git lo
 For every task not in dead-band, in this order — stop at the first that decides it:
 
 1. **Premise** — does the code still have the problem? Quote `file:line`. A refuted premise
-   is a terminal proposal (`retired` if the object is gone, `dropped` if the choice is not to)
+   is a terminal proposal (`obsoleted` if the object is gone, `withdrawn` if the choice is not to)
    — never a dispatch. 2 of 7 premises were refuted the day this loop was designed by hand.
 2. **Condition** — for `blocked`, did the 照合先 fire? "Fired" and "the event source was
-   deleted" are different (`retired`). A condition that cannot be observed anymore drops the
+   deleted" are different (`obsoleted`). A condition that cannot be observed anymore drops the
    task out of `blocked`.
 3. **Worth** — 複雑性 × 価値 × 使用頻度. Cheap now that dispatch is cheap: a 20-minute build
    session changes the calculus for small `chore` rows that were parked as "単独では着手しない".
@@ -72,8 +74,8 @@ For every task not in dead-band, in this order — stop at the first that decide
 4. **Better solution** — has the substrate absorbed it (a built-in command, a native flag)?
    Verify by running it, not from memory (`claude plugin eval` existed but was gated —
    "native" is a claim to test).
-5. **Ownership** — a task that can only become `ready` in another repo is moved there as
-   `candidate` and closed here as `decided`.
+5. **Ownership** — a task that can only become `accepted` in another repo is moved there as
+   `draft` and closed here as `resolved`.
 
 Write the verdict and the one-line reason **into the task** (store: a dated section; table:
 the 着手条件 cell). The reader of the ledger must not need this conversation.
@@ -84,7 +86,7 @@ The digest is where the human's attention is spent, so budget it: **one decision
 message**, in the order background → what is at stake → options → recommendation → cost /
 reversibility. A ten-item numbered list looks efficient and is not — the owner asked for one
 at a time on the first run. Bookkeeping that only applies the vocabulary (a satisfied
-condition → `ready`, adding the three lines, a `decided` whose decision is already recorded)
+condition → `accepted`, adding the three lines, a `resolved` whose decision is already recorded)
 can go as one blanket-OK list; anything that changes a rule, accepts a risk, spends money, or
 drops a task is its own question.
 
@@ -102,7 +104,7 @@ merge word and the answers come **in the triage session**, or through the human'
 
 ### 3. Dispatch — packet, worktree, fresh session
 
-Only `ready` tasks, and at most **3 concurrent build sessions**. Group tasks that share one
+Only `accepted` tasks, and at most **3 concurrent build sessions**. Group tasks that share one
 setup into one packet (three skill-comply chores became one session; three README notes in
 three repos became one). Measurements (readings that decide the next state) dispatch just as
 well as implementations — often better: read-only, decidable, reversible.
@@ -199,7 +201,7 @@ The build session's report is a claim. Before asking for the merge word:
   **drops nothing alone**; never merges, publishes, or touches rules / ADR / hooks / security
   gates unattended; never changes the filing rule while its measurement is running.
 - Success is reconciliation, not throughput: per cycle report `open before → after`,
-  `closed (done + decided + dropped + retired)` vs `spawned`, and where the spawns came from
+  `closed (done + resolved + rejected + withdrawn + obsoleted)` vs `spawned`, and where the spawns came from
   (`claims.jsonl` origins). A cycle that raises open count is not a bad cycle if the spawns
   were the human's; a cycle that "wins" by mass drops is.
 - Two questions the loop deliberately does not answer (state them, measure them): what a
@@ -230,7 +232,7 @@ exits — the next tick spawns a fresh one. No in-session cron, no successor han
 cycles the memory is the ledger (verdicts and reasons are written into the tasks), so
 auto-compaction of the standing session costs nothing the next cycle needs, and a fresh
 session resumes from the ledger alone. Cross-repo effects travel only through the ledgers
-(a task moved as `candidate`, an ADR link), never through a session's memory. The judge and
+(a task moved as `draft`, an ADR link), never through a session's memory. The judge and
 the builds may be different model tiers on purpose: judgment errors are the expensive ones
 (a missed refuted premise wastes the whole build), so the orchestrator is the strongest tier
 available and the builds are the fast tier.
@@ -253,7 +255,7 @@ pipeline's 13:30 packet deadline and before the human gate). The tick decides "s
 due" by weekday (Saturday) so each repo keeps one plist. Do not use in-session `CronCreate`
 or `/loop` for this — session-only, 7-day expiry, and silent when the session dies. A cycle
 that fires while the human is away still does everything up to the digest — 条件 checks,
-vocabulary-only bookkeeping, dispatch of `ready` work within WIP, verification of finished
+vocabulary-only bookkeeping, dispatch of `accepted` work within WIP, verification of finished
 builds — then sends the digest to Slack (one message per decision) and the closing line;
 consults and merges wait for the human in the session. The session's context is not the
 loop's memory: verdicts live in the tasks, so the standing session can be `/clear`ed and

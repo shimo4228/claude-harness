@@ -94,7 +94,7 @@ Recommendation        : Keep / Move / Simplify / Make temporary / Delete / Defer
 | Move | 同 Demote / Merge、または rules-distill（skill → rule 方向） |
 | Simplify | 同 Improve、built-in `/simplify` |
 | Make temporary | rule なら `review-when:`、ADR なら `## Review-when`、skill なら `## 失効条件` に期限を書く |
-| Defer | `.notes/TASKS.md` に `candidate` で起票（task-stocktake の語彙） |
+| Defer | 台帳（rfcs/ または `.notes/TASKS.md`）に `draft` で起票（task-stocktake の語彙） |
 | Keep | 理由を 1 行残す（将来の stocktake の根拠になる） |
 
 ## 適用外

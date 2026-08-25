@@ -59,6 +59,12 @@ store 形台帳の家を repo トップレベルの公開 `rfcs/` に一元化�
    第二語彙を作らない。RFC lifecycle との対応（例: candidate=Draft、ready=Accepted、
    done=Implemented、decided=判断で決着、dropped=Rejected/Withdrawn）は skill:
    `task-stocktake` を正本とする。
+
+   > **注記（2026-08-25, ADR-0050）**: 語の具体形は同日中に標準語彙 9 語（draft /
+   > accepted / in_progress / blocked / done / resolved / rejected / withdrawn /
+   > obsoleted）へ全域移行した — 非標準語彙の写像がセッション間でずれる実証を受けた
+   > もの。本項の原則「第二語彙を作らない・frontmatter が唯一の正本」は不変で、
+   > 変わったのは語だけ。対応表は ADR-0050。
 4. archive 機構は持たない。終端エントリは削除・退避せずその場に残す — dropped も却下理由
    ごと残ることが公開判断記録の価値であり、この設計は `rules/common/akc-cycle.md` の
    「却下記録の読み方」と同じ思想に立つ。pending の視界は `claims.py ready` の state

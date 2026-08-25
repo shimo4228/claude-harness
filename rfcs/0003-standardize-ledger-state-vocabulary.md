@@ -1,5 +1,5 @@
 ---
-state: candidate 2026-08-25
+state: in_progress 2026-08-25
 review-when: ADR-0049 が supersede された時、または gloss 運用で drift 再発が 3 ヶ月観測されなかった時（現状維持で決着）
 ---
 
@@ -58,11 +58,12 @@ CA 15・AKC 1）/ 単一表 repo 9 件の状態列 / CA の CLAUDE.md 台帳節�
 
 ## Status
 
-candidate（≈ draft）— gloss 運用（2026-08-25 導入）の観測期間中。判断はその後
-（著者指示: まず運用し、冗長・不足が見えたら規約を再検討する）。
+in_progress — 当初の観測期間（gloss 運用 3 ヶ月）を待たず、著者指示（2026-08-25
+「Rfc3 も opus 実装させといて」）で採用・実装に前倒し。判断の記録は ADR-0050。
+語彙は本文 Summary の 9 語案のとおり確定（in progress は token 制約で `in_progress`）。
 
 ## Next action
 
-- 再開条件: gloss 運用下でも状態語の写像ずれが再発する（または 3 ヶ月無事故 → dropped で決着）
-- 照合先: rfcs/ エントリの Status 節と実際の state 遷移記録の突き合わせ
-- 成立時: ready（sweep の実装 packet を書く）
+- harness 正本層（skill / rule / claims.py / bats / rfcs）は judge が sweep 済み。
+  CA / AKC / 単一表 8 repo の sweep は build dispatch 実行中 — 検収と全 repo 反映の
+  確認をもって done へ

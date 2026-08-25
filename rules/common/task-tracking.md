@@ -9,8 +9,9 @@ skill: `task-stocktake` が持つ。形は 2 つ:
 - **単一表** `.notes/TASKS.md` — 小さい repo。そのまま読む
 - **store** 公開 `rfcs/NNNN-slug.md` — 1 タスク 1 ファイル（提案も作業も 1 店舗）、
   ID は `RFC-NNNN`。frontmatter に `state:`
-  （開: `candidate` / `ready` / `in_progress` / `blocked`、終端: `done` / `dropped` /
-  `decided` / `retired`、日付を続けてよい）、本文は自由記述（推奨様式は Rust RFC
+  （開: `draft` / `accepted` / `in_progress` / `blocked`、終端: `done` / `resolved` /
+  `rejected` / `withdrawn` / `obsoleted` — 標準語彙、ADR-0050。日付を続けてよい）、
+  本文は自由記述（推奨様式は Rust RFC
   テンプレ準拠）。**語彙・様式・rfcs/ 規約の正本は skill: `task-stocktake`**（各語の
   定義・`blocked` の入場条件・終端語の使い分け・公開規約）。ここには複製しない —
   分散した版は誰も刈らず肥大する。並行セッションが別タスクを消せない置き方

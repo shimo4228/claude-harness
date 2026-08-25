@@ -658,7 +658,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "ready", help="着手可能なタスクを列挙（rfcs/ / .notes/tasks/ store 形式の repo）"
     )
-    p.add_argument("--state", default="ready", help="列挙する state（既定 ready）")
+    # 語彙は 2026-08-25 に標準語へ移行（ADR-0050: ready→accepted 等）。subcommand 名の
+    # `ready` は「着手可能なものを問う」動詞句として維持 — hook 文言・docs が広く参照する。
+    p.add_argument("--state", default="accepted", help="列挙する state（既定 accepted）")
     p.set_defaults(func=cmd_ready)
     return parser
 

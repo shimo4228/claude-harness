@@ -79,7 +79,7 @@ minor: AKC 単一表の残行 `T3` は ID 形式が claims 正規表現に元々
 ## Future possibilities
 
 - AKC の correspondence doc から「実践している repo 群」として相互参照する
-- 却下（dropped）エントリの蓄積が、発散段階の反証に使わない規律（akc-cycle
+- 却下（rejected / withdrawn）エントリの蓄積が、発散段階の反証に使わない規律（akc-cycle
   「却下記録の読み方」）の実測データになる
 
 ## Status

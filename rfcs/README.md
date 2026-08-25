@@ -5,12 +5,12 @@
 様式・状態語彙・規約の正本は skill: `task-stocktake`、判断は
 [ADR-0049](../docs/adr/0049-unify-task-ledger-into-public-rfcs.md)。
 
-状態は各ファイルの frontmatter `state:` が**唯一の正本**（`candidate` / `ready` /
-`in_progress` / `blocked` / `done` / `decided` / `dropped` / `retired`。この index には
-複製しない — 二重記録は drift する）。この 8 語は**台帳の語彙であって RFC 標準語彙では
-ない** — RFC 標準（Rust / IETF）は文書内 state を持たない。本文末尾の `## Status` 節が
-標準語 gloss つきで現在地を語り（IETF「Status of This Memo」型）、`## Next action` が
-tracking 層（何があれば動くか）を持つ。本文の他の節は Rust RFC テンプレ準拠。終端
+状態は各ファイルの frontmatter `state:` が**唯一の正本**（`draft` / `accepted` /
+`in_progress` / `blocked` / `done` / `resolved` / `rejected` / `withdrawn` /
+`obsoleted` — 標準語彙、ADR-0050。この index には複製しない — 二重記録は drift する）。
+RFC 標準（Rust / IETF）は文書内 state を持たないため、本文末尾の `## Status` 節が
+現在地を語り（IETF「Status of This Memo」型）、`## Next action` が tracking 層
+（何があれば動くか）を持つ。本文の他の節は Rust RFC テンプレ準拠。終端
 エントリも削除・退避せずここに残る — 却下理由ごと残るのが公開判断記録の価値。状態別の
 列挙は `python3 ~/.claude/scripts/claims.py ready [--state <state>]`。
 

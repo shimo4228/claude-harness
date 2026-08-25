@@ -1,5 +1,5 @@
 ---
-state: candidate 2026-08-25
+state: draft 2026-08-25
 review-when: tdd skill が退役した時、または substrate が fix 中の test 改変防止を native に持った時
 ---
 
@@ -55,10 +55,10 @@ fix chain 中（判定方法は要設計 — Unresolved）、`tests/` 配下へ�
 
 ## Status
 
-candidate（≈ draft）— 観測待ちの提案（2026-08-25 起票）。建てない状態が既定。
+draft — 観測待ちの提案（2026-08-25 起票）。建てない状態が既定。
 
 ## Next action
 
 - 再開条件: test 改変による GREEN 偽装を 1 回でも観測する
 - 照合先: fix chain の実装 diff（tests/ への編集がテストを弱めた事例）
-- 成立時: ready（設計は Reference-level explanation の方針で）
+- 成立時: accepted（設計は Reference-level explanation の方針で）

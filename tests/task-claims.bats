@@ -15,7 +15,7 @@ HOOK="$HOME/.claude/hooks/task-claims-reminder.sh"
 setup() {
   REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$REPO/.notes"
-  printf '| ID | 状態 |\n| T-FOO | ready |\n| T-BAR | ready |\n' > "$REPO/.notes/TASKS.md"
+  printf '| ID | 状態 |\n| T-FOO | accepted |\n| T-BAR | accepted |\n' > "$REPO/.notes/TASKS.md"
   export CLAUDE_PROJECT_DIR="$REPO"
   export CLAUDE_CODE_SESSION_ID="aaaaaaaa-1111-2222-3333-444444444444"
 }
@@ -343,7 +343,7 @@ claims() { python3 "$HELPER" "$@"; }
   # TASKS.md は生成物 (ADR-0094)。render 前に起票したタスクを台帳だけで見ると
   # 「台帳に見当たりません」と嘘の警告が出て、警告自体が信用されなくなる。
   mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nid: T-NEW\nstate: ready\n---\n' > "$REPO/.notes/tasks/T-NEW.md"
+  printf -- '---\nid: T-NEW\nstate: accepted\n---\n' > "$REPO/.notes/tasks/T-NEW.md"
   run claims claim T-NEW
   [ "$status" -eq 0 ]
   [[ "$output" != *"台帳に見当たりません"* ]] || return 1
@@ -351,7 +351,7 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "a store does not suppress the typo warning for an unknown id" {
   mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nid: T-NEW\nstate: ready\n---\n' > "$REPO/.notes/tasks/T-NEW.md"
+  printf -- '---\nid: T-NEW\nstate: accepted\n---\n' > "$REPO/.notes/tasks/T-NEW.md"
   run claims claim T-TYPOO
   [ "$status" -eq 0 ]
   [[ "$output" == *"台帳に見当たりません"* ]] || return 1
@@ -381,9 +381,9 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "ready lists store tasks with state ready and marks claimed ones" {
   mkdir -p "$REPO/.notes/tasks"
-  printf -- '---\nid: T-ONE\nstate: ready\n---\n\n## タスク\n\nfirst thing to do\n' > "$REPO/.notes/tasks/T-ONE.md"
+  printf -- '---\nid: T-ONE\nstate: accepted\n---\n\n## タスク\n\nfirst thing to do\n' > "$REPO/.notes/tasks/T-ONE.md"
   printf -- '---\nid: T-TWO\nstate: done 2026-08-16\n---\n\ndone thing\n' > "$REPO/.notes/tasks/T-TWO.md"
-  printf -- '---\nid: T-THREE\nstate: ready\n---\n\nsecond thing\n' > "$REPO/.notes/tasks/T-THREE.md"
+  printf -- '---\nid: T-THREE\nstate: accepted\n---\n\nsecond thing\n' > "$REPO/.notes/tasks/T-THREE.md"
   claims claim T-THREE
   run claims ready
   [ "$status" -eq 0 ]
@@ -417,7 +417,7 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "known_tasks reads the rfcs store so a filed RFC does not warn" {
   mkdir -p "$REPO/rfcs"
-  printf -- '---\nstate: candidate\n---\n\n## Summary\n\nroll out rfcs\n' > "$REPO/rfcs/0001-public-rfcs-rollout.md"
+  printf -- '---\nstate: draft\n---\n\n## Summary\n\nroll out rfcs\n' > "$REPO/rfcs/0001-public-rfcs-rollout.md"
   run claims claim RFC-0001
   [ "$status" -eq 0 ]
   [[ "$output" != *"台帳に見当たりません"* ]] || return 1
@@ -425,7 +425,7 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "an unknown RFC id still warns" {
   mkdir -p "$REPO/rfcs"
-  printf -- '---\nstate: candidate\n---\n\nonly this one\n' > "$REPO/rfcs/0001-one.md"
+  printf -- '---\nstate: draft\n---\n\nonly this one\n' > "$REPO/rfcs/0001-one.md"
   run claims claim RFC-9999
   [ "$status" -eq 0 ]
   [[ "$output" == *"台帳に見当たりません"* ]] || return 1
@@ -433,8 +433,8 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "ready lists rfcs entries by RFC id with the summary line" {
   mkdir -p "$REPO/rfcs"
-  printf -- '---\nstate: ready\n---\n\n## Summary\n\nroll out rfcs everywhere\n' > "$REPO/rfcs/0001-public-rfcs-rollout.md"
-  printf -- '---\nstate: candidate\n---\n\n## Summary\n\nnot yet accepted\n' > "$REPO/rfcs/0002-two.md"
+  printf -- '---\nstate: accepted\n---\n\n## Summary\n\nroll out rfcs everywhere\n' > "$REPO/rfcs/0001-public-rfcs-rollout.md"
+  printf -- '---\nstate: draft\n---\n\n## Summary\n\nstill a draft\n' > "$REPO/rfcs/0002-two.md"
   run claims ready
   [ "$status" -eq 0 ]
   [[ "$output" == *"RFC-0001"*"roll out rfcs everywhere"* ]] || return 1
@@ -443,7 +443,7 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "ready marks a claimed rfcs entry" {
   mkdir -p "$REPO/rfcs"
-  printf -- '---\nstate: ready\n---\n\nclaimable thing\n' > "$REPO/rfcs/0003-three.md"
+  printf -- '---\nstate: accepted\n---\n\nclaimable thing\n' > "$REPO/rfcs/0003-three.md"
   claims claim RFC-0003
   run claims ready
   [ "$status" -eq 0 ]
@@ -452,8 +452,8 @@ claims() { python3 "$HELPER" "$@"; }
 
 @test "ready dual-reads rfcs and the legacy store during migration" {
   mkdir -p "$REPO/rfcs" "$REPO/.notes/tasks"
-  printf -- '---\nstate: ready\n---\n\nnew style\n' > "$REPO/rfcs/0001-one.md"
-  printf -- '---\nstate: ready\n---\n\nold style\n' > "$REPO/.notes/tasks/T-OLD.md"
+  printf -- '---\nstate: accepted\n---\n\nnew style\n' > "$REPO/rfcs/0001-one.md"
+  printf -- '---\nstate: accepted\n---\n\nold style\n' > "$REPO/.notes/tasks/T-OLD.md"
   run claims ready
   [ "$status" -eq 0 ]
   [[ "$output" == *"RFC-0001"* ]] || return 1
@@ -463,7 +463,7 @@ claims() { python3 "$HELPER" "$@"; }
 @test "the rfcs index README is not mistaken for an entry" {
   mkdir -p "$REPO/rfcs"
   printf -- '# index\n\nnot a task\n' > "$REPO/rfcs/README.md"
-  printf -- '---\nstate: ready\n---\n\nonly entry\n' > "$REPO/rfcs/0001-one.md"
+  printf -- '---\nstate: accepted\n---\n\nonly entry\n' > "$REPO/rfcs/0001-one.md"
   run claims ready
   [ "$status" -eq 0 ]
   [[ "$output" == *"RFC-0001"* ]] || return 1
@@ -475,7 +475,7 @@ claims() { python3 "$HELPER" "$@"; }
   # 入った途端に単一表への誘導が消えると、表の ready 行が黙って隠れる
   # (2026-08-25 adr-reviewer 実測: harness の T-002 が不可視になった)。
   mkdir -p "$REPO/rfcs"
-  printf -- '---\nstate: ready\n---\n\nrfc entry\n' > "$REPO/rfcs/0001-one.md"
+  printf -- '---\nstate: accepted\n---\n\nrfc entry\n' > "$REPO/rfcs/0001-one.md"
   run claims ready
   [ "$status" -eq 0 ]
   [[ "$output" == *"RFC-0001"* ]] || return 1
@@ -485,7 +485,7 @@ claims() { python3 "$HELPER" "$@"; }
 @test "ready does not mention the single table when it has no task rows" {
   printf '# empty ledger\n' > "$REPO/.notes/TASKS.md"
   mkdir -p "$REPO/rfcs"
-  printf -- '---\nstate: ready\n---\n\nrfc entry\n' > "$REPO/rfcs/0001-one.md"
+  printf -- '---\nstate: accepted\n---\n\nrfc entry\n' > "$REPO/rfcs/0001-one.md"
   run claims ready
   [ "$status" -eq 0 ]
   [[ "$output" != *"TASKS.md"* ]] || return 1
