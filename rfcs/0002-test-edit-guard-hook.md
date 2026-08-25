@@ -52,3 +52,13 @@ fix chain 中（判定方法は要設計 — Unresolved）、`tests/` 配下へ�
 ## Future possibilities
 
 - 発火ログが溜まれば、GREEN 偽装の発生率そのものの実測になる
+
+## Status
+
+candidate（≈ draft）— 観測待ちの提案（2026-08-25 起票）。建てない状態が既定。
+
+## Next action
+
+- 再開条件: test 改変による GREEN 偽装を 1 回でも観測する
+- 照合先: fix chain の実装 diff（tests/ への編集がテストを弱めた事例）
+- 成立時: ready（設計は Reference-level explanation の方針で）

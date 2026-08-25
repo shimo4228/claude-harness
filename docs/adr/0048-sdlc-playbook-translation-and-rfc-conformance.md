@@ -112,6 +112,12 @@ rule の対象であり、改版されうる。
 のいずれかが起きたとき、付表 1/2 の snapshot は失効し、
 ブリッジ文書ともども再照合する。
 
+> **注記（2026-08-25, 著者指示）**: 様式に `## Status` / `## Next action` の 2 節を独自
+> 追加した（IETF「Status of This Memo」型の prose status + 一元化の tracking 層。RFC 標準に
+> state 語彙が無いことへの応答 — 正本は skill: task-stocktake）。**この様式は運用して
+> 冗長な点・足りない点が観測されたら再検討する** — 完全準拠 + 2 節という形自体を固定
+> しない。状態語彙の全域標準化は RFC-0003 が追跡。
+
 ## Alternatives Considered
 
 ### ハーネス語彙を playbook 語彙へ改名する

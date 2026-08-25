@@ -145,10 +145,15 @@ store 形の家は repo トップレベルの**公開 `rfcs/`**。1 エントリ
 唯一の正本 — index に複製しない**。二重記録は drift する）。提案もタスクも 1 店舗 —
 提案だけの別置き場を作らない（分散した台帳は誰も刈らない）。
 
-- **状態は上の語彙 8 語をそのまま**（第二語彙を作らない）: `candidate` = RFC の Draft /
-  `ready` = Accepted（着手可）/ `in_progress` / `blocked` / `done` = Implemented /
-  `decided` = 判断で決着（build なし）/ `dropped` = Rejected・Withdrawn / `retired`。
-  入場条件・終端の使い分け・blocked 3 行・retired 引用の規定もそのまま適用する
+- **状態は上の語彙 8 語をそのまま**（第二語彙を作らない）。標準語 gloss（各エントリの
+  Status 節に添える — 非標準語彙はセッションごとに写像がずれるため、自己記述で固定する。
+  2026-08-25 実測）: `candidate` ≈ draft / `ready` ≈ accepted / `in_progress` ≈
+  in progress / `blocked` ≈ blocked（RFC 標準に state 語彙は無く、これは issue-tracker
+  標準語）/ `done` ≈ implemented / `decided` ≈ resolved（build なしで決着）/
+  `dropped` ≈ rejected（否決）または withdrawn（自ら取り下げ）/ `retired` ≈ obsoleted
+  （対象消滅 — withdrawn ではない: 意思でなく外部要因）。
+  入場条件・終端の使い分け・blocked 3 行・retired 引用の規定もそのまま適用する。
+  語彙自体の全域標準化は RFC-0003 が追跡（採否未決）
 - **終端エントリは archive しない**: 削除も退避もせずその場に残す（RFC 慣行。`dropped`
   も公開判断記録 — 却下理由ごと残るのが価値）。pending の視界は `ready` の state
   フィルタが保つ
@@ -175,7 +180,19 @@ review-when: <失効条件（無ければ省略）>
 ## Prior art
 ## Unresolved questions
 ## Future possibilities
+## Status
+## Next action
 ```
+
+末尾 2 節は Rust テンプレ外の**独自追加**（2026-08-25 著者採用）で、一元化の tracking 層を
+本文に持たせる — Rust では tracking issue に住む情報の家。前例は IETF の
+「Status of This Memo」（標準 RFC も本文に prose の status 節を持つ）:
+
+- **`## Status`** — 現在地 1〜3 行。**state の標準語 gloss（上の対応）+ 日付**を必ず添える
+  （例:「blocked（≈ issue-tracker 標準の blocked。RFC 標準に state 語彙は無い）— CA
+  pipeline の書き先判断待ち（2026-08-25）」）。state 遷移のたびにここも更新する
+- **`## Next action`** — 何があれば動くか。`blocked` の 3 行（再開条件 / 照合先 / 成立時）は
+  ここが家（Unresolved questions ではない — あちらは提案内容の未解決問）
 
 - Rust の preamble（Feature Name / Start Date / RFC PR / Issue）は metadata なので
   frontmatter で表す。見出しは EN 準拠、本文の言語は自由。失効条件の frontmatter key は
@@ -183,7 +200,7 @@ review-when: <失効条件（無ければ省略）>
   ヘッダと同一概念に同一の語を使う（第 3 の名前を作らない）
 - 機械契約は 1 つだけ: **本文の最初の非見出し行**が `claims.py ready` の要約表示になる
   （`## Summary` の 1 行目がそのまま出る）。frontmatter で機械が読むのは `state:` のみ
-- `blocked` の 3 行（再開条件 / 照合先 / 成立時）は Unresolved questions 配下に置く
+- `blocked` の 3 行（再開条件 / 照合先 / 成立時）の家は `## Next action`（上の節）
 - 標準語彙との対応（翻訳可能性の担保 — ADR-0048）: intent.md problem → Motivation /
   proposed outcome → Summary / affected users and systems → Guide-level（users）・
   Reference-level explanation（systems）/ constraints → Reference-level explanation /

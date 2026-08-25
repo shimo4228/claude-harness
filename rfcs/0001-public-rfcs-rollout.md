@@ -75,15 +75,22 @@ minor: AKC 単一表の残行 `T3` は ID 形式が claims 正規表現に元々
 - 既存 ID（T-XXX）の参照が commit message・ADR に残る — 移送時に旧 ID を本文へ併記する
   規約で足りるか
 
-blocked の 3 行（2026-08-25）:
-- 再開条件: CA の weekly-pipeline が書く新規タスクの置き先（`.notes/tasks/` のまま
-  = dual-read 継続、または rfcs/ へ向ける = 無人セッションが公開 tracked ディレクトリに
-  書く境界判断 — ADR-0043/0049 の交差）が決まる
-- 照合先: CA `scripts/weekly-pipeline.sh:71`（`TASKS_DIR` の既定値）
-- 成立時: in_progress（判断に沿って pipeline 追随 → 全 repo 空で dual-read を畳む）
 
 ## Future possibilities
 
 - AKC の correspondence doc から「実践している repo 群」として相互参照する
 - 却下（dropped）エントリの蓄積が、発散段階の反証に使わない規律（akc-cycle
   「却下記録の読み方」）の実測データになる
+
+## Status
+
+blocked（≈ issue-tracker 標準の blocked。RFC 標準に state 語彙は無い）— harness 分と
+CA / AKC の移送は検収済み（2026-08-25）。CA weekly-pipeline の書き先判断待ち。
+
+## Next action
+
+- 再開条件: CA の weekly-pipeline が書く新規タスクの置き先（`.notes/tasks/` のまま
+  = dual-read 継続、または rfcs/ へ向ける = 無人セッションが公開 tracked ディレクトリに
+  書く境界判断 — ADR-0043/0049 の交差）が決まる
+- 照合先: CA `scripts/weekly-pipeline.sh:71`（`TASKS_DIR` の既定値）
+- 成立時: in_progress（判断に沿って pipeline 追随 → 全 repo 空で dual-read を畳む）
