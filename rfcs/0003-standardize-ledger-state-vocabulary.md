@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-08-25
+state: done 2026-08-25
 review-when: ADR-0049 が supersede された時、または gloss 運用で drift 再発が 3 ヶ月観測されなかった時（現状維持で決着）
 ---
 
@@ -58,12 +58,15 @@ CA 15・AKC 1）/ 単一表 repo 9 件の状態列 / CA の CLAUDE.md 台帳節�
 
 ## Status
 
-in_progress — 当初の観測期間（gloss 運用 3 ヶ月）を待たず、著者指示（2026-08-25
-「Rfc3 も opus 実装させといて」）で採用・実装に前倒し。判断の記録は ADR-0050。
-語彙は本文 Summary の 9 語案のとおり確定（in progress は token 制約で `in_progress`）。
+done — 当初の観測期間（gloss 運用 3 ヶ月）を待たず、著者指示（2026-08-25）で採用・
+実装した。判断の記録は ADR-0050。語彙は本文 Summary の 9 語案のとおり確定（in progress
+は token 制約で `in_progress`）。sweep 実施: harness 正本層（judge）+ CA rfcs 15 件・
+配線 doc / AKC / 単一表 8 repo（build dispatch、検収済み）。歴史記録（archive・過去
+cycle 参照・authorship の語彙移行記録）は旧語のまま残置 — 橋は ADR-0050 の対応表。
+対象外として残した残骸: aeon-shop ×2 / zafu-ios は別語彙（pending / open）で 8 語系に
+元々乗っておらず、AKC `T3`/`T6`・AAP・zenn の `deferred` / `observing` は撤廃済み語の
+残骸（各 repo の次の棚卸しで拾う）。
 
 ## Next action
 
-- harness 正本層（skill / rule / claims.py / bats / rfcs）は judge が sweep 済み。
-  CA / AKC / 単一表 8 repo の sweep は build dispatch 実行中 — 検収と全 repo 反映の
-  確認をもって done へ
+無し — 終端。新語彙下での drift 再発の観測は ADR-0050 の Review-when が持つ。
