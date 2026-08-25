@@ -1,5 +1,5 @@
 ---
-state: candidate 2026-08-25
+state: blocked 2026-08-25
 review-when: 対象 repo すべてで展開が完了し dual-read を畳んだ時、または ADR-0049 が supersede された時
 ---
 
@@ -37,7 +37,14 @@ harness の公開ミラーには harness-sync の収集範囲に `rfcs/` を足�
 
 **進捗（2026-08-25）**: harness 分は実施済み — claude-harness の SUBTREES に `rfcs/` を
 追加、HOOK_ALLOWLIST に task-claims-reminder.sh / review-model-notice.sh / claims.py /
-両 bats を追加して公開。残りは他 repo への展開と既存台帳行の移送判断。
+両 bats を追加して公開。
+
+**進捗（2026-08-25、build dispatch 検収済み）**: contemplative-agent — store 18 件を
+全件判定（移送 15 / 終端 archive 3 / 残置 0、機微起因の書き換え 0。`.notes/tasks/` は空。
+commit 77f1491、未 push）。agent-knowledge-cycle — T-003 → RFC-0001 移送 + rfcs/ 初設
+（commit ee64707、未 push）。単一表のみの 9 repo は本 RFC の規則どおり対象外。
+minor: AKC 単一表の残行 `T3` は ID 形式が claims 正規表現に元々乗っておらず、ready の
+単一表誘導が出ない（AKC 側の命名整備事項）。
 
 ## Drawbacks
 
@@ -67,6 +74,13 @@ harness の公開ミラーには harness-sync の収集範囲に `rfcs/` を足�
   残すか（形の統一 vs 公開の意味が無い場所での儀式）
 - 既存 ID（T-XXX）の参照が commit message・ADR に残る — 移送時に旧 ID を本文へ併記する
   規約で足りるか
+
+blocked の 3 行（2026-08-25）:
+- 再開条件: CA の weekly-pipeline が書く新規タスクの置き先（`.notes/tasks/` のまま
+  = dual-read 継続、または rfcs/ へ向ける = 無人セッションが公開 tracked ディレクトリに
+  書く境界判断 — ADR-0043/0049 の交差）が決まる
+- 照合先: CA `scripts/weekly-pipeline.sh:71`（`TASKS_DIR` の既定値）
+- 成立時: in_progress（判断に沿って pipeline 追随 → 全 repo 空で dual-read を畳む）
 
 ## Future possibilities
 
