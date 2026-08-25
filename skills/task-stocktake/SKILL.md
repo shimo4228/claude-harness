@@ -128,11 +128,70 @@ ADR-0082 が観察対象アームを退役させたので `retired`、§B5 は�
 日付を続けてよい（`done 2026-06-17`）。**日付は台帳に書いた日でなく、終わった日を書く** —
 棚卸しで遅れて気付いた終端は、気付いた日でなく実際の決着日を入れると滞留が見える。
 
-**store 形式の repo**（`.notes/tasks/T-XXX.md`、1 タスク 1 ファイル、frontmatter の
-`state:` が状態。配線の正本は rule `common/task-tracking.md`）では、状態別の列挙は
-`python3 ~/.claude/scripts/claims.py ready --state <state>` で引く。終端状態のファイルは
-`.notes/archive/tasks/` へ `mv` するのが archive（機構は無い — CA ADR-0095）。この skill が
-担うのは意味的な判定（散在タスク行の sweep、着手条件が開いたかの解釈、archive 候補の選定）。
+**store 形式の repo**（1 タスク 1 ファイル、frontmatter の `state:` が状態。配線の正本は
+rule `common/task-tracking.md`）では、状態別の列挙は
+`python3 ~/.claude/scripts/claims.py ready --state <state>` で引く。store の家は下節の
+`rfcs/`。旧 `.notes/tasks/T-XXX.md` は移行期間中 dual-read され、その終端ファイルだけは
+従来通り `.notes/archive/tasks/` へ `mv` するのが archive（機構は無い — CA ADR-0095。
+rfcs/ 側は下節の通り archive しない）。この skill が担うのは意味的な判定（散在タスク行の
+sweep、着手条件が開いたかの解釈、archive 候補の選定）。
+
+## store の家 rfcs/ と本文様式（この skill が正本、ADR-0049）
+
+store 形の家は repo トップレベルの**公開 `rfcs/`**。1 エントリ 1 ファイル
+`rfcs/NNNN-slug.md`（4 桁採番・欠番不再利用 — docs/adr と同じ規約）、ID は stem 先頭
+4 桁から `RFC-NNNN`。index は `rfcs/README.md`（`| # | Title |` の表 +
+「提案から小さな作業項目まで同居する」旨の 1 行。**state は各ファイルの frontmatter が
+唯一の正本 — index に複製しない**。二重記録は drift する）。提案もタスクも 1 店舗 —
+提案だけの別置き場を作らない（分散した台帳は誰も刈らない）。
+
+- **状態は上の語彙 8 語をそのまま**（第二語彙を作らない）: `candidate` = RFC の Draft /
+  `ready` = Accepted（着手可）/ `in_progress` / `blocked` / `done` = Implemented /
+  `decided` = 判断で決着（build なし）/ `dropped` = Rejected・Withdrawn / `retired`。
+  入場条件・終端の使い分け・blocked 3 行・retired 引用の規定もそのまま適用する
+- **終端エントリは archive しない**: 削除も退避もせずその場に残す（RFC 慣行。`dropped`
+  も公開判断記録 — 却下理由ごと残るのが価値）。pending の視界は `ready` の state
+  フィルタが保つ
+- **公開が既定**: 本文は公開可能な書き方をし、機微（内部事情・非公開 repo のパス等）は
+  本文に書かずリンク先へ逃がす（「詳細はリンク先」の既存規約と同じ）
+- **接続**: 起票したら `claims.py spawn RFC-NNNN --origin …`（review 由来は `--producer`
+  必須 — 下節）。着手時の claim も T-XXX と同じ
+
+**本文の推奨様式 — Rust RFC 0000-template 完全準拠**（推奨であって強制ではない。
+自由記述は引き続き有効。小さな作業項目は該当なし節を省き Summary / Motivation 中心で
+よい — 起票摩擦の低さを RFC 純度より優先する）:
+
+```markdown
+---
+state: candidate 2026-08-25
+review-when: <失効条件（無ければ省略）>
+---
+## Summary
+## Motivation
+## Guide-level explanation
+## Reference-level explanation
+## Drawbacks
+## Rationale and alternatives
+## Prior art
+## Unresolved questions
+## Future possibilities
+```
+
+- Rust の preamble（Feature Name / Start Date / RFC PR / Issue）は metadata なので
+  frontmatter で表す。見出しは EN 準拠、本文の言語は自由。失効条件の frontmatter key は
+  `review-when:` — ADR の `## Review-when`（harness ADR-0044）・rules の `review-when`
+  ヘッダと同一概念に同一の語を使う（第 3 の名前を作らない）
+- 機械契約は 1 つだけ: **本文の最初の非見出し行**が `claims.py ready` の要約表示になる
+  （`## Summary` の 1 行目がそのまま出る）。frontmatter で機械が読むのは `state:` のみ
+- `blocked` の 3 行（再開条件 / 照合先 / 成立時）は Unresolved questions 配下に置く
+- 標準語彙との対応（翻訳可能性の担保 — ADR-0048）: intent.md problem → Motivation /
+  proposed outcome → Summary / affected users and systems → Guide-level（users）・
+  Reference-level explanation（systems）/ constraints → Reference-level explanation /
+  open questions → Unresolved questions。Build-or-not
+  ①既存流用の検討 → Rationale and alternatives、③誰が消費するか → Motivation。
+  **Prior art は search-first / Phase 0 の結果の置き場**（AKC Research phase の受け皿）
+- ADR との境界: rfcs/ のエントリ = 提案・作業・未決。ADR = 決定記録。採用判断が出たら
+  ADR が Rationale and alternatives を引き取り、エントリは state だけ進める
 
 ## レビュー指摘の起票規律（この skill が正本）
 

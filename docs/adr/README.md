@@ -53,6 +53,8 @@
 | [0045](0045-triage-loop-launchd-tick-and-slack-digest.md) | triage loop の timer を session の外（launchd `triage-tick.sh` → `herdr agent prompt`）へ、digest は Slack 片方向（1 判断 1 通 + cycle 末尾 1 行、既存 webhook 流用）、答えは triage セッションの中だけ。session 内 CronCreate / 自己更新は skill から外す。harness 土 08:03、CA 水 17:07 + 土 14:07 | accepted | 2026-08-19 |
 | [0046](0046-skill-creator-shrink-in-place-and-creation-gate.md) | skill-creator をその場で縮退（5,826→96 行）し、作成時ゲート（草稿 subagent + skill-stocktake Phase 2 checklist）と命令形配線（rule + PreToolUse hook `skill-create-notice.sh`）に置き換え。skill-writer/skill-judge 新設と NVIDIA SkillEvaluator 導入は棄却 | accepted | 2026-08-22 |
 | [0047](0047-retire-learned-notes-directory.md) | `skills/learned/` を全件退役（11 件）し、learn-eval の Save 先を Absorb / Promote の 2 択 + Drop に限定。実測で 184 read 中 161 が監査日集中、実作業 read は 74 日で 12 回。reachability はディレクトリの定数なので判定軸にならないと確認 | accepted | 2026-08-23 |
+| [0048](0048-sdlc-playbook-translation-and-rfc-conformance.md) | AI-native SDLC playbook（2026-08-21）は改名でなく翻訳で取り込む — 対応の主役は AKC の二重ループ（product loop ↔ harness loop、stage↔phase 1:1 は誤り）、提案本文は Rust RFC 0000-template 完全準拠（preamble は frontmatter へ）。付表: product loop 機構マップ snapshot + 採用しないもの（control bands / LLM-judge evals ゲート / 3 artifact 分離 / DORA） | accepted | 2026-08-25 |
+| [0049](0049-unify-task-ledger-into-public-rfcs.md) | store 形タスク台帳を公開 `rfcs/NNNN-slug.md` に一元化（提案も作業も 1 店舗、ID RFC-NNNN、状態語彙 8 語流用）。archive 機構は持たず終端エントリは公開判断記録として残置。claims.py は正規表現 + 走査パスの最小改修のみ。全 repo 展開は RFC-0001 が追跡 | accepted | 2026-08-25 |
 
 ## Template
 

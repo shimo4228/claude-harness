@@ -175,8 +175,10 @@ The build session's report is a claim. Before asking for the merge word:
 ### 5. Merge on the human's word, then close the books
 
 - `git -C <repo> merge --ff-only task/<name>` → run verify on `main` again → `claims.py
-  release T-XXX --outcome done --commit <sha>` → state `done <date>` in the ledger (store:
-  `mv` to `.notes/archive/tasks/`) → `git worktree remove` + `git branch -d` → close the build
+  release T-XXX --outcome done --commit <sha>` → state `done <date>` in the ledger (an
+  `rfcs/` entry stays in place as a public decision record — ADR-0049; a legacy
+  `.notes/tasks/` file is `mv`ed to `.notes/archive/tasks/`) → `git worktree remove` +
+  `git branch -d` → close the build
   session's pane (`herdr pane close <pane_id>`; the pane is not evidence — the commit body is).
   Never close panes you did not spawn.
 - If the merge changed a pinned gate script (`.claude/verify.sh`), the approval ledger needs
