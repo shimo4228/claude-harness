@@ -159,6 +159,13 @@ store 形の家は repo トップレベルの**公開 `rfcs/`**。1 エントリ
   `claims.py ready` の state フィルタが保つ
 - **公開が既定**: 本文は公開可能な書き方をし、機微（内部事情・非公開 repo のパス等）は
   本文に書かずリンク先へ逃がす（「詳細はリンク先」の既存規約と同じ）
+- **その場で終わる仕事は起票しない**（起票の足切り、2026-08-25 著者規約）:
+  "Do not create an RFC for work that can be safely completed in the current session
+  without preserving intent or state." — 台帳は seam（セッション境界・判断待ち・
+  条件待ち）へ intent と state を運ぶ器で、運ぶものが無い起票は純コスト（GTD の
+  2 分ルールの台帳版）。逆は成り立つ: 今すぐ却下できる提案でも**却下理由を残す価値が
+  あるなら**起票してよい — それは intent の保存に当たる（公開判断記録が rfcs/ の
+  存在理由）。review 指摘の足切り（HIGH + producer、下節）と便乗型の禁止は別軸のまま
 - **接続**: 起票したら `claims.py spawn RFC-NNNN --origin …`（review 由来は `--producer`
   必須 — 下節）。着手時の claim も T-XXX と同じ
 

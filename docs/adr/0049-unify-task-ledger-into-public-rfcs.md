@@ -75,6 +75,12 @@ store 形台帳の家を repo トップレベルの公開 `rfcs/` に一元化�
    （claude-config）内にあり、公開ミラー claude-harness の収集範囲への追加は RFC-0001 が
    担う。公開は撤回不能（clone / クロール済みになりうる — ADR-0037 Alternatives の記録）
    なので、書き方の既定を接続より先に立てる。
+
+   > **注記（2026-08-25, 著者規約）**: 起票の足切りを追加した — 現在のセッションで安全に
+   > 完了でき、intent / state を将来へ運ぶ必要が無い作業には RFC を作らない（GTD の
+   > 2 分ルールの台帳版。却下理由を残すための起票は intent の保存として可。正本は
+   > task-stocktake の rfcs/ 節）。公開既定で 1 起票あたりの curation コストが上がった
+   > ことへの対衝。
 6. 機構改修は最小に留める（実測: `claims.py` +61/−16、`task-claims-reminder.sh` +7/−3、
    bats 11 本追加 +100 行 — 正は本 commit の `git diff --numstat`。suite は全 green だが
    総数は並行変更を含むため本変更の baseline にしない）。`claims.py` の ID 正規表現を
