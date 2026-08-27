@@ -74,10 +74,72 @@ origin: auto-extracted
 
    #### 5a. Mandatory checklist (verify by actually reading the files)
 
-   Run **all** of the following before evaluating the draft:
+   **First, enumerate the overlap candidates — do not grep by hand.** The draft
+   from Step 4 is still in the conversation, not on disk, so **write it to a file
+   in this session's scratchpad directory with the Write tool** and pass that path:
 
-   - [ ] Grepped `~/.claude/skills/` for keywords and checked for content overlap
-   - [ ] Checked for overlap with MEMORY.md (project + global)
+   ```bash
+   uv run --project ~/.claude/skills/learn-eval \
+          --directory ~/.claude/skills/learn-eval \
+          python scripts/overlap_candidates.py \
+          --draft /path/to/scratch/learn-eval-draft.md --project "$PWD"
+   ```
+
+   Both arguments are load-bearing:
+
+   - **Write the draft to a file; never inline it into the command.** A
+     heredoc terminates on a line that matches its delimiter, and a draft is
+     arbitrary session-derived prose that may contain one — the rest of the
+     draft would then be read by the shell as commands, before any human gate.
+     `rules/common/security.md` treats a SKILL.md as a control program for
+     exactly this reason: a step that builds shell source out of untrusted text
+     is an injection path, not a formatting choice.
+   - **`--project "$PWD"` is required whenever `--directory` is.** `--directory`
+     makes the skill directory the process cwd, so the script's default
+     `--project .` would resolve to the skill's own directory and silently drop
+     the invoking repo's `MEMORY.md`. `$PWD` expands before uv changes
+     directory, so it still names the repo you are working in.
+
+   Evidence mode: JSON on stdout, exit 0 however many candidates (exit 2 only when
+   an input is unreadable). It enumerates; it never says "this is a duplicate".
+   `skill_candidates` ranks installed skills by how much of each **description**
+   the draft's terms cover (the description is what routes a future session, so a
+   body match would rank a skill nothing reaches); `memory_candidates` does the
+   same over MEMORY.md index lines — project **and** global — with line numbers.
+   Both report `shared_terms`, so a claim of overlap is checkable.
+
+   **Read the score, not the rank**, and read the two lists on different scales:
+
+   - `skill_candidates` — a description carries ~30 terms, so the score spreads.
+     Measured 2026-08-26 against the live 67-skill library: a draft whose
+     knowledge already had a home scored **0.600** against that skill and ≤0.143
+     against everything else; a genuinely new draft topped out at 0.100. Treat a
+     tight cluster below ~0.2 as "no candidate", not "five near-misses".
+   - `memory_candidates` — an index line carries 3–8 terms, so the score is noisy
+     and `shared_concepts` is the signal. **Concepts, not terms**: a Japanese
+     word of n characters produces n−1 matching bigrams, so counting raw terms
+     let one incidental katakana word outrank a real match. The script drops
+     anything sharing a single concept; what survives is worth reading.
+
+   **Before reading the candidates, check that the comparison actually ran.** Each
+   of these means part of the corpus was never compared, and "no overlap" would be
+   a false clean bill:
+
+   - `memory_files_unreadable` non-empty, or `memory_files_read` empty while
+     `memory_files_missing` is not → the memory half did not run. Name the file.
+   - `skills_unscannable` non-empty → those skills were not compared at all. The
+     one you cannot read is as likely to be the twin as any other.
+   - `skill_candidates_total` / `memory_candidates_total` above `top_n` → the list
+     was truncated; there are more candidates than you were shown.
+
+   (An empty draft exits 2 rather than reporting no candidates, so a truncated
+   Write fails loudly instead of certifying itself.)
+
+   Then run all of the following before evaluating the draft:
+
+   - [ ] Stated, per surviving candidate, whether it is really the same knowledge —
+     quoting its `shared_terms` or the cited MEMORY.md line. "Nothing survived the
+     floor and the top skill scored 0.09" is a valid answer; "I grepped" is not
    - [ ] Considered appending to an existing skill instead (see knowledge-placement-decision)
    - [ ] Confirmed the pattern is reusable, not a one-off fix
    - [ ] Checked the pattern against the **session's observational record** (actual tool output, errors, user corrections). Is it grounded in "what actually happened" rather than your own summary or paraphrase?
@@ -161,9 +223,13 @@ origin: auto-extracted
 ## Output Format for Step 5
 
 ```
+### Overlap candidates (from scripts/overlap_candidates.py)
+- skills: 0.60 git-workflow [bash, c, cd, git, permission, status] → same knowledge, Absorb
+- memory: MEMORY.md:45 feedback_git_dash_c_over_cd, 4 shared terms → already recorded
+(or: top skill 0.10, nothing survived the memory floor — no real overlap)
+
 ### Checklist
-- [x] skills/ grep: no overlap (or overlap found → details)
-- [x] MEMORY.md: no overlap (or overlap found → details)
+- [x] Candidates judged one by one: (verdict per candidate, quoting shared terms)
 - [x] Append-to-existing considered: new file appropriate (or should append to [X])
 - [x] Reusability: confirmed (or one-off → Drop)
 

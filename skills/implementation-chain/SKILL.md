@@ -49,25 +49,16 @@ routing を自発的に行うようになったら、この段落を外す。）
 
 ## Chain Matrix（種別 × ステップ）
 
-各セルの値: `Y` 必須 / `C` 条件付き / `-` 省略可 / `↑` 上の行のステップの中で実行する。
-
-`refactor` × Simplify の `↑` は「実行しない」ではない — Refactor Clean が built-in
-`/simplify` → `refactor-cleaner` の順で回すので、**`/simplify` 自体は refactor でも走る**。
-以前ここが `-` だったため「refactor は Simplify 不要」と読める状態になっていた
-（2026-08-15 code-reviewer 指摘）。Simplify が本当に非該当なのは `chore` と `prototype`。
+各セルの値: `Y` 必須 / `C` 条件付き / `-` 省略可。
 
 | ステップ | feat | fix | refactor | chore | prototype |
 |---|:-:|:-:|:-:|:-:|:-:|
 | Plan（メインループ / plan mode。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
-| Premise Challenge（Plan 段の cross-model 反証、skill: `codex-review` plan mode） | C | - | - | - | - |
 | TDD（メインループ、skill: `tdd`） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
-| Simplify（built-in `/simplify`、quality 軸の cleanup 適用） | Y | C | ↑ | - | - |
 | Code Review | Y | Y | Y | C | - |
 | Security Review | C | C | - | C | - |
-| Silent-Failure Review | C | C | C | - | - |
-| Cross-Model Review | Y | Y | C | - | - |
 | Doc Sync (context files) | C | C | C | C | - |
 | E2E / 回帰テスト（skills: `e2e` / `ai-regression-testing`） | C | C | C | - | - |
 | Verify (build / types / lint / tests / secrets / deps / doc sync / git status) | Y | Y | Y | Y | - |
@@ -76,23 +67,21 @@ routing を自発的に行うようになったら、この段落を外す。）
 
 - `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（2026-08-15 に `Y` から降格、[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない。判断に迷ったら Y
 - 全種別 × E2E / 回帰テスト: **ユーザー可視のフロー（画面遷移・API の外形）を変えたら `e2e`**、**AI に広く編集させた diff で同種のバグが再発しうるなら `ai-regression-testing`** を Y。いずれも Verify の coverage floor（`rules/common/testing.md`）の**上に足す**もので、置き換えではない。純粋な内部リファクタや設定変更だけなら `-`
-- `feat` / `chore` × Build-or-not（2026-08-25 追加、Premise Challenge の**前段**）: **新規機構・計器・常駐資産（skill / rule / hook / agent）・依存の追加を含む plan のみ Y**。plan 本文に 4 問の答えを必須で書く — ①存在すべきか（削除・既存流用で解けないか）②適正な大きさ（行数・段数の上限を先に宣言）③誰が消費するか（読み手のいない出力は建てない）④失効条件。**セッションが judge-tier ならこの自答で足りる（agent 呼び出しは冗長 — 同一モデル）。build-tier セッションのみ agent: `architect`（model: fable）を必須**とし、verdict が Don't build なら chain はそこで止まる。実測根拠: CA ADR-0095（この問いを持たない無人 chain が 30 時間で 5,000 行）
-- `feat` × Premise Challenge: **新規機構・不可逆・公開面に触れる feat のみ Y**（2026-08-22 追加）。設計パケット確定前に `codex-plan-challenge.sh --plan` を 1 回。歯止めと fold は skill: `codex-review` が正本。順序は 存在（Build-or-not）→ 前提（ここ）→ 実装
+- `feat` / `chore` × Build-or-not（2026-08-25 追加）: **新規機構・計器・常駐資産（skill / rule / hook / agent）・依存の追加を含む plan のみ Y**。plan 本文に 4 問の答えを必須で書く — ①存在すべきか（削除・既存流用で解けないか）②適正な大きさ（行数・段数の上限を先に宣言）③誰が消費するか（読み手のいない出力は建てない）④失効条件。**セッションが judge-tier ならこの自答で足りる（agent 呼び出しは冗長 — 同一モデル）。build-tier セッションのみ agent: `architect`（model: fable）を必須**とし、verdict が Don't build なら chain はそこで止まる。実測根拠: CA ADR-0095（この問いを持たない無人 chain が 30 時間で 5,000 行）
 - `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y。着手時の照合規律（既済照合・schema 変更の全消費者棚卸し等）は skill: `repair-discipline`
 - 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
 - `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら上の Build-or-not 行に従う（judge-tier は 4 問自答、build-tier は agent: `architect`。実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
-- `fix` × Simplify: 新規ロジックを含む fix のみ Y。typo・設定値のみの diff は `-`
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（2026-08-16 に `Y` から降格、ADR-0042）。
   脅威面 = 資格情報の取得・保管・送出 / 外部 IO / 公開経路（外部に出るデータの内容と範囲）/
   無人実行の起動経路とブラスト半径 / 外部コンテンツを LLM 文脈へ取り込む経路 / 権限と bypass の境界。
   内部ロジックの追加のみ、既存経路の内側で完結する feat は `-`
 - `fix` × Security Review: 入力検証・認証・秘匿情報を触る fix のみ Y。ロジック誤り単独は `-`
-- `feat` / `fix` / `refactor` × Silent-Failure Review: **diff が catch / except / fallback / retry / 既定値での握り潰しを追加・変更するときのみ Y**（2026-08-22 追加。bug 軸 = Code Review、quality 軸 = Simplify、security 軸 = Security Review のどれにも無い「エラーを黙って飲む」軸）。2 週間で発火 0 なら行ごと外す
-- 全種別 × Code Review の effort: `feat` / `refactor` は `high`、`fix` / `chore` は `medium` を明示して起動する。
+- 全種別 × Code Review の effort: **`medium`** を明示して起動する（low/medium は最も確信の
+  高い findings のみ報告する帯 — レビュー起点のオーバーエンジニアリングを避ける側に倒す。
+  `high` は著者が明示的に求めたときだけ）。
   無指定だと `/code-review` は「最後に打ったレベル」を再利用するので、chain がセッション状態に依存する
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
 - `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y
-- `refactor` × Cross-Model Review: 公開 API / 並行処理 / セキュリティ境界に触れる高リスク refactor のみ Y。純粋な内部整理は `-`
 - 全種別 × Doc Sync: 変更が以下のいずれかに該当する場合のみ Y。該当 doc を**同じ diff** で更新する（後追い PR にしない）
   - 機構・ゲート・閾値・段構成の変更 → CODEMAPS の Data Flow / architecture（プロジェクトに鮮度規約があればそれに従う）
   - ADR 新設・廃止 → knowledge graph（graph.jsonld 等）+ CODEMAPS 言及（両面更新）
@@ -101,22 +90,43 @@ routing を自発的に行うようになったら、この段落を外す。）
   - 数値クレームの規律: 集約カウントの正本は 1 箇所のみ（他はポインタ）。機械検証可能な doc↔実体対応は prose 修正でなくテストで固定する（検出は code、削除判断は人間）
 
 built-in review は chain の正規ステップである（ADR-0039 → ADR-0042 で T-004「自動枠は変更しない」を
-全面反転）。残る agent 枠は substrate が持たない観点（言語専門・repo 固有の脅威モデル・別モデル）
-だけを持つ。担当の割り当ては下の Review 表が正本。
+全面反転）。担当の割り当ては下の Review 表が正本。
 
-## Review / Cleanup ステップ（実装直後・Verify 前）
+## Review ステップ（実装直後・Verify 前）
 
-実装が一段落したら Verify の前に Matrix の Review category を起動する。reviewer 名簿の正本は
-次の表。同じ diff を見る category は並列起動する。
+常設レビューは **fresh-context 1 段**（2026-08-27 再編 — 公式 best practices の推奨密度
+「機械検証主体 + adversarial review 1 段」への回帰。多段構成はレビュー起点の
+オーバーエンジニアリングを供給していた。根拠と経緯は当該 ADR）。
 
 | 順 | category | 起動先 |
 |:-:|---|---|
-| 1 | **Simplify** | built-in `/simplify`（judge-tier セッションでは表の下「Review の実行モデル pin」経由。Review 群より**前**。該当種別は Matrix の Simplify 行が正本 — `feat` = Y、`fix` = C、`refactor` = `↑`（Refactor Clean の中で）、`chore` / `prototype` = 非該当） |
-| 2 | Code Review | built-in `/code-review`（judge-tier セッションでは「Review の実行モデル pin」経由。**effort を明示する** — 種別ごとの値は Matrix 下の 「全種別 × Code Review の effort」）。Swift は `swift-reviewer` も追加 |
-| 2 | Security Review | `security-reviewer`（発火は Matrix の Security Review 行が正本。agent 側は自発起動しない） |
-| 2 | Silent-Failure Review | `pr-review-toolkit:silent-failure-hunter`（公式 plugin `pr-review-toolkit@claude-plugins-official`。同 plugin の他 5 agent と `/review-pr` は chain に組み込まない — code-reviewer / code-simplifier は built-in と重複） |
-| 2 | Cross-Model Review | skill: `codex-review` |
-| 2 | ADR / Record Review | `adr-reviewer` + skill: `codex-review` |
+| 1 | Code Review | built-in `/code-review`（judge-tier セッションでは「Review の実行モデル pin」経由。effort は `medium` を明示。quality 軸（Reuse / Simplification / Efficiency / Altitude）は built-in が内蔵）。Swift は `swift-reviewer` も追加 |
+| 1 | Security Review | `security-reviewer`（**脅威面を動かす diff のみ** — 発火は Matrix の Security Review 行が正本。agent 側は自発起動しない） |
+
+2 行とも発火する diff では並列起動する（同じ diff を見るため）。
+
+**reviewer への指示（必須）**: 起動 prompt に必ず含める —
+「correctness / stated requirements に効く gap のみ報告。それ以外（防御的コード・追加の抽象層・
+起こり得ないケースのテスト等）は optional として報告し、適用しない。diff 外の指摘は報告不要
+（気づいた場合は 1 行のみ、修理はしない）」。この 1 行は loop 自身を壊す欠陥の起票チャネル
+として残す（規約は `rules/common/task-tracking.md`）。reviewer は問われれば必ず何か返す —
+指摘の全追跡がオーバーエンジニアリングの供給源になる（公式 best practices の名指し）。
+
+**1 往復規律**: Review → 修理は **1 往復まで**。修理は指摘に答える最小 diff に限り、
+修理 diff の検証は機械ゲート（Verify）のみで**再レビューしない**。発振（レビューが修理を生み、
+修理が次のレビュー対象になる連鎖）はここで切る。
+
+**opt-in 名簿**（自発発火しない。著者が明示的に求めたときだけ）:
+
+- batch simplify = built-in `/simplify` — 肥大を感じたとき数 commit 分まとめて
+  （実績: CA commit `e739912` の 22 commit 一括、CA commit `edca8cf` の Review 後実行 +
+  再 Verify）。per-commit の Simplify ステップは廃止（quality 軸は `/code-review` が内蔵）
+- security 深掘り = plugin `claude-security`（全 repo スキャン）
+- cross-model = skill: `codex-review`（diff review・plan 段の前提反証とも）
+
+adr-reviewer は opt-in ではなく skill: `adr-writer` の内部ステップ（ADR 執筆時は
+省略しない — 配線は同 skill のみ、この chain は持たない）。swift-reviewer は Swift diff で
+Review 表の Code Review 行に従い併用（ADR-0042 が去就を保留した項目）。
 
 **Review の実行モデル pin（2026-08-24 追加）**: judge-tier のセッション（Fable）で chain を回すとき、
 built-in `/simplify` と `/code-review` を主ループで直接呼ばない — セッションのモデルを継いで
@@ -125,14 +135,8 @@ judge-tier トークンを消費する。代わりに `Agent(subagent_type: "gen
 `/simplify` の working-tree への fix 適用はサブエージェントでも同じに機能する）。自作 reviewer
 agent は frontmatter の `model:` が正本。build-tier のセッションでは直接呼んでよい。
 
-Simplify を Review 群の前に置くのは、`/simplify` が fix を working tree に適用するため
-（reviewer には適用後の diff を見せる）。**この順序は逆にすると Review のやり直しが要るので、
-「後で思い出す」では回収できない** — 実測でも省略と順序違反が起きたため、Code Review の
-起動直前に PreToolUse hook が未実行を指摘する（配線は `hooks/README.md`）。bug 軸は Code Review、quality 軸は Simplify の分担で、
-`python-reviewer` と `code-reviewer` は退役した — 決定論チェックは Verify が、Pythonic idiom と
-一般的な correctness は substrate の built-in `/code-review` が吸収済み
-（[ADR-0039](../../docs/adr/0039-retire-python-reviewer-simplify-in-chain.md) → ADR-0042）。
-Refactor Clean では built-in simplify の後に `refactor-cleaner` agent を起動する。
+Refactor Clean では built-in simplify の後に `refactor-cleaner` agent を起動する
+（refactor 種別専用のステップで、per-commit Simplify の廃止とは独立）。
 TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（順序として逐次必須なのは Verify のみ）。
 
 ## Writing Chain（`writing` 種別のルーティング）
@@ -145,7 +149,7 @@ TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（
 | 学術論文 / preprint / position paper | `paper-ecosystem` |
 | README / repo トップページ | `readme-writer` |
 | llms.txt 等 AI-doc | `llms-txt-writer` |
-| ADR（設計判断の記録） | `adr-writer`（生成）+ Record Review category |
+| ADR（設計判断の記録） | `adr-writer`（生成。adr-reviewer の配線は同 skill 内） |
 
 チェーン本体（agent 起動順・並列化・最終 gate）の**正本は各 skill の定義**（ここに複製しない）。
 この skill が規定するのは以下の糊のみ:
@@ -161,7 +165,8 @@ TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（
 | readme-judge Rewrite / geo_check FAIL | Verify FAIL → 停止 |
 
 **Cross-Model Review（条件付き）**: 公開・deposit 前の高 stakes 文書のみ実行する。
-prose は prompt-driven、private ドラフト・下書き段階は `-`。
+prose は prompt-driven、private ドラフト・下書き段階は `-`（writing chain は ADR-0055 の
+再編対象外 — 各 orchestrator skill の配線が正本のまま）。
 
 **Verify 相当（writing 版）**: build / types / tests は非該当。代わりに (1) 決定論 lint または証拠（README は readme_evidence.py の JSON + readme-judge の binding 判定、llms.txt は geo_check.py、記事は mechanical_checks 等、doc 分類に該当するもの） (2) fact / citation gate（fact-checker verdict の出典編入、paper なら citation-formatter） (3) `git status` 確認。
 
@@ -172,7 +177,7 @@ prose は prompt-driven、private ドラフト・下書き段階は `-`。
 
 以下を検出した時点で chain を中断し、ユーザーに報告する:
 
-- Code Review / Security Review / Cross-Model Review が **`CRITICAL`** を返した
+- Code Review / Security Review が **`CRITICAL`** を返した
 - Verify ステップで build / types / tests のいずれかが失敗
 - `fix` で根本原因の仮説が証拠で支持されない
 - Phase 0 (`/search-first`) で `Adopt` Verdict → 実装方針の再 plan を要請

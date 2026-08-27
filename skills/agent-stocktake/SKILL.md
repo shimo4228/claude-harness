@@ -44,30 +44,83 @@ find ~/.claude/agents -name "*.md" -newermt "$(jq -r .evaluated_at ~/.claude/ski
 
 As in rules-stocktake, the Phase 1 integrity checks **always run over the full set** —
 retiring a skill or hook silently breaks a reference inside an unmodified agent body, and
-mtime cannot see that. Any agent with a newly broken reference joins the re-evaluation set.
+mtime cannot see that. Any agent whose reference check (Step 3 below) newly fails joins
+the re-evaluation set. The script has no `changed` mode either, for a *different* reason:
+the near-duplicate pairs and the residency total are set properties, so a partial corpus
+would give wrong numbers rather than fewer ones.
 
-## Phase 1 — Inventory + mechanical integrity checks
+## Phase 1 — Evidence, inventory, usage
+
+### Step 1 — Run the evidence script (do not count by hand)
+
+```bash
+uv run --project ~/.claude/skills/agent-stocktake \
+       --directory ~/.claude/skills/agent-stocktake \
+       python scripts/agent_evidence.py --root ~/.claude
+```
+
+Evidence mode: JSON on stdout, exit 0 however many findings (exit 2 only when the
+corpus is unreadable). It measures and enumerates; it never assigns a verdict.
+
+**Transcribe the JSON into findings — never re-measure by eye.** What it gives you:
+
+| JSON field | Replaces |
+|---|---|
+| `desc_words` / `body_lines` / `total_desc_words` | the `wc -w` / `wc -l` pass |
+| `tools.items[].status` + `registry.known_tools` | `builtin` / `unverified` / `mcp`. **`unverified` means "not in the script's dated list", not "does not exist"** — you hold the live tool registry and the script does not, so confirm an `unverified` against your own tool list before calling it Update evidence. `registry.known_tools.as_of` is that list's date (`null` when `--known-tools` replaced it) |
+| `tools.items[].server_in_config` + `registry.mcp_config_files` | **Not a verdict.** It says only whether the server appears in the local config files listed — servers supplied by a connector never appear there at all, so a `false` is not "retired". `null` means no config source parsed. Check the `status` of each source before using this at all; a `false` beside a non-`ok` source is not evidence |
+| `unreadable` | files the scan could not open, with a reason. **Non-empty means the scan is incomplete** — name them and fix before stating any total, because a suppression instruction inside an unread file is now certified absent |
+| `tools_unparsable` | agents whose `tools:` line did not parse (e.g. YAML flow style). Their `items` is `[]`, which looks identical to an agent with no `tools:` key — i.e. **unrestricted**. It is not; the list was simply not read |
+| `description_near_duplicates` | the near-identical-description check; twins split delegation traffic, so each pair feeds the Stage 1 overlap question |
+| `suppression_candidates` | line-numbered candidates for the Stage 1 suppression question (the catalog is bilingual because the corpus is) |
+| `always_never_candidates` | line-numbered candidates for the over-constraint question, **body only** — a description is a delegation trigger, not an instruction to the agent |
+
+The last two are **candidates, not findings**, and roughly one in five is real —
+read every cited line before writing it up. The catalog is also a **floor, not a
+census**: it holds five phrasings drawn from one corpus, so a suppression written
+some other way ("skip anything you're unsure about", 「ノイズになる指摘は避ける」)
+appears in no JSON field. Keep reading for those; an empty list is not a clean bill.
+
+For the measured false-positive ratios and which lines produced them, see
+[ADR-0054](../../docs/adr/0054-extract-agent-stocktake-and-learn-eval-mechanical-checks.md)
+— they are recorded once, there, so this step does not carry numbers that go stale.
+
+### Step 2 — Read the gates that already own the rest
+
+Three checks stay outside the script because another gate owns them. Read their
+output; do not re-implement:
+
+- [ ] Frontmatter parses and carries `name`, `description`, `origin`, `model`, and
+  `model` is an alias → `scripts/hooks/harness_lint.py` `lint_agents`, which runs
+  in `.claude/verify.sh` and the pre-commit hook. A missing origin is still an
+  integrity finding per rules/common/skills.md, feeding Improve.
+- [ ] `name` equals the filename stem → the same `lint_agents` (moved there from
+  this script 2026-08-27, RFC-0014). It admits no judgment and the delegation
+  registry keys on it, so it belongs to a gate that stops a commit — not to
+  evidence a reader may or may not transcribe. A finding here is a **blocked
+  commit**, not a stocktake verdict.
+- [ ] Markdown links inside agent bodies resolve → the same script's
+  `lint_markdown_links` (its scopes include `agents`).
+
+### Step 3 — Resolve bare-path references (the one check nothing else owns)
+
+`lint_markdown_links` sees only link syntax, and `skill-health`'s `scan_refs.py`
+scans the *skills* tree. A path written as prose inside an agent body
+(`~/.claude/hooks/foo.sh`, `skills/foo/SKILL.md`) is covered by neither. Grep the
+corpus for them and `ls` each one. This is the check the `changed`-mode rule above
+depends on, so it runs over the full set even in `changed` mode.
+
+### Step 4 — Inventory
 
 Enumerate with Glob: `~/.claude/agents/*.md`. Read every file into one context (the
-corpus is small). Measure live — `wc -w` per description for the residency column,
-`wc -l` per file for the body column; never trust figures written in docs.
+corpus is small). The residency and body columns come from the Step 1 JSON —
+never trust figures written in docs, including this one.
 
-Mechanical checks with throwaway bash/grep (structural detection → code; meaning →
-LLM, per the enumerate/decide split):
+### Step 5 — Usage counts
 
-- [ ] Frontmatter parses and carries `name`, `description`, `origin` (missing origin is
-  an integrity finding per rules/common/skills.md, feeding Improve)
-- [ ] `name` matches the filename stem (the delegation registry keys on it)
-- [ ] Every tool named in `tools:` exists in the current harness (a retired MCP server
-  or renamed tool → Update evidence)
-- [ ] Every file path / hook / skill the body references resolves
-- [ ] No two agents share a near-identical description (flag for the Stage 1 overlap
-  question — the listing is a selection surface; twins split delegation traffic)
-
-**Usage counts** (evidence input, never a verdict trigger): read
-`~/.claude/metrics/agent-usage.jsonl` inline (the hook `log-agent-usage.sh` appends one
-`invoke` event per Agent-tool launch, keyed by `subagent_type`) and count per-agent
-events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-liner.
+Evidence input, never a verdict trigger. Read `~/.claude/metrics/agent-usage.jsonl`
+inline (the hook `log-agent-usage.sh` appends one `invoke` event per Agent-tool launch,
+keyed by `subagent_type`) and count per-agent events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-liner.
 
 - If the log is **missing or its first event is younger than 90 days**, render usage as
   `—` (unmeasured). **Never render it as 0** — unmeasured and unused are different facts.
@@ -77,9 +130,9 @@ events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-line
   value can be episodic (e.g. paper reviewers fire only near a deposit).
 - Log exists since **2026-07-27**; before that date there is no measurement at all.
 
-State the scan result up front: files found, total description words (the per-session
-residency tax of the listing), integrity failures, and whether usage is measurable.
-Carry failures into Stage 1 as pre-computed evidence.
+State the scan result up front, taking the counts from the Step 1 JSON: `agents_total`
+**minus anything in `unreadable`, which must be named**, `total_desc_words` (the per-session residency tax of the listing), integrity failures,
+and whether usage is measurable. Carry failures into Stage 1 as pre-computed evidence.
 
 ## Phase 2 — Evaluation (fully inline, holistic)
 
@@ -93,8 +146,11 @@ rest the **body layer** (invocation):
   the always-loaded listing; states when to delegate AND when not to
 - [ ] *Description truthful to the body?* — what it promises is what the body does
   (a drifted description misroutes delegation every session, even if the body is fine)
-- [ ] *Body free of suppression instructions?* — confidence thresholds ("only report
-  findings you are ≥N% sure of"), severity floors ("only high-severity"), "be
+- [ ] *Body free of suppression instructions?* — start from this agent's
+  `suppression_candidates` in the Phase 1 JSON, read each cited line, then keep
+  reading for phrasings the catalog does not know (it is a floor, not a census).
+  What counts: confidence thresholds ("only report findings you are ≥N% sure of",
+  「確信度を付け、低いものは捨てる」), severity floors ("only high-severity"), "be
   conservative" framings. The current-generation guidance is: report everything,
   filter in a separate pass — a suppression instruction is followed literally and
   silently drops findings. A No here is an **Improve-by-inversion** candidate:
@@ -102,7 +158,9 @@ rest the **body layer** (invocation):
   (deleting leaves the suppressive frame; inverting replaces it)
 - [ ] *Body free of previous-generation over-constraint?* — exhaustive step-by-step
   procedures for judgment the current model holds natively, repeated emphasis,
-  ALWAYS/NEVER pairs that the surrounding-context judgment should own
+  ALWAYS/NEVER pairs that the surrounding-context judgment should own. Phase 1's
+  `always_never_candidates` locates the tokens; deciding whether a hit is a
+  directive or merely quotes the words is this question's job
 - [ ] *Not absorbed by the substrate?* — does the harness now cover this agent's job
   natively (native review machinery, plan mode, built-in slash commands)? Absorption →
   Dissolve candidate; the claim must name its absorber concretely. Judge with the

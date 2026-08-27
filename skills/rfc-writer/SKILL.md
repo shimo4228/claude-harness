@@ -1,6 +1,6 @@
 ---
 name: rfc-writer
-description: "公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when harness-boundary の Defer や task-triage の起票提案が承認されたとき, or /rfc-writer. 各 repo の rfcs/README.md は薄いポインタ + index のみで、規約本文はここ以外に書かない。NOT for — 状態語彙の定義と台帳の棚卸し（→ task-stocktake が正本）、起票するかの足切り判定のうち review 指摘の HIGH + producer 規律（→ task-stocktake「レビュー指摘の起票規律」）、open タスクの判定・dispatch・検収（→ task-triage）、決定の記録（→ adr-writer。rfcs は提案・未決、ADR は決定）、単一表 .notes/TASKS.md への 1 行起票（→ rule task-tracking の形のまま）。"
+description: "公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when harness-boundary の Defer や task-triage の起票提案が承認されたとき, or /rfc-writer. 各 repo の rfcs/README.md は薄いポインタ + index のみで、規約本文はここ以外に書かない。NOT for — 状態語彙の定義と台帳の棚卸し（→ task-stocktake が正本）、起票するかの足切り判定のうち review 指摘の loop-breaking + producer 規律（→ task-stocktake「レビュー指摘の起票規律」）、open タスクの判定・dispatch・検収（→ task-triage）、決定の記録（→ adr-writer。rfcs は提案・未決、ADR は決定）、単一表 .notes/TASKS.md への 1 行起票（→ rule task-tracking の形のまま）。"
 user-invocable: true
 origin: shimo4228
 ---
@@ -27,8 +27,9 @@ rfcs/ は**提案と作業項目の公開台帳**（判断は ADR-0049/0050）�
   ことになった（in_progress + Status に経緯）② 人間の判断待ちで止まった（blocked +
   3 行）③ 実装中に「やらない」と決めた（rejected / withdrawn、却下理由ごと terminal で
   置く）。完了後の後追い起票はしない — それは ADR か commit log の領分
-- 別軸の既存足切りはそのまま: review 指摘は HIGH + producer 引用（task-stocktake
-  「レビュー指摘の起票規律」）、便乗型（「次に X を触る時に」）は台帳でなくコード側の注記
+- 別軸の既存足切りはそのまま: review 指摘は「loop 自身を壊す欠陥」+ producer 引用のみ
+  即時起票（task-stocktake「レビュー指摘の起票規律」、ADR-0055 で再絞り込み）、
+  便乗型（「次に X を触る時に」）は台帳でなくコード側の注記
 
 ## 1. 起票手順
 

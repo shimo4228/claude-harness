@@ -89,6 +89,12 @@ scaffold は溶ける）なので、ADR を軽く持つことに構造上の障�
    未決の対抗案は藁人形でない、注記の存在）、`skills/context-sync/SKILL.md`（7 入力、
    Review-when 発火済み ADR の注記チェック）、`skills/adr-writer/evals/evals.json`。
 
+> **注記（2026-08-26, ADR-0051）**: Decision #6 が `agents/adr-reviewer.md` へ置いた
+> 7 節存在チェック（および Status enum / Date 書式の目視項目）は、ADR-0051 で
+> `skills/adr-writer/scripts/adr_lint.py` へ移した。adr-reviewer に残るのは意味的項目
+> （Review-when の観測可能性・注記の存在・藁人形判定）のみ。Decision #5 の
+> `lint_adr_review_when` は残置（重複解消条件は ADR-0051 Review-when）。
+
 ## Review-when
 
 grill-me / adr-reviewer / plan が Review-when と Date を読まずに旧 ADR を conflict や veto

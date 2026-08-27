@@ -158,20 +158,23 @@ The build session's report is a claim. Before asking for the merge word:
 - Anything the packet forbade that the diff contains → bounce, do not fix it yourself.
 - **Compliance with the packet and the chain**: did the build run the chain for its type
   (`implementation-chain`), keep the must-nots, and stop at the acceptance line? A deviation is
-  acceptable only when the report *names it as a deviation with a reason* ("Simplify 省略:
-  機械修正のみ" / "premise refuted, corrected instead of stopping — because …"). A silent
+  acceptable only when the report *names it as a deviation with a reason* ("E2E 省略:
+  UI 非接触" / "premise refuted, corrected instead of stopping — because …"). A silent
   deviation — something skipped or done differently without saying so — is a bounce even if
   the result looks right, because the next build learns from what the last one got away with.
 - **Harvest what the build hands back — but ask the human only what the rule says to ask.**
   Read the commit body and the final message. Two kinds reach the digest as decisions:
-  (1) **HIGH out-of-diff review findings** with a verified producer → propose filing
-  (`spawn --origin review --producer`), per skill `task-stocktake`'s 起票規律 — the filing
-  itself (numbering, template, index row) follows skill `rfc-writer`; (2) **explicit filing requests
+  (1) **out-of-diff findings that break the loop itself** (the next build would bounce on
+  them — e.g. a verify.sh blind spot) with a verified producer → propose filing
+  (`spawn --origin review --producer`), per skill `task-stocktake`'s 起票規律 (ADR-0055 で
+  「HIGH 以上」から再絞り込み) — the filing itself (numbering, template, index row) follows
+  skill `rfc-writer`; (2) **explicit filing requests
   that are the deliverable of a measurement / probe task** (a probe's "(B)/(C) はやる価値がある",
   an instrument finding such as "the metrics are polluted") — these are not review findings,
-  they are the task's output, and the build has no authority to file them. MEDIUM / LOW review
-  findings are **discarded by the rule**: they stay in the commit body, and the digest reports
-  only their count ("diff 外 MEDIUM/LOW: 3 件、commit body 参照") — no list, no question.
+  they are the task's output, and the build has no authority to file them. All other review
+  findings, **HIGH included**, are **discarded by the rule**: they stay in the commit body
+  (producer 付き 1 行), and the digest reports
+  only their count ("diff 外 findings: 3 件、commit body 参照") — no list, no question.
   Observations that are not tasks (a rate near a revert threshold, a measurement caveat) are
   one line each. The judge never files on its own initiative.
 
@@ -206,9 +209,9 @@ The build session's report is a claim. Before asking for the merge word:
   (`claims.jsonl` origins). A cycle that raises open count is not a bad cycle if the spawns
   were the human's; a cycle that "wins" by mass drops is.
 - Two questions the loop deliberately does not answer (state them, measure them): what a
-  build session does with side-findings (this harness: HIGH with verified producer → file
-  after asking; below → one line in the commit body), and who prunes spawned-but-unstarted
-  work (here: the human, at the digest).
+  build session does with side-findings (this harness: loop-breaking defect with verified
+  producer → file after asking; everything else, HIGH included → one line in the commit
+  body), and who prunes spawned-but-unstarted work (here: the human, at the digest).
 
 ## Where the loop lives — one orchestrator session per repo
 

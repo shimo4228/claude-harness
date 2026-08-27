@@ -90,6 +90,10 @@ rule の対象であり、改版されうる。
    | 環境ティア autonomy | prototype 種別 ↔ harness precommit 群 ↔ 公開 repo の人間 GO | 同型 |
    | Response tiers（log / diagnose / act via PR） | task-triage 三役（hook 通知 / Fable judge / Opus build + 人間 merge）、launchd tick | 最も綺麗な 1:1 |
 
+   > **注記（2026-08-27, ADR-0055）**: REVIEW.md 行の「上回る」は密度の超過として削減された
+   > — 常設レビューは fresh-context 1 段 + 条件付き Security へ縮約（公式 best practices の
+   > 推奨密度へ回帰）。snapshot 本文はそのまま残す。
+
 5. **付表 2（採用しないもの、根拠つき）を次の表に収録する。**
 
    | playbook 実践 | 採用しない根拠 | 再訪条件 |

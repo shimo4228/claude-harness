@@ -21,6 +21,9 @@ to the repos or to Wikidata.
 
 Sibling/self Zenodo DOIs (10.5281/zenodo.*) are reported separately and NOT
 counted as divergence: they are ecosystem cross-links, not external citations.
+
+Network contract: no retry, no backoff — a 429/503 halts the audit (exit 2). Why, in
+`api_get`.
 """
 
 from __future__ import annotations
@@ -41,6 +44,19 @@ DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>\])},;`&]+")
 ZENODO_PREFIX = "10.5281/zenodo."
 EXCLUDE_DIRS = {".notes", ".git", "node_modules", ".venv", "__pycache__"}
 UA = {"User-Agent": "citation-sync-audit/1.0 (read-only layer audit)"}
+# Reached the host and were told to stop. The statuses match url_liveness.py:62; the
+# halt policy is deliberately **stricter** — that probe walks a corpus and halts after
+# 2 consecutive, this one makes a handful of requests and halts on the first, so there
+# is no threshold to tune. Duplicated rather than shared: separate sub-projects, and
+# the harness prefers a copy over a coordination point (duplicate over coordination).
+RATE_LIMIT_STATUSES = frozenset({429, 503})
+# MediaWiki の Action API は throttle を HTTP 200 + {"error": {...}} で返す。status だけ見ると
+# 「成功して 0 件」に見え、その層が空のまま CONVERGED と報告される — 監査していない結果を
+# 監査結果として書き出す、この script が最も避けるべき形 (2026-08-27 silent-failure-hunter)。
+MEDIAWIKI_RATE_LIMIT_CODES = frozenset({"ratelimited", "maxlag", "readonly"})
+# url_liveness.py:63 と同値。throttle 中の host が答えず接続を保持したままだと、timeout が
+# 無ければ無言で永久に止まる (exit code すら出ない = 最悪の silent failure)。
+TIMEOUT = 10.0
 
 
 def norm_arxiv(aid: str) -> str:
@@ -157,18 +173,42 @@ def scan_graph(repo: Path) -> tuple[set[str], str | None]:
     return refs, qid
 
 
-def api_get(url: str, tries: int = 5) -> dict:
+class RateLimited(RuntimeError):
+    """A rate limit reached the audit. Not a transient error — the run stops here."""
+
+
+def api_get(url: str) -> dict:
+    """One request, no retry, no backoff.
+
+    A 429/503 is a **policy signal**, not a transient error: on 2026-07-16 an
+    account was permanently blocked and its artifacts deleted after a burst was
+    pushed through backoff (rules/common/debugging.md). A retry loop would encode
+    the violation in code, so there is none — the same contract url_liveness.py
+    holds (ADR-0052).
+    """
     req = urllib.request.Request(url, headers=UA)
-    for i in range(tries):
-        try:
-            with urllib.request.urlopen(req) as r:
-                return json.load(r)
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                time.sleep(5 * (i + 1))
-                continue
-            raise
-    raise RuntimeError(f"rate-limited after {tries} tries: {url}")
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            payload = json.load(r)
+    except urllib.error.HTTPError as e:
+        if e.code in RATE_LIMIT_STATUSES:
+            raise RateLimited(
+                f"rate limit: HTTP {e.code} from {url} — stopped, not retried"
+                " (rules/common/debugging.md)"
+            ) from e
+        raise
+    # 200 で返る throttle。ここで拾わないと `.get("entities", {})` が空 dict に落ちて
+    # 「その層に引用が無い」と読まれる。
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if isinstance(error, dict):
+        code = str(error.get("code", ""))
+        if code in MEDIAWIKI_RATE_LIMIT_CODES:
+            raise RateLimited(
+                f"rate limit: API error '{code}' from {url} — stopped, not retried"
+                " (rules/common/debugging.md)"
+            )
+        raise RuntimeError(f"API error '{code}' from {url}: {error.get('info', '')}")
+    return payload
 
 
 def scan_wikidata(qid: str) -> set[str]:
@@ -208,7 +248,25 @@ def scan_wikidata(qid: str) -> set[str]:
     return refs
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    """exit 0 = converged / 1 = divergence / 2 = 監査していない。
+
+    **1 は「監査が走って差分が出た」専用**。ここで例外を捕まえないと、Python の既定で
+    どんなクラッシュも exit 1 になり、SKILL.md が公開している契約では "divergence あり"
+    と読める — 走らなかった監査が findings として記録される (2026-08-27 silent-failure-hunter)。
+    """
+    try:
+        return _audit(argv)
+    except RateLimited as e:
+        print(f"\nHALTED: {e}")
+        return 2
+    except (urllib.error.URLError, OSError, json.JSONDecodeError, KeyError, RuntimeError) as e:
+        print(f"\nFATAL: 監査は完了していない — {type(e).__name__}: {e}")
+        print("  exit 2 = 未実施。divergence の結果ではない。")
+        return 2
+
+
+def _audit(argv: list[str] | None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("repos", nargs="+", help="repo directories to audit")
     ap.add_argument(
@@ -217,7 +275,7 @@ def main() -> int:
         help="skip the retired Wikidata layer (ADR-0021) — always pass this",
     )
     ap.add_argument("--json", help="also write machine-readable results to this path")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     diverged = False
     results = {}
@@ -231,6 +289,8 @@ def main() -> int:
         graph, qid = scan_graph(repo)
         wikidata: set[str] | None = None
         if not args.skip_wikidata and qid:
+            # 捕捉は main() 側 — try をこの 1 行に巻くと、次に api_get を呼ぶ人が
+            # try の外に書いた瞬間 halt が traceback + exit 1 に戻る。
             wikidata = scan_wikidata(qid)
 
         layers = {"docs": docs, "zenodo": zenodo, "graph": graph}
@@ -261,7 +321,12 @@ def main() -> int:
         print("  -> " + ("CONVERGED" if not repo_diverged else "DIVERGED"))
 
     if args.json:
-        Path(args.json).write_text(json.dumps(results, indent=1))
+        # 監査は既に終わっている。付随物の書き込み失敗を fatal に混ぜると、DIVERGED を
+        # 出した直後に「未実施」と自己矛盾する (2026-08-27 code-review MEDIUM)。
+        try:
+            Path(args.json).write_text(json.dumps(results, indent=1))
+        except OSError as e:
+            print(f"WARN: --json を書けなかった ({e}) — 監査結果は上の表が正")
     print(f"\n{'DIVERGENCE FOUND' if diverged else 'all repos converged'}")
     return 1 if diverged else 0
 

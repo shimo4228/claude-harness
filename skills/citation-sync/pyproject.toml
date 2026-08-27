@@ -1,0 +1,39 @@
+[project]
+name = "citation-sync"
+version = "0.1.0"
+description = "Audit the three citation layers of research repos (docs / .zenodo.json / graph.jsonld) and report divergence. Read-only."
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers"]
+markers = [
+  "unit: fast pure-python unit tests",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# root ruff.toml と同じ明示 select。sub-project 化する前この script は root 設定で
+# lint されていたので、pyproject を足したことでゲートの rule set が黙って
+# 入れ替わらないよう同じ集合を pin する (根拠は root ruff.toml の冒頭コメント)。
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["scripts"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]

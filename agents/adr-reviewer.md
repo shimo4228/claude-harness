@@ -28,12 +28,31 @@ faithfully and completely written down. `architect` judges **the decision** — 
 should exist at all. An ADR can be excellently written about a bad decision; say so, but do not
 re-litigate the decision itself unless the record contradicts itself.
 
+## Step 0: Mechanical lint first (deterministic layer)
+
+意味的レビューの前に、機械チェックを script に任せる（ADR-0051。「存在 = code、内容 = LLM」
+の分業は ADR-0021 が導入・ADR-0044 が ADR へ適用したもので、その拡張）:
+
+```bash
+python3 ~/.claude/skills/adr-writer/scripts/adr_lint.py --root <repo root>
+```
+
+出力 JSON（evidence モード、判定しない）のうち**レビュー対象 ADR に関する逸脱** —
+節の欠落・見出しの大小文字ゆれ・Status 語彙・Date 書式・index drift・命名 — をそのまま
+レポートの findings に転記する。**節の存在・書式をあなたが目視で数え直さない** — あなたの
+注意は下の意味的チェックに使う。script が読めない環境ではその旨を明記して目視に切り替える。
+`numeric_evidence` の paired にある主張値と表・リストの実数の乖離候補も findings 判断の入力にし、
+項目を目視で数え直さない。unpaired は出典確認が必要な数値主張として扱う。
+
+また、対象 repo の `docs/adr/README.md` の**ローカル規約**（テンプレ節セット、Status 語彙、
+supersede half の scope 規約など）を読み、それをレビュー基準として適用する — repo により
+7 節目が `References` の corpus もある（例: contemplative-agent）。頻出指摘の事例集は
+`~/.claude/skills/adr-writer/references/review-findings.md`（事例のみ。基準はここが正本）。
+
 ## Review Criteria
 
-### 1. Section Completeness
+### 1. Title / Review-when semantics（機械チェックの外側）
 
-- [ ] All seven sections present: **Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences**
-      (`Review-when` is required from ADR-0044 on; earlier ADRs are read with the Context premise + Date instead)
 - [ ] `Review-when` names an **observable** trigger or premise (a measurement, an event, a substrate
       capability) — or states 「無し — 恒久判断ではなく記録」. 「状況が変わったら」 is not a condition
 - [ ] A **count or period** condition (「N 回連続」「30 日で M 件」) names what must stay fixed for
@@ -41,8 +60,6 @@ re-litigate the decision itself unless the record contradicts itself.
       description). If nothing can be named, the count is not measurable: rewrite it as an event
       condition or author judgment (2026-08-22: ADR-0046's gate had 0 observations while the subject
       and the judge both changed within the window)
-- [ ] `Status` is one of accepted / superseded / deprecated (not blank, not "draft" left over)
-- [ ] `Date` is absolute (`2026-08-01`), never relative ("先週", "最近")
 - [ ] Title states the decision, not the topic — "X を Y に移す" beats "X について"
 
 ### 2. Context — 事実か、後付けの正当化か
@@ -140,8 +157,8 @@ the decision rather than a description of the problem.
 
 **Verdict の基準**:
 
-- **MAJOR ISSUES** — 7 節のいずれかが欠落（0043 以前の ADR は Review-when 無しを欠落と数えない）/
-  Context が検証可能な根拠を持たない /
+- **MAJOR ISSUES** — 7 節のいずれかが欠落（adr_lint の evidence から転記。0043 以前の ADR は
+  Review-when 無しを欠落と数えない）/ Context が検証可能な根拠を持たない /
   Consequences が片面のみ / Decision が実体の diff と矛盾。chain 上は CRITICAL 相当（停止）
 - **NEEDS REVISION** — 藁人形の alternatives、出典なき数値、先行 ADR との関係が未記載
 - **APPROVED** — 上記なし。Minor は残っていてよい

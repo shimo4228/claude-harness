@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: Cross-model second opinion from the OpenAI Codex CLI (a different model family), read-only, in two seams — (1) code review of the current diff, folded into the Claude Code review chain; (2) plan-stage premise challenge of a design packet (refute / missing / alternative, never a design). Use when the user says "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", "プランを Codex に反証させて", "前提を別モデルで叩いて", invokes /codex-review or /codex-review --plan <file>, or when the implementation-chain Review step wants a decorrelated reviewer / the Plan step wants a decorrelated premise check. NOT for letting Codex write code or design (read-only, divergence only) and NOT a replacement for the in-Claude reviewers — it runs alongside them.
+description: 'Cross-model second opinion from the OpenAI Codex CLI (a different model family), read-only, in two seams — (1) code review of the current diff; (2) plan-stage premise challenge of a design packet (refute / missing / alternative, never a design). Opt-in only (2026-08-27 再編) — use ONLY when the user explicitly asks with "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", "プランを Codex に反証させて", "前提を別モデルで叩いて", or invokes /codex-review or /codex-review --plan <file>. NOT a default step of the implementation chain (自発発火しない), NOT for letting Codex write code or design (read-only, divergence only), and NOT a replacement for the in-Claude reviewers.'
 user-invocable: true
 origin: shimo4228
 ---
@@ -18,17 +18,21 @@ sub-agents / Workflow for parallel throughput; use this only where a second
 
 ## When to Use
 
-- Before commit on a non-trivial `feat` / `fix`, as a parallel reviewer next to
-  the built-in `/code-review` and `security-reviewer`.
-- When the user wants a second opinion from a non-Claude model on a diff.
-- High-stakes or error-prone changes where decorrelated review pays off.
-- High-stakes **prose** diffs before publishing/deposit (public-repo README,
-  paper, public article) — the `writing` chain's conditional cross-model seam.
-  Use **prompt-driven mode** with writing-focused instructions; scoped modes
-  run Codex's built-in code-review instructions, which fit prose poorly.
+**Opt-in のみ**（2026-08-27 再編 — chain の既定ステップから外れた。ADR-0055）。
+発火はユーザーの明示要求、または writing orchestrator skill が panel member として
+明示的に配線している場合（readme-writer 等 — writing chain は ADR-0055 の対象外）だけ:
 
-Skip it for trivial edits, throwaway scripts, or when Codex is not authenticated
-(the script fails fast with a fallback message — fall back to the Claude reviewers).
+- The user asks for a second opinion from a non-Claude model on a diff
+  ("codex review", "別モデルでレビュー", /codex-review).
+- The user asks for a plan-stage premise challenge
+  ("プランを Codex に反証させて", /codex-review --plan).
+- High-stakes **prose** diffs when the user asks for a cross-model pass before
+  publishing/deposit. Use **prompt-driven mode** with writing-focused
+  instructions; scoped modes run Codex's built-in code-review instructions,
+  which fit prose poorly.
+
+Never self-trigger as part of the implementation chain. Skip it when Codex is
+not authenticated (the script fails fast — fall back to the Claude reviewers).
 
 ## Execution
 
@@ -78,9 +82,9 @@ bash ~/.claude/skills/codex-review/codex-plan-challenge.sh --plan <packet.md> [-
   コードは渡さない — Codex は `--sandbox read-only` で repo を自分で読んで前提を照合する（`--ephemeral` で session も残さない）
 - 出力は `REFUTE` / `MISSING` / `ALTERNATIVE` と `VERDICT: premise-hole | alternative-exists | no-objection` の
   1 行のみ。score なし、集計なし（skill: `llm-as-judge`）
-- 発火条件は implementation-chain の Matrix「Premise Challenge」行が正本。**歯止めはここが正本**:
-  発散段の外部声は **1 回・1 系統まで**（主ループが複数の声の仲裁役になった時点で著者性が消える）。
-  finding は採るか捨てるかを plan に 1 行ずつ記録し、**折衷しない**
+- 発火はユーザーの明示要求のみ（2026-08-27 に implementation-chain の Matrix 行を撤去、opt-in 化）。
+  **歯止めはここが正本**: 発散段の外部声は **1 回・1 系統まで**（主ループが複数の声の仲裁役に
+  なった時点で著者性が消える）。finding は採るか捨てるかを plan に 1 行ずつ記録し、**折衷しない**
 - **read-only は argv と config の両面で pin する**: script は `--ignore-user-config --ignore-rules -c approval_policy="never"` を固定で付ける（`~/.codex/config.toml` の `approvals_reviewer=auto_review` と `.rules` の `git push` / `uv run` pre-approve が sandbox escalation を自動承認しうる — 2026-08-22 security-reviewer HIGH）。review seam も `-c sandbox_mode="read-only" -c approval_policy="never"` を常時付ける。パケットは data として囲えるが、Codex が読む対象 repo の `AGENTS.md` / skill は instruction として入るので、出力は「repo 由来の未検証データ」の枠で畳む
 - fold は下の「fold, don't dump」と同じ扱い。追加は 2 点 — `premise-hole` を確認できたら設計に戻る
   （re-plan）/ Codex 未導入時は fresh-context の general-purpose agent に同じ prompt（REFUTE / MISSING / ALTERNATIVE + VERDICT）を渡す。`architect` は build-or-not 専任で代用にならない
@@ -102,9 +106,10 @@ Next action: <continue | stop | re-plan>
 
 - **Verify each finding before relaying it.** Codex may be wrong; drop findings
   you can disprove, keep the ones you confirm. You own the verdict, not Codex.
-- **Early stop on CRITICAL** — if a confirmed finding is CRITICAL, halt the chain
-  and report to the user (skill: `implementation-chain` の早期停止条件).
-- Run this **in parallel** with the in-Claude reviewers, then merge verdicts.
+- **Early stop on CRITICAL** — if a confirmed finding is CRITICAL, halt and
+  report to the user before committing.
+- When the user requested this alongside the in-Claude reviewers, run it in
+  parallel with them, then merge verdicts.
 
 ### Prose 裁定基準（2026-08-13 追加。エッセイ・記事レビューの fold 用）
 

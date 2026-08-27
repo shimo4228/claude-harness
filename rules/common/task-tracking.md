@@ -38,8 +38,10 @@ lease（既定 24h）が切れた claim は `--force` なしで引き継げる�
 
 ## レビュー指摘の扱い
 
-台帳が純増する最大の入口。**diff の外の指摘は HIGH 以上だけ起票**し、それ未満は commit
-message に 1 行残して捨てる。**severity だけでは濾せない**ので、起票にも修理にも
+台帳が純増する最大の入口。build セッションからの即時起票は **loop 自身を壊す欠陥**
+（放置すると次の build が bounce を食う類）**のみ**。それ以外は severity 不問で commit
+message に 1 行（producer 付き）残して捨てる — HIGH でも起票しない（実測の正本は
+ADR-0055）。起票する場合も
 producer→sink の `file:line` 引用（前提の検証）を先に置く — `spawn --origin review` は
 `--producer PATH:LINE` が無ければ起票を拒否する。
 

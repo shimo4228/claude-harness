@@ -61,6 +61,13 @@ bug を探さないと明記、fix を working tree に適用）は観点が直�
 
 ## Decision
 
+> **注記（2026-08-27, ADR-0055）**: Decision 1–2 の per-commit Simplify step と
+> 「Review 群の前」の順序は退役した — built-in `/code-review` が quality 軸
+> （Reuse / Simplification / Efficiency / Altitude）を内蔵するため、`/simplify` は
+> batch opt-in（数 commit まとめて）へ降格し、順序強制 hook
+> （simplify-order-notice.sh）も同時退役。bug 軸 × quality 軸の直交という本 ADR の
+> 分析、および Decision 3 以降（python-reviewer 退役ほか）は生きている。
+
 1. Chain Matrix に **Simplify** step（built-in `/simplify`、quality 軸の cleanup 適用）を
    追加する。feat = Y、fix = C（新規ロジックを含む fix のみ。typo・設定値のみは `-`）、
    refactor は Refactor Clean 内で実行済みのため `-`、chore / prototype は `-`。

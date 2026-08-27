@@ -1,0 +1,27 @@
+[project]
+name = "context-sync"
+version = "0.1.0"
+description = "Deterministic evidence extractor for context-sync Phase 4 (doc/code drift). Mechanical half of the code/LLM split; the semantic half stays in the context-sync skill checklist."
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]

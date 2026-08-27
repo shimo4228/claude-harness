@@ -41,20 +41,51 @@ If `$ADR_DIR` does not exist, create it — the ADR request itself covers the di
 git makes it reversible. Mention the creation in your final report. Write a minimal
 `README.md` index alongside:
 
-```markdown
+````markdown
 # Architecture Decision Records
 
-| ID | Title | Status | Date |
-|---|---|---|---|
+## Index
+
+| ADR | Title | Status | Date |
+|-----|-------|--------|------|
 
 ## Template
 
-ADRs in this repository use the 7-section template:
-Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences.
-`Review-when` holds the expiry conditions — an ADR is a dated hypothesis, not a permanent constraint.
+ADRs in this repository use the 7-section template
+(`scripts/adr_lint.py` checks section presence mechanically):
+
+```markdown
+# ADR-NNNN: [Title]
+
+## Status
+accepted | superseded | deprecated
+
+## Date
+YYYY-MM-DD
+
+## Context
+[what was the problem]
+
+## Decision
+[what was decided]
+
+## Review-when
+[expiry conditions — an ADR is a dated hypothesis, not a permanent constraint]
+
+## Alternatives Considered
+[rejected options and why]
+
+## Consequences
+[what becomes easier / harder]
+```
 
 File name: `NNNN-kebab-case-title.md` (zero-padded 4-digit sequence).
-```
+Index rows link the number: `| [NNNN](NNNN-slug.md) | Title | status | YYYY-MM-DD |`.
+````
+
+（インデックス行は番号を相対リンクにする — harness / CA 等の既存 index と同形。
+`adr_lint.py` はこの README の Template fenced block から期待節セットを読むので、
+README を置くことが lint のテンプレ宣言を兼ねる。）
 
 If the user declines, stop and explain that ADRs need a directory.
 
@@ -91,6 +122,12 @@ Ask the user (or accept from caller) for:
 
 If 3-7 are missing, request them — do not proceed. ADRs without these sections are noise.
 
+**予防チェック（packet 確定前）.** [references/review-findings.md](references/review-findings.md)
+（レビュー頻出指摘の日付つき事例集）を読み、該当パターンを自己点検する — 引用 ADR の
+実在と内容一致、surviving scope の置き場所、造語の出所、full/partial supersede の判定根拠、
+gitignored パス参照、数値の出典と分母、カウント条件の固定対象。これは書き時の予防であって
+意味的レビューの代替ではない — commit 前の adr-reviewer は省略しない。
+
 **Assemble and approve the decision packet before delegating.** The main loop holds the semantic authority for this ADR, so it — not the agent — must settle the actual content: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4. The agent that follows only renders what you hand it; it will not fill a gap you leave. If the decision is still fuzzy, resolve it here in the main loop — do not expect the agent to infer it.
 
 ### Step 4: Delegate body generation to the adr-writer agent
@@ -112,6 +149,27 @@ The agent will:
 If the agent returns "needs more input", surface the missing-fields message to the user and stop. Do not push partial ADRs.
 
 **Fidelity check (main loop, after the agent writes).** Because the agent only renders, verify it added nothing semantic: read the written file and confirm every Context fact, Decision clause, rejection reason, and Consequence traces back to the packet you approved in Step 3. If the agent introduced an inferred claim (a "logically entailed" consequence, an unstated rationale), strike it or send it back — the render must not exceed the packet.
+
+### Step 4.5: Run the mechanical lint
+
+```bash
+python3 ~/.claude/skills/adr-writer/scripts/adr_lint.py --root "$REPO_ROOT"
+```
+
+Evidence モード（判定しない・exit 0）。出力 JSON のうち**今書いた ADR に関する逸脱**
+（missing_sections / case_mismatch / status / date / index / naming）を修正してから先へ進む。
+既存 ADR の逸脱は報告のみ — このステップで直さない（別タスク）。lint の検査範囲は機械的
+性質のみで、意味的レビュー（adr-reviewer）の代替ではない。
+
+ad hoc で blocking 判定が欲しいときは `--gate` を足す。免除境界は既定で無制限なので
+repo ごとの値を渡す — harness は `--sections-from 44 --require-review-when-from 44`
+（ADR-0009 の 2 節欠落と 0043 以前の Review-when 無しを免除、ADR-0051）。
+
+### Step 4.6: Run the semantic review (adr-reviewer)
+
+commit 前に agent: `adr-reviewer` を起動して今書いた ADR を渡す — 省略しない。
+**この skill が adr-reviewer の唯一の配線**（ADR-0055 で implementation-chain の Review 表
+から外れた）。指摘は Step 3 の packet に照らして主ループが採否を決め、採った分だけ直す。
 
 ### Step 5: Update the index
 
@@ -170,4 +228,7 @@ Index:   updated (+1 row)
 
 - ADR template canonical source: read the target repo's existing ADRs to mirror their voice. For the harness itself, see `~/.claude/docs/adr/README.md`.
 - Agent that fills the body: `~/.claude/agents/adr-writer.md`.
+- Mechanical lint (evidence mode + `--gate`): `scripts/adr_lint.py`（ADR-0051。repo の
+  `docs/adr/README.md` Template からテンプレを自動適応、tests は `tests/test_adr_lint.py`）。
+- レビュー頻出指摘の事例集: `references/review-findings.md`（Step 3 の予防チェックで読む）。
 - Evals: `evals/evals.json` (3 scenarios — new ADR / missing docs-adr / sequence collision).

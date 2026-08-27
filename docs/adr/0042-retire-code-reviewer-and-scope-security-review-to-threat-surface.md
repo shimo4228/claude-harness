@@ -93,6 +93,12 @@ built-in `/security-review` は 3 段（発見 → 並列 FP フィルタ → co
 
 ## Decision
 
+> **注記（2026-08-27, ADR-0055）**: Decision 1 の effort pin は `feat` / `refactor` = `high`
+> から**全種別 `medium`** へ降格した（high 帯の「uncertain findings を含む広い報告」が
+> レビュー起点のオーバーエンジニアリングを供給していたため）。built-in への一本化・
+> Security Review の脅威面条件（Decision 2–4）は生きている。Decision 5 の
+> simplify-order-notice.sh は per-commit Simplify の廃止に伴い退役した。
+
 1. `agents/code-reviewer.md` を**退役（削除）**し、Code Review category の起動先を
    built-in `/code-review` にする。effort は種別で固定する（`feat` / `refactor` = `high`、
    `fix` / `chore` = `medium`）— 無指定だと「最後に打ったレベル」を再利用する仕様なので、

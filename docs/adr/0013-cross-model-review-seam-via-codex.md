@@ -22,6 +22,10 @@ accepted
 
 ## Decision
 
+> **注記（2026-08-27, ADR-0055）**: seam 自体（read-only / allowlist / untrusted 扱い /
+> verdict の Claude 所有）は維持。ただし発火は chain の既定ステップから外れ、
+> ユーザー明示要求のみの opt-in になった。
+
 1. **cross-model seam を、脱相関が最も効く review に一点だけ開く**。`codex-review` skill を新設し、read-only な `codex review` を薄くラップする。read-only 不変条件は**外部 CLI の仕様に依存させず、フラグ allowlist でコード側に保証**する（未知 / `-c` / `--write` 等は exit 64 で拒否）。Codex 出力は untrusted input として扱い、verdict は Claude が所有する。
 
 2. **スループット系は全て Claude native（Workflow tool）に寄せる**。ECC の orch-\* / team-\* / multi-execute / dmux は採用しない。理由は既存資産との重複（Workflow + planning.md chain）と外部ランタイム依存・solo 不適合。

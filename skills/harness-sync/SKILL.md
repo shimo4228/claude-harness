@@ -71,9 +71,42 @@ script は commit しない。LLM 側で diff と secret scan の結果を確認
   価値提案（何を pick できるか）で記述する。`gh repo edit --description` で編集
 - `docs/hooks.md` — **script 生成ではない手書き doc**。hook の発火条件・bypass 変数・
   `settings.json` 断片・bats 被覆を持つので、公開 hook を足す / 挙動を変えたら手で追随する
-- `llms.txt` / `llms-full.txt` — 構成変更があれば。文面の質は `llms-txt-writer` に defer
+- `llms.txt` / `llms-full.txt` — **退役した component の行を消すのは機械検査で確認する**
+  （下の「AI 向け導線のリンク切れ」）。文面の質は `llms-txt-writer` に defer
 - 集約 repo README の「Upstream components」節も **script 生成**（marker 間を apply 時に
   自動再生成、外部 origin の名前のみ・ECC トップリンクのみ）— 手で編集しない
+
+### 4b. AI 向け導線のリンク切れ検査（機械、blocking）
+
+apply の後・commit の**前**に、公開 repo に対して必ず走らせる:
+
+```bash
+python3 ~/.claude/skills/context-sync/scripts/context_evidence.py \
+  --root <公開repo> --gate      # exit 3 = 違反あり。直すまで commit しない
+```
+
+exit 3 は**リンク切れ専用ではない** — gate scope は `adr_index` / `graph_jsonld` /
+`llms_txt` の 3 つ（集約 repo は `docs/adr/` を丸ごと持つので ADR index drift でも鳴る）。
+出力行がどの検査かを名指しするので、そこを読む。
+
+**この検査が要る理由は削除の非対称にある。** subtree の丸ごと置換は退役した skill を
+公開側から消すが、`llms.txt` / `llms-full.txt` は root files として不可侵で、手で保守する
+文書のまま残る。つまり skill を 1 つ退役させるたび、AI 向け導線だけが消えた path を
+指し続ける — 人間の README と違い、この故障は読んで気づく人がいない。
+
+実例（2026-08-27 に検出、RFC-0012）: `en-to-ja-translation` / `ja-to-en-translation` /
+`substack-publishing` の 3 skill が harness 側で退役した後、集約 repo の `llms.txt` は
+`skills/<name>/SKILL.md` を指したままだった。llms-full.txt 側のリンクも同じ検査が
+解決する（同 RFC で追加）。
+
+**この step は暫定（interim）**。不変条件は「publish されない component を AI 向け doc が
+指さない」で、その roster を機械で知っているのは harness ではなく公開 repo の
+`scripts/sync-from-local.sh`（origin filter から README の表を GENERATED marker 間へ
+再生成し、secret / frontmatter / allowlist の 4 箇所で abort する）。**正しい置き場所は
+その abort 連鎖の 5 番目**か、より深くは llms.txt の component 行自体を GENERATED marker
+にすること — 後者は検出でなくクラスごと消える。ここが checklist 側にあるのは RFC-0012 の
+作業境界（ミラー repo を触らない）の産物であって設計判断ではない。**agent を経由しない
+sync はこの検査を通らない。**
 
 ### 5. コミット
 

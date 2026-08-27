@@ -70,6 +70,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
 | [session-theme-mining](skills/session-theme-mining/SKILL.md) | 過去の Claude Code / Codex セッションを横断し、記事になりうる未解決の問いを 0〜3 件の同格な候補カードとして発見する。Use when — 「過去セッションから記事テーマを探して」「まだ書いていない問いを発掘して」「セッション履歴から collect-co |
 | [rfc-writer](skills/rfc-writer/SKILL.md) | 公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when |
+| [review-to-lint](skills/review-to-lint/SKILL.md) | 既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チ |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
@@ -182,6 +183,8 @@ The live harness also runs components from external upstreams. Their content —
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
 | ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, loop-design-check, python-patterns, refactor-clean, tdd, update-codemaps | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) + local modifications | mondo | — | — |
+| [cursor/plugins](https://github.com/cursor/plugins) | thermo-nuclear-code-quality-review | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |

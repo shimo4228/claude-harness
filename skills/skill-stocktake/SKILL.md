@@ -73,30 +73,49 @@ Enumerate skill definition files with Glob (no script needed):
 (`skills/learned/` was retired on 2026-08-23, ADR-0047 — the `learned/<name>` key form no
 longer applies. A rule or skill referencing a name in prose does NOT make it a skill.)
 
-**Usage evidence** (parent-owned; batch agents never see it): read
-`~/.claude/metrics/skill-usage.jsonl` inline (the hook `log-skill-usage.sh` appends to
-it) and count per-skill deliberate-use events over the last 14 days plus the last-used
-date. Aggregate with a throwaway `python3`/`jq` one-liner.
+**Usage evidence** (parent-owned; batch agents never see it). Step 0 — run the script and
+transcribe the numbers; do not re-derive them by hand:
 
-Corrections that decide whether the number means anything:
+```bash
+uv run --project ~/.claude/skills/skill-stocktake python -m scripts.usage_stats --days 14
+```
 
-- **Split by event type; never sum them.** `slash` = the user typed it. `invoke` = the
-  model selected it. `read` = a file was opened, which carries no intent. Only
-  `slash + invoke` is *deliberate use*. Summing all three makes a never-chosen skill
-  look busy.
-- **Drop `sandbox: true` rows.** They are the trace of skill-comply's compliance test
-  making a sandboxed child session call the skill — a synthetic scenario, not use.
-  Counting them makes exactly the skills under compliance test look busy. The tag exists
-  only from 2026-08-17 (`log-skill-usage.sh` schema comment); older rows carry no tag, so
-  for windows reaching before that date also drop rows whose `project` is under
-  `/tmp/skill-comply-sandbox` or `/private/tmp/skill-comply-sandbox` (e.g.
-  `select(.sandbox != true and ((.project // "") | test("^(/private)?/tmp/skill-comply-sandbox(/|$)") | not))`).
+JSON out, exit 0 always: `counts` (per skill — `deliberate` / `slash` / `invoke` /
+`last_used`, ordered by deliberate use), `window_label`, `measurable`, and `excluded`
+(how many rows each correction removed). The four corrections that decide whether the
+number means anything — the event-type split, the two sandbox exclusions, and the
+real-span label — live in the script's docstring together with their measured effect on
+the real log. **Do not re-implement them as a jq one-liner here** (ADR-0052): the
+`verify-bootstrap` case is why — 2 apparent uses, 0 after correction.
 
-Because `read` is never counted, the audit's own file reads cannot inflate usage and no
-current-day exclusion is needed. If the log is **missing**, render usage as `—`
-(unmeasured). **Never render it as 0** — unmeasured and unused are different facts. If
-the log is younger than 14 days, say so and label the column with the log's real span
-rather than the nominal one.
+Two readings the script hands you but cannot make for you:
+
+- `measurable: false` → render usage as `—` (unmeasured). **Never render it as 0** —
+  unmeasured and unused are different facts.
+- `span_shorter_than_window: true` → label the column with `window_label` (the log's real
+  span), not the nominal `14d`.
+
+**Reference-URL evidence** (parent-owned for the same reason, plus one of its own: Phase 2
+runs batch agents *in parallel*, and `fetch named URLs` inside each of them is a burst
+against the same hosts — the shape `rules/common/debugging.md` forbids). Check every URL
+the library names once, serially, here:
+
+```bash
+set -o pipefail   # without it a producer crash reads as "0 dead links, all healthy"
+uv run --project ~/.claude/skills/skill-health python -m scripts.scan_refs --external-urls |
+  uv run --project ~/.claude/skills/skill-health python -m scripts.url_liveness --urls-from -
+```
+
+Extraction is `scan_refs`'s job, not a `grep`: it skips fenced code blocks and template
+slots, so the audit does not fetch its own example URLs. (`--offline` on `url_liveness`
+is the dry run — it reports every URL `skip` without touching the network.)
+
+Verdicts are `live` / `dead` / `blocked` / `skip`. **`blocked` is not `dead`** — a 403 is
+bot policy, not absence; reporting it as dead sends the next reader chasing a link that
+is fine. `skip`, `offline_suspected: true`, `halted: true`, and a non-null `source_error` all
+mean *unchecked*, not *fine* — and `input_lines: 0` means nothing was ever checked, which
+is not the same as a clean corpus. If the run halted on a rate limit, say so in the report and do **not** re-run the
+remainder in this session.
 
 State the scan result up front: which paths were scanned, how many skills found, and
 whether usage is measurable.
@@ -120,10 +139,11 @@ creation-time draft gate by reference, not by copy):
   Phase 3's job, not this agent's — the same goes for contradictions with skills outside
   this batch)
 - [ ] Currency: **unconditionally verify** every artifact the skill names — `ls` each
-  referenced path (`~/.claude/agents/<name>.md`, hooks, bundled scripts), run
-  `--help` / version checks for named CLI flags, fetch named URLs. "Verify if it looks
-  stale" is banned phrasing: the condition is what dilutes. Deterministically checkable
-  claims get deterministic checks, every time.
+  referenced path (`~/.claude/agents/<name>.md`, hooks, bundled scripts) and run
+  `--help` / version checks for named CLI flags. "Verify if it looks stale" is banned
+  phrasing: the condition is what dilutes. Deterministically checkable claims get
+  deterministic checks, every time. **Do not fetch URLs** — the parent checked them once
+  in Phase 1 and hands you the verdicts; parallel batch agents each fetching is a burst.
 
 **Stocktake-only existence pass (every item, including Keep-bound skills).** This is
 separate from the canonical four-question quality screen above, which `skill-creator`

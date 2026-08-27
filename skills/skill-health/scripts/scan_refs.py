@@ -42,6 +42,12 @@ _BASH_RE = re.compile(r"\bbash\s+(\S+\.sh)\b")
 # [\w-]+ allows underscores (Python convention) as well as the hyphen-case
 # harness convention; both are valid agent filenames on disk.
 _AGENT_RE = re.compile(r"~/\.claude/agents/([\w-]+)\.md")
+# `uv run --project <dir> python -m scripts.X` resolves the module against <dir>, not
+# against the skill whose SKILL.md documents the command. Cross-skill invocations exist
+# (skill-stocktake Phase 1 calls skill-health's url_liveness), and without this the
+# reference is reported dangling against the calling skill's own scripts/ — a false
+# positive on a real, resolvable artifact.
+_UV_PROJECT_RE = re.compile(r"--project\s+(\S+)")
 
 # Markdown link parsing, mirrored from readme-writer/scripts/readme_evidence.py (ex readme_lint.py) so
 # the harness has one consistent treatment of fences and local links.
@@ -211,17 +217,40 @@ def extract_run_modules(markdown: str, skill: str, skill_dir: Path) -> list[Refe
     Lines carrying a `--directory` override are skipped: the override changes the
     working directory, so `scripts.X` no longer resolves to the skill dir and a
     naive check would be a false positive.
+
+    A `--project <dir>` on the line names a *sibling skill* to resolve against
+    instead (uv's project root). Its last path segment is used against the skills
+    root being scanned, so the check works from a worktree as well as from the
+    installed harness; a segment that names no sibling on disk is unresolvable and
+    the line is skipped rather than reported.
     """
     refs: list[Reference] = []
     for line_no, line in enumerate(markdown.splitlines(), start=1):
         if "--directory" in line:
             continue
+        base = skill_dir
+        project = _UV_PROJECT_RE.search(line)
+        if project:
+            raw_project = project.group(1)
+            sibling = Path(raw_project.rstrip("/")).name
+            # A shell variable cannot be resolved from the text, so the reference is
+            # genuinely undecidable and is skipped. A *named* sibling is not: resolving
+            # it and letting `exists()` answer is the whole point, and skipping when the
+            # directory is absent would report the worst breakage — the target skill
+            # deleted outright — as a clean scan.
+            if "$" in raw_project or sibling in ("", ".", ".."):
+                continue
+            # Resolution is by last segment against the skills root being scanned, so a
+            # `--project` pointing at an unrelated checkout of the same name resolves
+            # here instead. That is the price of working from a worktree, where the
+            # literal `~/.claude/skills/...` path is not the tree under review.
+            base = skill_dir.parent / sibling
         for m in _RUN_MODULE_RE.finditer(line):
             module = m.group(1)
             if _is_metavariable(module.rsplit(".", 1)[-1]):
                 continue
             rel = module.replace(".", "/") + ".py"
-            refs.append(Reference(skill, "run_module", module, str(skill_dir / rel), line_no))
+            refs.append(Reference(skill, "run_module", module, str(base / rel), line_no))
     return refs
 
 
@@ -315,6 +344,75 @@ def extract_skill_refs(markdown: str, skill: str, root: Path) -> list[Reference]
 def _is_external(href: str) -> bool:
     h = href.strip()
     return bool(_SCHEME_RE.match(h)) or h.startswith("//")
+
+
+# Bare `https://…` written in prose rather than as a Markdown link. The body may not
+# end in sentence or wrapper punctuation, so `(see https://x/y).` yields `https://x/y`
+# without a post-hoc trim. Trimming afterwards (`sed 's/[.,)]*$//'`) also eats a `)`
+# that genuinely belongs to the URL, and a mis-trimmed URL comes back `dead` — the
+# failure `url_liveness`'s blocked/dead vocabulary exists to prevent.
+# `NNNN` / `NNN` stand for a number the author fills in (`zenodo.NNNN`, `arXiv:NNNN.NNNNN`).
+_NNNN_PLACEHOLDER_RE = re.compile(r"NNN+")
+# Path segments that are documentation stand-ins rather than a real resource. Measured
+# on this corpus: `https://github.com/owner/repo` at
+# skills/jsonld-knowledge-graph/SKILL.md:194 was fetched as a concrete reference, so its
+# 404 was evidence about an example, not about the skill.
+_PLACEHOLDER_SEGMENTS = frozenset({"owner", "repo", "your-repo", "user", "username", "org"})
+_BARE_URL_RE = re.compile(r"https?://[^\s<>\"'`\]]*[^\s<>\"'`.,;:!?)\]]")
+
+
+def extract_external_urls(markdown: str) -> list[str]:
+    """External URLs a SKILL.md names, in first-appearance order, deduplicated.
+
+    Only lines **outside fenced code blocks** count: a URL in an example command is
+    illustrative, and fetching it would put the audit's own examples on the wire —
+    the burst `rules/common/debugging.md` forbids. Markdown-link hrefs are taken
+    verbatim (the delimiters already bound them); prose URLs go through
+    `_BARE_URL_RE`.
+    """
+    urls: dict[str, None] = {}
+
+    def add(url: str) -> None:
+        # Template slots (`https://github.com/<owner>/…`, `…/zenodo.NNNN`) name no host
+        # to check; requesting them spends the delay budget to report a `dead` the
+        # reader then has to hand-filter out.
+        if _has_template_placeholder(url) or _NNNN_PLACEHOLDER_RE.search(url):
+            return
+        if _PLACEHOLDER_SEGMENTS & set(url.rstrip("/").split("/")):
+            return
+        urls.setdefault(url, None)
+
+    for _line_no, line in _content_lines(markdown):
+        for m in _MD_LINK_RE.finditer(line):
+            href = m.group(2).strip()
+            # `_MD_LINK_RE` ends the href at the first `)`, so a link whose target
+            # itself contains one — `[math](https://…/Function_(mathematics))` — arrives
+            # truncated, and a truncated URL comes back `dead`. Re-attach exactly the
+            # parens the destination opened.
+            missing = href.count("(") - href.count(")")
+            tail = line[m.end() :]
+            while missing > 0 and tail.startswith(")"):
+                href, tail, missing = href + ")", tail[1:], missing - 1
+            if _is_external(href) and href.startswith(("http://", "https://")):
+                add(href)
+        prose = _MD_LINK_RE.sub(" ", line)
+        for m in _BARE_URL_RE.finditer(prose):
+            url, rest = m.group(0), prose[m.end() :]
+            # `…/wiki/Foo_(bar)` — the trailing class drops the closing paren because a
+            # trailing `)` is usually the wrapper, not the URL. Re-attach it when the
+            # URL itself opened one, or the audit reports a live page `dead`.
+            if rest.startswith(")") and url.count("(") > url.count(")"):
+                url, rest = url + ")", rest[1:]
+            # A URL cut short *by* a template slot survives as a bare prefix, and the
+            # placeholder sits past the match where `add`'s own check cannot see it.
+            # The cut can land one character early (`…/works/doi` from
+            # `…/works/doi:<DOI>`), so skip the punctuation the trailing class excluded
+            # before looking. Only an *opening* delimiter counts — a bare `>` is the
+            # closing half of a Markdown autolink, not a slot.
+            if rest.lstrip(".,;:!?)]").startswith(("<", "{", "…")):
+                continue
+            add(url)
+    return list(urls)
 
 
 def extract_md_links(markdown: str, skill: str, skill_dir: Path) -> list[Reference]:
@@ -521,11 +619,35 @@ def main(argv: list[str] | None = None) -> int:
         help="skills root to scan (default: ~/.claude/skills)",
     )
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    parser.add_argument(
+        "--external-urls",
+        action="store_true",
+        help="print the external URLs named across the corpus (one per line) and exit 0; "
+        "feeds skill-health's url_liveness instead of a hand-rolled grep",
+    )
     args = parser.parse_args(argv)
     if not args.root.is_dir():
         print(f"error: scan root not found: {args.root}", file=sys.stderr)
         return 2
     skill_files = _skill_files(args.root)
+    if args.external_urls:
+        # A listing, not a check: URL reachability is url_liveness's job, and this
+        # mode must not move the dangling gate.
+        seen: dict[str, None] = {}
+        for skill_md in skill_files:
+            try:
+                body = skill_md.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                # Keep scanning, but say so: this listing feeds a pipeline, and a file
+                # that silently contributes no URLs is indistinguishable from a file
+                # that names none.
+                print(f"warning: cannot read {skill_md}: {exc}", file=sys.stderr)
+                continue
+            for url in extract_external_urls(body):
+                seen.setdefault(url, None)
+        for url in sorted(seen):
+            print(url)
+        return 0
     items = _scan_files(skill_files)
     scanned = len(skill_files)
     external = external_skills(args.root)

@@ -23,6 +23,7 @@ from scripts.scan_refs import (
     external_skills,
     extract_agent_refs,
     extract_bash_scripts,
+    extract_external_urls,
     extract_md_links,
     extract_references,
     extract_run_modules,
@@ -67,6 +68,32 @@ class TestExtractRunModules:
         # skill dir; skip rather than emit a false positive.
         md = "uv run --directory ../other python -m scripts.run\n"
         assert extract_run_modules(md, "foo", Path("/s/foo")) == []
+
+    def test_project_override_resolves_against_the_named_sibling(self, tmp_path: Path) -> None:
+        # Regression (2026-08-26): skill-stocktake Phase 1 calls skill-health's
+        # url_liveness via `uv run --project ~/.claude/skills/skill-health`. Resolving
+        # against the calling skill reported a real artifact as dangling.
+        (tmp_path / "foo").mkdir()
+        (tmp_path / "skill-health" / "scripts").mkdir(parents=True)
+        md = "uv run --project ~/.claude/skills/skill-health python -m scripts.url_liveness\n"
+        refs = extract_run_modules(md, "foo", tmp_path / "foo")
+        assert [r.target for r in refs] == [str(tmp_path / "skill-health/scripts/url_liveness.py")]
+
+    def test_project_override_with_a_missing_sibling_is_still_reported(
+        self, tmp_path: Path
+    ) -> None:
+        # Skipping here reported the *worst* breakage — the target skill deleted
+        # outright — as a clean scan, while deleting one script inside it exited 1.
+        (tmp_path / "foo").mkdir()
+        md = "uv run --project ~/.claude/skills/gone python -m scripts.run\n"
+        refs = extract_run_modules(md, "foo", tmp_path / "foo")
+        assert [r.target for r in refs] == [str(tmp_path / "gone/scripts/run.py")]
+
+    def test_project_override_from_a_shell_variable_is_skipped(self, tmp_path: Path) -> None:
+        # `$UV` cannot be resolved from the text, so the reference is undecidable.
+        (tmp_path / "foo").mkdir()
+        md = "uv run --project $UV python -m scripts.run\n"
+        assert extract_run_modules(md, "foo", tmp_path / "foo") == []
 
     def test_records_raw_text(self) -> None:
         refs = extract_run_modules("python -m scripts.run\n", "foo", Path("/s/foo"))
@@ -486,3 +513,55 @@ class TestExternalOwnership:
         (tmp_path / "root" / "vendored").symlink_to(real, target_is_directory=True)
         missing, _ = partition_findings(scan_root(tmp_path / "root"))
         assert len(missing) == 1
+
+
+class TestExtractExternalUrls:
+    def test_prose_and_link_urls_are_collected(self) -> None:
+        md = "See [docs](https://example.com/a) and https://example.com/b for more.\n"
+        assert extract_external_urls(md) == ["https://example.com/a", "https://example.com/b"]
+
+    def test_fenced_urls_are_skipped(self) -> None:
+        # Fetching an example command's URL puts the audit's own docs on the wire.
+        md = "text\n```bash\ncurl https://example.com/inside-fence\n```\n"
+        assert extract_external_urls(md) == []
+
+    def test_trailing_sentence_punctuation_is_not_part_of_the_url(self) -> None:
+        # `sed 's/[.,)]*$//'` after the fact also eats a `)` that belongs to the URL;
+        # a mis-trimmed URL comes back `dead`.
+        md = "(see https://example.com/a), then https://example.com/b.\n"
+        assert extract_external_urls(md) == ["https://example.com/a", "https://example.com/b"]
+
+    def test_template_slots_are_skipped(self) -> None:
+        md = "https://github.com/<owner>/repo and https://doi.org/10.5281/zenodo.NNNN\n"
+        assert extract_external_urls(md) == []
+
+    def test_a_url_truncated_by_a_template_slot_is_skipped(self) -> None:
+        # The trailing class excludes `:`, so the match stops one character short of
+        # the placeholder and a bare prefix survived: `.../works/doi` was fetched and
+        # reported dead on every audit.
+        md = "curl https://api.openalex.org/works/doi:<DOI> and swh:1:snp:<hash>\n"
+        assert extract_external_urls(md) == []
+
+    def test_a_closing_paren_that_belongs_to_the_url_is_kept(self) -> None:
+        md = "see https://en.wikipedia.org/wiki/Foo_(bar) for details\n"
+        assert extract_external_urls(md) == ["https://en.wikipedia.org/wiki/Foo_(bar)"]
+
+    def test_an_autolink_closing_bracket_is_not_a_template_slot(self) -> None:
+        assert extract_external_urls("<https://example.com/a>\n") == ["https://example.com/a"]
+
+    def test_markdown_link_keeps_parens_in_its_destination(self) -> None:
+        # `_MD_LINK_RE` ends the href at the first `)`, so the destination arrived
+        # truncated and came back dead.
+        md = "[math](https://en.wikipedia.org/wiki/Function_(mathematics))\n"
+        assert extract_external_urls(md) == ["https://en.wikipedia.org/wiki/Function_(mathematics)"]
+
+    def test_owner_repo_placeholder_is_skipped(self) -> None:
+        # Measured: skills/jsonld-knowledge-graph/SKILL.md:194.
+        assert extract_external_urls("see https://github.com/owner/repo\n") == []
+
+    def test_duplicates_collapse_in_document_order(self) -> None:
+        md = "https://b.example https://a.example https://b.example\n"
+        assert extract_external_urls(md) == ["https://b.example", "https://a.example"]
+
+    def test_local_links_are_not_urls(self) -> None:
+        assert extract_external_urls("[x](./sibling.md) and [y](#anchor)\n") == []

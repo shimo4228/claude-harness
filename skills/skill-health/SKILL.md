@@ -105,6 +105,13 @@ uv run --directory ~/.claude/skills/skill-health \
   python -m scripts.scan_refs ~/.claude/skills --json
 ```
 
+`--external-urls` on the same scanner lists the external URLs the corpus names,
+fence- and placeholder-aware, and exits 0 — it is the input to this skill's other
+probe, `python -m scripts.url_liveness --urls-from -` (URL reachability as
+`live` / `dead` / `blocked` / `skip`; **`blocked` is not `dead`**). Reachability is
+checked by whoever owns the audit, once and serially, never inside parallel batch
+agents — `skill-stocktake` Phase 1 is the caller today (ADR-0052).
+
 Exit code is the code-owned gate: `0` clean, `1` dangling references found, `2`
 scan root missing. The scanner is **conservative by design** — it skips template
 placeholders (`<your-repo>/x.sh`), illustrative example links (`[](url)`), and
@@ -129,16 +136,19 @@ repair is a human judgment; surface the fact, let the user decide.
 For the scanned skills, surface the existing signals so the report is a single
 health view — **labelling each value's source**, never recomputing it:
 
-- **Utility** — read `~/.claude/metrics/skill-usage.jsonl` for 7/30/90-day
-  counts (the same log `skill-stocktake` uses). Apply the same corrections as
-  `skill-stocktake`'s "Four corrections" (that section is canonical) — in
-  particular drop `sandbox: true` rows and, for windows reaching before
-  2026-08-17, rows whose `project` is under `/tmp/skill-comply-sandbox` /
-  `/private/tmp/skill-comply-sandbox`: those are skill-comply's compliance test
-  calling the skill, not use. Where a skill is rarely or never
-  triggered, judge **[LLM]** whether the cause is *over-specialized* scope (a
-  trigger so narrow it never fires) versus simply *new*. If the log's first
-  event is younger than 90 days, render usage as `unmeasured` — never `0`.
+- **Utility** — do not read `~/.claude/metrics/skill-usage.jsonl` by hand. The four
+  corrections that decide whether its numbers mean anything are code, not prose
+  (ADR-0052); run the script once per window:
+
+  ```bash
+  uv run --project ~/.claude/skills/skill-stocktake python -m scripts.usage_stats --days 90
+  ```
+
+  Where a skill is rarely or never triggered, judge **[LLM]** whether the cause is
+  *over-specialized* scope (a trigger so narrow it never fires) versus simply *new* —
+  `last_used` is not clipped to the window, so "used 100 days ago" is distinguishable
+  from "never". If `measurable` is false, or `span_shorter_than_window` is true, render
+  usage as `unmeasured` — never `0`.
 - **Risk** — point to the latest `CLAUDE-SECURITY-*/CLAUDE-SECURITY-RESULTS.md`
   if present; if none/stale, recommend running `/claude-security`. Do not
   re-scan for vulnerabilities here.

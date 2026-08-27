@@ -9,7 +9,7 @@
 #   Agent/Task 起動で model pin 欠落 → advisory に留める。prompt 部分一致の
 #     ヒューリスティックで誤検知しうるので、deny の権限を持たせない。
 # 配線の根拠: built-in review skill はセッションモデルを継ぎ、モデル引数を持たない
-# （simplify-order-notice.sh と同じ配置理由・同じ matcher）。
+# （commit 境界では手遅れなので、起動直前の PreToolUse に置く）。
 #
 # セッションモデルは hook payload に無いので transcript 末尾の直近 "model" フィールドから
 # 読む（assistant 行が持つ）。読めなければ黙る — 無根拠に指摘しない。
@@ -31,8 +31,7 @@ esac
 
 tool=$(printf '%s' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || exit 0
 
-# matcher "Task|Agent|Skill" は無錨で TaskCreate 等にも当たるため、この判定は冗長ではない
-# （simplify-order-notice.sh と同じ）。
+# matcher "Task|Agent|Skill" は無錨で TaskCreate 等にも当たるため、この判定は冗長ではない。
 case "$tool" in
   Skill)
     name=$(printf '%s' "$INPUT" | jq -r '.tool_input.skill // empty' 2>/dev/null) || exit 0
@@ -51,8 +50,8 @@ case "$tool" in
   *) exit 0 ;;
 esac
 
-# セッションモデルの判定。tail -c で走査量を固定する（ログ長比例の罠は
-# simplify-order-notice.sh の scan と同じ理由）。grep の一致なしは「判定不能」なので黙る。
+# セッションモデルの判定。tail -c で走査量を固定する（全文 scan はログ長に比例して
+# 遅くなる）。grep の一致なしは「判定不能」なので黙る。
 T="${REVIEW_MODEL_TRANSCRIPT:-$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)}"
 [[ -n "$T" && -f "$T" ]] || exit 0
 model=$(tail -c 2000000 "$T" 2>/dev/null | grep -o '"model" *: *"[^"]*"' | tail -n 1) || true

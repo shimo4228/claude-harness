@@ -105,6 +105,10 @@ code-reviewer による欠陥検査と本文提示の**両方**が要る。重�
 
 ### 3. adr-reviewer agent を新設し、chain に配線する
 
+> **注記（2026-08-27, ADR-0055）**: adr-reviewer 自体は維持。ただし配線は
+> implementation-chain の Review 表から外れ、skill: `adr-writer` の内部ステップ
+> （ADR 執筆時は省略しない）が唯一の居場所になった。codex-review の脚は opt-in 化で外れた。
+
 ADR の**記録としての質**のみを検査する。決定の是非は `architect`、生成は `adr-writer` で、
 三者の境界を保つ。検査軸は 8 項目で、中核は次の 3 つ:
 

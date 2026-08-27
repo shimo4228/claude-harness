@@ -288,6 +288,7 @@ identifiers:
 - 既存の swh entry があれば **置き換えず追記** (各 release の snapshot が独立した priority claim)
 - SWHID は content の存在証明であって authorship 証明ではない (ADR-0013 Consequences)。authorship は DOI / ORCID 層が担う — README 等で SWHID を authorship の根拠として書かない
 - Archive 内の閲覧 URL: `https://archive.softwareheritage.org/swh:1:snp:<hash>;origin=https://github.com/<owner>/<repo>`
+- **Review-when — SWHID の DataCite 投影** (as-of 2026-08-25): DataCite schema 4.7 (2026-03) は `SWHID` を relatedIdentifierType として正式追加したが、Zenodo の deposit 語彙 (`zenodo.org/api/vocabularies/relationtypes`, 34 種 ≒ 4.5 相当) は未対応で swhid scheme が無い。**Zenodo が 4.6/4.7 語彙に追随したら**、release 時に `.zenodo.json` へ version DOI → `swh:1:snp:` の relation を追加し、SWHID 層を CITATION.cff だけでなく DataCite registry にも投影する (URL 押し込みは意味が濁るので追随前はやらない)
 
 **Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は `~/.config/zenodo/credentials.env`)。
 

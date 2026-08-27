@@ -56,11 +56,18 @@
 | [0048](0048-sdlc-playbook-translation-and-rfc-conformance.md) | AI-native SDLC playbook（2026-08-21）は改名でなく翻訳で取り込む — 対応の主役は AKC の二重ループ（product loop ↔ harness loop、stage↔phase 1:1 は誤り）、提案本文は Rust RFC 0000-template 完全準拠（preamble は frontmatter へ）。付表: product loop 機構マップ snapshot + 採用しないもの（control bands / LLM-judge evals ゲート / 3 artifact 分離 / DORA） | accepted | 2026-08-25 |
 | [0049](0049-unify-task-ledger-into-public-rfcs.md) | store 形タスク台帳を公開 `rfcs/NNNN-slug.md` に一元化（提案も作業も 1 店舗、ID RFC-NNNN、状態語彙 8 語流用）。archive 機構は持たず終端エントリは公開判断記録として残置。claims.py は正規表現 + 走査パスの最小改修のみ。全 repo 展開は RFC-0001 が追跡 | accepted | 2026-08-25 |
 | [0050](0050-standardize-ledger-state-vocabulary.md) | 台帳の状態語彙を標準語彙 9 語へ全域移行（draft / accepted / in_progress / blocked / done / resolved / rejected / withdrawn / obsoleted）— 非標準語彙はセッション間で写像がずれる実証（同日 2 通りに書いた）。分担線: 提案 lifecycle は RFC 標準語、RFC に無い実行系は issue-tracker 標準語。dropped は rejected / withdrawn に分裂、gloss 運用は廃止 | accepted | 2026-08-25 |
+| [0051](0051-extract-mechanical-adr-checks-into-cross-repo-lint.md) | ADR レビューの機械チェックを cross-repo lint script（adr_lint.py、evidence 既定 + --gate）へ抽出し adr-reviewer を意味的チェック専任に薄化 — テンプレは repo の README から自動適応、実行座標は skill ステップ（verify.sh 常時配線は却下）、頻出指摘は review-findings.md へ蒸留 | accepted | 2026-08-26 |
+| [0052](0052-url-liveness-and-usage-aggregation-evidence-scripts.md) | URL 到達性（`skill-health/scripts/url_liveness.py`）と skill usage 集計（`skill-stocktake/scripts/usage_stats.py`）を evidence script へ降ろし skill-stocktake を薄化 — `blocked` を `dead` に畳まない語彙、429 連発は retry せず停止（policy signal）、並列 batch agent の fetch を親 1 パスへ直列化。search-first は lychee 等を却下（blocked/dead の再導出が必須・Rust 依存）。消費者は 3 → 2 箇所に訂正（DOI validity は別問題） | accepted | 2026-08-26 |
+| [0053](0053-extract-context-sync-checklist-into-evidence-script.md) | context-sync Phase 4 の機械チェックを evidence script（context_evidence.py、evidence 既定 + --gate）へ抽出しチェックリストを Step 0 配線で薄化 — 20 項目の再分類は deterministic 4 / hybrid 11 / semantic 4 / deferred 1、gate scope は 7 repo 実測で決定（context_paths は opt-in、公開ミラーの真陽性 1 件は免除しない）、ADR index は adr_lint・graph.jsonld は graph_lint へ委譲、URL 到達性は RFC-0008 待ちで verdict skip、検査不能は degraded[] で clean と区別 | accepted | 2026-08-26 |
+| [0054](0054-extract-agent-stocktake-and-learn-eval-mechanical-checks.md) | agent-stocktake と learn-eval の機械チェックを evidence script へ抽出し、自己申告を成果物に置き換える — review-to-lint の 2 件目・3 件目適用。suppression catalog は日英両方（実在した唯一の該当は日本語）、description 近似重複は Jaccard/containment 実測 gap（0.525 / 0.319）から閾値 0.5、tokenizer は 2 script に複製（feedback: duplicate_over_coordination） | accepted | 2026-08-26 |
+| [0055](0055-review-chain-single-pass-regression.md) | レビュー chain を fresh-context 1 段 + 条件付き Security へ縮約する（公式推奨密度への回帰）— レビュー起点のオーバーエンジニアリング発振を 1 往復規律・correctness-only 指示・effort medium・diff 外起票の loop-breaking 限定で切断。Simplify は batch opt-in、codex-review は明示要求のみ、simplify-order-notice hook 退役 | accepted | 2026-08-27 |
 
 ## Template
 
 新しい ADR を追加する際は以下のフォーマットに従う。`## Review-when` は ADR-0044 以降必須
-（`harness_lint.py` が存在を検査）。それ以前の ADR には無いので、読むときは Context の前提と
+（`harness_lint.py` が存在を検査。節存在・Status・Date・index の機械検査は
+`skills/adr-writer/scripts/adr_lint.py` — 書き時とレビュー時の skill ステップで走る、ADR-0051）。
+それ以前の ADR には無いので、読むときは Context の前提と
 Date で重みを決める。ADR は日付つき仮説であって恒久的な拘束ではない（`rules/common/akc-cycle.md`）:
 
 ```markdown

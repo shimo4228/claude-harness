@@ -38,6 +38,11 @@ Contemplative Agent の `scripts/build_decision_packet.py`（週次承認パケ�
 
 ## Decision
 
+> **注記（2026-08-27, ADR-0055）**: producer 検証の機構（`--producer` 必須、真偽は
+> 起票側の責任、破棄規律）は維持。ただし足切りは「HIGH 以上は起票可」から
+> 「loop 自身を壊す欠陥のみ即時起票、他は severity 不問で commit body 1 行」へ
+> 更に絞られた（実測の正本は ADR-0055）。
+
 **起票の条件を severity でなく前提に置き、ハーネスが既に持つ唯一の機械的
 チョークポイントで強制する。**
 
