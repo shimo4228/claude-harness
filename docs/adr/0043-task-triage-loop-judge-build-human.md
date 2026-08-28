@@ -119,3 +119,8 @@ accepted
 対応として skill: `implementation-chain` の Plan 段に「実行者の決定」を必須ステップとして
 足した。dispatch 条件と三役の**正本は本 ADR と `task-triage` のまま**で、増えたのは ad-hoc 入口
 から同じ判断へ入る導線だけ。本 ADR の決定内容は変えない。
+
+> **注記（2026-08-28, [ADR-0057](./0057-judge-tier-default-dispatch-and-plan-boundary-advisory.md)）**:
+> 上記の導線は宣言のみで発火機構が無く不足だった。ADR-0057 が「実行者の決定」の既定を
+> dispatch へ反転し、plan 承認境界（ExitPlanMode PostToolUse）の advisory hook を足した。
+> 三役と dispatch 条件の正本は引き続き本 ADR と `task-triage`。

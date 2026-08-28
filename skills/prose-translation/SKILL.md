@@ -10,8 +10,7 @@ origin: shimo4228
 人間向け prose を、**著者の声と出力先channelのregisterを保ったまま**自然に訳すためのスキル。
 
 **voice 非収束な prose の翻訳本体は、メインループ（最上位モデル）が本方法論に従って実行する。**
-翻訳は意味的権限が高く、サブエージェントへのlossy handoffで会話文脈とvoice制約を失いやすいため、
-メインループが最終的なsemantic commitmentを握る。
+サブエージェントへの handoff は会話文脈と voice 制約を落とす。
 
 **定型 pipeline の venue 翻訳はこの限りではない**。用語集・タグ規約を使う宛先稿の準備は
 project agent が担ってよい。その場合も**訳出の方法論は本 skill が正本**で、agent は起動時に
@@ -21,8 +20,7 @@ project agent が担ってよい。その場合も**訳出の方法論は本 ski
 
 - **対象**: **JA→EN と EN→JA の両方向**。essay / opinion / research doc / README / ADR / glossary 等、人間向け prose。
   共通骨格（絶対ルール・5 ステップ・QA・Review）は方向に依らず同じで、方向固有の判断だけを
-  下の「EN→JA 方向の追加規約」が持つ（2026-08-23 に姉妹 skill `en-to-ja-translation` を統合 —
-  本文の約 55% が同一で、骨格の片方だけが育つ drift が始まっていた）。
+  下の「EN→JA 方向の追加規約」が持つ。
 - **対象外**:
   - AI 向け doc（`llms.txt` / `llms-full.txt` / FAQ）→ `llms-txt-writer`
   - 学術 citation / reference list の format 検証 → `citation-formatter`
@@ -77,9 +75,9 @@ direct / discoveryその他のvoiceを保ち、日本語の謙遜・婉曲表現
 
 原文に出典セクションがあれば、**URL / DOI は保持**し description のみ英訳する。編入のポリシーは writing-ecosystem の **Citation & Sources Workflow** に従う。
 
-## EN→JA 方向の追加規約（2026-08-23 統合）
+## EN→JA 方向の追加規約
 
-上の 5 ステップをそのまま使い、以下だけを差し替える。共通部分は再掲しない。
+上の 5 ステップをそのまま使い、以下だけを差し替える。
 
 ### term-lock は「訳す-by-default」
 
@@ -100,8 +98,7 @@ direct / discoveryその他のvoiceを保ち、日本語の謙遜・婉曲表現
 
 ### Pass 2 は「脱翻訳調 self-edit」に差し替える
 
-**「日本語の技術ライターは本当にこう書くか？」** を各段落に問い、以下 6 つの翻訳調シグナルを潰す
-（**JA→EN 方向に対応物が無い、方向固有の判断**）:
+**「日本語の技術ライターは本当にこう書くか？」** を各段落に問い、以下 6 つの翻訳調シグナルを潰す:
 
 - **英語語順の残存** — 主語の過剰な明示（"it" / "we" の逐語訳）、後置修飾の直訳
 - **冗長な受動態** — "is used by" の逐語受動。能動・自動詞に倒せないか
@@ -136,9 +133,7 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 - localization policy（term policy / 例外リスト / Pass 2 のチェック項目）
 
 **所有権を明確にする**: サブエージェントの出力は**ドラフト扱い**で、確定訳ではない。
-メインループが必ず (a) Pass 2 (b) back-translation QA (c) 最終承認 を行い、**最終的な voice の
-確定と semantic commitment はメインループが握る**。このfinalizationを省いてサブエージェント
-出力をそのまま確定訳にしてはならない。
+メインループが必ず (a) Pass 2 (b) back-translation QA (c) 最終承認 を行う。
 
 機械的前処理（term 候補の抽出・保護スパン検出・訳語一貫性 grep）は、ドラフト生成とは別に
 軽量モデルへ委譲してよい。
@@ -146,7 +141,7 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 ## Review（翻訳後）
 
 訳文を既存の review agent にかける（**新規 reviewer agent は作らない**）。
-**出力言語で分岐する** — 両方向のスキルなので、EN 出力だけを想定した導線にしない:
+**出力言語で分岐する**:
 
 - **JA→EN（EN 出力）** — 出力先チャンネルの review agent に defer する（記事の type では
   分岐しない）。どのチャンネルがどの agent かは、その project の rules のチャンネル表が正本

@@ -58,5 +58,5 @@ Verdict: PASS | FAIL | BLOCKED
 ## Boundaries
 
 - 本 skill は reviewer を起動せず、reviewer の判断を上書きしない。
-- ADR、memory、過去セッションを受け入れ条件として読まない。現在の contract と現在稿の証跡だけを使う。
+- 受け入れ条件は現在の contract と現在稿の証跡だけ。
 - paper は `paper-ecosystem`、README は `readme-writer` の専用 gate を使う。

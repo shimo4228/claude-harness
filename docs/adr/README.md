@@ -5,7 +5,7 @@
 ## Index
 
 | ADR | Title | Status | Date |
-|-----|-------|--------|------|
+| --- | --- | --- | --- |
 | [0001](0001-ecc-skill-management-policies.md) | ECC スキル管理ポリシー | accepted | 2026-03-08 |
 | [0002](0002-disable-claude-mem.md) | claude-mem プラグイン無効化 | accepted | 2026-03-08 |
 | [0003](0003-regex-to-llm-classification.md) | 正規表現から LLM 分類への転換 | accepted | 2026-03-20 |
@@ -61,6 +61,10 @@
 | [0053](0053-extract-context-sync-checklist-into-evidence-script.md) | context-sync Phase 4 の機械チェックを evidence script（context_evidence.py、evidence 既定 + --gate）へ抽出しチェックリストを Step 0 配線で薄化 — 20 項目の再分類は deterministic 4 / hybrid 11 / semantic 4 / deferred 1、gate scope は 7 repo 実測で決定（context_paths は opt-in、公開ミラーの真陽性 1 件は免除しない）、ADR index は adr_lint・graph.jsonld は graph_lint へ委譲、URL 到達性は RFC-0008 待ちで verdict skip、検査不能は degraded[] で clean と区別 | accepted | 2026-08-26 |
 | [0054](0054-extract-agent-stocktake-and-learn-eval-mechanical-checks.md) | agent-stocktake と learn-eval の機械チェックを evidence script へ抽出し、自己申告を成果物に置き換える — review-to-lint の 2 件目・3 件目適用。suppression catalog は日英両方（実在した唯一の該当は日本語）、description 近似重複は Jaccard/containment 実測 gap（0.525 / 0.319）から閾値 0.5、tokenizer は 2 script に複製（feedback: duplicate_over_coordination） | accepted | 2026-08-26 |
 | [0055](0055-review-chain-single-pass-regression.md) | レビュー chain を fresh-context 1 段 + 条件付き Security へ縮約する（公式推奨密度への回帰）— レビュー起点のオーバーエンジニアリング発振を 1 往復規律・correctness-only 指示・effort medium・diff 外起票の loop-breaking 限定で切断。Simplify は batch opt-in、codex-review は明示要求のみ、simplify-order-notice hook 退役 | accepted | 2026-08-27 |
+| [0056](0056-budget-lints-as-verify-bootstrap-annotation.md) | 予算系 lint（閾値を要する複雑度・関数/ファイル長・bundle サイズ系）の global 規約を verify-bootstrap の但し書きとして置く — 「最大 strict」が予算系を構造的に落とす盲点（82 repo / 104 config でヒット 0、2026-08-28 実測）を閉じる。global 数値・ツール表・backfill なし、閾値は corpus 分布の実測（免除境界の原則）、超過は閾値を上げずに刈る（配達点は閾値行コメント）、展開は需要駆動。ADR-0055 の計器却下の射程を日付つき注記で狭める | accepted | 2026-08-28 |
+| [0059](0059-verify-precommit-block-on-stale-approval.md) | verify-precommit の承認失効（exit 71 = 台帳に載っている repo のゲートが編集で hash 不一致）は commit を block する — 通知のみの失効挙動が 3 週間の沈黙（CA、2026-08-06〜28、ゲート未実行のまま commit が通り続けた）を許した実害への修理。未承認（exit 70）は従来どおり通知して通す。回帰テスト 4 本 | accepted | 2026-08-28 |
+| [0057](0057-judge-tier-default-dispatch-and-plan-boundary-advisory.md) | judge-tier セッションの実装既定を dispatch へ反転（自己実装は例外 3 種の 1 行記録時のみ）+ plan 承認境界（ExitPlanMode PostToolUse）の advisory hook `plan-executor-notice.sh` 新設 + planning.md 常駐 1 行。spawn-session のモデル固定は著者実測（herdr dispatch で Opus 起動成立）により却下。ADR-0043 の 2026-08-22 注記の穴に enforcement を足す | accepted | 2026-08-28 |
+| [0058](0058-writing-harness-scaffold-dissolution.md) | 執筆ハーネス 15 ファイル 2,504 行の規約を短い原則へ戻す（Scaffold Dissolution）。Orwell 6 rules の取り込みを調べた結果、4 つは既存と重複し、差は内容ではなく書き方だった — 原則に例示・例外・判定手順・整合弁明・出自の日付を添えると問いが起きなくなる。原則は skill 本文、閾値は判定 agent、直し方は references/ へ三層分離。複製は正本 1 つへ統合（Output Format 55 行 × 2 → 共有 reference）。実測由来の拡張も畳む（著者裁定）。ルール 1 は禁止形のみ、ルール 6 の例外条項を追加。writing-ecosystem 438 → 378 行 | accepted | 2026-08-28 |
 
 ## Template
 

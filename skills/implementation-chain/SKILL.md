@@ -33,17 +33,21 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 返させて読む ② 設計代替は Plan agent を観点違い（最小変更 / クリーン / 実用）で並列し、主ループが
 比較して推奨・ユーザー選択（収束の所在は Matrix の Plan 行）。
 
-**実行者の決定**（Plan の最後、必須。2026-08-22 追加）: plan が固まったら「このセッションが
-実装するか」を 1 行で決める。判断が要るのは judge-tier のセッション（Fable）で走っているとき —
-そのまま実装に入ると、Review 群まで judge-tier を消費する（built-in `/code-review` と `/simplify`
-はセッションのモデルを継いで走り、モデル引数は無い。pin できるのは自作 agent と plugin agent の
-`model:` だけ）。skill: `task-triage` の dispatch 条件（前提が `file:line` で検証済み / worktree で
-可逆 / 受け入れ条件が判定可能 / 1 セッションに収まる / rule 変更を含まない）を満たすなら、実装は
-build-tier の新規セッション（skill: `spawn-session`、または Agent tool / `claude --bg -w <name>
---model opus`）へ渡し、本セッションは packet を書いて検証側に残る。**三役とティアの正本は
-task-triage の役割表**（ここには複製しない）。条件を満たさない・分割できないなら、このセッションで
-実装してよい — その場合も Review 群は下の「Review の実行モデル pin」で build-tier に降ろす
-（人間の `/model` 切替を待たない）。
+**実行者の決定**（Plan の最後、必須。2026-08-22 追加、2026-08-28 既定を反転）: plan が固まったら
+「このセッションが実装するか」を 1 行で決める。判断が要るのは judge-tier のセッション（Fable）で
+走っているとき — そのまま実装に入ると、Review 群まで judge-tier を消費する（built-in `/code-review`
+と `/simplify` はセッションのモデルを継いで走り、モデル引数は無い。pin できるのは自作 agent と
+plugin agent の `model:` だけ）。**judge-tier の既定は dispatch**: 実装は build-tier の新規セッション
+（skill: `spawn-session`、または Agent tool / `claude --bg -w <name> --model opus`）へ渡し、
+本セッションは packet を書いて検証側に残る（dispatch 条件の照合は skill: `task-triage` — 前提が
+`file:line` で検証済み / worktree で可逆 / 受け入れ条件が判定可能 / 1 セッションに収まる /
+rule 変更を含まない）。**三役とティアの正本は task-triage の役割表**（ここには複製しない）。
+このセッションで実装してよいのは、次のいずれかを plan に 1 行記録したときだけ:
+(a) 設計文書・ADR・skill / rule の散文編集（judge-tier の本業）、(b) dispatch 条件を満たせない
+具体的理由がある、(c) ユーザーの明示指示。自己実装する場合も Review 群は下の
+「Review の実行モデル pin」で build-tier に降ろす（人間の `/model` 切替を待たない）。
+文脈損失（ADR-0016「model 継承は能力しか救わず文脈損失は救わない」）を dispatch を避ける理由に
+しない — packet の充実で救う（packet の形は task-triage が正本）。
 （失効条件: モデルのティア区別と使用限度が消えた、または substrate がセッション単位の model
 routing を自発的に行うようになったら、この段落を外す。）
 
@@ -111,10 +115,6 @@ built-in review は chain の正規ステップである（ADR-0039 → ADR-0042
 （気づいた場合は 1 行のみ、修理はしない）」。この 1 行は loop 自身を壊す欠陥の起票チャネル
 として残す（規約は `rules/common/task-tracking.md`）。reviewer は問われれば必ず何か返す —
 指摘の全追跡がオーバーエンジニアリングの供給源になる（公式 best practices の名指し）。
-
-**1 往復規律**: Review → 修理は **1 往復まで**。修理は指摘に答える最小 diff に限り、
-修理 diff の検証は機械ゲート（Verify）のみで**再レビューしない**。発振（レビューが修理を生み、
-修理が次のレビュー対象になる連鎖）はここで切る。
 
 **opt-in 名簿**（自発発火しない。著者が明示的に求めたときだけ）:
 

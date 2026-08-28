@@ -132,6 +132,48 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   ! gate_ran
 }
 
+# --- a stale approval blocks; a missing one does not (ADR-0057) ---------------
+# For 3 weeks (2026-08-06..28, contemplative-agent) a ledgered repo's gate sat
+# revoked after an edit: the re-approve notice printed on stderr at every commit,
+# nobody acted, and the gate never ran. A KNOWN repo whose gate has gone dark is
+# a same-day repair (one approve command), so exit 71 now blocks. Exit 70 (repo
+# not in the ledger at all — e.g. a fresh clone) still passes with a notice,
+# because blocking every unapproved repo would punish ordinary work.
+
+@test "a stale approval (edited gate) blocks the commit" {
+  write_gate 0
+  approve
+  write_gate 1  # exit 71: ledgered, hash mismatch
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  blocked
+}
+
+@test "the stale-approval block names the re-approve command" {
+  write_gate 0
+  approve
+  write_gate 1
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [[ "$(printf '%s' "$output" | jq -r '.reason')" == *"approve"* ]]
+}
+
+@test "the stale-approval block still does not run the gate" {
+  write_gate 0
+  approve
+  write_gate 1
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  ! gate_ran
+}
+
+@test "re-approving after the edit unblocks the commit and runs the gate" {
+  write_gate 0
+  approve
+  write_gate 0 'edited'  # same exit, different bytes — approval goes stale
+  approve                # human re-reads and re-approves the edited bytes
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  gate_ran || return 1
+  [ "$(printf '%s' "$output" | jq -r 'has("decision")')" = "false" ]
+}
+
 @test "a gate symlinked outside the repo is refused" {
   printf '#!/bin/sh\nprintf x > "%s/gate-ran"\nexit 0\n' "$TMP" > "$TMP/outside.sh"
   chmod +x "$TMP/outside.sh"

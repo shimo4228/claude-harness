@@ -27,3 +27,4 @@ README には書かない（複製は drift する）。
 | [0013](0013-verify-sh-untracked-file-blind-spot.md) | verify.sh の git ls-files 盲点 — 未 commit 新規ファイルも lint 対象に |
 | [0014](0014-name-stem-gate-to-harness-lint.md) | agent name=stem 検査を harness_lint の gate へ移設 |
 | [0015](0015-adr-numeric-consistency-evidence.md) | ADR 数値整合の hybrid 検査を adr_lint へ追加 |
+| [0016](0016-agent-tool-build-path-hook-parity.md) | Agent tool 実装経路の hooks/skills 発火同一性の実測検証 |

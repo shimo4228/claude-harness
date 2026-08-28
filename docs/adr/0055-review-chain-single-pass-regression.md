@@ -81,6 +81,12 @@ security review を残す判断材料とした。
    クラス自体が観測できなくなる。
 4. 1 往復規律を新設する: Review → 修理は 1 往復まで。修理は指摘に答える最小 diff、修理
    diff の検証は機械ゲート（Verify）のみで再レビューしない。
+   **［2026-08-27 注記: 本項は同日の著者判断で撤回した。** 公式 best practices の再読で、
+   「fix them and re-review」は推奨でなく subagent 構成の利点の記述（自然な往復）であること、
+   および発振の主因は往復でなく系統数（6 系統 × 各系統の並列 agent 起動 — Simplify 単体で
+   4 agent、全発火で 10 前後）だという著者判断による。常設 1 系統 + effort medium +
+   correctness-only の下では往復を制限しない。修理連鎖の発振が再発した時に本項を入れ直す。
+   「修理は最小 diff」は維持。］
 5. diff 外指摘の起票規約を再絞り込みする（`rules/common/task-tracking.md` + skill:
    `task-stocktake` 「レビュー指摘の起票規律」）。build セッションからの即時起票は
    「loop 自身を壊す欠陥」のみとする。それ以外は severity 不問で commit body に 1 行
@@ -94,7 +100,8 @@ security review を残す判断材料とした。
 
 - 公式 best practices の review 推奨（1 段 + correctness-only）が大きく改版された時
   （引用は as-of 2026-08-27）
-- 1 往復規律の下でもレビュー起点の修理連鎖が 2 周以上発生するのを同一 repo で観測した時
+- 常設 1 系統の下でレビュー起点の修理連鎖が発振（修理が次のレビュー対象になる連鎖が
+  収束しない）するのを観測した時 — 1 往復規律（Decision 4、2026-08-27 撤回）を入れ直す
 - 脅威面に触れる diff の実害を Code Review + 条件付き Security Review が見逃した 1 回目
 - エラー握り潰し型（catch / fallback の silent failure）の実害を観測した 1 回目 —
   専任軸の復活を再訪する
@@ -115,6 +122,12 @@ commit body を task-triage の定期 tick で sweep し、producer 再照合が
 密度は維持しつつ、行数/機能・セッション数/機能の比率ダイヤル等の監視計器やブレーキ機構を
 新設する案。却下: 計器・ブレーキ自体が機構の追加であり、CA が計器づくりで膨れた経緯
 （CA ADR-0095）と自己矛盾する。削減だけが機構総量を減らせる唯一の手である。
+
+> **注記（2026-08-28, ADR-0056）**: 本却下を狭める（partial、Status は変えない）。
+> 却下の対象は review chain への自作計器・ブレーキの新設であり、既存 verify ゲート内で
+> 既製 lint の予算系 rule を select することは「機構の新設」に含めない——新 hook・新
+> script・新セッション・自作計器のいずれも増えず、増えるのは既存 config の行だけである。
+> 詳細は [ADR-0056](./0056-budget-lints-as-verify-bootstrap-annotation.md)。
 
 ### security-reviewer の統合（/code-review の prompt 1 行への折り込み）
 
@@ -138,6 +151,11 @@ security-reviewer も畳み、脅威面検査を `/code-review` の prompt 1 行
 
 - 発振（レビュー→修理→再レビュー）が 1 往復規律と再レビュー禁止で構造的に切れる
 - レビューのセッション・トークン消費が大幅に減る（6 系統 × 往復 → 1〜2 系統 × 1 往復）
+
+> **注記（2026-08-28）**: 上 2 点の「1 往復規律」への依拠は Decision 4 の 2026-08-27 撤回
+> により失効。発振の遮断は系統数の削減（6 系統 → 常設 1 系統 + effort medium +
+> correctness-only）が担い、往復は制限しない。消費の見積りは「1〜2 系統 × 自然な往復」に
+> 読み替える。
 - diff 外起票の補充エンジンが止まり、台帳が収束方向になる
 - 公式推奨と同型になり、外部の読者・ツールが chain を既知パターンとして読める
 

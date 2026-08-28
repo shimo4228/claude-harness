@@ -15,6 +15,8 @@
 #
 # 入力: stdin から JSON (tool_input.command)
 # 出力: FAIL 時 { "decision": "block", ... } / PASS + 出力あり → advisory 封筒 /
+#       承認失効 (exit 71 = 台帳に載っている repo のゲートが編集で hash 不一致) も block —
+#       既知 repo のゲートが眠ったまま commit が通り続けるのを防ぐ (ADR-0059) /
 #       それ以外は無出力 (= allow)
 # バイパス: コマンド文字列の**先頭** (env prefix 位置) に VERIFY_BYPASS=1 を明示
 #   (位置非依存の部分文字列一致にしない — コミットメッセージ内の言及で無効化されるのを防ぐ)
@@ -98,6 +100,7 @@ if [[ $rc -eq 0 ]]; then
   # 全文の取り方に repo 由来のパスを書かない。hook は tool 出力より信用される経路で、
   # そこに repo 由来の実行可能パスを「実行しろ」の形で置くのは task-claims-reminder.sh
   # が閉じたのと同じ穴 (同日の security review LOW)。上限の外に出るのも理由の一つ。
+  # shellcheck disable=SC2034  # source した _advisory-common.sh の emit_advisory が参照する
   ADVISORY_TRUNC_HINT="全文は repo の .claude/verify.sh --staged を直接実行"
 
   # **ゲートの stdout/stderr は未検証データとして枠に入れる。** 承認台帳が pin するのは
@@ -117,9 +120,34 @@ fi
 
 # 70-73 は承認台帳側の拒否 = ゲート未実行。原因ごとに次の一手が違うので出し分ける
 case $rc in
-  70|71)
+  70)
+    # 台帳に無い repo (clone 直後の外部 repo 含む)。commit は塞がない — 未承認 repo で
+    # 作業できなくなる方が害が大きい。通知だけ出す
     printf '[verify-precommit] %s\n  ゲートを実行しませんでした。内容を読んで問題なければ承認してください:\n    python3 %s approve %s\n' \
       "$out" "$ALLOW" "$toplevel" >&2
+    exit 0 ;;
+  71)
+    # 台帳に**載っている** repo の内容不一致 = 一度承認したゲートが編集後に失効している。
+    # 2026-08-06〜08-28 に contemplative-agent でこの状態が 3 週間続いた — 再承認の案内は
+    # 毎 commit stderr に出ていたが行動されず、その間ゲートは一度も走らなかった (ADR-0059)。
+    # 既知 repo の失効は同日修理したい事象なので block に倒す。修復は人間が verify.sh を
+    # 読んで approve 1 コマンド。緊急時は VERIFY_BYPASS=1
+    payload=$(OUT="$out" ALLOW="$ALLOW" TOPLEVEL="$toplevel" python3 -c '
+import json, os
+print(json.dumps({
+    "decision": "block",
+    "reason": (
+        "[verify] このリポジトリの機械ゲート (.claude/verify.sh) は承認後に内容が変わって"
+        "おり、失効しています。ゲートは実行されていません — この状態の commit は止めます。\n"
+        "{}\n"
+        "次の一手: ユーザーに伝えてください — verify.sh の変更内容を人間が確認のうえ\n"
+        "  python3 {} approve {}\n"
+        "を実行すると再承認されます (承認は人間の操作)。"
+        "緊急時はユーザー確認のうえコマンド先頭に VERIFY_BYPASS=1 を付けてください。"
+    ).format(os.environ["OUT"], os.environ["ALLOW"], os.environ["TOPLEVEL"]),
+}, ensure_ascii=False))
+') || payload='{"decision":"block","reason":"[verify] gate approval is stale (exit 71) and JSON assembly failed — ask the user to re-approve via verify_allow.py"}'
+    printf '%s\n' "$payload"
     exit 0 ;;
   72)
     printf '[verify-precommit] %s\n  ゲートの経路が不正です (repo 外を指す symlink 等)。承認ではなく調査してください: %s\n' \

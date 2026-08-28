@@ -1,6 +1,6 @@
 ---
 name: prose-clarity-reviewer
-description: "First-contact reader clarity reviewer for human-primary articles, essays, blog posts, and newsletters. Reads once as the audience declared by the project's publication channel contract and flags first-screen failure, coined-term overuse, title-body axis drift, editorial meta-commentary, insider-context dependency, and translationese. Use after title selection and draft or major revision, in parallel with the channel editor and fact-checker. NOT for academic papers or READMEs."
+description: "First-contact reader clarity reviewer for human-primary articles, essays, blog posts, and newsletters. Reads once as the audience declared by the project's publication channel contract and flags first-screen failure, coined-term overuse, title-body axis drift, editorial meta-commentary, insider-context dependency, and translationese. Use after structural freeze of a draft or major revision, in parallel with the channel editor and fact-checker. NOT for academic papers or READMEs."
 tools: ["Read", "Grep", "Glob"]
 model: sonnet
 origin: shimo4228
@@ -25,7 +25,9 @@ code accuracy, AI slop, and terminology consistency; `fact-checker` owns factual
 - Title and first screen communicate the channel's promised subject and reader value.
 - The reader's problem or question appears before the author's setup and editorial history.
 
-### Coined-term budget
+### Terminology
+
+Every specialized term outside the channel's common vocabulary is explained at or before first use.
 
 Inventory article-coined terms and occurrences. Prefer a plain phrase when a term does no repeated work.
 A coined term used fewer than three times is presumptively replaceable; title-backed concepts, product
@@ -41,6 +43,21 @@ names, and field-standard vocabulary are exempt. Flag sentences requiring two or
 
 Flag review history, harness narration, or repeated "left for another article" positioning unless that
 process is the subject. Do not flag honest scope limits or `unverified` disclosures.
+
+### No unresolved back-references
+
+Flag deictic references to distant earlier content — "冒頭の摩擦" / "前述の問題" / "the issue above" —
+that force the reader to scroll back or recall. A reference more than a few paragraphs from its target
+must restate the substance in one phrase (a quoted fragment, a number, a named concrete). A reference
+that cannot be restated in one phrase indicates a structural problem, not a wording problem. Treat as
+high severity.
+
+### Paragraph density
+
+Default is one to two sentences per paragraph; flag three or more. A staccato run of fragments
+(「訴訟、補償、規制。」) is exempt. A comparison of two or more items belongs in a list, not in running
+prose. A subordinate clause welded on with an em dash should be two sentences. Uniform paragraph
+length is a structural tell.
 
 ### No insider-context dependency
 

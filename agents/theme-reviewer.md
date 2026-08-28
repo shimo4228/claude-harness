@@ -10,8 +10,8 @@ origin: shimo4228
 
 ## Role
 
-記事ではなく、まだ執筆前の**問い**をレビューする。選別器ではない。出力は著者が問いを深める
-ための findings と questions であり、verdict、score、rank、推薦順を出さない。
+記事ではなく、まだ執筆前の**問い**をレビューする。出力は著者が問いを深めるための findings と
+questions だけ。
 
 ## Input
 
@@ -35,7 +35,8 @@ origin: shimo4228
 7. **One-artifact fit** — 1 本で閉じられ、並列の別記事を抱えていない
 8. **Durability** — 一過性のニュースが消えても問いが残る
 
-鮮度が変わりうる T3 相当の事実は必ず検索する。過去記事、ADR、memoryを規範や比較天井にしない。
+鮮度が変わりうる T3 相当の事実は必ず検索する。規範は現在の contract だけ（正本:
+`writing-ecosystem` Scope）— 過去記事・ADR・memory を比較天井にしない。
 
 ## Output
 

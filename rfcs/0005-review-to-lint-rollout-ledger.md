@@ -20,7 +20,7 @@ skill 新設時の適用候補リスト（SKILL.md 末尾、citation-formatter �
 |---|---|---|---|
 | 1 | context-sync — チェックリスト 20 項目中 15 が deterministic、実行コマンド既載で抽出コスト最小 | **RFC-0006** | 確定 |
 | 2 | paper 系の束 — citation-formatter ほぼ丸ごと（約 16 項目中 14）+ paper-ecosystem / paper-writing の deposit gate（orphan 双方向 mapping・脚注 1:1・style 混在・DOI/arXiv 形式）+ vocabulary-consistency-checker の term inventory 層 + paper-reviewer 構造項目 | 保留 | 次の paper 作業開始時。WebFetch 実在確認は `--online` flag に隔離し evidence モードは offline 完結（方針のみ先に固定） |
-| 3 | writing-ecosystem 系の束 — editor / essay-reviewer / prose-clarity-reviewer / clarity-reviewer + quality-gate + collect-context + x-draft。readme_evidence.py の骨格（term_candidates / insider_refs / prose_signals）流用可 | 保留 | writing-ecosystem の設計安定後（著者判断 2026-08-26: 流動中の正本への接木は drift 負債） |
+| 3 | writing-ecosystem 系の束 — editor / essay-reviewer / prose-clarity-reviewer / clarity-reviewer + quality-gate + collect-context + x-draft。readme_evidence.py の骨格（term_candidates / insider_refs / prose_signals）流用可 | 保留（global 側のみ） | writing-ecosystem の設計安定後（著者判断 2026-08-26: 流動中の正本への接木は drift 負債）。**2026-08-27 注記**: zenn-content の project-local な Zenn 層は先行実施済み（`scripts/zenn_evidence.py`、zenn-content ADR-0012）。channel contract 固有で cross-repo 性が無く、流動中の global 正本に触れないため保留の射程外。global 側を実施するとき fence 除外パーサ・register カウント・self-link 位置の重複を引き直す |
 | 4 | agent-stocktake — harness_lint 未カバー分: name=stem・tools 実在・description 近似重複・suppression 文言の regex 列挙（hybrid の教科書例） | **RFC-0007** | 確定 |
 | 5 | config-gc — 8 チャンネルを 1 scan script に束ねる（orphan hook / permission 重複 / cache は script 済み） | 保留 | 次の月次 GC 前 |
 | 6 | URL liveness 共通部品 — skill-stocktake / context-sync / paper-ecosystem の 3 箇所が要求、既存 script のどれも持たない | **RFC-0008** | 確定（#1/#7 の依存） |

@@ -79,7 +79,7 @@ You are **strict** — not to be harsh, but to push for sharp claims, explicit t
 - [ ] Hedge density appropriate (some hedging is academic; stacked hedges weaken)
 
 **Common issues to flag:**
-- AI slop patterns (re-list from `paper-ecosystem` skill's Banned Patterns)
+- AI slop patterns (canon: `writing-ecosystem` の AI Slop + `references/style-diagnostics.md`; do not re-list)
 - Over-hedging that erodes any claim ("It might possibly be the case that perhaps...")
 - Under-hedging in places that warrant qualification ("This proves X" when evidence is partial)
 
