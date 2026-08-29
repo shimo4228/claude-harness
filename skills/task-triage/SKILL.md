@@ -253,10 +253,17 @@ cycle: `task-stocktake` (ledger hygiene) first when it is due, then this skill.
 | slow (a harness, a small table) | weekly | weekly, same day, before triage |
 | fast (a research repo with a review chain feeding it) | twice a week — e.g. mid-week + the day of its weekly gate | weekly |
 
-The timer is launchd (`scripts/triage-tick.sh`, see above): harness Sat 08:03 (stocktake →
+The timer is launchd (`scripts/triage-tick.sh`, see above): harness Sun 06:30 (stocktake →
 triage); CA Wed 17:07 (triage) and Sat 14:07 (stocktake → triage, after the Saturday
-pipeline's 13:30 packet deadline and before the human gate). The tick decides "stocktake
-due" by weekday (Saturday) so each repo keeps one plist. Do not use in-session `CronCreate`
+pipeline's 13:30 packet deadline and before the human gate). The tick's *default* for
+"stocktake due" is the weekday (Saturday) so a repo with two slots keeps one plist — but a
+repo with a single weekly slot must pass `--stocktake` in its plist, or moving that slot off
+Saturday silently kills the stocktake half (harness hit exactly this when it moved off
+Saturday 2026-08-29; the flag is now explicit in its plist).
+
+The plists live in `scripts/launchd/` and are copied to `~/Library/LaunchAgents/`; after
+editing one, `launchctl bootout` + `bootstrap` it and confirm with `launchctl print` — an
+edited file that was never reloaded keeps firing on the old schedule. Do not use in-session `CronCreate`
 or `/loop` for this — session-only, 7-day expiry, and silent when the session dies. A cycle
 that fires while the human is away still does everything up to the digest — 条件 checks,
 vocabulary-only bookkeeping, dispatch of `accepted` work within WIP, verification of finished

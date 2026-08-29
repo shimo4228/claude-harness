@@ -1,6 +1,6 @@
 ---
 name: collect-context
-description: "記事・エッセイを書く前の素材収集。セッション内外のコンテキストを集め、全項目ソース付きの証拠台帳（evidence dossier）— Claims Register・一次/⚠未検証の tier・セッションログ索引 — を生成する。Use when — 「素材を集めて」「証拠台帳を作って」「この作業の記事コンテキストをまとめて」、執筆に着手する前、fact-checker に渡す主張リストが要るとき。NOT for — 過去ログから記事の問いを発見（→ session-theme-mining）、テーマ・構成・タイトル等の編集判断（受け側 repo の責務。正本は受け側 repo の rules のチャンネル表、global 側は writing-ecosystem）、事実の検証そのもの（→ fact-checker agent）。収集者は推薦・提案・方向性メモを出力に書かない"
+description: "記事・エッセイを書く前の素材収集。セッション内外のコンテキストを集め、全項目ソース付きの証拠台帳（evidence dossier）— Claims Register・一次/⚠未検証の tier・セッションログ索引 — を生成する。Use when — 「素材を集めて」「証拠台帳を作って」「この作業の記事コンテキストをまとめて」、執筆に着手する前、fact-checker に渡す主張リストが要るとき。NOT for — 過去ログから記事の問いを発見（→ session-theme-mining）、テーマ・構成・タイトル等の編集判断（受け側 repo の責務。正本は受け側 repo の rules のチャンネル表、執筆 orchestrator は writing-ecosystem — zenn-content 常駐）、事実の検証そのもの（→ fact-checker agent）。収集者は推薦・提案・方向性メモを出力に書かない"
 user-invocable: true
 origin: shimo4228
 ---
@@ -14,7 +14,8 @@ origin: shimo4228
 
 **collect-context は証拠を集めるだけ。** テーマ・方向性・タイトル・構成・読者想定・
 差別化戦略は決めない。誰が正本かは**受け側 repo の rules のチャンネル表**を引く
-（global 側は `writing-ecosystem`）。特定 project の skill 名をここに列挙しない。
+（執筆 orchestrator は `writing-ecosystem` — `~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）。
+特定 project の skill 名をここに列挙しない。
 
 - 出力に**収集者の推薦・提案・方向性メモを書かない**
 - **受け側 repo の既存記事を探索・目録化しない**
@@ -80,8 +81,8 @@ Claude / Codex JSONL の本文抽出は、形式差分と redaction の正本で
 `session-theme-mining` helper だけを使う。
 
 ```bash
-uv run --directory ~/.claude/skills/session-theme-mining \
-  python ~/.claude/skills/session-theme-mining/scripts/session_catalog.py \
+uv run --directory ~/MyAI_Lab/zenn-content/.claude/skills/session-theme-mining \
+  python ~/MyAI_Lab/zenn-content/.claude/skills/session-theme-mining/scripts/session_catalog.py \
   trace <raw-path> [<raw-path> ...]
 ```
 
@@ -176,7 +177,7 @@ grep -rli "<スコープのキーワード>" .notes/ 2>/dev/null | head -10
 
 ## Claims Register（fact-checker 直行表）
 
-記事に使える検証可能クレームの一覧。fact-checker はこの表から検証を開始する。
+記事に使える検証可能クレームの一覧。fact-checker agent（`~/MyAI_Lab/zenn-content` 常駐）はこの表から検証を開始する。
 
 | # | クレーム | tier | 一次ソース | 検証方法 |
 |---|---------|------|-----------|---------|

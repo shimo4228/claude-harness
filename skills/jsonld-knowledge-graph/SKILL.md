@@ -383,7 +383,7 @@ schema に version / count / churning field を持たせていない限り、こ
 - llms.txt / llms-full.txt の文章設計 — use `llms-txt-writer`
 - Project doc role の overlap 検出 / 整理 — use `context-sync`
 - CODEMAPS の生成 / 更新 — use `update-codemaps`
-- Articles / blog post の文体 設計 — use `writing-ecosystem`
+- Articles / blog post の文体 設計 — use `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）
 
 ## Related
 

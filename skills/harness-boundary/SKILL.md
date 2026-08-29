@@ -3,6 +3,7 @@ name: harness-boundary
 description: "agent 環境に mechanism（rule / skill / hook / agent / workflow / runtime 拡張 / prompt chain）を追加・変更・レビューするとき、それが 6 層（model capability / skill = 手続き記憶 / values・policy / eval / data・memory / runtime）のどこに属するか、なぜモデル自身に任せられないか、次のモデル世代で不要になるか、runtime を Claude Code → Pi → Codex と交換しても残す価値があるかを問い、Keep / Move / Simplify / Make temporary / Delete / Defer を返す設計レンズ。Use when — 「これはハーネスに入れるべきか」「どの層に置くか」「モデルに任せられないか」「runtime 変えても残るか」「harness が肥大している」「この hook / rule / workflow を足していい？」, when implementation-chain の Plan で harness 自体（~/.claude の rules / skills / hooks / agents / settings）を変更する task と判定されたとき, or /harness-boundary. Delete / Simplify は成功として扱う。NOT for — 未構築物の build-or-not 単体（→ agent architect）、設置済み資産の定期監査と Retire / Dissolve の verdict（→ rules-stocktake / skill-stocktake / agent-stocktake。本 skill は証拠を渡すだけ）、世代交代時の一括照合（→ generation-audit）、loop 構造の妥当性（→ loop-design-check）、harness の作り方の処方（→ agent-harness-construction）。"
 user-invocable: true
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # harness-boundary — harness を捨てても残るものだけを資産にする設計レンズ

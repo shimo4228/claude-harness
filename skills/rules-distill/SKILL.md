@@ -4,6 +4,7 @@ description: Scan installed skills to extract principles that belong in the alwa
 license: MIT
 user-invocable: true
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # rules-distill — promote environment-specific facts to rules

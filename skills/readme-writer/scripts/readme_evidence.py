@@ -87,7 +87,8 @@ _STADIUM_RE = re.compile(
 _DEGREE_ADVERB_JA_RE = re.compile(
     r"とても|非常に|かなり|しっかり|すごく|本当に|極めて|めちゃくちゃ"
 )
-# Small slop vocabulary. The canonical banned list lives in writing-ecosystem;
+# Small slop vocabulary. The canonical banned list lives in writing-ecosystem
+# (resident in ~/MyAI_Lab/zenn-content/.claude/skills/ since 2026-08-29);
 # this copy is deliberately short (same choice zenn-content made) and only
 # produces evidence lines — the judge decides whether a hit matters.
 _SLOP_EN = (
@@ -328,7 +329,7 @@ def structure(
             jumps.append({"line": h.line, "from": prev, "to": h.level, "text": h.text})
         prev = h.level
     broken = []
-    for href, line in [(l.href, l.line) for l in links] + [(i.src, i.line) for i in images]:
+    for href, line in [(ln.href, ln.line) for ln in links] + [(i.src, i.line) for i in images]:
         if _is_external(href):
             continue
         target = unquote(href.split("#", 1)[0].split("?", 1)[0].strip())

@@ -105,6 +105,14 @@ def is_internal_host(url: str) -> bool:
     except (socket.gaierror, UnicodeError, ValueError):
         return False
     for raw in addresses:
+        # typeshed types sockaddr[0] as `str | int` (AF_* families other than INET/INET6
+        # put an int there), so the scope-id strip is only meaningful for a str.
+        # `continue`, never `return`: this loop must see **every** address before it can
+        # say "not internal", and `addresses` is a set, so returning early on one
+        # unvettable entry can skip the 127.0.0.1 that follows it — the exact fetch this
+        # function exists to block. Same reason the `except ValueError` below continues.
+        if not isinstance(raw, str):
+            continue
         try:
             address = ipaddress.ip_address(raw.split("%", 1)[0])
         except ValueError:

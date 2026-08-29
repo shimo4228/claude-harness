@@ -348,6 +348,47 @@ curl -s https://zenodo.org/api/records/<any_version_id> \
 
 **移行 (既存 repo で badge が version DOI のまま残っている場合)**: 新規 release 時に concept DOI へ差し替える。過去 commit log や tag history に version DOI 形式の badge が残っていても問題ない (HTML/SVG snapshot として保存されるため citation は破壊されない)。
 
+### Published record の metadata edit (retrofit — release を待たない例外経路)
+
+**正常系は release 同梱** (`.zenodo.json` を直して次の release に載せる)。この節は
+`authorship-strategy` ADR-0002 が定める retrofit — 相互宣言の欠落を見つけた、
+新しい sibling を足した、といった場面で **release cadence を待たずに published record の
+metadata だけを直す**ときの手順。新しい version は増えない。
+
+対話セッションでのみ実行する。外部 platform への書き込みなので無人 cron に載せない。
+
+```bash
+# 1. 現 metadata 取得
+curl -s -H "Authorization: Bearer $ZENODO_TOKEN" \
+  https://zenodo.org/api/deposit/depositions/<id>
+# 2. published record を unlock (draft が生える)
+curl -s -X POST -H "Authorization: Bearer $ZENODO_TOKEN" \
+  https://zenodo.org/api/deposit/depositions/<id>/actions/edit
+# 3. metadata 全置換 (related_identifiers は取得した現物に merge してから PUT)
+curl -s -X PUT -H "Authorization: Bearer $ZENODO_TOKEN" -H "Content-Type: application/json" \
+  https://zenodo.org/api/deposit/depositions/<id> -d @metadata.json
+# 4. 再公開
+curl -s -X POST -H "Authorization: Bearer $ZENODO_TOKEN" \
+  https://zenodo.org/api/deposit/depositions/<id>/actions/publish
+# PUT に失敗したら draft を捨てる (放置すると次の edit が詰まる)
+curl -s -X POST -H "Authorization: Bearer $ZENODO_TOKEN" \
+  https://zenodo.org/api/deposit/depositions/<id>/actions/discard
+```
+
+罠 (2026-08-25 に 6 record で実測):
+
+- **PUT は全置換**。取得した metadata に差分を merge してから投げる。部分更新ではない
+- **dedup は (relation, identifier) の組で照合**してから merge する
+- **concept DOI から latest version の解決**は `GET /api/records/<concept_id>` が
+  redirect するので追随が要る
+- **伝播確認**: publish 後数十秒で DataCite の `relatedIdentifiers` に反映される。
+  concept record 側の metadata も latest version に追随する
+- **rate limit**: 逐次実行 + sleep。連発したら transient error でなく policy signal と扱って
+  止める (`rules/common/debugging.md`)
+
+script 化はしない判断 (2026-08-29、RFC-0004)。頻度が年数回で、常設の書き込み道具は
+「registry を気軽に触る」誘因になり ADR-0002 の主従 (release 同梱が正常系) を逆転させる。
+
 ## Early stop conditions
 
 - **Pre-flight で Zenodo webhook 未登録** → user に opt-in 依頼で停止 (上の "Zenodo opt-in" 参照)。新規 DOI repo の最初の release で頻発する漏れ

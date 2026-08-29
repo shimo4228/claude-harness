@@ -1,5 +1,5 @@
 ---
-state: draft 2026-08-25
+state: withdrawn 2026-08-29
 review-when: tdd skill が退役した時、または substrate が fix 中の test 改変防止を native に持った時
 ---
 
@@ -57,8 +57,8 @@ fix chain 中（判定方法は要設計 — Unresolved）、`tests/` 配下へ�
 
 draft — 観測待ちの提案（2026-08-25 起票）。建てない状態が既定。
 
+**triage 照合 2026-08-29**: GREEN 偽装の観測は依然 0 件。加えて本エントリは skill `task-stocktake` が名指す signal-first 型（「実害が起きたら考える」）に該当する — 同 skill は「発生すれば自然に再発見されるものは将来の自分への予告として保持しない → `withdrawn` にして起票し直す方が安い」と規定する。照合先「fix chain の実装 diff で テストを弱めた事例」は誰かが気づかない限り発火せず、機械照合できない。→ **`withdrawn`**（再発時に再起票）。オーナー確認済み 2026-08-29。
+
 ## Next action
 
-- 再開条件: test 改変による GREEN 偽装を 1 回でも観測する
-- 照合先: fix chain の実装 diff（tests/ への編集がテストを弱めた事例）
-- 成立時: accepted（設計は Reference-level explanation の方針で）
+無し。GREEN 偽装を実際に観測したら、本エントリを参照して新規起票する（本文の Reference-level explanation と Drawbacks はそのまま設計の出発点として使える）。

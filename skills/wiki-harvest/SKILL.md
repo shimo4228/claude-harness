@@ -3,6 +3,7 @@ name: wiki-harvest
 description: 研究 repo セッションから LLM wiki (Obsidian Vault wiki/concept/) を read-only で走査し、その repo の主担当 concept ページから「repo の次アクションを変えうる候補」だけを抽出して、一次出典付き・landing slot マップ付きのランク付き候補台帳 (ledger) を repo の .notes/ に生成する。Use when the user invokes /wiki-harvest, asks「wiki から repo に還元して」「wiki の有益分を AKC/AAP/CA/authorship に持ってきて」, or when closing the daily-research→wiki→repo loop. wiki への書き込みは行わない（それは vault セッションの /ingest）。chat 上の自由質問は wiki-query。
 user-invocable: true
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # wiki-harvest — LLM wiki から研究 repo への還元
@@ -128,7 +129,7 @@ triage しない（＝ ①② を全部 ADR 候補として起こす）と、`de
 4. ranking: signal の強さ（repo アクションへの影響度）で `high` / `med` / `low`。
 5. **task 台帳との関係**: この ledger は**候補台帳**であってタスク台帳ではない（rule `common/task-tracking.md` の単一台帳の対象外 — 採否判断前の候補はタスクでない）。候補が `promoted` になり、昇格作業がそのセッション内で完結しない場合は、repo の task 台帳に 1 行立てて引き継ぐ。
 
-完了後、生成した候補の要約（件数・**response-type 別内訳**・high rank の見出し）を chat に返す。**ADR/graph への昇格も prototype の着手も提案に留め、自動で書かない・自動で実装しない**。承認されたら `framing` は `adr-writer`、`prototype` は計器/spike の実行（read-only 計器が第一手）、③④ は `citation-sync` / `jsonld-knowledge-graph` に人間が手動で引き継ぐ。
+完了後、生成した候補の要約（件数・**response-type 別内訳**・high rank の見出し）を chat に返す。**ADR/graph への昇格も prototype の着手も提案に留め、自動で書かない・自動で実装しない**。承認されたら `framing` は `adr-writer`、`prototype` は計器/spike の実行（read-only 計器が第一手）、③④ は `citation-sync`（`~/MyAI_Lab/paper-lab` 常駐、2026-08-29 移設） / `jsonld-knowledge-graph` に人間が手動で引き継ぐ。
 
 ### Step 6 — 採用ゲート（load-bearing 前の一次照合 / fact-check）
 
@@ -137,8 +138,8 @@ triage しない（＝ ①② を全部 ADR 候補として起こす）と、`de
 citation を durable artifact に deposit する）**の前に、元の一次文献に対して主張を fact-check する**。抽出段（Step 4）は
 一次 ID を*見つける*だけ。この Step 6 はその一次が digest の言う通りの内容かを*確認*する — 別工程。
 
-- **機構・手法の主張**（「論文 X はこういう仕組み」）→ **`fact-checker` agent** に一次（arXiv/DOI）照合を依頼。
-- **数値・実証・access-blocked な一次** → **`cited-source-mirror-verification` skill**（③ citation は従来どおりこれ）。
+- **機構・手法の主張**（「論文 X はこういう仕組み」）→ **`fact-checker` agent**（`~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）に一次（arXiv/DOI）照合を依頼。
+- **数値・実証・access-blocked な一次** → **`cited-source-mirror-verification` skill**（③ citation は従来どおりこれ。`~/MyAI_Lab/paper-lab` 常駐、2026-08-29 移設）。
 - **一次が到達不能**なら claim は `UNVERIFIABLE` のまま。採用するなら durable artifact に「**未照合の前提**」と明記するか、`defer`。
 
 **なぜ（この Step が防ぐ具体的失敗）**: digest は論文の手法を reframe しうる。prototype を「論文 X は Surprise×Utility

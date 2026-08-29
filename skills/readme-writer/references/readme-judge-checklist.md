@@ -41,7 +41,7 @@
 | R5 | 能動態が主か（受動態の連鎖で主体が消えていないか） |
 | R6 | 抽象形容詞（powerful / robust / 画期的）でなく具体像で語っているか |
 | R7 | 各段落・各 bullet について「読者のどの問いに答えるか」が 1 行で言えるか。言えない段落は削除候補として名指す |
-| R8 | 企業メモ調・AI slop（正本は writing-ecosystem）・em-dash 連打・予告つき triad になっていないか |
+| R8 | 企業メモ調・AI slop（正本は writing-ecosystem — zenn-content 常駐）・em-dash 連打・予告つき triad になっていないか |
 | R9 | 主張を言い切っているか（ヘッジの積み重ねで何も言っていない文がないか） |
 
 ### R-C 文脈予算（継ぎ足しで育った README の病因。この節が README 版の独自コア）

@@ -18,7 +18,7 @@ You are **辛口 (strict/critical)** — not to be harsh, but to push for excell
 
 **Boundary with `readme-judge`（改稿ループの判定器）:** `readme-judge` is the only agent that emits a verdict (Publishable / Fix / Rewrite); it owns first-screen density, paragraph-level density, context budget (coined terms / ADR-as-explanation / internal history) and accretion detection. This agent is a **panel** reviewer: it emits findings on floor recovery, structure, length discipline and visuals, and its Overall Assessment is consumed only for verdict-level disagreement routing (judge Publishable vs. this agent MAJOR ISSUES → human).
 
-**Important:** This agent reviews READMEs and repo top pages only. For tech articles use the `editor` agent. For idea/opinion essays use the `essay-reviewer` agent. For AI-only docs (llms.txt / llms-full.txt) use the `llms-txt-writer` skill.
+**Important:** This agent reviews READMEs and repo top pages only. For tech articles use the `editor` agent. For idea/opinion essays use the `essay-reviewer` agent (both resident in `~/MyAI_Lab/zenn-content/.claude/agents/` since 2026-08-29). For AI-only docs (llms.txt / llms-full.txt) use the `llms-txt-writer` skill.
 
 **Boundary with `readme-clarity-reviewer` (designed for parallel execution):** this agent checks the **artifact** — floor recovery, structure, length, visuals. `readme-clarity-reviewer` checks the **first-contact reader's experience** — coined-term budget, insider-context dependency, Japanese register (ですます), one-sentence tests. Run both in parallel; do not fold reader-experience findings into this agent's scope.
 
@@ -175,8 +175,8 @@ The floor is a *small* non-negotiable core — everything else must earn its pla
 
 - `readme-writer` skill — 執筆原則の正本（フロア / two-sided rule / Visual-first / Length budget / Voice-Register）と `scripts/readme_evidence.py`（証拠 JSON）。本 agent はその panel 段
 - `readme-clarity-reviewer` agent — 並列相方（初見読者の読書体験・造語予算・日本語 register）
-- `editor` agent — 実用チャンネルのレビュー
-- `essay-reviewer` agent — エッセイチャンネルのレビュー
+- `editor` agent — 実用チャンネルのレビュー（`~/MyAI_Lab/zenn-content` 常駐）
+- `essay-reviewer` agent — エッセイチャンネルのレビュー（同）
 - `context-sync` skill — README ↔ 機械層（llms.txt / graph.jsonld）の fact 一致検証
 - `codex-review` skill — 公開前の高 stakes README への cross-model 並列レビュー（prompt-driven）
 

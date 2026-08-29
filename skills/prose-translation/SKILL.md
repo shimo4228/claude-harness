@@ -159,7 +159,7 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 
 ## Related
 
-- `writing-ecosystem` skill — shared AI-slop / Title / 出典編入の正本（本 skill が defer する先）
-- `essay-reviewer` / `editor` agent — 翻訳後の EN review
-- `citation-formatter` agent — 学術 citation の format 検証（本 skill の対象外）
+- `writing-ecosystem` skill — shared AI-slop / Title / 出典編入の正本（本 skill が defer する先。`~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）
+- `essay-reviewer` / `editor` agent — 翻訳後の EN review（`~/MyAI_Lab/zenn-content/.claude/agents/` 常駐）
+- `citation-formatter` agent — 学術 citation の format 検証（本 skill の対象外。`~/MyAI_Lab/paper-lab` 常駐、2026-08-29 移設）
 - `llms-txt-writer` skill — AI 向け doc（本 skill の対象外）

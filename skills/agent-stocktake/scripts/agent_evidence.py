@@ -32,6 +32,7 @@ import argparse
 import json
 import re
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 # ---------------------------------------------------------------- tool registry
@@ -345,7 +346,7 @@ def classify_tool(
     return {"name": name, "status": "builtin" if name in known_tools else "unverified"}
 
 
-def scan_suppression(body_lines: list[str], first_line: int = 1) -> list[dict]:
+def scan_suppression(body_lines: Sequence[str], first_line: int = 1) -> list[dict]:
     """Line-numbered suppression *candidates* — the judgment is the reader's."""
     hits: list[dict] = []
     for offset, line in enumerate(body_lines):

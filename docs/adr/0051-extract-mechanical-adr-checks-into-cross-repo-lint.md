@@ -49,6 +49,13 @@ repo ごとに異なる（Review-when vs References）ため、単純な固定�
 2. 実行座標は skill / agent のステップに置く — adr-writer skill の Step 4.5（書き時）と
    adr-reviewer agent の Step 0（レビュー時）。verify.sh やコミット hook への常時配線は
    行わない。
+
+   > **注記 2026-08-29（射程を狭める。partial、Status は変えない）**: この既定は「対象に
+   > 正本 writer skill が存在する」ことを暗黙の前提にしていた（adr-writer / readme-writer）。
+   > `hooks/*.sh` のような実行資産にはその skill が無く、「skill ステップ」という座標が
+   > そもそも存在しない。そのクラスでは `verify.sh` 側が既定になる。判定軸（課税率 ×
+   > 既製性）と例外の正本は skill `review-to-lint` §5 — ここには複製しない。
+   > 発見経路は RFC-0005 の履歴掘削（同 RFC #13〜#15）。
 3. 頻出指摘は `skills/adr-writer/references/review-findings.md` に日付・commit 参照
    つきの事例集として蒸留し、adr-writer skill Step 3 の予防チェック（packet 確定前の
    自己点検）に配線する。判定基準の正本は adr-reviewer に置いたまま — 事例集は基準の

@@ -3,6 +3,7 @@ name: session-judgment-mining
 description: 過去の Claude Code セッション群（~/.claude/projects/<project>/*.jsonl）を遡及的に一括発掘し、ユーザーが繰り返し下した判断・価値観を抽出して skill / rule に正本化するワークフロー。人間発話の抽出 jq パターン、既存資産（skills / rules / ADR / memory）とのカバレッジ照合による重複回避、価値観リファレンス（why）と判断ゲート（when/what）の二層設計判断、既存スキルとの矛盾解消（免除条項）と memory への昇格マークまでを扱う。Use when — 「過去セッションから私の判断・価値観をスキルにして」「セッション履歴を紐解いて規約化して」、同じ指摘・修正がセッションを跨いで繰り返されていると気づいたとき、memory の feedback が溜まって確率的リコール頼みになっているとき。NOT for — 過去ログから記事の問いを発見 → session-theme-mining、現行セッションからの単発パターン抽出 → learn-eval、skill 品質の監査 → skill-stocktake、既存 skill 群からの rule 蒸留 → rules-distill、会話ログの要約・議事録作成。
 user-invocable: true
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # session-judgment-mining — 過去セッション群からの判断・価値観の発掘とスキル化
@@ -111,7 +112,7 @@ jq -r '
 
 ## Related
 
-- `session-theme-mining` — 過去の Claude / Codex セッションから記事の問いを発見する。判断・価値観の正本化はしない
+- `session-theme-mining`（`~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）— 過去の Claude / Codex セッションから記事の問いを発見する。判断・価値観の正本化はしない
 - `learn-eval` — 現行セッションからの単発パターン抽出（本スキルの単セッション版・対）
 - `skill-stocktake` / `rules-distill` — 生成後のスキル監査・rule への蒸留
 - `skill-creator` — **書く前に必ず通す入口と草稿ゲート**（`rules/common/skills.md` の配線）。Step 5 以降の起草・境界引き・判定はそちらが持ち、本 skill は Step 1–4 の抽出と、Step 7 の ground truth 遡及テストを足す

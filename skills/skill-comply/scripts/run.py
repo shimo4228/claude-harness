@@ -373,7 +373,13 @@ def _positive_int(raw: str) -> int:
     return value
 
 
-def main() -> None:
+# `main` is the four numbered steps and nothing else. Each step below was a
+# paragraph inside it until the complexity budget landed (C901=15, ADR-0056);
+# they were already separated by the `[n/4]` comments, so the split follows the
+# seam the code drew for itself rather than inventing one.
+
+
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="skill-comply: Measure skill compliance rates",
     )
@@ -453,13 +459,10 @@ def main() -> None:
         ),
     )
 
-    args = parser.parse_args()
+    return parser
 
-    if not args.skill.exists():
-        print(f"Error: Skill file not found: {args.skill}", file=sys.stderr)
-        sys.exit(1)
 
-    target = classify_target(args.skill)
+def _announce_target(target, args: argparse.Namespace) -> None:
     if args.load_target_skill and args.allow_bash:
         progress(
             "[warn] --load-target-skill と --allow-bash の併用: 監査対象の本文が"
@@ -476,11 +479,8 @@ def main() -> None:
             "       skill ではないので Skill 呼び出しは期待しない（rule / agent 定義 / 素の .md）"
         )
 
-    results_dir = Path(__file__).parent.parent / "results"
-    results_dir.mkdir(exist_ok=True)
 
-    skill_name = args.skill.parent.name if args.skill.stem == "SKILL" else args.skill.stem
-
+def _resolve_spec(args: argparse.Namespace, results_dir: Path, skill_name: str) -> ComplianceSpec:
     # Step 1: Generate (or load) compliance spec
     if args.spec is not None:
         if not args.spec.exists():
@@ -496,6 +496,10 @@ def main() -> None:
         progress(f"       spec saved to {spec_path} (reuse with --spec)")
     progress(f"       {len(spec.steps)} steps extracted")
 
+    return spec
+
+
+def _warn_unreachable_detectors(spec: ComplianceSpec, args: argparse.Namespace) -> None:
     unreachable = unreachable_detector_tools(spec, allow_bash=args.allow_bash)
     if unreachable:
         detail = ", ".join(f"{tool} x{n}" for tool, n in sorted(unreachable.items()))
@@ -505,6 +509,103 @@ def main() -> None:
         )
         if "Bash" in unreachable:
             progress("       Bash が要るなら --allow-bash を明示する（既定 off は意図的な設計）")
+
+
+def _print_dry_run(spec: ComplianceSpec, scenarios: list[Scenario]) -> None:
+    """Print everything an attacker-influenced file could have put in the run.
+
+    SKILL.md tells the user to read the generated scenarios here before
+    measuring a document they do not trust. That is only true if every
+    attacker-controlled field is actually shown: `prompt` is what the unattended
+    child is told to do, `setup_commands` and `files:` are what touch the
+    filesystem. Printing the spec alone made the documented mitigation a promise
+    the output did not keep — and when `files:` was added, the same defect
+    recurred for the widest field of the three (arbitrary path plus arbitrary
+    content) until a reviewer caught it.
+    """
+    print("\n[dry-run] Spec and scenarios generated. Skipping execution.")
+    print(f"\nSpec: {spec.id} ({len(spec.steps)} steps)")
+    for step in spec.steps:
+        marker = "*" if step.required else " "
+        print(f"  [{marker}] {step.id}: {step.description}")
+    for s in scenarios:
+        print(f"\n--- {_safe_text(s.level_name)} (level {s.level}, sandbox id {s.id!r}) ---")
+        print(f"description: {_safe_text(s.description)}")
+        print("files:")
+        for rel, content in s.files or ():
+            body = content.encode()
+            print(f"  {rel!r} ({len(body)} bytes)")
+            for line in content.splitlines() or [""]:
+                print(f"    | {_safe_text(line)}")
+        if not s.files:
+            print("  (none)")
+        print("setup_commands:")
+        for cmd in s.setup_commands or ("(none)",):
+            print(f"  {cmd!r}")
+        print("prompt:")
+        # Split first, sanitize per line: `_safe_text` drops newlines along
+        # with every other non-printable, so sanitizing the whole prompt
+        # first would collapse a multi-line prompt into one long line —
+        # exactly the structure a reviewer needs to see.
+        for line in s.prompt.splitlines() or [""]:
+            print(f"  | {_safe_text(line)}")
+
+
+def _report_conditions(
+    target, args: argparse.Namespace, payload, scored: list, invalidated: list
+) -> dict:
+    invoked = sum(1 for o in scored if o.target_invocations[0] > 0)
+    tier = (
+        "n/a (not a project-scoped skill)"
+        if payload is None
+        else (
+            "tier 2 — full body (--load-target-skill)"
+            if args.load_target_skill
+            else "tier 1 — stub"
+        )
+    )
+    conditions = {
+        "Target kind": target.kind,
+        "Skill placed in sandbox": tier,
+        "Child tools denied": ", ".join(DENIED_TOOLS)
+        if not args.allow_bash
+        else ", ".join(t for t in DENIED_TOOLS if t != "Bash"),
+    }
+    if payload is not None:
+        # The tier-1 headline. The compliance percentage below it grades the
+        # spec's procedure steps, and in tier 1 the stub carries no procedure —
+        # so that percentage is not evidence about the skill. Say which number
+        # answers which question instead of letting one stand in for the other.
+        conditions["Target skill invoked"] = f"{invoked}/{len(scored)} scenarios"
+        if not args.load_target_skill:
+            conditions["Tier 1 caveat"] = (
+                "**下の Compliance は手順の遵守を測っており、tier 1 では本文を渡していないので "
+                "skill に帰属しない。tier 1 の測定結果は上の invoked 行**"
+            )
+    if invalidated:
+        conditions["Excluded (skill unresolved)"] = (
+            f"**{len(invalidated)} scenario(s) — 読み込めないまま走ったのでスコアから除外**"
+        )
+    return conditions
+
+
+def main() -> None:
+    args = _build_parser().parse_args()
+
+    if not args.skill.exists():
+        print(f"Error: Skill file not found: {args.skill}", file=sys.stderr)
+        sys.exit(1)
+
+    target = classify_target(args.skill)
+    _announce_target(target, args)
+
+    results_dir = Path(__file__).parent.parent / "results"
+    results_dir.mkdir(exist_ok=True)
+
+    skill_name = args.skill.parent.name if args.skill.stem == "SKILL" else args.skill.stem
+
+    spec = _resolve_spec(args, results_dir, skill_name)
+    _warn_unreachable_detectors(spec, args)
 
     # Step 2: Generate scenarios
     spec_yaml = yaml.dump(
@@ -526,40 +627,7 @@ def main() -> None:
         progress(f"       - {_safe_text(s.level_name)}: {_safe_text(s.description, 60)}")
 
     if args.dry_run:
-        # SKILL.md tells the user to read the generated scenarios here before
-        # measuring a document they do not trust. That is only true if every
-        # attacker-controlled field is actually shown: `prompt` is what the
-        # unattended child is told to do, `setup_commands` and `files:` are what
-        # touch the filesystem. Printing the spec alone made the documented
-        # mitigation a promise the output did not keep — and when `files:` was
-        # added, the same defect recurred for the widest field of the three
-        # (arbitrary path plus arbitrary content) until a reviewer caught it.
-        print("\n[dry-run] Spec and scenarios generated. Skipping execution.")
-        print(f"\nSpec: {spec.id} ({len(spec.steps)} steps)")
-        for step in spec.steps:
-            marker = "*" if step.required else " "
-            print(f"  [{marker}] {step.id}: {step.description}")
-        for s in scenarios:
-            print(f"\n--- {_safe_text(s.level_name)} (level {s.level}, sandbox id {s.id!r}) ---")
-            print(f"description: {_safe_text(s.description)}")
-            print("files:")
-            for rel, content in s.files or ():
-                body = content.encode()
-                print(f"  {rel!r} ({len(body)} bytes)")
-                for line in content.splitlines() or [""]:
-                    print(f"    | {_safe_text(line)}")
-            if not s.files:
-                print("  (none)")
-            print("setup_commands:")
-            for cmd in s.setup_commands or ("(none)",):
-                print(f"  {cmd!r}")
-            print("prompt:")
-            # Split first, sanitize per line: `_safe_text` drops newlines along
-            # with every other non-printable, so sanitizing the whole prompt
-            # first would collapse a multi-line prompt into one long line —
-            # exactly the structure a reviewer needs to see.
-            for line in s.prompt.splitlines() or [""]:
-                print(f"  | {_safe_text(line)}")
+        _print_dry_run(spec, scenarios)
         return
 
     # Step 3: Execute scenarios. `execute_scenarios` enforces sandbox uniqueness
@@ -618,38 +686,7 @@ def main() -> None:
     progress("[4/4] Generating report...")
 
     scored = [o for o in outcomes if o.result and o not in invalidated]
-    invoked = sum(1 for o in scored if o.target_invocations[0] > 0)
-    tier = (
-        "n/a (not a project-scoped skill)"
-        if payload is None
-        else (
-            "tier 2 — full body (--load-target-skill)"
-            if args.load_target_skill
-            else "tier 1 — stub"
-        )
-    )
-    conditions = {
-        "Target kind": target.kind,
-        "Skill placed in sandbox": tier,
-        "Child tools denied": ", ".join(DENIED_TOOLS)
-        if not args.allow_bash
-        else ", ".join(t for t in DENIED_TOOLS if t != "Bash"),
-    }
-    if payload is not None:
-        # The tier-1 headline. The compliance percentage below it grades the
-        # spec's procedure steps, and in tier 1 the stub carries no procedure —
-        # so that percentage is not evidence about the skill. Say which number
-        # answers which question instead of letting one stand in for the other.
-        conditions["Target skill invoked"] = f"{invoked}/{len(scored)} scenarios"
-        if not args.load_target_skill:
-            conditions["Tier 1 caveat"] = (
-                "**下の Compliance は手順の遵守を測っており、tier 1 では本文を渡していないので "
-                "skill に帰属しない。tier 1 の測定結果は上の invoked 行**"
-            )
-    if invalidated:
-        conditions["Excluded (skill unresolved)"] = (
-            f"**{len(invalidated)} scenario(s) — 読み込めないまま走ったのでスコアから除外**"
-        )
+    conditions = _report_conditions(target, args, payload, scored, invalidated)
     report = generate_report(
         args.skill,
         spec,

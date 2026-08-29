@@ -14,7 +14,13 @@ from pathlib import Path
 
 import pytest
 
+from scripts import context_checks as cc
 from scripts import context_evidence as ce
+
+# `ce` is the public surface (collect_evidence / gate_violations / the parsing
+# functions). `cc` is where the internals actually live after the 2026-08-28
+# file-LOC split (ADR-0056) — monkeypatching a re-exported alias on `ce` would
+# not reach the reference the checks resolve, so private symbols are patched here.
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "context_evidence.py"
 
@@ -149,7 +155,7 @@ def test_adr_index_check_delegates_to_adr_lint(repo: Path):
 
 
 def test_adr_index_check_skips_and_degrades_when_adr_lint_is_unavailable(repo: Path, monkeypatch):
-    monkeypatch.setattr(ce, "_load_adr_lint", lambda: (None, "ImportError: boom"))
+    monkeypatch.setattr(cc, "_load_adr_lint", lambda: (None, "ImportError: boom"))
     ev = ce.collect_evidence(repo)
     assert ev["checks"]["adr_index"]["status"] == "skip"
     assert ev["checks"]["adr_index"]["reason"] == "ImportError: boom"
@@ -159,14 +165,14 @@ def test_adr_index_check_skips_and_degrades_when_adr_lint_is_unavailable(repo: P
 
 def test_gate_fails_when_a_gated_check_could_not_run(repo: Path, monkeypatch):
     """Exit 0 with no output must not be the answer for "we could not look"."""
-    monkeypatch.setattr(ce, "_load_adr_lint", lambda: (None, "ImportError: boom"))
+    monkeypatch.setattr(cc, "_load_adr_lint", lambda: (None, "ImportError: boom"))
     ev = ce.collect_evidence(repo)
     violations = ce.gate_violations(ev)
     assert any("gated check did not run" in v for v in violations)
 
 
 def test_oversize_file_is_reported_not_dropped(repo: Path, monkeypatch):
-    monkeypatch.setattr(ce, "_MAX_FILE_BYTES", 10)
+    monkeypatch.setattr(cc, "_MAX_FILE_BYTES", 10)
     ev = ce.collect_evidence(repo)
     assert ev["checks"]["context_paths"]["files_read"] == 0
     assert ev["checks"]["context_paths"]["files_total"] == 1
@@ -176,7 +182,7 @@ def test_oversize_file_is_reported_not_dropped(repo: Path, monkeypatch):
 
 def test_unreadable_llms_txt_is_unreadable_not_perfect(repo: Path, monkeypatch):
     (repo / "llms.txt").write_text("- [gone](docs/nope.md)\n", encoding="utf-8")
-    monkeypatch.setattr(ce, "_MAX_FILE_BYTES", 5)
+    monkeypatch.setattr(cc, "_MAX_FILE_BYTES", 5)
     ev = ce.collect_evidence(repo)
     assert ev["checks"]["llms_txt"]["status"] == "unreadable"
     assert "broken_links" not in ev["checks"]["llms_txt"]
@@ -185,7 +191,7 @@ def test_unreadable_llms_txt_is_unreadable_not_perfect(repo: Path, monkeypatch):
 
 def test_oversize_graph_jsonld_is_not_reported_as_invalid_json(repo: Path, monkeypatch):
     (repo / "graph.jsonld").write_text(json.dumps({"@graph": []}), encoding="utf-8")
-    monkeypatch.setattr(ce, "_MAX_FILE_BYTES", 5)
+    monkeypatch.setattr(cc, "_MAX_FILE_BYTES", 5)
     ev = ce.collect_evidence(repo)
     graph = ev["checks"]["graph_jsonld"]
     assert graph["status"] == "unreadable"
@@ -207,14 +213,14 @@ def test_symlink_outside_the_root_is_refused(tmp_path: Path):
 
 
 def test_path_index_truncation_is_announced(repo: Path, monkeypatch):
-    monkeypatch.setattr(ce, "_MAX_INDEX_ENTRIES", 1)
+    monkeypatch.setattr(cc, "_MAX_INDEX_ENTRIES", 1)
     ev = ce.collect_evidence(repo)
     assert ev["inventory"]["path_index"]["truncated"] is True
     assert any("path index truncated" in d["reason"] for d in ev["degraded"])
 
 
 def test_git_failure_is_reported_rather_than_read_as_fresh(repo: Path, monkeypatch):
-    monkeypatch.setattr(ce, "_git", lambda root, *args: (None, "git timed out after 20s"))
+    monkeypatch.setattr(cc, "_git", lambda root, *args: (None, "git timed out after 20s"))
     ev = ce.collect_evidence(repo)
     stale = ev["checks"]["stale_docs"]
     assert stale["status"] == "skip"
@@ -397,7 +403,7 @@ def test_dot_directory_references_resolve(tmp_path: Path):
 
 
 def test_gate_paths_fails_when_a_context_file_went_unread(repo: Path, monkeypatch):
-    monkeypatch.setattr(ce, "_MAX_FILE_BYTES", 10)
+    monkeypatch.setattr(cc, "_MAX_FILE_BYTES", 10)
     ev = ce.collect_evidence(repo)
     violations = ce.gate_violations(ev, gate_paths=True)
     assert any("did not cover" in v for v in violations)

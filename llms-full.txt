@@ -16,7 +16,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`) — applies to skills, agents, and rules; ADRs sync wholesale and hooks come from a curated allowlist
 - **Hooks directory**: `hooks/` — five PreToolUse hooks at the `git commit` boundary (secret scan, repo-owned gate runner, bandit, `ruff format --check`, review reminder) plus shared parts; wired manually into `settings.json`, install guide at `docs/hooks.md`
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
-- **Agents directory**: `agents/` — prompt generation (scout, prompt-writer) and editorial review (editor, essay-reviewer, fact-checker)
+- **Agents directory**: `agents/` — prompt generation (scout, prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR/codemap tooling
 - **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, root-cause-first debugging, skill origin tracking, knowledge staleness, and the Contemplative Constitutional AI clauses
 - **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health
 - **Python build**: uv (or pip install -e .), Python 3.10+
@@ -100,23 +100,11 @@ The context-sync skill is defined as a project documentation auditor. It detects
 
 ## What is the llms-txt-writer skill?
 
-The llms-txt-writer skill is defined as an AI-facing document writer covering both Answer.AI's llms.txt standard and GEO/AEO static analysis. It produces three artifacts: `llms.txt` (a navigator file modeled on robots.txt for AI), `llms-full.txt` (a self-contained reference around 20 KB), and standalone FAQ or glossary pages. The companion script `geo_check.py` runs five GEO-SFE checks: ski-ramp score, chunk self-containment, question-form heading rate, entity density, and definitional expression density. The skill is explicitly not for human-facing READMEs or articles; for those, use writing-ecosystem.
-
-## What is the writing-ecosystem skill?
-
-The writing-ecosystem skill is defined as the orchestrator and canon for human-facing writing and review. It owns the drafting procedure directly — a five-step first-draft sequence, a concrete-before-explanation rule, and per-genre structures for technical guides, essays, and newsletters — and coordinates three review sub-agents: editor for technical articles, essay-reviewer for idea pieces, and fact-checker for verifiable claim verification. Drafting used to live in a separate article-writing skill; that skill was retired on 2026-08-15 and absorbed here, because its imported voice model (extract a founder or brand voice from supplied samples, and default to an operator-style voice when none are supplied) contradicted this skill's fixed discovery register. The skill maintains the AI slop ban list (in both English and Japanese), the voice convention (discovery register throughout, with sentence endings decided by the publishing channel — note and Zenn take `ですます`, and `だ/である` is the default only where a channel imposes no convention), the four-act essay structure, and the title convention. It is the canonical entry point for any human-primary content: blog posts, tutorials, newsletter issues, essays, and long-form articles. AI-facing documentation belongs to llms-txt-writer instead.
+The llms-txt-writer skill is defined as an AI-facing document writer covering both Answer.AI's llms.txt standard and GEO/AEO static analysis. It produces three artifacts: `llms.txt` (a navigator file modeled on robots.txt for AI), `llms-full.txt` (a self-contained reference around 20 KB), and standalone FAQ or glossary pages. The companion script `geo_check.py` runs five GEO-SFE checks: ski-ramp score, chunk self-containment, question-form heading rate, entity density, and definitional expression density. The skill is explicitly not for human-facing READMEs or articles.
 
 ## What does the scout agent do?
 
 The scout agent is defined as a pre-implementation solution discovery specialist. It searches npm, PyPI, MCP registries, GitHub, and the web for battle-tested alternatives to a proposed custom implementation, then returns a verdict: Adopt (use as-is), Extend (use with a thin wrapper), Compose (use multiple together), or Build (no fitting external solution). The agent is invoked by the search-first skill and triggered by the planning rule's Phase 0 mandate. It runs in a separate context to avoid polluting the main conversation with raw search results, returning only the verdict and supporting evidence.
-
-## What does the editor agent do?
-
-The editor agent is defined as a strict technical article editor for tutorials, implementation guides, and debugging stories. It reviews drafts for code accuracy (every snippet must compile or run), AI slop detection (vague hedging language, generic transitions, "leveraging synergies" patterns), narrative flow (does each paragraph advance the argument?), and terminology consistency (the same concept must use the same name throughout). The agent is intentionally adversarial — it catches problems the author would defend. It is invoked by the writing-ecosystem skill after a draft is substantially complete, before publication.
-
-## How does the fact-checker agent verify claims?
-
-The fact-checker agent is defined as a verifiable-claim verification specialist. It first extracts factual statements from an article — historical dates, statistical figures, citations, attributed quotes, named results — then issues web searches to corroborate or refute each one. Per-claim verdicts are returned as accurate (verified by an authoritative source), inaccurate (contradicted by evidence), or unverifiable (no clear source found). The agent is invoked by writing-ecosystem before publication, especially for articles making historical, statistical, or citation-based claims. Its output is a verdict table the author can act on directly.
 
 ## What are the four Contemplative AI axioms used here?
 

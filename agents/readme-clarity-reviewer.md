@@ -114,4 +114,4 @@ Never emit numeric scores — every finding is a concrete observation plus a sug
 - For floor recovery / structure / length / visuals → `readme-reviewer` (parallel partner, not replacement)
 - For counting (structure, insider references, term candidates) → `scripts/readme_evidence.py` (code-owned); for the verdict → `readme-judge`
 - For fact consistency with machine surfaces → `context-sync`
-- For academic papers → global `clarity-reviewer`; for articles / essays / newsletters → global `prose-clarity-reviewer`
+- For academic papers → `clarity-reviewer` (resident in ~/MyAI_Lab/paper-lab); for articles / essays / newsletters → `prose-clarity-reviewer` (resident in ~/MyAI_Lab/zenn-content)

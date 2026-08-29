@@ -1,5 +1,5 @@
 ---
-state: draft 2026-08-25
+state: resolved 2026-08-29
 review-when: Zenodo が legacy deposition API（/api/deposit/depositions）を廃止・変更した時、または Zenodo の relation 語彙が DataCite 4.6+ に追随した時（後者は release-doi の SWHID review-when と同時に本提案の適用場面が 1 つ増える）
 ---
 
@@ -109,11 +109,19 @@ POST /api/deposit/depositions/{id}/actions/publish # 再公開（新 version は
 
 ## Status
 
-draft — 起票のみ（2026-08-25、authorship-strategy セッションでの 6 record 編集の直後）。
-採否判断・search-first・build-or-not は未実施。
+resolved 2026-08-29 — **A（手順化のみ）を採用**し、B（script 昇格）と C（drift 検査）は却下した。
+skill `release-doi` の Post-release 節に「Published record の metadata edit (retrofit —
+release を待たない例外経路)」を追加し、実証済みの API flow（unlock → PUT → publish、失敗時 discard）と
+5 つの罠（PUT は全置換 / dedup は (relation, identifier) の組 / concept→latest の redirect 追随 /
+伝播確認 / rate limit は policy signal）を収載した。
+
+**B・C を却下した理由**: 頻度が年数回で、常設の書き込み道具は「registry を気軽に触る」誘因になり、
+ADR-0002 の主従（release 同梱が正常系、metadata edit は retrofit の例外経路）を逆転させる — 本 RFC 自身の
+Drawbacks がそう書いている。search-first（既存 CLI の照合）は A の範囲では不要なため実施していない。
+B が必要になったらこの判断ごと再訪する。
 
 ## Next action
 
-次に同型の retrofit 需要が出た時、または著者が採否を判断する時: ①既存 CLI の
-search-first → ②Build-or-not 自答（頻度見積り込み）→ ③A/B/C の選択。A だけなら
-release-doi skill への追記で即完了できる。
+無し。次の retrofit は `release-doi` の当該節を読んで実行する。
+Zenodo が SWHID relation type に対応した日の一括投影（Future possibilities）で B の必要性が
+再浮上したら、本エントリを参照して新規起票する。

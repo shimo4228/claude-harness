@@ -52,7 +52,7 @@ class TestParsers:
 
     def test_links_exclude_images(self) -> None:
         md = "[t](x.md) ![i](y.png) [![b](s.svg)](u)\n"
-        assert [(l.text, l.href) for l in parse_links(md)] == [("t", "x.md")]
+        assert [(ln.text, ln.href) for ln in parse_links(md)] == [("t", "x.md")]
 
 
 @pytest.mark.unit

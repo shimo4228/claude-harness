@@ -7,6 +7,7 @@ metadata:
   version: "0.1"
   created: "2026-06-25"
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # skill-health — Skill-Library Structural Debt Scan
@@ -149,6 +150,24 @@ health view — **labelling each value's source**, never recomputing it:
   `last_used` is not clipped to the window, so "used 100 days ago" is distinguishable
   from "never". If `measurable` is false, or `span_shorter_than_window` is true, render
   usage as `unmeasured` — never `0`.
+
+  From the same output, **enumerate residency-fold candidates** (RFC-0017): skills with
+  `deliberate` 0 but read events > 0 in the window. Their description has not driven a
+  single selection while the body is demonstrably reached another way — the description
+  is a fold candidate. Hand the list to the author with the decision axis attached
+  (default: add an explicit one-line reference from a related skill / rule, then
+  `disable-model-invocation: true` — even a one-line description still resides in the
+  system prompt as an unaudited instruction, RFC-0018; a one-line description is the
+  fallback only when no reference site exists); exclude skills whose window is
+  shorter than their age would need (`span_shorter_than_window`, or added days ago).
+  This is an enumeration, not a verdict — folding is the author's call.
+
+- **Size** — enumerate SKILL.md bodies over the 500-line limit
+  (`wc -l ~/.claude/skills/*/SKILL.md | sort -rn`; limit per skill-creator §3, sourced
+  from Anthropic's official best practices as of 2026-08-29 — re-check on doc updates).
+  Growth after creation is the case the creation-time gate cannot catch. The verdict on
+  whether an oversized body is bloat or load-bearing belongs to skill-stocktake's
+  Hygiene question, not here.
 - **Risk** — point to the latest `CLAUDE-SECURITY-*/CLAUDE-SECURITY-RESULTS.md`
   if present; if none/stale, recommend running `/claude-security`. Do not
   re-scan for vulnerabilities here.

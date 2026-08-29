@@ -7,6 +7,7 @@ metadata:
   version: "1.0"
 user-invocable: true
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # generation-audit — 世代交代時のハーネス照合

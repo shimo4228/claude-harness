@@ -28,3 +28,5 @@ README には書かない（複製は drift する）。
 | [0014](0014-name-stem-gate-to-harness-lint.md) | agent name=stem 検査を harness_lint の gate へ移設 |
 | [0015](0015-adr-numeric-consistency-evidence.md) | ADR 数値整合の hybrid 検査を adr_lint へ追加 |
 | [0016](0016-agent-tool-build-path-hook-parity.md) | Agent tool 実装経路の hooks/skills 発火同一性の実測検証 |
+| [0017](0017-skill-description-residency-optimization.md) | skill listing の常駐コストを description 側から削る（本数軸の実測による差し替え） |
+| [0018](0018-description-behavior-contamination.md) | description の挙動汚染（第 2 の rules 層化）の検査・撤去 |

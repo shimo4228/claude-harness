@@ -145,30 +145,30 @@ TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（
 
 | doc 分類 | orchestrator skill |
 |---|---|
-| 記事 / エッセイ / newsletter（人間向け prose） | `writing-ecosystem` |
-| 学術論文 / preprint / position paper | `paper-ecosystem` |
+| 記事 / エッセイ / newsletter（人間向け prose） | `writing-ecosystem`（正本は `~/MyAI_Lab/zenn-content` — 記事作業はその repo を working dir に含めて行う） |
+| 学術論文 / preprint / position paper | `paper-ecosystem`（正本は `~/MyAI_Lab/paper-lab` — 論文作業はその repo を working dir に含めて行う） |
 | README / repo トップページ | `readme-writer` |
 | llms.txt 等 AI-doc | `llms-txt-writer` |
 | ADR（設計判断の記録） | `adr-writer`（生成。adr-reviewer の配線は同 skill 内） |
 
 チェーン本体（agent 起動順・並列化・最終 gate）の**正本は各 skill の定義**（ここに複製しない）。
-この skill が規定するのは以下の糊のみ:
+記事 / paper の chain 詳細（reviewer panel・verdict・機械検査）は移設先 repo の orchestrator と
+channel contract が正本 — 本節はルーティングと、global 常駐 doc（README / llms.txt / ADR）の
+糊だけを規定する:
 
 **Verdict マッピング**（writing agent の出力 → chain verdict への変換）:
 
 | agent 出力 | chain 上の扱い |
 |---|---|
-| MAJOR ISSUES（editor / essay-reviewer / readme-reviewer） | CRITICAL → 停止 |
-| ❌ INACCURATE（fact-checker） | CRITICAL → 停止 |
-| DRIFT（source-fidelity-checker） | CRITICAL → 停止 |
-| NEEDS REVISION（editor / essay-reviewer / readme-reviewer） | HIGH → 継続 + 修正 |
+| MAJOR ISSUES（readme-reviewer） | CRITICAL → 停止 |
+| NEEDS REVISION（readme-reviewer） | HIGH → 継続 + 修正 |
 | readme-judge Rewrite / geo_check FAIL | Verify FAIL → 停止 |
 
-**Cross-Model Review（条件付き）**: 公開・deposit 前の高 stakes 文書のみ実行する。
+**Cross-Model Review（条件付き）**: 公開前の高 stakes 文書のみ実行する。
 prose は prompt-driven、private ドラフト・下書き段階は `-`（writing chain は ADR-0055 の
 再編対象外 — 各 orchestrator skill の配線が正本のまま）。
 
-**Verify 相当（writing 版）**: build / types / tests は非該当。代わりに (1) 決定論 lint または証拠（README は readme_evidence.py の JSON + readme-judge の binding 判定、llms.txt は geo_check.py、記事は mechanical_checks 等、doc 分類に該当するもの） (2) fact / citation gate（fact-checker verdict の出典編入、paper なら citation-formatter） (3) `git status` 確認。
+**Verify 相当（writing 版）**: build / types / tests は非該当。代わりに (1) 決定論 lint または証拠（README は readme_evidence.py の JSON + readme-judge の binding 判定、llms.txt は geo_check.py） (2) `git status` 確認。
 
 **公開権限**: task request が commit / publish / deposit を含むかをそのまま使う。
 この skill 固有の確認形式や追加 gate は設けない。
@@ -181,4 +181,4 @@ prose は prompt-driven、private ドラフト・下書き段階は `-`（writin
 - Verify ステップで build / types / tests のいずれかが失敗
 - `fix` で根本原因の仮説が証拠で支持されない
 - Phase 0 (`/search-first`) で `Adopt` Verdict → 実装方針の再 plan を要請
-- `writing` で Verdict マッピング表の CRITICAL 相当（MAJOR ISSUES / ❌ INACCURATE / DRIFT）を検出
+- `writing` で Verdict マッピング表の CRITICAL 相当（MAJOR ISSUES）を検出（記事 / paper の停止条件は各 repo の orchestrator が持つ）

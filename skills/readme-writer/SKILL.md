@@ -134,7 +134,8 @@ Mermaid styling・辺の交差の直し方・hero の仕様・表セルの制約
 
 README は最初の着地面で、読者の大半は著者の文脈を何も知らない。
 
-- **AI-slop 禁止リスト（正本は `writing-ecosystem`）は README の prose にも適用する。** 特に EN の
+- **AI-slop 禁止リスト（正本は `writing-ecosystem` の references/style-diagnostics.md —
+  `~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）は README の prose にも適用する。** 特に EN の
   em-dash 多用 — 修正は文の再構築で行い、`:` / `;` への機械置換をしない
 - **日本語 README の地の文はですます調**（`writing-ecosystem` Voice からの意図的分岐。正本側の
   Related に登録済み）。表のセル・体言止め・見出しは適用外。英語 README は一人称のパーソナルな
@@ -248,6 +249,6 @@ uv run python -m scripts.readme_evidence fixtures/sample_issues.md --text
 - [`codex-review`](../codex-review/SKILL.md) — 公開 README への cross-model 並列レビュー（prompt-driven）
 - [`headline-craft`](../headline-craft/SKILL.md) — tagline 候補の生成
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) / [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — 機械 surface
-- [`writing-ecosystem`](../writing-ecosystem/SKILL.md) — AI slop 禁止リストと Voice 規約の正本
+- `writing-ecosystem`（`~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem` — 2026-08-29 移設）— AI slop 禁止リストと Voice 規約の正本
 - `references/` — `readme-judge-checklist.md` / `visual.md` / `ja-register.md` / `about.md`
 - `inspiration.md` — 設計の出自・外部エビデンスの出典（Portability のため SKILL.md 本文から分離）

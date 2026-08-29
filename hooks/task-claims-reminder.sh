@@ -58,7 +58,13 @@ esac
 # CRITICAL、実証済み)。repo-local コードを信頼する必要が出たときは、
 # `scripts/hooks/verify_allow.py` の内容 hash 承認 (rules/common/security.md) を通す。
 ROOT="${CLAUDE_PROJECT_DIR:-}"
-[ -d "$ROOT" ] || ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || ROOT="$PWD"
+# 敵対的 .git/config の無害化 (ADR-0034 の T-GIT-HOSTILE-CONFIG 横展開)。
+# rev-parse は index を読まないので実測では fsmonitor は起動しない
+# (2026-08-29 実測: rev-parse 0 回 / ls-files 2 回 / status 2 回)。live な穴の
+# 塞ぎではなく、git を呼ぶ兄弟 hook と形を揃えるための defense-in-depth
+# (harness-lint-precommit.sh:42 / verify-precommit.sh:50 と同形)。
+[ -d "$ROOT" ] || ROOT=$(git -c core.fsmonitor= -c core.hooksPath= \
+  rev-parse --show-toplevel 2>/dev/null) || ROOT="$PWD"
 RFCS="$ROOT/rfcs"
 
 OUT=""

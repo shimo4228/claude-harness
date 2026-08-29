@@ -67,7 +67,7 @@ config が読めない環境では auto-memory の vault パスを使う。
   (見本の場所・特徴・却下された register) がそこにある。無い環境では、ユーザーの
   過去ポストやブログを 1〜2 本読んで register を写し取るか、ユーザーに 1 回聞く。
   記事の文体と SNS の文体は別物として扱う
-- AI slop 禁止リスト・Craft 規約 → skill: `writing-ecosystem`。**Voice は defer しない**（意図的分岐。
+- AI slop 禁止リスト・Craft 規約 → skill: `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）。**Voice は defer しない**（意図的分岐。
   正本側の Related に登録済み）
 - 脱 AI-tell → skill: `public-comment` の改稿規律を公開ポストにも適用する
 

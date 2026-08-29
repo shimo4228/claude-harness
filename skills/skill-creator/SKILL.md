@@ -18,7 +18,8 @@ skill は agent が実行する制御プログラムで、書いた瞬間から�
 会話に素材があれば先に抽出してから埋める（使ったツール、手順、著者の訂正、入出力）:
 
 - 何をできるようにするか（1 文）
-- いつ使うか — **著者の発話例を 3 つ**（description にそのまま入れる）
+- いつ使うか — **著者の発話例を 3 つ**（description にそのまま入れる。自発発火を
+  狙う skill のみ — 狙わないなら §3 の `disable-model-invocation`）
 - NOT for — 隣接 skill / agent を**名指し**で
 - 置き場 — `skills/<name>/SKILL.md`（`commands/` は使わない）か `agents/<name>.md`
 - 検証可能な出力か（file 変換・固定手順なら with/without を見る価値がある。文体系は不要）
@@ -38,13 +39,21 @@ skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全�
 
 ## 3. 書き方 — Fable 向け
 
-- **判断基準と罠を書く。手順の羅列・反復強調・旧世代向けの禁止列挙は書かない**。
-  迷ったら generation-audit の 4 観点（意図 / 根拠 / 鮮度 / 失効条件）で各行を見る
+- **判断基準と罠を書く。手順の羅列・反復強調・トリビアルな禁止列挙は書かない** —
+  禁止は原理原則へ畳む。ただし grep 可能な検出語・自己執行力のある禁止・数値閾値は
+  畳まない（抽象化すると機能を失う — ADR-0058）。迷ったら generation-audit の
+  4 観点（意図 / 根拠 / 鮮度 / 失効条件）で各行を見る
 - 重なる内容は**参照**で済ませる（正本は 1 か所。複製した版は誰も刈らず drift する）
 - frontmatter: `name`（dir と一致）/ `description`（発話例 + NOT for）/ `user-invocable` /
   `origin`（rules/common/skills.md の表）。agent は `tools` / `model` も（判定系は opus、
   read-only + Bash は evidence script がある時だけ）
-- 目安 100 行。超える分は `references/` に逃がす。script を持つなら `pyproject.toml` + tests
+- **description は trigger surface で、毎セッション listing に常駐する** — 字数コスト
+  だけでなく、載っているだけで挙動に干渉しうる未監査の常駐指示層（RFC-0018）。自発発火を
+  狙わない skill（slash / rule の命令形 / 他 skill の参照で届くもの）は
+  `disable-model-invocation: true` を既定に検討（RFC-0017）— listing から降り、
+  description は人間用 slash メニューにだけ残る。その場合 §1 の発話例 3 つは不要
+- 上限 500 行（Anthropic 公式 best practices、as-of 2026-08-29）。超える分は `references/` に
+  逃がす。script を持つなら `pyproject.toml` + tests
 - 名指しする path / agent / CLI flag は書いた時点で存在させる（scan_refs が後で拾うが、
   書く側で潰す方が安い）
 
@@ -58,7 +67,8 @@ skill の本文は渡さない（anchoring）。
 渡す質問（正本は skill-stocktake Phase 2。ここは参照であり複製しない）:
 
 - Actionability / Scope fit / Uniqueness（**library 全体**）/ Currency（名指し資産の
-  **無条件**検証 — Glob か Read で存在確認、「古そうなら」は禁句）
+  **無条件**検証 — Glob か Read で存在確認、「古そうなら」は禁句）/ Hygiene（トリビアルな
+  禁止列挙・反復強調の肥大が無いか）
 - 追加 2 問 — Generation fit（旧世代向け記述が無いか）/ Trigger realism（自発発火に
   依存した設計になっていないか）
 

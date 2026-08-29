@@ -119,6 +119,6 @@ Dominant No: <あれば 1 行、なければ「なし」>
 
 ## When NOT to Use This Agent
 
-- 記事・エッセイ（→ `writing-ecosystem`がchannel reviewerと`quality-gate`へrouteする）
+- 記事・エッセイ（→ `writing-ecosystem`がchannel reviewerと`quality-gate`へrouteする — いずれも `~/MyAI_Lab/zenn-content` 常駐）
 - llms.txt 等の AI 専用 doc（→ `llms-txt-writer`）
 - README の事実が llms.txt / graph.jsonld と一致するかの照合（read-only の allowlist 照合。この agent は README だけを読む）

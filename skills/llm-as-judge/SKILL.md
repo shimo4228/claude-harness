@@ -4,6 +4,7 @@ description: Design pattern for LLM-as-judge evaluators — binary checks as evi
 license: MIT
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
+disable-model-invocation: true
 ---
 
 # LLM-as-Judge — Checks as Evidence, Holistic Verdict, No Scores

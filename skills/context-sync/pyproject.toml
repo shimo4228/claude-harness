@@ -19,9 +19,26 @@ addopts = ["--strict-markers"]
 line-length = 100
 target-version = "py311"
 
+[tool.ruff.lint]
+# root ruff.toml と同じ明示 select を pin する。無指定だと ruff の既定 (0.16 で 413 rule)
+# が効き、ゲートの判定が上流の版更新で動く — 検査の閾値は harness 側が所有する
+# (根拠は root ruff.toml の冒頭コメント。citation-sync が 2026-08 に同じ pin を先行導入)。
+# C901 の閾値は root と同じ 15。予算は **上げずに刈る** (ADR-0056、正本は .claude/verify.md)。
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["scripts"]
+
+[tool.ty.environment]
+# 直接スクリプト実行 (`python3 scripts/<name>.py`) を支える兄弟 import は、`scripts/` が
+# sys.path[0] になる前提で書かれている (`if __package__:` の else 枝)。ty にも同じ入口を
+# 教えないと、その枝が丸ごと unresolved-import になる — 経路は実在するので抑制ではなく
+# 解決先の宣言。
+root = [".", "scripts"]

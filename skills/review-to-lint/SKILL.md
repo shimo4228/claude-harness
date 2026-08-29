@@ -1,6 +1,6 @@
 ---
 name: review-to-lint
-description: "既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チェックを script に降ろして」と言ったとき、または reviewer の指摘に機械的項目の反復が目立つときに /review-to-lint で使う。NOT for — 新規 reviewer の作成（→ skill-creator）、意味的基準そのものの変更（各 reviewer の正本）、judge の設計（→ llm-as-judge）、既に evidence script を持つ reviewer の再抽出（readme-writer / adr-writer は実施済み）。"
+description: "既存 reviewer（agent / review skill）のチェックリスト、または過去セッションの reviewer 履歴から機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チェックを script に降ろして」「履歴から lint 化できるものを探して」と言ったとき、または reviewer の指摘に機械的項目の反復が目立つときに /review-to-lint で使う。NOT for — 新規 reviewer の作成（→ skill-creator）、意味的基準そのものの変更（各 reviewer の正本）、judge の設計（→ llm-as-judge）、既に evidence script を持つ reviewer の再抽出（readme-writer / adr-writer は実施済み）。"
 user-invocable: true
 origin: shimo4228
 ---
@@ -12,6 +12,36 @@ reviewer のチェックリストには、LLM が数えるより script が数�
 集中させる。先行実例: `readme_evidence.py`（readme-writer）、`adr_lint.py`（adr-writer、
 ADR-0051）。分業原理は「存在 = code、内容 = LLM」（ADR-0021 が導入、ADR-0044 が ADR へ適用）と
 feedback: deterministic_semantic_layering（script 計測 + LLM 解釈）。
+
+## 0. 入口 — チェックリスト起点と履歴起点
+
+対象 reviewer が決まっているならそのまま §1 へ。「どの reviewer / どの規約を lint 化すべきか」
+から決めるなら reviewer の履歴を掘る。チェックリスト起点の棚卸しは reviewer が**明文で持つ
+項目**しか出さないので、実際に反復している指摘を取りこぼす（2026-08-29 の実測: RFC-0005 の
+12 候補は document / skill-asset 層のみで、`hooks/*.sh` を対象とする 3 クラスを見落としていた
+= 同 RFC の #13〜#15）。
+
+**機構は作らない** — 抽出 script も回収 hook も新設しない（ADR-0055 Decision 5「回収機構は
+作らない」）。1 回の手調査で足りる。2 回目を要求されたら、そのとき ADR-0055 の supersede
+込みで script を提案する。
+
+corpus と抽出の非自明点:
+
+- reviewer 報告は `~/.claude/projects/<project>/<session-id>/subagents/agent-*.jsonl`。
+  **親 transcript の隣ではない**
+- reviewer 種別は subagent 冒頭の user message で判別する。`agentType` フィールドは無く、
+  親 transcript とは id で繋がらない（突合は最終 assistant text と親の tool_result の一致）
+- 組込 `/code-review` の署名は `` `medium effort → 3+5 angles × 6 candidates …` ``
+- 取るのは最終 assistant **メッセージ**。`jq | tail -1` は最終**行**しか取らない
+  （1 ファイル 100〜450KB あるので全文は読めない）
+- `ReportFindings` の構造化 tool_use は保存されない。抽出は自然言語パースになる
+
+**閾値を掘る前に固定する。** クラスの粒度は自由変数で、細かく切れば「台帳に無いクラス」は
+必ず作れる。既定: 同一クラスが **3 回以上 かつ 2 セッション以上**、**採用実績 1 件以上**、
+**退役 reviewer 由来のみのクラスは数えない**（その reviewer はもう走らないので需要が無い）。
+
+行き先は 2 つ。**採用が反復 → lint 候補**（§1 へ）、**却下が反復 → 退役候補**（形骸規約・
+reviewer remit のズレ。lint 化すると偽陽性を永続化する）。
 
 ## 1. 棚卸しと 3 分類（この skill の核）
 
@@ -51,12 +81,25 @@ feedback: deterministic_semantic_layering（script 計測 + LLM 解釈）。
 - 頻出指摘の**事例**は `references/` の日付・commit 参照つきカタログへ（writer skill の
   書き時予防に配線）。**基準**は reviewer が正本のまま — 事例と基準を複製しない
 
-## 5. 配線しないもの
+## 5. 実行座標
 
-- commit hook / verify.sh への常時配線は既定でしない — 対象ドキュメントを触らない commit
-  にも毎回課税する（著者判断 2026-08-26、ADR-0051）。実行座標は writer skill のステップと
-  reviewer の Step 0。形骸化が観測されたら commit 面への配線を再訪
-- 集計・viewer・grader agent は持たない（skill-creator「持たないもの」と同じ理由）
+置き場は 2 軸で決める:
+
+- **課税率** — その検査が意味を持つ commit の割合。低ければ writer skill / reviewer の
+  ステップ、高ければ repo の `verify.sh`
+- **既製性** — 既製ツールの config 行で足りるなら `verify.sh`（ADR-0056 の着地形）。
+  自作 script なら skill ステップ側が既定
+
+既定は skill ステップ側 — commit hook / verify.sh への常時配線は、対象を触らない commit にも
+毎回課税する（著者判断 2026-08-26、ADR-0051 Decision 2）。
+
+**例外: 正本 writer skill を持たない対象。** `hooks/*.sh` のような実行資産には
+adr-writer / readme-writer に相当する writer skill が無く、「skill ステップ」という座標が
+そもそも存在しない。この場合は `verify.sh` 側が既定になる（2026-08-29 の履歴掘削で判明 —
+ADR-0051 Decision 2 はこのケースを想定していない）。
+
+形骸化が観測されたら commit 面への配線を再訪する。集計・viewer・grader agent は持たない
+（skill-creator「持たないもの」と同じ理由）。
 
 ## 6. 記録
 

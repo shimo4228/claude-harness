@@ -11,9 +11,9 @@ origin: shimo4228
 （規範）でも「どれを採るか」（判定）でもなく、「どう候補を作るか」（生成）だけを担う。
 
 **役割分担（defer 宣言）**:
-- 誠実さ規約・AI slop 禁止リスト → `writing-ecosystem` の Title Conventions が正本。本スキルの全候補はあのフィルタを通ってから提示する
+- 誠実さ規約・AI slop 禁止リスト → `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）の Title Conventions が正本。本スキルの全候補はあのフィルタを通ってから提示する
 - platform 文字数・記法 → 各 project の publication channel contract。実値はここに書かない
-- 公開記事候補の点検 → global `title-reviewer`。本 skill 自身の候補を自己採点しない
+- 公開記事候補の点検 → `title-reviewer` agent（`~/MyAI_Lab/zenn-content` 常駐）。本 skill 自身の候補を自己採点しない
 - topics / emoji → platform を所有する project-local skill
 
 ## 実証知見（技法の根拠）

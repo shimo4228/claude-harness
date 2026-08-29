@@ -47,7 +47,6 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [codex-review](skills/codex-review/SKILL.md): cross-model second opinion from the OpenAI Codex CLI (a different model family), read-only — code review of the current diff folded into the review chain, plus a plan-stage premise challenge of a design packet (refute / missing / alternative, never a design)
 - [llms-txt-writer](skills/llms-txt-writer/SKILL.md): writes AI-facing documentation (llms.txt, llms-full.txt, FAQ pages, glossaries) with Answer.AI llms.txt standard compliance and GEO/AEO static analysis (GEO-SFE 5 checks)
 - [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md): designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt for projects with stable concept-level structure — encodes domain entities and relationships as schema.org triples for LLM citation
-- [writing-ecosystem](skills/writing-ecosystem/SKILL.md): orchestrator and canon for human-facing writing and review — owns the drafting procedure and per-genre structures, coordinates the editor, essay-reviewer, and fact-checker agents, and holds the AI slop bans, voice convention, and title conventions
 - [measurement-discipline](skills/measurement-discipline/SKILL.md): discipline for measurement-backed claims, thresholds, and guards — one pass is not evidence, gate on observations not the calendar, calibrate guard firing rates (0% and 100% both design bugs), no numeric caps as quality filters, no distribution claims from survivors only
 - [repair-discipline](skills/repair-discipline/SKILL.md): discipline for starting a repair — verify against git log and real code before picking up a stale task, sweep all consumers in the same change on schema/storage edits, know a bypass short-circuits every gate, low CPU is not stuck, foreground retries only
 - [review-to-lint](skills/review-to-lint/SKILL.md): extracts mechanically decidable checks from an existing reviewer's checklist into a deterministic evidence script, thinning the reviewer to semantic-only judgment
@@ -55,16 +54,10 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [authorship-strategy](skills/authorship-strategy/SKILL.md): 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos
 - [release-doi](skills/release-doi/SKILL.md): cuts a versioned release of a DOI-registered research repo — Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging
 - [adr-writer](skills/adr-writer/SKILL.md): records design decisions as numbered ADRs — directory detection, sequence numbering, index update; prose generation delegated to the adr-writer agent
-- [paper-ecosystem](skills/paper-ecosystem/SKILL.md): orchestrator for academic paper writing and review — role boundaries for paper-writing plus five reviewer agents; canonical home of Source Fidelity, Vocabulary Consistency, Academic Voice, Reader Clarity, and Citation Format rules
-- [paper-writing](skills/paper-writing/SKILL.md): drafting procedure for academic papers — title, outline, section drafting, abstract, references with claim-cite 1:1 mapping and direct primary-source access
-- [paper-deposit](skills/paper-deposit/SKILL.md): deposits a finished, reviewed paper to Zenodo as a standalone DOI record, optionally cross-posts to SSRN, and cross-links the minted DOI back into the research-program repository
-- [ai-native-preprint-submission](skills/ai-native-preprint-submission/SKILL.md): submits a deposited paper to AI-native preprint platforms (aiXiv / AiraXiv) — Web UI browser automation with human gates for account/file/submit actions, or author-delegated API/MCP submission; canonical DOI stays at the registry
 - [readme-writer](skills/readme-writer/SKILL.md): writes human-facing READMEs — deterministic structural lint plus holistic LLM review without scores
 - [hf-sync](skills/hf-sync/SKILL.md): mirrors graph.jsonld-bearing research repos to Hugging Face Datasets — flattens the graph and uploads alongside graph.jsonl
-- [citation-sync](skills/citation-sync/SKILL.md): audits the three citation layers of a research repo (docs, .zenodo.json, graph.jsonld) and syncs them bottom-up
 - [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session inside Herdr, visible in the mobile app session list
 - [harness-sync](skills/harness-sync/SKILL.md): one-way export of origin-filtered components from the live harness (~/.claude) into this publication repo — collection, secret scan, subtree replacement
-- [cited-source-mirror-verification](skills/cited-source-mirror-verification/SKILL.md): verify an access-blocked or digest-sourced numeric claim against an open mirror before citing it in a durable artifact (paper, knowledge graph, DOI repo)
 - [wiki-harvest](skills/wiki-harvest/SKILL.md): read-only harvest from an Obsidian LLM wiki (wiki/concept/) into a research repo — extracts only next-action-changing candidates into a ranked, source-cited ledger under the repo's `.notes/`
 - [wiki-query](skills/wiki-query/SKILL.md): read-only query over an Obsidian LLM wiki (wiki/concept/) with `[[ ]]` source-cited synthesis
 - [repo-asset-stocktake](skills/repo-asset-stocktake/SKILL.md): audits a project repository's non-code assets (tool configs, CI workflows, runbooks) for diminished value — every asset serves a consumer; flags assets whose consumer has vanished, with Keep/Update/Retire/Merge verdicts
@@ -83,16 +76,8 @@ Specialized agents in `agents/`, each with its own tool allowlist.
 
 - [scout](agents/scout.md): pre-implementation solution discovery — searches npm, PyPI, MCP registries, GitHub, and the web for battle-tested alternatives before writing custom code
 - [prompt-writer](agents/prompt-writer.md): generates concise, focused prompts using a lightweight model (Haiku)
-- [editor](agents/editor.md): strict technical article editor — reviews tutorials, implementation guides, and debugging stories for code accuracy, AI slop, narrative flow, and terminology consistency
-- [essay-reviewer](agents/essay-reviewer.md): strict essay editor for idea/opinion articles mixing social theory, organizational analysis, design philosophy, historical perspective, and personal narrative
-- [fact-checker](agents/fact-checker.md): fact verification specialist — extracts verifiable factual claims from articles, searches web sources to verify them, reports per-claim verdicts (accurate, inaccurate, unverifiable)
 - [adr-writer](agents/adr-writer.md): generates the 7-section ADR body (Status / Date / Context / Decision / Review-when / Alternatives / Consequences) from supplied input only — never invents content
 - [codemap-writer](agents/codemap-writer.md): generates and refreshes docs/CODEMAPS/ — token-lean architecture documentation capped at ~1000 tokens per map
-- [paper-reviewer](agents/paper-reviewer.md): academic paper structure review — argument flow, section transitions, claim sharpness, evidence-claim alignment
-- [source-fidelity-checker](agents/source-fidelity-checker.md): reads each cited primary source directly and flags drift between paper claims and source content
-- [vocabulary-consistency-checker](agents/vocabulary-consistency-checker.md): verifies that terms carry consistent definitions throughout a paper and that sub-classifications are explicit at introduction
-- [clarity-reviewer](agents/clarity-reviewer.md): first-contact reader clarity review — coined-term budget, title-axis alignment, meta-commentary, insider-context dependency
-- [citation-formatter](agents/citation-formatter.md): verifies in-text citations against the reference list — format consistency, DOI and arXiv ID validity
 - [readme-reviewer](agents/readme-reviewer.md): strict README / repo top-page review — LLM-read floor recovery, lead clarity, human hook, scannability, length discipline, visual effectiveness
 - [readme-clarity-reviewer](agents/readme-clarity-reviewer.md): first-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register; parallel partner of readme-reviewer
 
