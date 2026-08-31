@@ -329,7 +329,7 @@ def require_task_id(task: str) -> str:
     return task
 
 
-def cmd_claim(args, root: Path) -> int:
+def cmd_claim(args: argparse.Namespace, root: Path) -> int:
     task = require_task_id(args.task)
     me = session_id()
     if not 0 <= args.lease_hours <= 720:
@@ -395,7 +395,7 @@ def cmd_claim(args, root: Path) -> int:
     return 0
 
 
-def cmd_release(args, root: Path) -> int:
+def cmd_release(args: argparse.Namespace, root: Path) -> int:
     task = require_task_id(args.task)
     me = session_id()
     held = open_claims(root).get(task)
@@ -448,7 +448,7 @@ def require_producers(origin: str, producers: list[str]) -> list[str]:
     return producers
 
 
-def cmd_spawn(args, root: Path) -> int:
+def cmd_spawn(args: argparse.Namespace, root: Path) -> int:
     task = require_task_id(args.task)
     producers = require_producers(args.origin, args.producer)
     rec = {
@@ -484,7 +484,7 @@ def _mark(rec: dict, hours: float | None, verbose: bool = False) -> str:
     return ""
 
 
-def cmd_open(args, root: Path) -> int:
+def cmd_open(args: argparse.Namespace, root: Path) -> int:
     held = open_claims(root)
     if args.oneline:
         # hook が読む 1 行形式。claim が無いときは何も言わない（無音が正常）。
@@ -553,7 +553,7 @@ def task_head(text: str) -> tuple[str, str]:
     return state, ""
 
 
-def cmd_ready(args, root: Path) -> int:
+def cmd_ready(args: argparse.Namespace, root: Path) -> int:
     rfcs = rfc_store_path(root)
     if not rfcs.is_dir() or rfcs.is_symlink():
         print("rfcs/ が無い。この repo は単一表（.notes/TASKS.md）— 直接読む。")

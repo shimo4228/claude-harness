@@ -66,7 +66,7 @@ def _utc(moment: datetime) -> str:
     return moment.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _parse_ts(value: Any) -> datetime | None:
+def _parse_ts(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
     try:
@@ -80,7 +80,7 @@ def _parse_ts(value: Any) -> datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
 
-def is_sandbox_path(project: Any) -> bool:
+def is_sandbox_path(project: object) -> bool:
     """True when *project* is the skill-comply sandbox base or lives under it."""
     if not isinstance(project, str):
         return False

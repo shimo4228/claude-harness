@@ -93,6 +93,7 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
 - [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
 - [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
+- [llm-first-code](rules/common/llm-first-code.md): code is optimized for its actual reader — the next LLM session, not humans; preserve verifiability (types, tests, golden files) over readability, enforce quality through machine gates, spend human-readability budget only on READMEs and output text
 
 ## Hooks
 

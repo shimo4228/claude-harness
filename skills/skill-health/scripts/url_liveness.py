@@ -53,6 +53,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Callable, Iterable
 from datetime import UTC, datetime
 
 USER_AGENT = "claude-harness-url-liveness/0.1 (evidence check; not a browser)"
@@ -146,7 +147,15 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
     "the named URL answered" — and chasing the chain is resolution, not liveness.
     """
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(
+        self,
+        req: object,
+        fp: object,
+        code: int,
+        msg: str,
+        headers: object,
+        newurl: str,
+    ) -> None:
         return None  # urlopen then raises HTTPError carrying the 3xx status
 
 
@@ -179,9 +188,9 @@ def http_fetch(url: str, timeout: float = DEFAULT_TIMEOUT) -> tuple[int | None, 
 
 
 def check_urls(
-    urls,
+    urls: Iterable[str],
     *,
-    fetch=http_fetch,
+    fetch: Callable[[str, float], tuple[int | None, str | None]] = http_fetch,
     delay: float = DEFAULT_DELAY,
     timeout: float = DEFAULT_TIMEOUT,
     offline: bool = False,

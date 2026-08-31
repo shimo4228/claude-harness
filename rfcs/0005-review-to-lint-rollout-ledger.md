@@ -1,5 +1,5 @@
 ---
-state: accepted 2026-08-26
+state: done 2026-08-30
 review-when: review-to-lint skill 自体が改廃されたら。候補の正本 skill が大幅改修されたら該当行の sweep 実測は失効
 ---
 ## Summary
@@ -82,4 +82,11 @@ accepted — 確定 5 件（RFC-0006〜0010）は 2026-08-27 に全件実装・m
 
 ## Next action
 
-保留候補は各発火条件が成立したセッションで本 RFC を参照して個別起票。委譲 5 件の検収は起票セッション（または後続 task-triage）が judge として行う。
+**done 2026-08-30（オーナー確認済み）— 本エントリは以後「候補台帳」として参照専用。**
+#13 が名指していた具体的欠陥（`hooks/task-claims-reminder.sh:61` の `core.fsmonitor` guard 欠落）は
+commit `4766e2b` で解消し、確定 5 件（RFC-0006〜0010）と派生 RFC-0011〜0015 も全て merge 済みで、
+本 RFC 由来の着手可能な作業は残っていない。残る保留 10 件はそれぞれ別の発火条件を持つ候補であり、
+`accepted` のままだと `claims.py ready` が毎 cycle これを dispatchable として誤報するため終端した
+（rfcs は archive しない規約なので、候補台帳としての参照は切れない）。
+
+保留候補は各発火条件が成立したセッションで本 RFC を参照して**個別に新規起票**する。

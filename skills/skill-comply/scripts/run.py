@@ -21,7 +21,7 @@ from scripts.report import generate_report
 from scripts.runner import run_scenario, sanitize_sandbox_id
 from scripts.scenario_generator import Scenario, generate_scenarios
 from scripts.spec_generator import generate_spec
-from scripts.target import classify_target, skill_payload
+from scripts.target import Target, classify_target, skill_payload
 
 #: All three scenarios at once. They share nothing — separate prompts, separate
 #: sandboxes, separate child processes — so the wall clock becomes the slowest
@@ -462,7 +462,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _announce_target(target, args: argparse.Namespace) -> None:
+def _announce_target(target: Target, args: argparse.Namespace) -> None:
     if args.load_target_skill and args.allow_bash:
         progress(
             "[warn] --load-target-skill と --allow-bash の併用: 監査対象の本文が"
@@ -552,7 +552,11 @@ def _print_dry_run(spec: ComplianceSpec, scenarios: list[Scenario]) -> None:
 
 
 def _report_conditions(
-    target, args: argparse.Namespace, payload, scored: list, invalidated: list
+    target: Target,
+    args: argparse.Namespace,
+    payload: tuple[str, str] | None,
+    scored: list,
+    invalidated: list,
 ) -> dict:
     invoked = sum(1 for o in scored if o.target_invocations[0] > 0)
     tier = (

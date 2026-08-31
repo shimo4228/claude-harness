@@ -99,6 +99,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | LLM 分野の外部知識は 1 週間スケールで陳腐化するという世界観を既定にする — 手法・仕様・相場観を記憶から断言せず検索時点で照合し、根拠に as-of 日付を、推奨に失効条件を付ける |
 | [practitioner-identity](rules/common/practitioner-identity.md) | 著者の自己定義 (verbatim) — AI 時代に何が良い考え・良い手段かを探し続ける。DOI は手段の一つで研究者志向ではない。コードは消えるが考えは消えない |
+| [llm-first-code](rules/common/llm-first-code.md) | コードを実際の読者 = 次セッションの LLM に最適化する — 可読性でなく検証可能性（型・テスト・golden）を保存し、品質は機械ゲートで執行、人間可読性の予算は README と出力の文面にだけ払う |
 <!-- END GENERATED: rules-table -->
 
 ### Hooks

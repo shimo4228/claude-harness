@@ -1,0 +1,181 @@
+{
+  "path": "fixtures/sample_issues.md",
+  "lang_guess": "en",
+  "line_count": 38,
+  "structure": {
+    "h1_count": 2,
+    "headings": [
+      {
+        "level": 1,
+        "text": "Sample Project",
+        "line": 1
+      },
+      {
+        "level": 2,
+        "text": "Overview",
+        "line": 11
+      },
+      {
+        "level": 4,
+        "text": "Buried subsection",
+        "line": 21
+      },
+      {
+        "level": 1,
+        "text": "Duplicate Title",
+        "line": 38
+      }
+    ],
+    "heading_level_jumps": [
+      {
+        "line": 21,
+        "from": 2,
+        "to": 4,
+        "text": "Buried subsection"
+      }
+    ],
+    "broken_local_refs": [
+      {
+        "href": "docs/does-not-exist.md",
+        "line": 29
+      },
+      {
+        "href": "logo.png",
+        "line": 25
+      },
+      {
+        "href": "docs/architecture.png",
+        "line": 27
+      }
+    ],
+    "images_without_alt": [
+      {
+        "src": "logo.png",
+        "line": 25
+      }
+    ]
+  },
+  "identity_lead": {
+    "present": false,
+    "line": null
+  },
+  "first_screen": {
+    "end_line": 11,
+    "lines": 10,
+    "prose_lines": 0,
+    "links": 0,
+    "new_terms": [],
+    "adr_refs": 0,
+    "github_repos": []
+  },
+  "insider_refs": {
+    "adr_total": 0,
+    "adr_unique": 0,
+    "adr_ids": {},
+    "github_repo_count": 0,
+    "github_repos": {},
+    "doc_paths": {
+      "docs/architecture.png": 1,
+      "docs/does-not-exist.md": 1
+    },
+    "dois": {
+      "10.5281/zenodo.1234567": [
+        34
+      ]
+    }
+  },
+  "term_candidates": [],
+  "details_blocks": [
+    {
+      "open_line": 31,
+      "close_line": 36,
+      "lines": 6,
+      "summary": "Reference",
+      "contains": {
+        "doi": true,
+        "bibtex": false,
+        "citation": false,
+        "image": false,
+        "code_fence": false
+      }
+    }
+  ],
+  "figures": [
+    {
+      "kind": "image",
+      "line": 25,
+      "src": "logo.png",
+      "alt": "",
+      "prose_after": true,
+      "badge_row": false
+    },
+    {
+      "kind": "image",
+      "line": 27,
+      "src": "docs/architecture.png",
+      "alt": "system architecture",
+      "prose_after": true,
+      "badge_row": false
+    }
+  ],
+  "badges": {
+    "count": 7,
+    "items": [
+      {
+        "alt": "b1",
+        "src": "https://img.shields.io/badge/build-passing.svg",
+        "line": 3
+      },
+      {
+        "alt": "b2",
+        "src": "https://img.shields.io/badge/version-1.0.svg",
+        "line": 4
+      },
+      {
+        "alt": "b3",
+        "src": "https://img.shields.io/badge/license-MIT.svg",
+        "line": 5
+      },
+      {
+        "alt": "b4",
+        "src": "https://img.shields.io/badge/coverage-90.svg",
+        "line": 6
+      },
+      {
+        "alt": "b5",
+        "src": "https://img.shields.io/badge/PRs-welcome.svg",
+        "line": 7
+      },
+      {
+        "alt": "b6",
+        "src": "https://img.shields.io/badge/made-with-love.svg",
+        "line": 8
+      },
+      {
+        "alt": "b7",
+        "src": "https://img.shields.io/badge/stars-lots.svg",
+        "line": 9
+      }
+    ]
+  },
+  "prose_signals": {
+    "slop_words": [],
+    "em_dash": {
+      "count": 1,
+      "lines": [
+        23
+      ]
+    },
+    "triad_preannounce_lines": [],
+    "degree_adverbs_ja": [],
+    "stadium_lines": []
+  },
+  "history_signals": [],
+  "numeric_claims": [],
+  "doi_citation": {
+    "doi_present": true,
+    "doi_first_line": 34,
+    "how_to_cite_present": false
+  },
+  "note": "evidence only — no verdict, no threshold; the judge decides what matters"
+}

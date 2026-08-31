@@ -1,0 +1,100 @@
+{
+  "path": "fixtures/sample_clean.md",
+  "lang_guess": "en",
+  "line_count": 27,
+  "structure": {
+    "h1_count": 1,
+    "headings": [
+      {
+        "level": 1,
+        "text": "Acme Parser — turn messy logs into typed events",
+        "line": 1
+      },
+      {
+        "level": 2,
+        "text": "What problem does it solve?",
+        "line": 14
+      },
+      {
+        "level": 2,
+        "text": "How do I install it?",
+        "line": 19
+      },
+      {
+        "level": 2,
+        "text": "Where do I go next?",
+        "line": 24
+      }
+    ],
+    "heading_level_jumps": [],
+    "broken_local_refs": [],
+    "images_without_alt": []
+  },
+  "identity_lead": {
+    "present": true,
+    "line": 3
+  },
+  "first_screen": {
+    "end_line": 14,
+    "lines": 13,
+    "prose_lines": 3,
+    "links": 0,
+    "new_terms": [
+      {
+        "term": "for backend engineers",
+        "line": 3
+      }
+    ],
+    "adr_refs": 0,
+    "github_repos": []
+  },
+  "insider_refs": {
+    "adr_total": 0,
+    "adr_unique": 0,
+    "adr_ids": {},
+    "github_repo_count": 0,
+    "github_repos": {},
+    "doc_paths": {},
+    "dois": {}
+  },
+  "term_candidates": [
+    {
+      "term": "for backend engineers",
+      "kind": "bold",
+      "count": 1,
+      "first_line": 3
+    }
+  ],
+  "details_blocks": [],
+  "figures": [
+    {
+      "kind": "mermaid",
+      "line": 7,
+      "prose_after": true
+    }
+  ],
+  "badges": {
+    "count": 0,
+    "items": []
+  },
+  "prose_signals": {
+    "slop_words": [],
+    "em_dash": {
+      "count": 1,
+      "lines": [
+        1
+      ]
+    },
+    "triad_preannounce_lines": [],
+    "degree_adverbs_ja": [],
+    "stadium_lines": []
+  },
+  "history_signals": [],
+  "numeric_claims": [],
+  "doi_citation": {
+    "doi_present": false,
+    "doi_first_line": null,
+    "how_to_cite_present": false
+  },
+  "note": "evidence only — no verdict, no threshold; the judge decides what matters"
+}

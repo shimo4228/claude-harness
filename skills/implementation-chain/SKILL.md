@@ -92,6 +92,7 @@ routing を自発的に行うようになったら、この段落を外す。）
   - パッケージ資産（プロンプト・シード・テンプレート・サービス定義）の増減 → 設定リファレンスの canonical 節
   - CLI / user-facing 挙動の変更 → README / llms.txt
   - 数値クレームの規律: 集約カウントの正本は 1 箇所のみ（他はポインタ）。機械検証可能な doc↔実体対応は prose 修正でなくテストで固定する（検出は code、削除判断は人間）
+  - 機械が parse する出力（hook 封筒 / lint 指摘行 / evidence JSON / claims の 1 行形式）の変更 → 対応する golden（`tests/golden/`）を同じ diff で更新。golden 更新が正当なのは**タスクがその出力の変更を宣言しているときだけ** — スコープ外の golden 赤は修正でなく事故報告（規約の正本: `tests/golden/README.md`）
 
 built-in review は chain の正規ステップである（ADR-0039 → ADR-0042 で T-004「自動枠は変更しない」を
 全面反転）。担当の割り当ては下の Review 表が正本。

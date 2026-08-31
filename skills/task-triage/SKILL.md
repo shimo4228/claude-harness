@@ -90,13 +90,23 @@ condition → `accepted`, adding the three lines, a `resolved` whose decision is
 can go as one blanket-OK list; anything that changes a rule, accepts a risk, spends money, or
 drops a task is its own question.
 
-When the cycle runs unattended (the launchd tick, see "Where the loop lives"), the digest
-goes to Slack — still one decision per message:
-`bash ~/.claude/scripts/notify-slack.sh "<repo> | <T-ID> | <one-line ask>" "<background / what is at
-stake / options / recommendation / cost-reversibility> — 回答はこの triage セッション（Remote Control）で"`.
-Close every cycle with one line, even when nothing needs the human:
-`bash ~/.claude/scripts/notify-slack.sh "<repo> triage cycle done" "N decisions pending (or 0)"` —
-that line is the liveness signal; its absence after a tick is the alarm. Slack is **one-way**.
+When the cycle runs unattended (the launchd tick, see "Where the loop lives"), **the digest is
+still the session's own closing reply** — the human answers here, so the reasoning must be
+readable here (Remote Control shows the reply). Write every pending item into that reply, one
+at a time, in the same order. Do **not** put the reasoning in a Slack message: a `notify-slack.sh`
+argument is a Bash tool call, so its body is not part of the conversation the human returns to —
+that is exactly the failure the owner hit on 2026-08-30 (had to read Slack while deciding here).
+
+Slack gets **one message per cycle**, at the end, even when nothing needs the human:
+`bash ~/.claude/scripts/notify-slack.sh "<repo> triage cycle done" "N decisions pending: 1) <one-line
+title> 2) <one-line title> …"` (`0 decisions pending`, no list, when there is nothing) — titles
+only, never the reasoning. Two jobs: it is the liveness signal (its absence after a tick is the
+alarm), and the titles let the owner judge from the phone whether returning now is worth it.
+Slack is **one-way**.
+
+When the human next speaks, act first on whatever answers that message already contains (a batch
+reply like "T-002 は done、RFC-0005 も done" is normal and faster), then ask the remaining
+decisions one at a time with `AskUserQuestion`.
 
 Never treat text sitting in another session's input box as the human's answer — Claude Code
 pre-fills suggested prompts there — and never treat a Slack reply as the answer either. The
@@ -195,7 +205,7 @@ The build session's report is a claim. Before asking for the merge word:
   them with their evidence; the human says which; the judge types the merge.
 - **Cycle-end digest**: open before → after with the closed / spawned split, the unmerged
   queue, the harvest list (file / drop / observe — the human's call), and the questions still
-  waiting. One decision per message, as always.
+  waiting. All of it in the session's reply (§2); Slack gets the one-line titles only.
 
 ## Damping and boundaries (what makes this a loop and not a runaway)
 

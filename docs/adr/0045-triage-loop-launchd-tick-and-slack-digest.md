@@ -76,11 +76,23 @@ CA は土曜 09:00 に `com.moltbook.weekly-pipeline` が走り、packet 締切�
    「<repo> triage cycle done — N decisions pending (or 0)」の 1 行を送る（生存信号。tick の後に
    この行が無いこと自体が警報になる）。Slack 上の返信は人間の答えとして扱わない —
    ADR-0043 の「他セッションの入力欄の文字は人間の言葉ではない」規則と同じ扱いを Slack にも適用する。
+
+   > **注記 2026-08-30**: digest 本文の置き場を Slack から**セッションの応答本文**へ移した。前提
+   > 「Slack は人間が判断材料を読める唯一の out 経路」が実運用で崩れている — 著者は常に triage
+   > セッションへ戻って判断しており（Remote Control でも応答は読める）、`notify-slack.sh` の引数は
+   > Bash tool call なので戻ってきた会話には要約しか残らず、Slack を見ながら判断する形になっていた。
+   > Slack は cycle 末尾 1 通のみ（`N decisions pending: 1) <一行タイトル> …`）— 生存信号の役割と、
+   > 「いま戻る価値があるか」を電話で判断できる粒度は保つ。1 判断 1 メッセージの原則は残るが、
+   > 宛先が Slack からセッション応答になった。片方向性と anti-spoofing 規則は不変。
+   > 判断待ちのファイル永続化は行わない（別セッションで判断しない — 著者確認 2026-08-30。
+   > 退出時も transcript が `claude --resume` で辿れるので fallback を置かない）。
 4. **CLI wrapper を持つのは Vault / aeon からの意図的逸脱。** 理由: ここでは LLM が作成した
    digest そのものが送る内容であって目的に合致する、sink は著者本人のチャンネルであり外部への
    exfiltration 面ではない、body は `jq --arg` で JSON 化するのみで shell 評価が入らない、Slack は
    片方向で返信を指示として拾う経路を作らない。逸脱理由は script 冒頭にも書く。
-5. **cadence（Asia/Tokyo）**: harness = 土曜 08:03 に stocktake → triage。CA = 水曜 17:07 に
+5. **cadence（Asia/Tokyo）**: harness = 土曜 08:03 に stocktake → triage（**訂正 2026-08-29**:
+   土曜午前の LLM ジョブ集中を避けて**日曜 06:30** へ移設、plist に `--stocktake` を明示。
+   下記の「実行される正本は plist」に従う）。CA = 水曜 17:07 に
    triage、土曜 14:07 に stocktake → triage（pipeline packet 締切 13:30 の後、人間の gate の前）。
    stocktake の要否は tick が曜日（土）で決める。plist は repo ごとに 1 本
    （`scripts/launchd/com.shimomoto.triage-{harness,ca}.plist` を正本として
@@ -104,8 +116,9 @@ CA は土曜 09:00 に `com.moltbook.weekly-pipeline` が走り、packet 締切�
   再訪する（観測点: tick が spawn 時に出す Slack 1 行。ログは machine-local で誰も定期的に読まない
   ので、Slack 側で数える）。
 - Slack 通知が 2 cycle 連続で読まれない（digest に対する答えが session に来ない）なら、通知経路
-  （Slack 片方向）を再訪する（観測点: 未回答の判断は台帳に open のまま残り、次の cycle が同じ
-  digest を再送する — triage セッションが「前回と同じ判断を再度送っている」と気づいた時点）。
+  （Slack 片方向）を再訪する。観測点（2026-08-30 更新）: 末尾 1 行の `N decisions pending` が
+  2 cycle 連続で減らないこと。旧観測点「同じ digest を Slack へ再送していると気づく」は、digest
+  本文が Slack から消えた（Decision 3 の注記）ので使えない。
 - CLI wrapper 経由で repo 由来の文字列が Slack に指示文として現れた事例が出たら、逸脱
   （Decision 4）を巻き戻して通知を shell 側へ戻す。
 

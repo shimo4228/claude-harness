@@ -30,3 +30,5 @@ README には書かない（複製は drift する）。
 | [0016](0016-agent-tool-build-path-hook-parity.md) | Agent tool 実装経路の hooks/skills 発火同一性の実測検証 |
 | [0017](0017-skill-description-residency-optimization.md) | skill listing の常駐コストを description 側から削る（本数軸の実測による差し替え） |
 | [0018](0018-description-behavior-contamination.md) | description の挙動汚染（第 2 の rules 層化）の検査・撤去 |
+| [0019](0019-relocated-source-skill-repo-sync-scripts.md) | 移設済み正本を指す 3 skill repo の sync script source 更新 |
+| [0020](0020-rust-for-resident-infra.md) | 常駐 infra の Rust 化 — 移行でなく発火条件つき greenfield pilot 方針 |

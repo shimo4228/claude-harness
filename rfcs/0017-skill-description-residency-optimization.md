@@ -106,9 +106,8 @@ done 2026-08-29 — 同日実施完了。当初の A/B 割当から 2 点変わ�
 
 ## Next action
 
-着手可能。build セッションで以下の順に片づける:
+完了。RFC-0017 由来の残作業は無い。派生 2 件が別エントリで走っている — **RFC-0018**（description の挙動汚染、done 2026-08-29）と **RFC-0019**（移設で source を失った 3 skill repo の sync script、accepted）。
 
-1. **窓不足 3 本を対象から外す**（`measurement-discipline` / `repair-discipline` / `loop-design-check`）。0 は「未使用」でなく「窓が無い」
-2. **III-a 11 本 / III-b 4 本それぞれに A（`disable-model-invocation`）か B（1 行 description）かを割り当てる。**判断軸は「名前すら listing から消してよいか」— 他 skill の `NOT for` 参照や rule の命令形配線から到達できるなら A、入口が listing しかないなら B
-3. **Build-or-not 4 問を自答して 3 択を決める**（定期実行 / review-to-lint 化 / 何も建てない）。S1 の集計 script が残っているので、既定は「何も建てない」寄り
-4. 分母（plugin / built-in 側の description）は本 RFC の scope 外。削減率を対外的に語るときだけ測る
+**triage 照合 2026-08-30**: 実効常駐は 40,815 → **25,238 字**、listing 対象は 92 → 72 エントリ（skills 67→58 / agents 25→14、うち `disable-model-invocation` 15）。当初見込み −6,596 字を大きく超えたのは手段 D が本数と description を同時に落としたため。
+
+（旧 Next action は accepted 時の着手手順 4 項目。実施済みのため撤去）
