@@ -1,0 +1,2 @@
+state: blocked のタスクはありません。
+単一表 .notes/TASKS.md にも行がある — そちらは直接読む。

@@ -1,0 +1,7 @@
+{
+  "systemMessage": "shown to user",
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": "ctx"
+  }
+}

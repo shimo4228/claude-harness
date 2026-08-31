@@ -82,6 +82,20 @@ HOOK_ALLOWLIST=(
   tests/ruff-format-precommit.bats
   tests/task-claims.bats
   tests/review-model-notice.bats
+  # Golden output freezes (2026-08-31): full-shape snapshots of outputs that
+  # machines parse, for the published subjects only. golden-harness-lint stays
+  # out with its subject (harness_lint.py, ~/.claude-specific — see above).
+  tests/golden-advisory-envelope.bats
+  tests/golden-review-chain-notice.bats
+  tests/golden-claims-ready.bats
+  tests/golden/README.md
+  tests/golden/advisory/basic.json
+  tests/golden/advisory/extra.json
+  tests/golden/advisory/truncated.json
+  tests/golden/review-chain-notice/commit.json
+  tests/golden/claims/ready.txt
+  tests/golden/claims/ready-empty.txt
+  tests/golden/claims/ready-no-store.txt
 )
 
 DRY_RUN=0
@@ -150,6 +164,7 @@ for rel in "${HOOK_ALLOWLIST[@]}"; do
     echo "       Reconcile scripts/sync-from-local.sh with $SOURCE_DIR." >&2
     exit 1
   fi
+  mkdir -p "$STAGING/$(dirname "$rel")"   # nested entries (tests/golden/...)
   cp -p "$SOURCE_DIR/$rel" "$STAGING/$rel"
 done
 

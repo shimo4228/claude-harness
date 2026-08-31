@@ -1,0 +1,6 @@
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "additionalContext": "本文 1 行目 \"quoted\" \\back\n2 行目\tタブ"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "additionalContext": "Review と Verify は済んでいますか？ 未完了なら skill: implementation-chain を確認して実行してください。"
+  }
+}
