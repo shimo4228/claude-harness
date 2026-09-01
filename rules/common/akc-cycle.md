@@ -1,9 +1,18 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0018 + ADR-0035 — skill 群が import する Scaffold Dissolution のローカル正本だけを常駐 -->
-<!-- review-when: import 元 skill が消えた時 / substrate が knowledge cycle を native 化した時 / モデル世代交代時 / 発散と照合の分離が会話パターンに吸収された時（却下記録の読み方節を溶かす） -->
-# AKC Rules (local edition)
+<!-- rationale: ADR-0018 + ADR-0035 + 二版化（2026-09-01）— skill 導入済み環境向けのポインター版。全機構を所有者へのポインターとして登載し、本 rule 自身が所有するのは Scaffold Dissolution（判定基準含む）と ADR / 却下記録の読み方のみ。skill 未導入環境向けの自己完結版は akc-cycle repo が別内容で持つ -->
+<!-- review-when: ポインター先の skill / rule が改廃された時 / substrate が knowledge cycle を native 化した時 / モデル世代交代時 / 発散と照合の分離が会話パターンに吸収された時（却下記録の読み方節を溶かす） -->
+# AKC Rules (pointer edition)
 
-6 phase の手順は各 skill が持つ。skill 未導入環境向けの自己完結版は AKC repo が正本。
+AKC の全機構と所有者。手順・本文は所有者側が正本で、ここには複製しない。
+
+| 機構 | 所有者 |
+|---|---|
+| 6 phase 手順 | Research→skill: `search-first` / Extract→`learn-eval` / Curate→`skill-health`+`skill-stocktake`+`rules-stocktake`+`agent-stocktake` / Promote→`rules-distill` / Measure→`skill-comply` / Maintain→`context-sync`+`repo-asset-stocktake`（mutable snapshot — AKC ADR-0019） |
+| 三役ループ judge/build/human（AKC ADR-0024） | skill: `task-triage`、rule: `planning.md` |
+| LLM-first artifact readability（AKC ADR-0025） | rule: `llm-first-code.md` |
+| expiry-conditioned knowledge（AKC ADR-0026） | rule: `knowledge-staleness.md` + 本 rule の「ADR も足場」「却下記録の読み方」節 |
+| mental model / instance の区別（AKC ADR-0027） | AKC repo の CLAUDE.md（harness rule の対象外） |
+| 自己完結版（skill 未導入環境向け） | akc-cycle repo `rules/common/akc-cycle.md`（本ファイルとは別内容 — 二版化 2026-09-01） |
 
 ## Scaffold Dissolution
 
@@ -14,6 +23,14 @@ rule は足場であり、実践が自然に回るようになれば簡素化・
 
 モデル世代交代も downward のトリガー。旧世代向けの禁止・網羅的手順・反復強調は
 skill: `generation-audit` で再監査する。
+
+判定基準（AKC ADR-0022 / ADR-0023）:
+
+- **完了証拠は held-out transfer** — 同一文脈での ablation 判別不能は必要証拠止まり。
+  溶かしてよい証拠は、scaffold 無しの新文脈で挙動が再現すること
+- **負の極は積極削除** — 負の情報差分を持つ artifact（古い既定を上書きする drift した
+  rule 等）は放置でなく削除する。沈黙・ablation・transfer はいずれも「不在」しか検出
+  できず負の差分に盲目なので、モデル世代交代時の generation review で監査する
 
 ## ADR も足場である（2026-08-14 著者指示）
 

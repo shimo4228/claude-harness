@@ -54,6 +54,9 @@ hook を薄型化する過程で、global skill `when-code-when-llm` の構造 /
    保持する。
 6. human-gate repo に retirement note を公開し、claude-harness を同期する。圧縮した
    `rules/common/akc-cycle.md` は self-contained distribution repo へ同期しない。
+   （2026-09-01 注記: akc-cycle repo の sync script はこの決定に反して rule を同期しており、
+   配布版がローカル圧縮版と byte 同一に drift していた。二版化で復帰 — 配布 repo が
+   自己完結版を所有・sync allowlist から rule を除外、ローカルはポインター版へ改稿）
 7. global skill `when-code-when-llm` を退役する。この判断軸は Contemplative Agent には適合するが、
    global harness では局所的な構造 / 意味分離を一般原則へ膨らませ、hook の過剰設計を誘発した。
    standalone repo は研究履歴として残すが、global skill の同期対象から外す。

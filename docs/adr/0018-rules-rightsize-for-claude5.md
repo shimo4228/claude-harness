@@ -82,5 +82,6 @@ Troubleshooting Test Failures（`testing.md`）は当初どこにも着地させ
 
 - **Chain Matrix が確率発火に変わる**。skill の自発トリガーは実質上限 ≒ 40%（既知の測定値）なので、`implementation-chain` が呼ばれないまま実装が進む可能性がある。→ `planning.md` に 1 行ポインタを残し、`user-invocable: true` で `/implementation-chain` からも到達可能にした。`skill-comply` で発火率を測定し、立たない場合は `planning.md` のポインタを命令形（「chain を組むときは `/implementation-chain` を呼ぶ」）に変える fallback を用意する。
 - **`akc-cycle.md` がローカル版と AKC repo 配布版で乖離する**。配布版は「skill 未導入でも動く自己完結版」という設計意図を持つため、圧縮を上流に同期してはならない。ローカルファイル冒頭にこの区別を明記した。`harness-sync` で公開 repo に同期する際は、この 1 ファイルが差分として扱われることに注意する。
+  （2026-09-01 注記: akc-cycle repo の sync script が rule を allowlist に含めており、この禁止に反して圧縮版が配布 repo へ同期され両者が byte 同一に drift していた（2026-08-27 の sync で確認）。同日、二版化で元判断に復帰 — 配布 repo が自己完結版（英語、6 phase 表 + AKC ADR-0022〜0026 反映）を所有し sync 対象外に、ローカルはポインター版に改稿）
 - Python の慣行が確率発火になる。→ `python-patterns` は Python ファイル編集時の description トリガーを持ち、`python-review` skill / `python-reviewer` agent が review 段で決定論的に当たる。ruff / pyright は hook / LSP で機械強制されており、退役したのは「機械が既に強制している内容の文章版」である。
   （2026-08-13 注記: `python-review` skill / `python-reviewer` agent は [ADR-0039](0039-retire-python-reviewer-simplify-in-chain.md) で退役し、この反論の agent 経路は失効した。残るのは機械強制層と `code-reviewer` + built-in `/simplify`）

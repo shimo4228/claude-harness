@@ -155,14 +155,17 @@ root files 不可侵・commit しない、は共通。
 
 ### Rule + plugin repo variant (akc-cycle)
 
-`akc-cycle` は 2026-07-15 に rule 単独から **rule + Claude Code plugin** に拡張された。
-script は固定 allowlist 方式: 1 rule (`rules/common/akc-cycle.md`) + 9 skills (AKC cycle
-phase binding: search-first / learn-eval / skill-stocktake / skill-health / rules-stocktake /
-rules-distill / skill-comply / context-sync / repo-asset-stocktake) + 2 agents (adr-writer /
-codemap-writer) を staging → prune → YAML frontmatter 検証 → secret scan → subtree 置換
-(rules/ skills/ agents/)。allowlist の component が harness に無い / origin marker が無い
-と abort (silently drop しない)。**`.claude-plugin/plugin.json` / `marketplace.json` は
-repo 側 root 資産** (README / LICENSE と同格) — sync は触らない。version 更新は
+`akc-cycle` は 2026-07-15 に rule 単独から **rule + Claude Code plugin** に拡張され、
+2026-09-01 の二版化で **rule は sync 対象外**になった: repo が自己完結版
+(self-contained edition) を所有し、harness 側はポインター版 — 別内容が意図
+(ADR-0018 / ADR-0035 の「圧縮版を配布 repo へ同期しない」への復帰)。script は固定
+allowlist 方式: 9 skills (AKC cycle phase binding: search-first / learn-eval /
+skill-stocktake / skill-health / rules-stocktake / rules-distill / skill-comply /
+context-sync / repo-asset-stocktake) + 2 agents (adr-writer / codemap-writer) を
+staging → prune → YAML frontmatter 検証 → secret scan → subtree 置換 (skills/ agents/)。
+allowlist の component が harness に無い / origin marker が無いと abort (silently drop
+しない)。**`.claude-plugin/plugin.json` / `marketplace.json` と `rules/common/akc-cycle.md`
+は repo 側 root 資産** (README / LICENSE と同格) — sync は触らない。version 更新は
 plugin.json を repo 側で手動 bump する。plugin は rules を運べない (Claude Code plugin
 仕様) ため、rule file は plugin payload 外の copy-install 経路のまま。
 
@@ -214,7 +217,7 @@ Packaging から 2026-07-03 に移動）:
 | `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
-| `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | rule + plugin (9 skills + 2 agents) | `scripts/sync-from-local.sh` (rule + plugin 版、固定 allowlist) | `~/.claude/rules/common/akc-cycle.md` + 対象 skills/agents |
+| `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (9 skills + 2 agents) + repo 所有 rule (自己完結版、sync 対象外 — 2026-09-01 二版化) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist) | 対象 skills/agents のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
 | `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/herdr-delegate` + `~/.claude/skills/spawn-session` |
 | `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
