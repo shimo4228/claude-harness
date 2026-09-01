@@ -65,6 +65,7 @@
 | [0059](0059-verify-precommit-block-on-stale-approval.md) | verify-precommit の承認失効（exit 71 = 台帳に載っている repo のゲートが編集で hash 不一致）は commit を block する — 通知のみの失効挙動が 3 週間の沈黙（CA、2026-08-06〜28、ゲート未実行のまま commit が通り続けた）を許した実害への修理。未承認（exit 70）は従来どおり通知して通す。回帰テスト 4 本 | accepted | 2026-08-28 |
 | [0057](0057-judge-tier-default-dispatch-and-plan-boundary-advisory.md) | judge-tier セッションの実装既定を dispatch へ反転（自己実装は例外 3 種の 1 行記録時のみ）+ plan 承認境界（ExitPlanMode PostToolUse）の advisory hook `plan-executor-notice.sh` 新設 + planning.md 常駐 1 行。spawn-session のモデル固定は著者実測（herdr dispatch で Opus 起動成立）により却下。ADR-0043 の 2026-08-22 注記の穴に enforcement を足す | accepted | 2026-08-28 |
 | [0058](0058-writing-harness-scaffold-dissolution.md) | 執筆ハーネス 15 ファイル 2,504 行の規約を短い原則へ戻す（Scaffold Dissolution）。Orwell 6 rules の取り込みを調べた結果、4 つは既存と重複し、差は内容ではなく書き方だった — 原則に例示・例外・判定手順・整合弁明・出自の日付を添えると問いが起きなくなる。原則は skill 本文、閾値は判定 agent、直し方は references/ へ三層分離。複製は正本 1 つへ統合（Output Format 55 行 × 2 → 共有 reference）。実測由来の拡張も畳む（著者裁定）。ルール 1 は禁止形のみ、ルール 6 の例外条項を追加。writing-ecosystem 438 → 378 行 | accepted | 2026-08-28 |
+| [0060](0060-codemap-evidence-script-and-freshness-gate-mechanization.md) | codemap chain の機械検査（freshness gate / header 検収）を `update-codemaps/scripts/codemap_evidence.py` へ抽出（review-to-lint 適用、著者指示発火）— evidence 既定 + `--gate --produced` 限定の厳格検収。免除境界は 10 repo / 24 codemap 実測（spec 準拠 0 件 → legacy は evidence 注記どまり）。zsh word-splitting 罠と orphan 誤裁定を code の性質へ。verify.sh の owned 判定に ECC-customized を追加 | accepted | 2026-09-01 |
 
 ## Template
 

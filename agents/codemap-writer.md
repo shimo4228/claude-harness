@@ -221,4 +221,14 @@ omitting it — the caller's freshness gate needs to know why the field is missi
 
 ## When You Are Done
 
-Return the summary block (see step 5) and stop. The caller (skill or upstream agent) decides whether to commit the changes.
+Before returning, run the mechanical gate on the files you produced — do not verify headers
+by eye; the script is the executor of the header spec:
+
+```bash
+python3 ~/.claude/skills/update-codemaps/scripts/codemap_evidence.py \
+  --repo <repo-root> --gate --produced INDEX.md architecture.md ...   # your "Files produced"
+```
+
+Exit 3 lists defects (`LEGACY_HEADER` / `STALE_SOURCE` / `BAD_DATE` / …) — fix the named files
+and re-run before returning. Then return the summary block (see step 5) and stop. The caller
+(skill or upstream agent) decides whether to commit the changes.
