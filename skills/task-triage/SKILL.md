@@ -29,9 +29,7 @@ lens it was designed with).
 ## Vocabulary — do not invent states
 
 Ledger states are `draft` / `accepted` / `in_progress` / `blocked` and the terminals
-`done` / `resolved` / `rejected` / `withdrawn` / `obsoleted` (standardized 2026-08-25,
-ADR-0050; old words candidate/ready/decided/dropped/retired map 1:1, dropped splitting into
-rejected/withdrawn); `blocked` requires 再開条件 / 照合先 / 成立時,
+`done` / `resolved` / `rejected` / `withdrawn` / `obsoleted` (ADR-0050); `blocked` requires 再開条件 / 照合先 / 成立時,
 便乗型 rows ("次に X を触るとき") do not belong in a ledger. The definitions live in
 `task-stocktake` — read that section before the first triage. There is no "defer".
 
@@ -176,8 +174,7 @@ The build session's report is a claim. Before asking for the merge word:
   Read the commit body and the final message. Two kinds reach the digest as decisions:
   (1) **out-of-diff findings that break the loop itself** (the next build would bounce on
   them — e.g. a verify.sh blind spot) with a verified producer → propose filing
-  (`spawn --origin review --producer`), per skill `task-stocktake`'s 起票規律 (ADR-0055 で
-  「HIGH 以上」から再絞り込み) — the filing itself (numbering, template, index row) follows
+  (`spawn --origin review --producer`), per skill `task-stocktake`'s 起票規律 (ADR-0055) — the filing itself (numbering, template, index row) follows
   skill `rfc-writer`; (2) **explicit filing requests
   that are the deliverable of a measurement / probe task** (a probe's "(B)/(C) はやる価値がある",
   an instrument finding such as "the metrics are polluted") — these are not review findings,
@@ -192,8 +189,7 @@ The build session's report is a claim. Before asking for the merge word:
 
 - `git -C <repo> merge --ff-only task/<name>` → run verify on `main` again → `claims.py
   release T-XXX --outcome done --commit <sha>` → state `done <date>` in the ledger (an
-  `rfcs/` entry stays in place as a public decision record — ADR-0049; a legacy
-  `.notes/tasks/` file is `mv`ed to `.notes/archive/tasks/`) → `git worktree remove` +
+  `rfcs/` entry stays in place as a public decision record — ADR-0049) → `git worktree remove` +
   `git branch -d` → close the build
   session's pane (`herdr pane close <pane_id>`; the pane is not evidence — the commit body is).
   Never close panes you did not spawn.
@@ -269,7 +265,7 @@ pipeline's 13:30 packet deadline and before the human gate). The tick's *default
 "stocktake due" is the weekday (Saturday) so a repo with two slots keeps one plist — but a
 repo with a single weekly slot must pass `--stocktake` in its plist, or moving that slot off
 Saturday silently kills the stocktake half (harness hit exactly this when it moved off
-Saturday 2026-08-29; the flag is now explicit in its plist).
+Saturday 2026-08-29).
 
 The plists live in `scripts/launchd/` and are copied to `~/Library/LaunchAgents/`; after
 editing one, `launchctl bootout` + `bootstrap` it and confirm with `launchctl print` — an

@@ -16,8 +16,7 @@ skill: `task-stocktake` が持つ。形は 2 つ:
   入場条件・終端語の使い分け）、**起票の正本は skill: `rfc-writer`**（足切り・採番・
   様式・公開規約・index 規約）。ここには複製しない — 分散した版は誰も刈らず肥大する。
   並行セッションが別タスクを消せない置き方
-  （先例: contemplative-agent、2026-08-15）。旧 store `.notes/tasks/` は 2026-08-25 に
-  廃止（全 repo 移送完了、dual-read も畳んだ — RFC-0001）
+  （先例: contemplative-agent、2026-08-15）
 
 store の repo では**全件を読まない**: `python3 ~/.claude/scripts/claims.py ready` が
 着手可能なタスクを 1 行ずつ出す（claim 中の印付き）。1 件の全文はそのファイルを読む。

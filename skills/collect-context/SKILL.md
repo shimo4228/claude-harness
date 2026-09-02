@@ -14,7 +14,7 @@ origin: shimo4228
 
 **collect-context は証拠を集めるだけ。** テーマ・方向性・タイトル・構成・読者想定・
 差別化戦略は決めない。誰が正本かは**受け側 repo の rules のチャンネル表**を引く
-（執筆 orchestrator は `writing-ecosystem` — `~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）。
+（執筆 orchestrator は `writing-ecosystem` — `~/MyAI_Lab/zenn-content` 常駐）。
 特定 project の skill 名をここに列挙しない。
 
 - 出力に**収集者の推薦・提案・方向性メモを書かない**

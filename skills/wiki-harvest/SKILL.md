@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 各研究 repo の `CLAUDE.md`「Research Wiki Consultation」節に *passive prose* で書かれている還元マップ（4カテゴリ）を、再現可能な能動手続きに形式化したもの。wiki の合成知識を diff → ランク付き候補 → repo 内 ledger に落とす。daily-research → wiki（合成層）→ repo（昇格）という一方向ループの最終辺を1コマンドで回す。
 
-> 兄弟スキル: `wiki-query` = chat 上の自由 Q&A（良回答は `wiki/concept/` へ書き戻す read-write。2026-08-06 に復活）。`wiki-harvest` = repo 向け定型抽出 → 台帳で、**wiki には書き込まない**。置き換えではない。
+> 兄弟スキル: `wiki-query` = chat 上の自由 Q&A（良回答は `wiki/concept/` へ書き戻す read-write）。`wiki-harvest` = repo 向け定型抽出 → 台帳で、**wiki には書き込まない**。置き換えではない。
 
 ## Vault パス（固定）
 
@@ -27,7 +27,7 @@ VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vaul
 
 > この skill は shimo4228 の個人運用（固定 vault + 自分の研究 repo 群）に紐づく。repo→concept マッピングは skill にハードコードせず、各 repo の CLAUDE.md から読む（下記 Step 1）。
 
-## 制約（CRITICAL）
+## 制約
 
 - **wiki は read-only**。この skill から vault 内のいかなるファイルにも書き込まない。wiki の更新（ingest / index / log）は vault セッションの `/ingest` の領域。一方向ループ（source → wiki → repo）を保全する。
 - **書き込みは repo 内の ledger のみ**。`.notes/wiki-harvest/ledger.md`（working/non-citable・gitignore 対象）だけを生成・更新する。
@@ -63,14 +63,14 @@ VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vaul
 
 抽出・列挙は機械的に網羅する（enumerate）。採否は次の Step で絞る（decide）。
 
-> **CRITICAL — 「ADR 候補」マークを ADR 直行と読まない**: concept ページの「ADR 候補」は *論点の提起*
+> **「ADR 候補」マークを ADR 直行と読まない**: concept ページの「ADR 候補」は *論点の提起*
 > であって *ADR 化の指示ではない*。ADR は「すでに下した決定の記録」であり、決定する装置ではない。
 > ①② は必ず Step 3.5 の response-type triage を通す。ここを飛ばすと「研究知見 → ADR の種」が直結し、
 > 実装判断を飛ばして成果物を先に作る（調べた労力を回収したくて成果物に走るサンクコスト罠）。
 
 ### Step 3 — signal フィルタ（品質ゲート）
 
-output discipline を適用する（正本はこの節 — 旧 `rules/common/akc-cycle.md` の Signal-first 常駐節は [ADR-0026](../../docs/adr/0026-retire-signal-first-residency.md) で退役、原則は本 skill にインライン内在化済み）。**各候補は repo の具体的アクションを名指しできなければ捨てる**:
+output discipline を適用する（正本はこの節。[ADR-0026](../../docs/adr/0026-retire-signal-first-residency.md)）。**各候補は repo の具体的アクションを名指しできなければ捨てる**:
 
 - どの ADR 番号を更新 / 新設するか
 - どの graph 辺 / glossary 語 / manifesto 項を足す・解消するか
@@ -129,7 +129,7 @@ triage しない（＝ ①② を全部 ADR 候補として起こす）と、`de
 4. ranking: signal の強さ（repo アクションへの影響度）で `high` / `med` / `low`。
 5. **task 台帳との関係**: この ledger は**候補台帳**であってタスク台帳ではない（rule `common/task-tracking.md` の単一台帳の対象外 — 採否判断前の候補はタスクでない）。候補が `promoted` になり、昇格作業がそのセッション内で完結しない場合は、repo の task 台帳に 1 行立てて引き継ぐ。
 
-完了後、生成した候補の要約（件数・**response-type 別内訳**・high rank の見出し）を chat に返す。**ADR/graph への昇格も prototype の着手も提案に留め、自動で書かない・自動で実装しない**。承認されたら `framing` は `adr-writer`、`prototype` は計器/spike の実行（read-only 計器が第一手）、③④ は `citation-sync`（`~/MyAI_Lab/paper-lab` 常駐、2026-08-29 移設） / `jsonld-knowledge-graph` に人間が手動で引き継ぐ。
+完了後、生成した候補の要約（件数・**response-type 別内訳**・high rank の見出し）を chat に返す。**ADR/graph への昇格も prototype の着手も提案に留め、自動で書かない・自動で実装しない**。承認されたら `framing` は `adr-writer`、`prototype` は計器/spike の実行（read-only 計器が第一手）、③④ は `citation-sync`（`~/MyAI_Lab/paper-lab` 常駐） / `jsonld-knowledge-graph` に人間が手動で引き継ぐ。
 
 ### Step 6 — 採用ゲート（load-bearing 前の一次照合 / fact-check）
 
@@ -138,8 +138,8 @@ triage しない（＝ ①② を全部 ADR 候補として起こす）と、`de
 citation を durable artifact に deposit する）**の前に、元の一次文献に対して主張を fact-check する**。抽出段（Step 4）は
 一次 ID を*見つける*だけ。この Step 6 はその一次が digest の言う通りの内容かを*確認*する — 別工程。
 
-- **機構・手法の主張**（「論文 X はこういう仕組み」）→ **`fact-checker` agent**（`~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）に一次（arXiv/DOI）照合を依頼。
-- **数値・実証・access-blocked な一次** → **`cited-source-mirror-verification` skill**（③ citation は従来どおりこれ。`~/MyAI_Lab/paper-lab` 常駐、2026-08-29 移設）。
+- **機構・手法の主張**（「論文 X はこういう仕組み」）→ **`fact-checker` agent**（`~/MyAI_Lab/zenn-content` 常駐）に一次（arXiv/DOI）照合を依頼。
+- **数値・実証・access-blocked な一次** → **`cited-source-mirror-verification` skill**（③ citation は従来どおりこれ。`~/MyAI_Lab/paper-lab` 常駐）。
 - **一次が到達不能**なら claim は `UNVERIFIABLE` のまま。採用するなら durable artifact に「**未照合の前提**」と明記するか、`defer`。
 
 **なぜ（この Step が防ぐ具体的失敗）**: digest は論文の手法を reframe しうる。prototype を「論文 X は Surprise×Utility

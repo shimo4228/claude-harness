@@ -112,7 +112,7 @@ jq -r '
 
 ## Related
 
-- `session-theme-mining`（`~/MyAI_Lab/zenn-content` 常駐、2026-08-29 移設）— 過去の Claude / Codex セッションから記事の問いを発見する。判断・価値観の正本化はしない
+- `session-theme-mining`（`~/MyAI_Lab/zenn-content` 常駐）— 過去の Claude / Codex セッションから記事の問いを発見する。判断・価値観の正本化はしない
 - `learn-eval` — 現行セッションからの単発パターン抽出（本スキルの単セッション版・対）
 - `skill-stocktake` / `rules-distill` — 生成後のスキル監査・rule への蒸留
 - `skill-creator` — **書く前に必ず通す入口と草稿ゲート**（`rules/common/skills.md` の配線）。Step 5 以降の起草・境界引き・判定はそちらが持ち、本 skill は Step 1–4 の抽出と、Step 7 の ground truth 遡及テストを足す

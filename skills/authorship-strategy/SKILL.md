@@ -174,16 +174,16 @@ Doctrine 単独だと「概念はわかるが実装イメージできない」�
 - **多言語化**: 各言語圏の LLM クローラー + LLM-mediated human 読者に対する diffusion 拡張
 - **Citation-graph federation**: 外部文献を取り込んだら、repo markdown に引用を書くだけで終えない — それは Google Scholar / arXiv "cited by" の citation graph に**不可視**で、被引用研究者には届かない。機械可読層に辺を張る: `.zenodo.json` `related_identifiers` の `relation: references` (→ DataCite / OpenAIRE / Scholix、`release-doi` skill が release ごとに同期) と graph.jsonld の `ExternalReference` ノード (`jsonld-knowledge-graph` skill)。**Wikidata P2860 層は 2026-07 の governance revocation（promotion-only 判定 + 全 item 一括削除）を受け恒久 retire — ADR-0021。self-created な community-authority-record 辺は張らない・再提案しない**。被引用研究者への passive シグナルは self-sovereign 層 (DataCite / OpenAIRE / Scholix + graph) 経由で維持する。能動シグナル (直接連絡・Scholar-indexed paper での正式引用) は別判断だが、受動辺の整備は取り込みの標準手順とする
 - **構造化 artifact**: glossary, ADR, JSON schema, specification
-- **Content 生産は channel と同格の first-class tactic**（2026-08-04 明文化）: 比較エッセイ（coined term を既知概念と対比する "X vs Y" 形式 — 比較構造は生成応答に名前を強制的に残す）、新しい worked instance、教材化・チュートリアル化、翻訳・別ジャンル展開。preference 階層（creative reuse > training > investigation）が最上位に置くのは「再利用される content」であり、インフラ（識別子・置き場・メタデータ）は拡散の**増幅器**であって**発生源**ではない。発生源は 3 つしかない: **(a) 新しい content（読む理由）/ (b) 他者の声による言及 = earned mention（信じる理由）/ (c) 再利用の affordance（使う理由）**。「次の一手」review が channel と測定器だけを出し始めたら、この発生源 3 分類に照らして欠けを補う
+- **Content 生産は channel と同格の first-class tactic**: 比較エッセイ（coined term を既知概念と対比する "X vs Y" 形式 — 比較構造は生成応答に名前を強制的に残す）、新しい worked instance、教材化・チュートリアル化、翻訳・別ジャンル展開。preference 階層（creative reuse > training > investigation）が最上位に置くのは「再利用される content」であり、インフラ（識別子・置き場・メタデータ）は拡散の**増幅器**であって**発生源**ではない。発生源は 3 つしかない: **(a) 新しい content（読む理由）/ (b) 他者の声による言及 = earned mention（信じる理由）/ (c) 再利用の affordance（使う理由）**。「次の一手」review が channel と測定器だけを出し始めたら、この発生源 3 分類に照らして欠けを補う
 - **Friction minimization for runtime adoption**: clone + copy が可能なら専用 infrastructure（MCP server 等）を自前で整備する優先度は低い。最低 friction で adoption が起きる形を選ぶ
 - **External collection への掲載は link-index 型を default に**: awesome list / marketplace / 他者の collection repo 経由で diffusion を求めるとき、artifact 正本は自分の repo に置いたまま**リンクで参照させる**。本文を相手 repo に vendor する型は (a) copy が drift vector になる、(b) host の enclosure（有料化・ライセンス変更）に自分のコンテンツごと巻き込まれる、(c) 収益事業への役務提供と解釈され著者の雇用上の制約と衝突しうる。掲載先は 4 条件で監査する: **①企業所有か ②open license が無いか ③コンテンツを vendor する構造か ④有料製品への funnel か** — 複合するほど危険で、①〜④が揃った先には出さない（リンク型でも回避）。掲載後に有料 tier 導入や vendor 化が見えたら取り下げる。前例と監査記録は project memory（awesome-list-submissions）参照
 - **AI 派生 wiki / MCP-query 面への onboarding**: third-party の AI 生成 wiki + query 面（現行インスタンス: DeepWiki —— public repo から自動生成され、MCP の ask 系で任意の agent が repo の合成理解を引ける）に idea/research repo を載せる。**derivation 型**の diffusion 面で、正本は repo に残り、派生 wiki は祝福対象（gate・修正・コントロールしない）。onboard は初回に index を起動する（現行 DeepWiki は通知用 email 入力 + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は personal-data 判断なので著者本人が行う）。起動後は repo 更新に自動追随する（refresh 優先度を上げる badge を README に添えると尚良い）。同時に **regurgitation-test の診断面**として使う —— 固有用語が AI paraphrase で薄まっていないかを wiki に問い、drift を検知する観測点になる。caveat: 派生 wiki は AI の paraphrase なので signature（固有用語）が薄まりうる → 防御は **upstream の dense anchoring**（vocabulary discipline。派生面を直そうとしない）。自前 MCP server は建てない（friction-minimization。third-party 面に乗る）。tool-agnostic に保ち、特定 vendor 仕様を doctrine に焼き込まない。
 
   同 family には **2 つの面型**があり補完的に併置できる:
   - **型 (a) AI 生成 wiki + ask 面**（現行インスタンス: DeepWiki）—— repo を AI が paraphrase して合成 wiki を作り、MCP の ask 系で任意 agent が repo の合成理解を引く。**signature drift のリスクがあり**（固有用語が paraphrase で薄まる）、初回 index 起動を要し（通知 email 入力 + Index ボタン送信 = 訪問だけでは起動しない、生成 2-10 分、email は personal-data 判断で著者本人が行う）、README badge は **refresh 鮮度**を上げる。だからこそ **regurgitation-test の診断面**にもなる（drift を検知できる）。
-  - **型 (b) zero-config MCP doc-hub badge 面 —— ⚠️ retired 2026-08-19（実測: access counter が全 repo・対照群とも 0 で計測器として死亡 / host referrer 0 / semantic 層非提供を 30 日隔てた 2 回の probe で確定 → ecosystem 全 41 repo から badge 撤去、ADR-0020 Status 注記）。以下は歴史記述として保持、新規 onboard はしない** —— （旧現行インスタンス: GitMCP）任意の public repo を **submission・index 起動なしで即** MCP doc hub 化し、repo 自身の llms.txt（優先）/ README を **paraphrase せずそのまま** 配信する。合成を経ないので **signature drift が無く**、regurgitation 診断は不要（その代わり drift 観測点にもならない）。README badge は refresh 用でなく **LLM 経由 access-count の計測器**で、star でなく LLM-mediated 引用を測る原則（上の LLM-mediated targeting / clone-not-star）と直結する。
+  - **型 (b) zero-config MCP doc-hub badge 面 —— retired 2026-08-19**（access counter が全 repo・対照群で 0、semantic 層非提供を 30 日隔てた 2 回の probe で確定 → 全 41 repo から badge 撤去。ADR-0020）。新規 onboard しない・badge を添えない。
 
-  両面とも third-party hosted・自前 infra ゼロ・public repo 限定で friction-minimization と crawler 開放に整合する。隣接サービス調査で「Index（公開ディレクトリ）+ README badge」の両軸を満たすのは型 (a) のフラッグシップ面のみで、index-only 面（コードライブラリ索引型）は doctrine/spec repo に artifact-type mismatch で **fit しない**（onboard 候補から外す）—— badge 面 (b) と wiki 面 (a) の二刀流が idea/research repo の最適配置
+  両面とも third-party hosted・自前 infra ゼロ・public repo 限定で friction-minimization と crawler 開放に整合する。隣接サービス調査で「Index（公開ディレクトリ）+ README badge」の両軸を満たすのは型 (a) のフラッグシップ面のみで、index-only 面（コードライブラリ索引型）は doctrine/spec repo に artifact-type mismatch で **fit しない**（onboard 候補から外す）—— 現行の配置は wiki 面 (a) のみ（badge 面 (b) は retired、ADR-0020）
 
 ### Origin Claim Scope の精密化
 
@@ -200,7 +200,7 @@ strategy の運用は **open inquiry の運用**である。Stance が言うと�
 
 ### 退役したメンタルモデル（2026-08-04 退役、再導入しない）
 
-かつての運用手順（gap-review ループ: 台帳を読む → catalog / OQ に対して gap 分析 → ランク付き候補 → gate 濾過 → 記録）は**収束側しか持たない機械**だった。10 巡回して、三巡目以降は毎巡「deploy 層は飽和」を確認しながら同じループを回し続けた。欠陥は手順の細部でなくメンタルモデル:
+gap-review ループ（台帳を読む → gap 分析 → ランク付き候補 → gate 濾過 → 記録）は**収束側しか持たない機械**で、欠陥は手順の細部でなくメンタルモデルにある。以下が再発条件:
 
 - **思考の単位が deployable candidate** — あらゆるアイデアが誕生時点で What/Why/Priority 付き介入に変換され、即 gate に通される。gate を通れる形をしていない思考（問い・違和感・仮説）は存在できない
 - **終端状態がすべて閉包** — DEPLOYED / DROP / WATCH / 判断待ち。「問いが開いた」という成果の置き場がない
@@ -215,13 +215,13 @@ strategy の運用は **open inquiry の運用**である。Stance が言うと�
 
 1. **問いから始める** — thesis・manifesto の open questions・世界の変化（新文献、観測の中の anomaly、thesis の外に出た現象）を読み、「まだ答えられないこと」「驚いたこと」「thesis を反証しうるもの」を先に立てる。台帳・tactic catalog・過去の候補リストはこの段階で**読まない**（過去が生成空間を priming する）。
 2. **問いの仕事をする** — 出力は open question / 仮説 / 実験設計 / （時に）deployable な手、のどれでもよい。**候補ゼロ・新しい問い一つで終わる回は完全な成功**。深掘りの道具（外部リサーチ、多様性注入、敵対的視点 =「thesis を信じない人なら何をするか」）は自由に使う。
-   **deployable な手を出す回の生成規則（2026-08-04 追記）**: open question は性質上「答えるにはデータが要る」形をしているため、OQ 起点の候補生成は放置すると測定器（instrument）に収束する（十巡目で実証済みの吸引バイアス）。手のリストを出すときは diffusion の 3 発生源 — **(a) content 生産 / (b) earned mention / (c) 再利用 affordance**（Layer 4 の "Content 生産" 項参照）— を必ず含め、**測定器は「名指しできる deploy 判断を現にブロックしている」場合のみ最大 1 枠**。「いずれ役立つ観測」は枠に入れない。
+   **deployable な手を出す回の生成規則**: open question は性質上「答えるにはデータが要る」形をしているため、OQ 起点の候補生成は放置すると測定器（instrument）に収束する（十巡目で実証済みの吸引バイアス）。手のリストを出すときは diffusion の 3 発生源 — **(a) content 生産 / (b) earned mention / (c) 再利用 affordance**（Layer 4 の "Content 生産" 項参照）— を必ず含め、**測定器は「名指しできる deploy 判断を現にブロックしている」場合のみ最大 1 枠**。「いずれ役立つ観測」は枠に入れない。
 3. **deploy を決めた候補にだけ gate** — 判断チェックリスト（下）は**外へ出す決定の門**であって思考の門ではない。「再提案しない」DROP ガードも re-*deploy* の禁止であり、問い空間には適用しない。
 4. **記録** — 開いた問いは manifesto の open-question set に登録する（問いの正本はここ）。採用した deployable は repo の台帳配線（context file が宣言）に従って記録する。既出荷の確認・dedup は**この段階で初めて**台帳と git log を読む（content 系候補の dedup は essay corpus =`zenn-content` の articles/ + articles-en/ も必ず grep する）。
 
 **二層会計の入力（2026-08-05、ADR-0022）**: 「次の一手」review の入力には essay layer の実績を正式に含める — 生産記録（zenn-content `scripts/schedule.json`）と実測（`scripts/metrics/snapshots.jsonl`）。これは発生源 (a) content 生産 / (b) earned mention の常設勘定であり、step 1 の「世界の変化・観測の中の anomaly」の一部として読む（候補台帳ではないので priming 禁止の対象外）。essay layer が出荷中か停滞中かを review が区別できること自体が、この編入の目的。数字の扱いは Layer 2 の「第二の audience layer」節の 3 境界に従う。
 
-**安全ガードの適用範囲（2026-08-04 明文化）**: ADR-0021 と 2026-07-16 の事象から来る禁止事項は従来どおり厳守する — ① community-governed authority record への self-created 登録はしない・再提案しない、② bot 速度の burst 書き込みはしない（rate-limit 連発は substrate の警報 — 停止して人間へ報告）、③ アカウント制裁を別アカウントで回避しない。この 3 類型は candidate 生成のどの段階でも不変。一方、この禁止を**それ以外の活動類型へ拡大解釈しない**: earned 系 — podcast / interview 出演、招待寄稿、公開スレッドへの grounded な返信（public-comment skill の人間ゲート経由）、他者が書く紹介の受け入れ — は上記 3 類型に該当せず、**都度人間ゲート付きで**候補に挙げてよい（台帳の push 候補の正しい読みも「原則不採用」でなく「採る場合は都度人間ゲート」）。ガードは境界を守るためのものであり、境界の内側（正当な earned mention の獲得）まで候補空間から除外すると diffusion の発生源 (b) が系統的に失われる。
+**安全ガードの適用範囲**: ADR-0021 と 2026-07-16 の事象から来る禁止事項は従来どおり厳守する — ① community-governed authority record への self-created 登録はしない・再提案しない、② bot 速度の burst 書き込みはしない（rate-limit 連発は substrate の警報 — 停止して人間へ報告）、③ アカウント制裁を別アカウントで回避しない。この 3 類型は candidate 生成のどの段階でも不変。一方、この禁止を**それ以外の活動類型へ拡大解釈しない**: earned 系 — podcast / interview 出演、招待寄稿、公開スレッドへの grounded な返信（public-comment skill の人間ゲート経由）、他者が書く紹介の受け入れ — は上記 3 類型に該当せず、**都度人間ゲート付きで**候補に挙げてよい（台帳の push 候補の正しい読みも「原則不採用」でなく「採る場合は都度人間ゲート」）。ガードは境界を守るためのものであり、境界の内側（正当な earned mention の獲得）まで候補空間から除外すると diffusion の発生源 (b) が系統的に失われる。
 
 **Saturation は信号**: review が「deploy 層は飽和」と繰り返し始めたら、それはループをもう一巡する理由ではなく**問いの階を上げろという信号**。channel の問いが尽きたなら、adoption の問い・thesis の妥当性の問い・測定の問い・まだ名前のない問いへ移る。
 

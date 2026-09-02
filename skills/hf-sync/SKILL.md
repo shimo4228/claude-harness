@@ -51,7 +51,7 @@ Auth は `~/.cache/huggingface/token`（`hf auth login` で保存されたもの
 
 shimo4228 系の現行 mapping は `~/MyAI_Lab/shimo4228/CLAUDE.md` の "HF Datasets mirror" section を参照。
 
-新規 project で記録を起こすときの format（2026-08-15 に `jsonld-knowledge-graph` から移設）:
+新規 project で記録を起こすときの format:
 
 ```markdown
 | GitHub repo | HF dataset |

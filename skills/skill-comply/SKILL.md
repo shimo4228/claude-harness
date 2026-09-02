@@ -150,9 +150,7 @@ Glob / Grep を持つ子に有効な命令を書ける。Tier 1 と Tier 2 の�
   実測: `--allowedTools "Read,Glob,Grep"` だけの子が Bash を呼び、`uname -sr` が
   ホスト上で実行された。`--permission-mode`（manual / dontAsk / acceptEdits）でも
   `--setting-sources project` でも変わらない。
-  **2026-07-25 の scan が F3/F4 に立てたはずの緩和は、実際には入っていなかった** —
-  「Bash は既定 off」は成立しておらず、`--allow-bash` は opt-in として機能していなかった。
-  現在は `--settings` の `permissions.deny` で `Bash` / `Agent` / `Workflow` /
+  `--settings` の `permissions.deny` で `Bash` / `Agent` / `Workflow` /
   `ToolSearch` / `ScheduleWakeup` を外す（正本: `scripts/child_settings.py`）。
   Bash 以外も外すのは、`Agent` と `Workflow` が**このコードが制御しないツール集合を持つ
   サブエージェント**を生み、`ToolSearch` が user 設定から継承した MCP の面
@@ -191,8 +189,6 @@ Glob / Grep を持つ子に有効な命令を書ける。Tier 1 と Tier 2 の�
 信頼できない .md を測るときは `--dry-run` で生成されたシナリオを先に読むこと。
 `--dry-run` は spec の step に加えて、**攻撃者が制御しうる 3 つのフィールドを全文出す** —
 無人の子に渡される `prompt`、ファイルシステムを触る `setup_commands` と `files:`。
-2026-08-01 まではどれも出しておらず、この節が案内する検査は実際には行えなかった
-（`files:` は追加時に同じ欠陥を繰り返し、レビューで見つかった）。
 
 ## Models
 

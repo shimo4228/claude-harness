@@ -56,8 +56,6 @@ The skill runs end-to-end in one turn. Phase 5 (Report) summarizes what was done
 
 Before any other detection, verify that `docs/CODEMAPS/` (if present) reflects the current source. Stale codemaps poison every downstream phase — Overlap detection (Phase 2) and Freshness checks (Phase 4) will compare against a fiction and propose wrong migrations.
 
-**Why pre-check, not just check**: in the original 5-phase design, codemap freshness was inside Phase 4 — by then we'd already produced migration proposals based on the old codemap. Phase 0 catches the drift before any other phase runs.
-
 **Three stale signals (OR — any single hit triggers an automatic cascade):**
 
 | Signal | Detection | Threshold |

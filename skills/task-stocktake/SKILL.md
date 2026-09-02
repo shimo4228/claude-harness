@@ -45,10 +45,8 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 
 開いている状態は 4 つ。**この節が語彙の唯一の正本** — rule / ADR / 他 skill は
 ここを参照し、定義を複製しない（4 文書に分散した版は誰も刈らず 6 語まで肥大した。
-CA 2026-08-16）。語は標準語彙（RFC 標準 + issue-tracker 標準）— 非標準語彙は
-セッションごとに写像がずれるため 2026-08-25 に全域移行した。旧語
-（candidate / ready / decided / dropped / retired）との対応は
-[ADR-0050](../../docs/adr/0050-standardize-ledger-state-vocabulary.md)。
+CA 2026-08-16）。語は標準語彙（RFC 標準 + issue-tracker 標準 — 非標準語彙は
+セッションごとに写像がずれる。[ADR-0050](../../docs/adr/0050-standardize-ledger-state-vocabulary.md)）。
 
 | 状態 | 定義 |
 |---|---|
@@ -128,7 +126,7 @@ audit ログは付かなかった）。配送機構を台帳に足して解く�
 観察タスクを閉じるときは特に混ざりやすい。「観察して結論が出た」＝ `done`、
 「観察対象が退役して観察が無意味になった」＝ `obsoleted`。後者を `done` に丸めると、
 **読みが取得されたのか取得されなかったのかが台帳から消える**（先例: CA の §B2 は
-ADR-0082 が観察対象アームを退役させたので `obsoleted`（当時の語: retired）、§B5 は
+ADR-0082 が観察対象アームを退役させたので `obsoleted`、§B5 は
 同じ B 系列だが読みが実在するので `done`。2026-08-16）。
 
 日付を続けてよい（`done 2026-06-17`）。**日付は台帳に書いた日でなく、終わった日を書く** —
@@ -137,9 +135,8 @@ ADR-0082 が観察対象アームを退役させたので `obsoleted`（当時�
 **store 形式の repo**（1 タスク 1 ファイル、frontmatter の `state:` が状態。配線の正本は
 rule `common/task-tracking.md`）では、状態別の列挙は
 `python3 ~/.claude/scripts/claims.py ready --state <state>` で引く。store の家は下節の
-`rfcs/`（旧 `.notes/tasks/` は 2026-08-25 に全 repo 移送完了で廃止 — dual-read も畳んだ。
-RFC-0001。`.notes/archive/tasks/` は歴史記録としてそのまま残る。rfcs/ 側は下節の通り
-archive しない）。この skill が担うのは意味的な判定（散在タスク行の sweep、着手条件が
+`rfcs/`（`.notes/archive/tasks/` は旧 store の歴史記録で台帳ではない — RFC-0001。
+rfcs/ 側は下節の通り archive しない）。この skill が担うのは意味的な判定（散在タスク行の sweep、着手条件が
 開いたかの解釈、単一表 repo の archive 候補の選定）。
 
 ## store の家 rfcs/（棚卸し側の規定）
@@ -160,7 +157,7 @@ store 形の家は repo トップレベルの**公開 `rfcs/`**（1 エントリ
 台帳が減らない最大の入口はレビュー指摘。CA 2026-08-15〜16 の実測では、fix commit ごとに
 reviewer が隣接コードの既存問題を平均 1.3 件出し、全部起票すると台帳は純増する。
 
-**足切り**（2026-08-27 に「HIGH 以上は起票可」から再絞り込み）: build セッションからの
+**足切り**: build セッションからの
 即時起票は **loop 自身を壊す欠陥**（放置すると次の build セッションが bounce を食う類 —
 例: verify.sh の盲点で正当な diff が通らない）**のみ**。それ以外は severity 不問で
 commit message に 1 行（producer 付き）残して捨てる。起票する側は「所有者の判断が要る」なら

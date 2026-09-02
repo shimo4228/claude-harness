@@ -28,12 +28,12 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 **README の種別判定**: README 自体の改善・書き直しが目的なら `writing`（Writing Chain → readme-writer）。コード変更に付随する README 追従更新ならコードチェーンの Doc Sync 内で扱う。
 
-**大きい feat の Plan の補助**（2026-08-22、公式 feature-dev plugin の型だけ吸収）: ① Explore agent を
+**大きい feat の Plan の補助**: ① Explore agent を
 2〜3 並列・別角度（類似機能 / 構造 / 拡張点）で走らせ、各 agent に「主ループが読むべきファイル 5〜10」を
 返させて読む ② 設計代替は Plan agent を観点違い（最小変更 / クリーン / 実用）で並列し、主ループが
 比較して推奨・ユーザー選択（収束の所在は Matrix の Plan 行）。
 
-**実行者の決定**（Plan の最後、必須。2026-08-22 追加、2026-08-28 既定を反転）: plan が固まったら
+**実行者の決定**（Plan の最後、必須）: plan が固まったら
 「このセッションが実装するか」を 1 行で決める。判断が要るのは judge-tier のセッション（Fable）で
 走っているとき — そのまま実装に入ると、Review 群まで judge-tier を消費する（built-in `/code-review`
 と `/simplify` はセッションのモデルを継いで走り、モデル引数は無い。pin できるのは自作 agent と
@@ -69,13 +69,13 @@ routing を自発的に行うようになったら、この段落を外す。）
 
 **条件付き発火 `C` の発動条件**:
 
-- `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（2026-08-15 に `Y` から降格、[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない。判断に迷ったら Y
+- `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない
 - 全種別 × E2E / 回帰テスト: **ユーザー可視のフロー（画面遷移・API の外形）を変えたら `e2e`**、**AI に広く編集させた diff で同種のバグが再発しうるなら `ai-regression-testing`** を Y。いずれも Verify の coverage floor（`rules/common/testing.md`）の**上に足す**もので、置き換えではない。純粋な内部リファクタや設定変更だけなら `-`
-- `feat` / `chore` × Build-or-not（2026-08-25 追加）: **新規機構・計器・常駐資産（skill / rule / hook / agent）・依存の追加を含む plan のみ Y**。plan 本文に 4 問の答えを必須で書く — ①存在すべきか（削除・既存流用で解けないか）②適正な大きさ（行数・段数の上限を先に宣言）③誰が消費するか（読み手のいない出力は建てない）④失効条件。**セッションが judge-tier ならこの自答で足りる（agent 呼び出しは冗長 — 同一モデル）。build-tier セッションのみ agent: `architect`（model: fable）を必須**とし、verdict が Don't build なら chain はそこで止まる。実測根拠: CA ADR-0095（この問いを持たない無人 chain が 30 時間で 5,000 行）
-- `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。判断に迷ったら Y。着手時の照合規律（既済照合・schema 変更の全消費者棚卸し等）は skill: `repair-discipline`
+- `feat` / `chore` × Build-or-not: **新規機構・計器・常駐資産（skill / rule / hook / agent）・依存の追加を含む plan のみ Y**。plan 本文に 4 問の答えを必須で書く — ①存在すべきか（削除・既存流用で解けないか）②適正な大きさ（行数・段数の上限を先に宣言）③誰が消費するか（読み手のいない出力は建てない）④失効条件。**セッションが judge-tier ならこの自答で足りる（agent 呼び出しは冗長 — 同一モデル）。build-tier セッションのみ agent: `architect`（model: fable）を必須**とし、verdict が Don't build なら chain はそこで止まる。実測根拠: CA ADR-0095（この問いを持たない無人 chain が 30 時間で 5,000 行）
+- `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。着手時の照合規律（既済照合・schema 変更の全消費者棚卸し等）は skill: `repair-discipline`
 - 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
 - `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら上の Build-or-not 行に従う（judge-tier は 4 問自答、build-tier は agent: `architect`。実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
-- `feat` × Security Review: **脅威面を動かす feat のみ Y**（2026-08-16 に `Y` から降格、ADR-0042）。
+- `feat` × Security Review: **脅威面を動かす feat のみ Y**（ADR-0042）。
   脅威面 = 資格情報の取得・保管・送出 / 外部 IO / 公開経路（外部に出るデータの内容と範囲）/
   無人実行の起動経路とブラスト半径 / 外部コンテンツを LLM 文脈へ取り込む経路 / 権限と bypass の境界。
   内部ロジックの追加のみ、既存経路の内側で完結する feat は `-`
@@ -94,14 +94,13 @@ routing を自発的に行うようになったら、この段落を外す。）
   - 数値クレームの規律: 集約カウントの正本は 1 箇所のみ（他はポインタ）。機械検証可能な doc↔実体対応は prose 修正でなくテストで固定する（検出は code、削除判断は人間）
   - 機械が parse する出力（hook 封筒 / lint 指摘行 / evidence JSON / claims の 1 行形式）の変更 → 対応する golden（`tests/golden/`）を同じ diff で更新。golden 更新が正当なのは**タスクがその出力の変更を宣言しているときだけ** — スコープ外の golden 赤は修正でなく事故報告（規約の正本: `tests/golden/README.md`）
 
-built-in review は chain の正規ステップである（ADR-0039 → ADR-0042 で T-004「自動枠は変更しない」を
-全面反転）。担当の割り当ては下の Review 表が正本。
+built-in review は chain の正規ステップである（ADR-0042）。担当の割り当ては下の Review 表が正本。
 
 ## Review ステップ（実装直後・Verify 前）
 
-常設レビューは **fresh-context 1 段**（2026-08-27 再編 — 公式 best practices の推奨密度
-「機械検証主体 + adversarial review 1 段」への回帰。多段構成はレビュー起点の
-オーバーエンジニアリングを供給していた。根拠と経緯は当該 ADR）。
+常設レビューは **fresh-context 1 段**（公式 best practices の推奨密度「機械検証主体 +
+adversarial review 1 段」。多段構成はレビュー起点のオーバーエンジニアリングを供給する —
+根拠は当該 ADR）。
 
 | 順 | category | 起動先 |
 |:-:|---|---|
@@ -121,7 +120,7 @@ built-in review は chain の正規ステップである（ADR-0039 → ADR-0042
 
 - batch simplify = built-in `/simplify` — 肥大を感じたとき数 commit 分まとめて
   （実績: CA commit `e739912` の 22 commit 一括、CA commit `edca8cf` の Review 後実行 +
-  再 Verify）。per-commit の Simplify ステップは廃止（quality 軸は `/code-review` が内蔵）
+  再 Verify）。commit ごとには回さない（quality 軸は `/code-review` が内蔵）
 - security 深掘り = plugin `claude-security`（全 repo スキャン）
 - cross-model = skill: `codex-review`（diff review・plan 段の前提反証とも）
 
@@ -129,7 +128,7 @@ adr-reviewer は opt-in ではなく skill: `adr-writer` の内部ステップ�
 省略しない — 配線は同 skill のみ、この chain は持たない）。swift-reviewer は Swift diff で
 Review 表の Code Review 行に従い併用（ADR-0042 が去就を保留した項目）。
 
-**Review の実行モデル pin（2026-08-24 追加）**: judge-tier のセッション（Fable）で chain を回すとき、
+**Review の実行モデル pin**: judge-tier のセッション（Fable）で chain を回すとき、
 built-in `/simplify` と `/code-review` を主ループで直接呼ばない — セッションのモデルを継いで
 judge-tier トークンを消費する。代わりに `Agent(subagent_type: "general-purpose", model: "opus")` の
 サブエージェント内で当該 skill を起動する（prompt に skill 名・effort・対象 diff の範囲を書く。

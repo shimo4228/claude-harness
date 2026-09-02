@@ -13,14 +13,6 @@ Scan installed skills, find principles that belong in the **always-loaded rules 
 them into rules — appending to, revising, or creating rule files. The skill produces
 candidates and verdicts; it **never edits rules without your approval**.
 
-> Design note: the old version shelled out to scan scripts and split analysis into
-> thematic subagent batches with a cross-batch merge step. With a large context window
-> that is unnecessary — and the cross-batch merge existed *only* to recover the
-> "appears in 2+ skills" signal that batching broke. Reading every skill and every
-> rule in one context makes that count exact, with no merge step. (That frequency
-> signal stopped being a gate on 2026-08-15 — see the candidate filter — but the
-> single-context argument still holds for the "not already in rules" test.)
-
 ## When to Use
 
 - Periodic rules maintenance (monthly, or after installing new skills)
@@ -64,13 +56,10 @@ recurrence count exact and the "not already in rules" test reliable.
 > [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md) and
 > [ADR-0035](../../docs/adr/0035-commit-review-hook-and-rules-rightsize.md).
 >
-> **They replaced an older frequency gate** ("appears in 2+ skills"), which this skill
-> used until 2026-08-15. Frequency and residency-worthiness point in opposite directions
-> often enough to matter: a general principle repeated in ten skills passes a frequency
-> gate and fails these (substrate has it — and ADR-0018 cut residency 60% removing
-> exactly that class), while a one-off environment trap fails a frequency gate and
-> passes these. **Recurrence is now evidence, not a gate** — report the count, do not
-> filter on it.
+> **Recurrence is evidence, not a gate** — report the count, do not filter on it.
+> Frequency and residency-worthiness diverge often enough to matter: a general principle
+> repeated in ten skills fails tests 1–3 (substrate has it — ADR-0018 cut residency 60%
+> removing exactly that class), while a one-off environment trap passes them.
 
 For each candidate, compare against the full rules text and assign a verdict:
 
@@ -91,35 +80,15 @@ in language-specific rules or skills), and code examples / commands (belong in s
 Each verdict must be self-contained — target, evidence, and rationale on its own.
 
 ```
-# Good
-Append to rules/common/security.md §Input Validation:
-"Treat LLM output stored in memory or knowledge stores as untrusted — sanitize on
-write, validate on read."
-Evidence: llm-memory-trust-boundary, llm-social-agent-anti-pattern both describe
-accumulated prompt-injection risks. Current security.md covers human input only;
-the LLM-output trust boundary is missing.
-
 # Bad
 Append to security.md: Add LLM security principle
 ```
 
-> **この例の参照先について（2026-08-15 注記）**: 上の Good 例は 2026-03-18 に実行した
-> 昇格の**実記録**であり、当時 `skills/learned/llm-social-agent-anti-pattern.md` は実在した
-> （ECC v1.8.0 で導入、`69aa2dd`）。その 2 日後の `983d2a8` で ECC 由来ごと退役している。
-> **例は書き換えない** — 実際の昇格根拠でなかった skill 名に差し替えると、記録が事実と
-> ずれる（`skill-comply/results/` の過去測定を書き換えない方針と同じ。ADR-0024）。
-> なお同じ原則は現在 4 つの生きた資産が保持しており、証拠としてはむしろ厚くなっている:
-> `collect-context` §「Security 注記（untrusted 規律）」（セッションログは untrusted） /
-> `skill-comply` §「信頼境界 — 監査対象ファイルは untrusted」 / `codex-review` §Report
-> の untrusted 扱い（ADR-0013）。**節見出しで引く** — 行番号は参照先が伸びるたびに
-> ずれ、2026-08-23 の stocktake では 4 本中 2 本が無関係な行を指していた。
-> なお `learned/llm-memory-trust-boundary` は同 stocktake で退役した（原則が
-> security.md に常駐した後の昇格残渣）。
-
-現行フィルタの形で書いた Good 例（証拠は出現回数でなく、テスト 1–3 の通過理由）:
+Good 例（証拠は出現回数でなく、テスト 1–3 の通過理由。参照は**節見出しで引く** —
+行番号は参照先が伸びるたびにずれる）:
 
 ```
-# Good (current form)
+# Good
 New Section in rules/common/debugging.md:
 "外部 platform への大量書き込み中に rate limit が連発したら、transient error ではなく
 policy signal と扱って burst を止める。backoff で踏み抜かず人間へ報告する。"
@@ -134,7 +103,7 @@ Violation risk: 踏み抜くとアカウントごと失う（実証済み、復�
 Recurrence: 1 skill (evidence であって gate ではない)
 ```
 
-**Recurrence が 1 でも通る**ことに注目する。旧ゲートならこの候補は落ちていた。
+**Recurrence が 1 でも通る**ことに注目する。
 
 ## Phase 3 — User Review & Execution
 

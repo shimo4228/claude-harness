@@ -117,6 +117,9 @@ Scaffold Dissolution（`rules/common/akc-cycle.md`）の**第 3 トリガー = �
 - ADR-0018 — 前回（Claude 5 世代交代時）の実施記録。手順の実証元
 - `harness-boundary` — 設計時の事前判断（層・可搬性・次世代での陳腐化予測）。本スキルは
   世代交代後の事後照合
+- `/claude-api prompt-audit`（Anthropic 公式 claude-api skill）— 自作資産**内部**の dated
+  pattern（版差 marker / tombstone / 圧力語 / 過剰指定）の静的検査。本スキルの runtime 層
+  照合とは別物で、model release ごとに併走させる（ADR-0061）
 
 ## References
 

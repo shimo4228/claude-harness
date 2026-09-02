@@ -1,6 +1,6 @@
 ---
 name: swift-reviewer
-description: Expert Swift / SwiftUI code reviewer specializing in Swift 6 strict concurrency, value semantics, SwiftUI state management, memory management (retain cycles), and HIG compliance. Use for all Swift code changes in iOS / macOS projects. MUST BE USED for Swift projects.
+description: Expert Swift / SwiftUI code reviewer specializing in Swift 6 strict concurrency, value semantics, SwiftUI state management, memory management (retain cycles), and HIG compliance. Use for all Swift code changes in iOS / macOS projects.
 tools: Read, Grep, Glob, Bash
 model: opus
 origin: shimo4228

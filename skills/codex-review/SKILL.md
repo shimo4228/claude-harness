@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: 'Cross-model second opinion from the OpenAI Codex CLI (a different model family), read-only, in two seams — (1) code review of the current diff; (2) plan-stage premise challenge of a design packet (refute / missing / alternative, never a design). Opt-in only (2026-08-27 再編) — use ONLY when the user explicitly asks with "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", "プランを Codex に反証させて", "前提を別モデルで叩いて", or invokes /codex-review or /codex-review --plan <file>. NOT a default step of the implementation chain (自発発火しない), NOT for letting Codex write code or design (read-only, divergence only), and NOT a replacement for the in-Claude reviewers.'
+description: 'Cross-model second opinion from the OpenAI Codex CLI (a different model family), read-only, in two seams — (1) code review of the current diff; (2) plan-stage premise challenge of a design packet (refute / missing / alternative, never a design). Opt-in only — use ONLY when the user explicitly asks with "codex review", "cross-model review", "second opinion on this diff", "別モデルでレビュー", "プランを Codex に反証させて", "前提を別モデルで叩いて", or invokes /codex-review or /codex-review --plan <file>. NOT a default step of the implementation chain (自発発火しない), NOT for letting Codex write code or design (read-only, divergence only), and NOT a replacement for the in-Claude reviewers.'
 user-invocable: true
 origin: shimo4228
 ---
@@ -18,7 +18,7 @@ sub-agents / Workflow for parallel throughput; use this only where a second
 
 ## When to Use
 
-**Opt-in のみ**（2026-08-27 再編 — chain の既定ステップから外れた。ADR-0055）。
+**Opt-in のみ**（ADR-0055 — implementation chain の既定ステップではない）。
 発火はユーザーの明示要求、または writing orchestrator skill が panel member として
 明示的に配線している場合（readme-writer 等 — writing chain は ADR-0055 の対象外）だけ:
 
@@ -69,7 +69,7 @@ Default mode needs a base ≠ your current branch: if you run `/codex-review` wh
 HEAD is already on the detected base (e.g. on `main`), it auto-falls back to
 `--uncommitted` (an all-equal diff would otherwise yield an empty review).
 
-## Plan-Stage Premise Challenge（2026-08-22 追加）
+## Plan-Stage Premise Challenge
 
 設計前の判断にも cross-model seam を 1 つ置く。**発散だけを脱相関させ、収束は脱相関させない**:
 Codex に設計させず、設計パケットへの反証・欠落制約・安い代替だけを返させる。
@@ -82,7 +82,7 @@ bash ~/.claude/skills/codex-review/codex-plan-challenge.sh --plan <packet.md> [-
   コードは渡さない — Codex は `--sandbox read-only` で repo を自分で読んで前提を照合する（`--ephemeral` で session も残さない）
 - 出力は `REFUTE` / `MISSING` / `ALTERNATIVE` と `VERDICT: premise-hole | alternative-exists | no-objection` の
   1 行のみ。score なし、集計なし（skill: `llm-as-judge`）
-- 発火はユーザーの明示要求のみ（2026-08-27 に implementation-chain の Matrix 行を撤去、opt-in 化）。
+- 発火はユーザーの明示要求のみ（ADR-0055）。
   **歯止めはここが正本**: 発散段の外部声は **1 回・1 系統まで**（主ループが複数の声の仲裁役に
   なった時点で著者性が消える）。finding は採るか捨てるかを plan に 1 行ずつ記録し、**折衷しない**
 - **read-only は argv と config の両面で pin する**: script は `--ignore-user-config --ignore-rules -c approval_policy="never"` を固定で付ける（`~/.codex/config.toml` の `approvals_reviewer=auto_review` と `.rules` の `git push` / `uv run` pre-approve が sandbox escalation を自動承認しうる — 2026-08-22 security-reviewer HIGH）。review seam も `-c sandbox_mode="read-only" -c approval_policy="never"` を常時付ける。パケットは data として囲えるが、Codex が読む対象 repo の `AGENTS.md` / skill は instruction として入るので、出力は「repo 由来の未検証データ」の枠で畳む
@@ -111,7 +111,7 @@ Next action: <continue | stop | re-plan>
 - When the user requested this alongside the in-Claude reviewers, run it in
   parallel with them, then merge verdicts.
 
-### Prose 裁定基準（2026-08-13 追加。エッセイ・記事レビューの fold 用）
+### Prose 裁定基準（エッセイ・記事レビューの fold 用）
 
 Codex は prose に対して系統的な癖を持つ（2026-08-13 の欲望枯渇エッセイで実測 —
 同一箇所のヘッジ済み思弁を 3 回連続で「根拠不足」指摘）。裁定の既定:

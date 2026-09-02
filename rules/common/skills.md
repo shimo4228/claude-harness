@@ -26,4 +26,7 @@ skill の正本は `skills/<name>/SKILL.md`。`commands/` は使わない。
 **skill / agent を新規作成・大幅改修するときは、書く前に skill: `skill-creator` を読む**
 （入口の intent 確認と fresh-context の草稿ゲートを持つ。自発発火は文言改良で伸びないので命令形で
 配線する — ADR-0018。新規作成は `hooks/skill-create-notice.sh` も思い出させる）。
+**小さな追記でも現行規則として書く** — 編集日・「追加 / 移設 / 廃止」の版差語・退役物の
+tombstone は本文に書かない（git と ADR が持つ。as-of 日付は claim にだけ）。正本は
+skill-creator §3、機械検査は `scripts/hooks/harness_lint.py`（ADR-0061）。
 公開は skill: `harness-sync`。

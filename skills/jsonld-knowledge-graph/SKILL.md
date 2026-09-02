@@ -341,11 +341,11 @@ graph.jsonld を更新したら、Hugging Face Datasets 上の mirror にも同�
 
 **正本は [`hf-sync`](../hf-sync/SKILL.md) skill にある**。`/hf-sync <Owner/dataset>` または `bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>` を project root で実行すれば、`graph.jsonld` の structural check → `graph.jsonl` flatten → `hf upload` 2 ファイルが 1 コマンドで走る。Local の token を使うので CI auth setup は不要。
 
-前提条件・repo mapping・token scope の扱いは **hf-sync に再掲しない**（2026-08-15 に重複 2 節を削除。正本を直したのにコピーが古いまま残る事故が実際に起きたため — `hf login` → `hf auth login` の改名時、この節のコピーだけ取り残された）。
+前提条件・repo mapping・token scope の扱いは **hf-sync に再掲しない**（正本の改名時にコピーだけ取り残された前例あり — `hf login` → `hf auth login`）。
 
 `release-doi` skill の Phase 5 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
 
-**Wikidata QID の sameAs 編入は行わない — RETIRED (2026-07)**。旧運用（`wikidata-federation` skill による item 作成 → QID アンカー）は、host governance の promotion-only 判定による全 item 一括削除を受け authorship-strategy ADR-0021 で恒久 retire。graph の `sameAs` は self-sovereign または earned な解決先（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）のみに張る。dead QID を検出したら purge する。
+**graph の `sameAs` は self-sovereign または earned な解決先のみ**（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）。Wikidata QID は張らない（authorship-strategy ADR-0021 — host governance による一括削除の実測）。dead QID を検出したら purge する。
 
 HF 側の `README.md` (dataset card) は graph 更新では同期しない。Dataset card は HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えたい場合は手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
 

@@ -61,9 +61,7 @@ Run the mechanical checks with throwaway bash/grep (detection is structural → 
 judgment on what the findings mean → LLM, per the enumerate/decide split):
 
 - [ ] Every `See skill:` / `See skills:` target exists under `~/.claude/skills/<name>/`
-- [ ] Every relative link between rule files resolves (the corpus is flat as of
-  2026-07-25 — a language sub-layer was retired into `skills/python-patterns`, so a
-  surviving `python/` path is a stale pointer, not a layer to validate)
+- [ ] Every relative link between rule files resolves
 - [ ] Every rule file's line 1 carries `<!-- origin: X -->`
 - [ ] Every `rules/common/` file carries `<!-- rationale: ... -->` and
   `<!-- review-when: ... -->` within its first 10 lines (ADR-0021; harness_lint
@@ -206,7 +204,7 @@ alone is banned. For non-Keep verdicts, cite the No answers (question + one-line
 ```
 
 Keys are directory-qualified stems (`common/planning`, `common/debugging`) so the schema
-survives if the corpus nests again — it is flat as of 2026-07-25 but has nested before.
+survives nesting.
 `lines` / `total_lines` let `changed` mode rebuild the Phase 3 table
 and the aggregate judgment from carried-forward entries. Update inline with Read/Write,
 not a script. Created on the first run — do not pre-seed an empty file.

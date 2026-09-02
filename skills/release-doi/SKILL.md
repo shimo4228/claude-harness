@@ -180,8 +180,8 @@ git add CHANGELOG.md CITATION.cff pyproject.toml \
   llms.txt llms-full.txt
 test -f codemeta.json && git add codemeta.json
 
-# HEREDOC で commit
-git commit -m "$(cat <<'EOF'
+# commit message はファイル経由（`$( )` は harness の PreToolUse hook が block する — skill: git-workflow）
+cat > "$SCRATCH/release-msg.txt" <<'EOF'
 release: vX.Y.Z — <one-line title>
 
 - ADR-XXXX <主要変更 1>
@@ -191,7 +191,7 @@ release: vX.Y.Z — <one-line title>
 
 <diff stats>: N files changed, +M / -K since vA.B.C. P tests across Q files.
 EOF
-)"
+git commit -F "$SCRATCH/release-msg.txt"
 
 git tag -a vX.Y.Z -m "vX.Y.Z — <one-line title>"
 
@@ -238,8 +238,6 @@ curl -sI "https://web.archive.org/save/https://github.com/<owner>/<repo>" | grep
 ## Post-release: DOI 反映
 
 Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 5 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
-
-**よくある失敗 (2026-05-05 contemplative-agent v2.3.0 で実際に発生)**: tag を push して `git push origin vX.Y.Z` で完了したつもりになるが、Releases sidebar の "Latest" が前 version のまま、Zenodo にも何も届かない。`gh release create` を Phase 5 で実行し忘れたのが原因。tag は webhook を発火させない。
 
 ```bash
 # 採番確認 (Zenodo の repo ページ or DOI badge URL を fetch)
@@ -292,7 +290,7 @@ identifiers:
 
 **Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は `~/.config/zenodo/credentials.env`)。
 
-**Wikidata 連邦 — RETIRED (2026-07)**: この step は実行しない。Wikidata アカウントが promotion-only 判定で無期限ブロックされ全 item が一括削除されたため、self-created な community-authority-record 登録は authorship-strategy ADR-0021 で恒久 retire。別アカウントでの再登録・代理依頼も禁止（block 回避）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
+**community-authority-record への self-registration はしない**（Wikidata 等。authorship-strategy ADR-0021: アカウント無期限ブロック + 全 item 削除の実測。別アカウント・代理依頼も同じ）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
 
 **AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (現行 DeepWiki は "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく (authorship-strategy framework の Layer 4 tactic: derivation 型 diffusion 面 + regurgitation-test 診断面)。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
 
@@ -433,11 +431,8 @@ GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/rel
 
 ## Notes — 設計判断の根拠
 
-- **Ground truth は実コマンド出力だけ**: 既存 doc の数値は drift しているので、INDEX.md の「43 modules」を読まずに `find src -name '*.py' | wc -l` を信頼する
 - **`.zenodo.json` references = 被引用研究者への passive シグナル**: repo markdown 内の引用は Google Scholar / arXiv "cited by" の citation graph に一切入らない (被引用側から不可視)。`.zenodo.json` の `references` 辺は release 時に DataCite metadata として propagate し、OpenAIRE / Scholix の citation graph に機械可読な辺を張る。引用した文献の著者周辺に届く数少ない受動経路なので、新規引用が増えた release では必ず同期する (authorship-strategy の citation-graph federation tactic)。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
-- **多言語 README は default 中間**: 全文再翻訳は cost 過大、最小 (badge のみ) は drift を残す。version + 統計 + sunset sentence までが妥当
 - **DOI 欄は Phase 5 で据え置き**: tag push 前に新 DOI を埋めると Zenodo 採番前なので必ず壊れる。Post-release で 1 commit 増やす方が安全
-- **Branch 切らない**: 個人研究 repo の default は main 直 push。`gh pr create` を自動実行しない
 - **Numeric cap を quality filter にしない**: `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う
 - **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し

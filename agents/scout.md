@@ -27,34 +27,26 @@ Before searching, clarify:
 
 Search these sources in parallel, prioritized by reliability:
 
-#### 2a. Package Registries
-- **npm**: `WebSearch` for "npm package [functionality]"
-- **PyPI**: `WebSearch` for "pypi [functionality] python"
-- **Go modules**: `WebSearch` for "go module [functionality]"
+#### 2a. Package Registries — npm, PyPI, Go modules (WebSearch)
 
 #### 2b. MCP Ecosystem
-- Search for MCP servers: `WebSearch` for "MCP server [functionality] claude"
-- Check Context7 for library docs: `mcp__context7__resolve-library-id` (if available — see Notes)
-- Check existing installed MCPs in `~/.claude.json` (the `mcpServers` key)
+- MCP servers (WebSearch); library docs via Context7 (`mcp__context7__resolve-library-id`, see Notes)
+- Installed MCPs: `~/.claude.json` (the `mcpServers` key)
 
 #### 2c. Claude Code Skills & Agents
 - Check existing skills: `Glob` for `~/.claude/skills/*/SKILL.md`
 - Check project-local skills: `Glob` for `.claude/skills/*/SKILL.md`
 - Check existing agents: `Glob` for `~/.claude/agents/*.md`
 
-#### 2d. GitHub & Community
-- Search GitHub repos: `WebSearch` for "github [functionality] [language]"
-- Search for templates/boilerplate: `WebSearch` for "template [functionality]"
+#### 2d. GitHub & Community — repos, templates, boilerplate (WebSearch)
 
 ### Phase 3: Holistic Evaluation
 
 Evaluate candidates using guiding dimensions and assign a verdict.
 
-**CRITICAL — FORBIDDEN PATTERNS:**
-- ❌ `Score: 8/10` or any `X/10` rating
-- ❌ Numeric scoring tables (weighted percentages, point totals)
-- ❌ Letter grades (A/B/C/F)
-- Instead: describe strengths/weaknesses in prose, then assign a single **Verdict** for the overall recommendation
+Describe each candidate's strengths and weaknesses in prose, then give one **Verdict**.
+No numeric scores, point tables, or letter grades — they hide the reasoning the caller
+needs to act on.
 
 #### Guiding Dimensions
 
@@ -110,7 +102,7 @@ Return a structured report:
 
 ## Evaluation
 
-### Checklist (REQUIRED — must appear in every report)
+### Checklist
 - [x] パッケージレジストリ検索: npm/PyPI で [N] 件確認
 - [x] MCP/スキル確認: 既存の MCP サーバー/スキルに該当なし（or あり: 詳細）
 - [x] リポジトリ内検索: 既存実装なし（or あり: path）
@@ -121,35 +113,10 @@ Return a structured report:
 **理由:** [証拠ベースの説明。形容詞ではなく事実で判定を支える]
 ```
 
-## Search Strategies by Domain
+## Maintenance threshold
 
-### Web/API Development
-- Middleware, auth, validation → npm/PyPI first
-- Database tools → check existing MCP servers
-- API clients → check Context7 for official SDKs
-
-### AI/LLM Development
-- Claude integration → Context7 for Anthropic SDK docs
-- Prompt engineering → MCP servers, skills
-- Data processing → PyPI (pandas, polars, etc.)
-
-### DevOps/Tooling
-- CI/CD → GitHub Actions marketplace
-- Linting/formatting → language-specific package registries
-- Monitoring → existing MCP servers
-
-### Content/Publishing
-- Markdown processing → npm (remark, unified ecosystem)
-- Image optimization → npm (sharp) / CLI tools
-- Cross-posting → existing APIs, check for CLIs
-
-## Anti-Patterns to Avoid
-
-1. **NIH (Not Invented Here)**: Don't dismiss existing tools without evaluation
-2. **Kitchen Sink**: Don't recommend packages with massive dependency trees for simple needs
-3. **Abandoned Projects**: Skip packages with no commits in 12+ months
-4. **Hype-Driven**: Popularity alone doesn't mean it's the right fit
-5. **Over-Engineering**: A 5-line utility doesn't need a package
+Treat a package with no commits in 12+ months as abandoned unless the repo says it is
+feature-complete.
 
 ## Integration with Other Agents
 
@@ -167,7 +134,6 @@ This agent is for **solution discovery** only:
 
 ## Notes
 
-- Always search at least 2 sources before concluding "nothing exists"
-- When in doubt, recommend the most boring, well-maintained option
+- A **Build** verdict needs at least two sources searched — one registry miss is not "nothing exists"
 - Report findings even if the verdict is "Build" — the research informs the design
 - **Context7 fallback**: If `mcp__context7__*` tools are unavailable, use `WebSearch` and `WebFetch` to retrieve library documentation directly. All research workflows must function without Context7.

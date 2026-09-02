@@ -43,6 +43,26 @@ skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全�
   禁止は原理原則へ畳む。ただし grep 可能な検出語・自己執行力のある禁止・数値閾値は
   畳まない（抽象化すると機能を失う — ADR-0058）。迷ったら generation-audit の
   4 観点（意図 / 根拠 / 鮮度 / 失効条件）で各行を見る
+- **現行規則として書く — 前版との差分を書かない。** 「（日付 追加 / 追記 / 移設 / 移管 /
+  再編 / 明文化）」「Y から降格」「旧 X は廃止、no longer」「日付 に復活」は edit 履歴で、
+  git と ADR が持つ。本文は現在の規則 + 理由 1 句 + ADR/RFC 番号。**as-of 日付は claim に
+  だけ付ける**（knowledge-staleness — 外部事実の検索時点、実測の観測日）。edit の日付は
+  付けない。改修時に入る型で、新規作成ゲートを通らない — `harness_lint.py` が同一括弧内の
+  日付 + edit 動詞を止める（実測: 2026-09-02 prompt-audit で 88 件中 55 件。ADR-0061）
+- **存在しないものを「やらない」と書かない（tombstone）。** 退役した step / store / 機構は
+  消し、禁止の実体があれば正の形で書く（「Wikidata 連邦 — RETIRED、この step は実行しない」
+  → 「sameAs は self-sovereign な解決先のみ」）。モデルは見たことのない選択肢を幻の代替
+  として読む
+- **経緯は ADR、本文は規則。** 「初見では X と推定しかけたが…」「第一波 / 第二波で移行」型の
+  物語は残さない。理由が 1 句で言えるなら 1 句（「正本の改名時にコピーが取り残された前例あり」）
+- **改修は置換であって追記ではない。** 規則を変えたら旧記述を grep して消す — 同一ファイル内に
+  2 版が残ると Fable は両方を文字通り読んで毎回どちらかを選ぶ（config-gc の削除手順、
+  authorship-strategy の型 (b) 配置で実例）
+- **条件を列挙したら tie-breaker を置かない。** 「判断に迷ったら Y」は条件付きに降格した
+  gate を Y 側へ戻す（implementation-chain feat×TDD で実例）
+- **例は出力の register を固定する。** 例の文体・長さ・言語がそのまま出力に写る。GitHub
+  コメント調の小文字例 9 本（thermo-nuclear）のような register 例は置かない。format を pin
+  する例だけ、illustrative と明記して置く
 - 重なる内容は**参照**で済ませる（正本は 1 か所。複製した版は誰も刈らず drift する）
 - frontmatter: `name`（dir と一致）/ `description`（発話例 + NOT for）/ `user-invocable` /
   `origin`（rules/common/skills.md の表）。agent は `tools` / `model` も（判定系は opus、
@@ -68,7 +88,7 @@ skill の本文は渡さない（anchoring）。
 
 - Actionability / Scope fit / Uniqueness（**library 全体**）/ Currency（名指し資産の
   **無条件**検証 — Glob か Read で存在確認、「古そうなら」は禁句）/ Hygiene（トリビアルな
-  禁止列挙・反復強調の肥大が無いか）
+  禁止列挙・反復強調の肥大、版差 marker・退役物の tombstone・同一ファイル内の 2 版が無いか）
 - 追加 2 問 — Generation fit（旧世代向け記述が無いか）/ Trigger realism（自発発火に
   依存した設計になっていないか）
 
@@ -99,9 +119,7 @@ skill の本文は渡さない（anchoring）。
 本文も判定器（著者）も窓の間に変わるので「N 回連続」は測れない（ADR-0046 Review-when 注記
 2026-08-22）。
 
-## 持たないもの
+## 参照
 
-description 最適化 loop（文言改良で発火が伸びない実測後は磨く先が壁。計器も 2026-06-29 に定数 0 を出した —
-memory `reference_skill_creator_loop_gotchas`）、eval viewer / feedback.json、grader・
-analyzer・comparator agent、packaging script（harness-sync）、quick_validate（harness_lint）。
-`references/portability.md`（人間可搬性の基準）は残す — harness-boundary が参照する。
+`references/portability.md`（人間可搬性の基準）— harness-boundary が参照する。packaging は
+harness-sync、frontmatter 検査は harness_lint が持つ。

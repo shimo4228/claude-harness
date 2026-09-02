@@ -34,7 +34,7 @@ origin: shimo4228
 
 ## 文体規約
 
-語彙・構造の tell リストの正本は `writing-ecosystem/references/style-diagnostics.md`（原則は同 skill の #ai-slop 節。`~/MyAI_Lab/zenn-content/.claude/skills/` 常駐、2026-08-29 移設）— ここに複製しない。コメント genre 固有の追加分のみ:
+語彙・構造の tell リストの正本は `writing-ecosystem/references/style-diagnostics.md`（原則は同 skill の #ai-slop 節。`~/MyAI_Lab/zenn-content/.claude/skills/` 常駐）— ここに複製しない。コメント genre 固有の追加分のみ:
 
 - **スレッドの register に合わせる**: 既存コメントの長さ・フォーマット水準を上限とする。自分の過去コメントがあるスレッドでは、その声との連続性も保つ（急な文体変化自体が不自然さの signal）
 - **concede-first / net-giver の 3 拍**: ①相手の nuance ある論点を具体的に認める → ②根拠ある価値を 1 つ足す（実例・反直感の史実・視覚的類推）→ ③鋭い一文で終える。リンク勧誘・「続きは私の記事で」をしない

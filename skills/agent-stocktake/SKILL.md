@@ -76,8 +76,7 @@ corpus is unreadable). It measures and enumerates; it never assigns a verdict.
 | `suppression_candidates` | line-numbered candidates for the Stage 1 suppression question (the catalog is bilingual because the corpus is) |
 | `always_never_candidates` | line-numbered candidates for the over-constraint question, **body only** — a description is a delegation trigger, not an instruction to the agent |
 
-The last two are **candidates, not findings**, and roughly one in five is real —
-read every cited line before writing it up. The catalog is also a **floor, not a
+The last two are **candidates, not findings** — read every cited line before writing it up. The catalog is also a **floor, not a
 census**: it holds five phrasings drawn from one corpus, so a suppression written
 some other way ("skip anything you're unsure about", 「ノイズになる指摘は避ける」)
 appears in no JSON field. Keep reading for those; an empty list is not a clean bill.
@@ -95,8 +94,7 @@ output; do not re-implement:
   `model` is an alias → `scripts/hooks/harness_lint.py` `lint_agents`, which runs
   in `.claude/verify.sh` and the pre-commit hook. A missing origin is still an
   integrity finding per rules/common/skills.md, feeding Improve.
-- [ ] `name` equals the filename stem → the same `lint_agents` (moved there from
-  this script 2026-08-27, RFC-0014). It admits no judgment and the delegation
+- [ ] `name` equals the filename stem → the same `lint_agents` (RFC-0014). It admits no judgment and the delegation
   registry keys on it, so it belongs to a gate that stops a commit — not to
   evidence a reader may or may not transcribe. A finding here is a **blocked
   commit**, not a stocktake verdict.

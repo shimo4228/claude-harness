@@ -8,7 +8,7 @@ origin: shimo4228
 
 # /learn-eval - Extract, Evaluate, then Save
 
-Extends the full /learn flow with a pre-save quality evaluation and a save-location decision.
+Extract a reusable pattern from the session, gate it, and route every Save to a destination something actually reaches.
 
 ## What to Extract
 
@@ -26,8 +26,8 @@ Look for:
 
 3. **Determine the destination — there is no parking lot.**
 
-   `learned/` was retired on 2026-08-23 (ADR-0047). Every Save must land somewhere that
-   something actually routes to, so pick one of exactly two:
+   Every Save must land somewhere that something actually routes to (ADR-0047), so pick
+   one of exactly two:
 
    - **Absorb into an existing asset** — the pattern belongs inside a skill, rule, or
      `hooks/README.md` section that already owns the topic. Name the file and the section.
@@ -45,19 +45,13 @@ Look for:
    Global vs project placement (once a destination type is chosen): 正本は
    [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md)。
 
-4. Draft the skill file using this format:
+4. Draft the candidate as a scratch note (the final skill shape belongs to `skill-creator`;
+   `overlap_candidates.py` reads name / description / Problem / Solution / When to Use):
 
 ```markdown
----
-name: pattern-name
-description: "Description in 130 characters or less"
-user-invocable: false
-origin: auto-extracted
----
-
 # [Descriptive Pattern Name]
 
-**Extracted:** [Date]
+description: "Description in 130 characters or less"
 **Context:** [Brief description of when this applies]
 
 ## Problem
@@ -244,10 +238,6 @@ origin: auto-extracted
 
 ## Notes
 
-- Don't extract trivial fixes (typos, simple syntax errors)
-- Don't extract one-time issues (specific API outages, etc.)
-- Focus on patterns that will save time in future sessions
-- Keep skills focused — one pattern per skill
 - On an Absorb verdict, do not create a new file — append to the existing skill instead
 
 ## References

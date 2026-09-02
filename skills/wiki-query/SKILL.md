@@ -10,7 +10,7 @@ origin: shimo4228
 Obsidian Vault 内の LLM wiki に問い合わせ、**出典 `[[ ]]` を明記した合成回答**を返す。
 複数ページを横断して合成した良回答は wiki に書き戻す（filing）。
 
-> パターンの出自: wiki の運用モデル（LLM がメンテする markdown wiki、人間は curation と問いに集中）と query 書き戻し（"good answers can be filed back into the wiki as new pages"）は Andrej Karpathy の「LLM Wiki」構想に由来する。この skill ファイル自体は shimo4228 の実装。2026-06-12〜2026-08-06 は read-only 運用だったが、原典 parity のため書き戻しを復活（vault CLAUDE.md §8-query と同期済み）。
+> パターンの出自: wiki の運用モデル（LLM がメンテする markdown wiki、人間は curation と問いに集中）と query 書き戻し（"good answers can be filed back into the wiki as new pages"）は Andrej Karpathy の「LLM Wiki」構想に由来する。この skill ファイル自体は shimo4228 の実装。
 
 このファイルが **query 手順の正本**。vault の `CLAUDE.md` §8-query はここに defer する。
 
@@ -25,7 +25,7 @@ VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vaul
 - 構造グラフ: `$VAULT/wiki/graph.jsonld`（symlink → `~/MyAI_Lab/daily-research/graph.jsonld`）
 - 原資料: `$VAULT/daily-research/`, `$VAULT/archive/`
 
-## 制約（CRITICAL）
+## 制約
 
 - **source 層は不変**: `daily-research/` `archive/` `99_Attachment/` には書き込まない。
 - 書き込み対象は **`wiki/concept/` + `wiki/log.md` + index 再生成**のみ。source の新規取り込み（ingest）と wiki 全体の lint は vault セッション専用のまま。
