@@ -72,12 +72,10 @@ _COUNT_NOUN_RE = re.compile(
 )
 _TREE_CHARS_RE = re.compile(r"[├└│─]")
 # A block is a tree when it draws branches, not merely when it contains a box
-# character: CODEMAPS flow diagrams ("CLI → Agent.run_session(...)") and prose
-# separators use ─ freely and produced 29/29 false "unresolved" entries in
-# contemplative-agent (2026-08-26).
-# Single character class, no nested quantifier: the first draft
-# (`^\s*(?:[│ ]\s*)*├──`) backtracked catastrophically on the long indented
-# lines in contemplative-agent's CODEMAPS and turned a 14 s run into a hang.
+# character: flow diagrams ("CLI → Agent.run_session(...)") and prose
+# separators use ─ freely and otherwise read as false "unresolved" entries.
+# Single character class, no nested quantifier: a nested-quantifier draft
+# (`^\s*(?:[│ ]\s*)*├──`) backtracks catastrophically on long indented lines.
 _TREE_BRANCH_RE = re.compile(r"^[ \t│]*[├└][─ ]*\S")
 _LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 _SHELL_LANGS = {"bash", "sh", "shell", "zsh", "console"}

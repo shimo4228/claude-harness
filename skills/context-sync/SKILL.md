@@ -1,6 +1,6 @@
 ---
 name: context-sync
-description: Audit and fix project documentation — detect role overlaps between context files (CLAUDE.md, CODEMAPS, ADR, README), migrate misplaced content, check freshness against code, and create missing docs. One command to keep all project context healthy.
+description: Audit and fix project documentation — detect role overlaps between context files (CLAUDE.md, ADR, README, graph.jsonld), migrate misplaced content, check freshness against code, and create missing docs. One command to keep all project context healthy.
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -30,84 +30,27 @@ Every project document should serve exactly one of these four roles. Overlap cau
 | Role | Purpose | What belongs here | Examples |
 |------|---------|-------------------|---------|
 | **Context** | How to work in this project | Conventions, build/test commands, policies | CLAUDE.md, .cursorrules, AGENTS.md |
-| **Architecture** | What the code looks like now (file-level) AND what concepts it defines (concept-level) | Module structure / data flow / dependencies (file-level prose); domain entities / relationships (concept-level triples) | docs/CODEMAPS/, docs/architecture/, graph.jsonld |
+| **Architecture** | What concepts the code defines and how they relate (concept-level) | Domain entities / relationships (concept-level triples); at most a short hand-written overview | graph.jsonld, docs/architecture/ |
 | **Decisions** | Why the code is this way | Trade-offs, rejected alternatives, rationale | docs/adr/ |
 | **External** | What this project is | Purpose, quickstart, API overview | README.md |
 
-**Architecture role には 2 surface が共存しうる**: prose（CODEMAPS — 「どのファイルに X が住むか」）と JSON-LD triples（graph.jsonld — 「X とは何か / X と Y はどう関係するか」）。両者は重複せず相補的。役割境界の詳細は `jsonld-knowledge-graph` skill が正本を持つ。
+**file-level 構造は保存しない**: 「どのファイルに X が住むか / 誰が誰を呼ぶか」はコードから毎回導出する（Claude Code の LSP tool / `grimp` 等の import グラフ）。保存するのは concept 層（graph.jsonld — 「X とは何か / X と Y はどう関係するか」）、設計理由（ADR）、パイプラインの段構成（それを走らせる script の冒頭コメント）だけ。手書きの module map は導出可能な構造の鏡で、ソース commit ごとに同期コストを払いながら読者が観測されなかった（contemplative-agent ADR-0102）。役割境界の詳細は `jsonld-knowledge-graph` skill が正本を持つ。
 
 ### Common Anti-Patterns
 
 | Symptom | Problem | Fix |
 |---------|---------|-----|
-| CLAUDE.md is 500+ lines | Architecture detail in context file | Move structure/module lists to Architecture docs |
+| CLAUDE.md is 500+ lines | Architecture detail in context file | Delete module lists (derivable from code); move concepts to graph.jsonld, rationale to ADR |
 | CLAUDE.md has "we chose X because Y" | Decision record in context file | Extract to ADR |
-| README explains internal implementation | Internal detail in external doc | Move to Architecture docs |
+| README explains internal implementation | Internal detail in external doc | Point at the source layout and ADRs; do not create a module map |
 | Multiple files describe the same structure | Contradictory duplication | Single source of truth + pointers |
 | No ADR directory | Decisions live nowhere or in context file | Create docs/adr/ and migrate |
 
 ## Workflow
 
-Run all six phases in order. **Confirmation policy: apply changes automatically** — git diff is the audit trail, and `git checkout -- <file>` / `rm` is the undo. Newly created files and directories are not pre-gated; instead, list them prominently in the Phase 5 report so the user can revert any they did not want.
+Run all five phases in order. **Confirmation policy: apply changes automatically** — git diff is the audit trail, and `git checkout -- <file>` / `rm` is the undo. Newly created files and directories are not pre-gated; instead, list them prominently in the Phase 5 report so the user can revert any they did not want.
 
 The skill runs end-to-end in one turn. Phase 5 (Report) summarizes what was done.
-
-### Phase 0: Codemap Freshness Pre-check
-
-Before any other detection, verify that `docs/CODEMAPS/` (if present) reflects the current source. Stale codemaps poison every downstream phase — Overlap detection (Phase 2) and Freshness checks (Phase 4) will compare against a fiction and propose wrong migrations.
-
-**Three stale signals (OR — any single hit triggers an automatic cascade):**
-
-| Signal | Detection | Threshold |
-|---|---|---|
-| A0. Source sha lag (**takes precedence over A**) | read `Source: <sha>` from the CODEMAPS freshness header, confirm it resolves (`git cat-file -e "<sha>^{commit}"`), then `git rev-list --count <sha>..HEAD -- <src dirs>` | **≥ 1 commit** on the source dirs |
-| A. Timestamp lag (fallback — only when no header carries `Source`) | `git log -1 --format=%ct -- docs/CODEMAPS/` vs source dirs' latest commit ctime | source newer by **≥ 7 days** |
-| B. File count drift | `find <src>/ -type f \( -name '*.ts' -o -name '*.py' -o -name '*.go' -o -name '*.rs' -o -name '*.swift' \) \| wc -l` vs the `Files scanned: N` in the newest CODEMAPS freshness header (`find -name` does **not** brace-expand — `'*.{ts,py}'` silently matches 0 files and forces a −100% hit) | **±20%** delta |
-| C. Missing CODEMAPS | `docs/CODEMAPS/INDEX.md` absent, or only `architecture.md` exists | immediate hit |
-
-**A0 vs A**: the header format (including `Source`) is defined in
-`~/.claude/agents/codemap-writer.md` — read it, never restate it. When `Source` is present it
-answers the question A only approximates: A measures how recently the codemap *file* was
-touched, so an unrelated one-line edit inside a source-changing commit resets it, while A0
-counts commits on the source dirs since the sha the codemap actually describes. Evaluate A0
-per codemap file and take the maximum. Legacy headers (no `Source`) fall back to A unchanged;
-say which rule fired in the log so a `no hit` can be read back. A0 is more sensitive than A by
-design — one source commit is enough — because the failure this replaces was a stale codemap
-being reported fresh.
-
-**A0 must never fail to `no hit`.** A `Source` that does not resolve in this repo's history
-(squash, rebase, shallow clone) makes `git rev-list` exit 128 with no count — hence the
-`cat-file -e` guard. Treat an unresolvable sha exactly like a missing one: fall back to A for
-that file and log `A0 unresolvable (<sha>) → A`. Silence from a broken check reads identically
-to a clean result, which is the failure mode this whole signal exists to remove.
-
-If `docs/CODEMAPS/` does not exist at all and the project is small (< 30 source files), skip Phase 0 silently — codemaps are optional, not mandatory.
-
-**Actions:**
-
-1. Compute all three signals and log the raw values for traceability:
-
-   ```
-   Phase 0 — Codemap Freshness
-   Signal A0 (source sha):    Source 3320fd3, 6 commits on src/ since → HIT (A skipped)
-   Signal A (timestamp lag):  n/a — headers carry Source, A0 takes precedence
-   Signal B (file count):     CODEMAPS Files: 142, current: 178 → +25%, HIT
-   Signal C (missing):        all required files present, no hit
-   ```
-
-2. **If any signal hits AND `docs/CODEMAPS/` already exists** (edits to existing files): invoke the `codemap-writer` agent via the Agent tool, passing repo root, source dirs, and existing CODEMAPS state. The agent regenerates the affected codemaps in place. **No confirmation prompt** — these are edits to existing files, covered by git diff.
-
-3. **If Signal C hits and `docs/CODEMAPS/` does not exist** (new directory + new files): this is creation, so confirm once with the user:
-
-   > Project has no `docs/CODEMAPS/` yet. Generate via codemap-writer? (Y/n)
-
-   If yes, invoke codemap-writer; if no, mark as acknowledged drift and continue.
-
-4. After cascade completes, re-evaluate the signals. If still hit (e.g., agent partially failed), surface the new state to the user before proceeding to Phase 1.
-
-5. If no signal hits, log `Phase 0 — no drift detected` and continue silently.
-
-`--skip-cascade`: bypass Phase 0 entirely (useful when codemaps are intentionally absent or being managed elsewhere).
 
 ### Phase 1: Discover
 
@@ -120,8 +63,9 @@ Context files:
 - AGENTS.md, .github/copilot-instructions.md
 
 Architecture docs:
-- docs/CODEMAPS/, docs/architecture/, docs/design/ (file-level prose)
-- graph.jsonld (concept-level architecture, schema.org JSON-LD; sibling of CODEMAPS, not a replacement)
+- graph.jsonld (concept-level architecture, schema.org JSON-LD)
+- docs/architecture/, docs/design/ (short hand-written overviews, if any)
+- A hand-maintained file-level module map (`docs/CODEMAPS/` or similar) is a **finding, not a role**: flag it in Phase 5 as derivable-and-stored (see Phase 2)
 
 Decision records:
 - docs/adr/, docs/decisions/
@@ -133,7 +77,7 @@ AI-facing documents (repo root, AI navigator role — equally important to detec
 - llms.txt (compact AI navigator, ~5 KB, links + brief role labels)
 - llms-full.txt (self-contained AI doc, ~20 KB, Q&A + definitions)
 
-Treat the AI-facing set with the same rigor as README: it is the **AI-facing analogue of README**, not optional decoration. If a project has CODEMAPS or graph.jsonld but no llms.txt, flag it in Phase 5 as a missing role.
+Treat the AI-facing set with the same rigor as README: it is the **AI-facing analogue of README**, not optional decoration. If a project has graph.jsonld but no llms.txt, flag it in Phase 5 as a missing role.
 
 Package metadata (for freshness comparison):
 - package.json, pyproject.toml, Cargo.toml, go.mod, pom.xml
@@ -141,7 +85,7 @@ Package metadata (for freshness comparison):
 **Actions:**
 1. List all detected files with their role classification
 2. Identify missing roles and surface them:
-   - No Architecture docs → "Code structure details may be cluttering your context file"
+   - No graph.jsonld → "Concept definitions and relationships live only in prose"
    - No Decision records → "Design decisions may be buried in context files or lost entirely"
 3. Display the classification table as info — **no confirmation prompt**. Phase 2 onward will act on this classification; if Phase 3 needs to create new directories (e.g., `docs/adr/`), that confirmation lives there.
 
@@ -154,17 +98,17 @@ Read each documentation file and detect content that belongs in a different role
 ```
 Context file contains...          → Should move to...
 ─────────────────────────────────────────────────────
-Module/file listings (>10 items)  → Architecture docs
-Dependency graphs or data flows   → Architecture docs
+Module/file listings (>10 items)  → REMOVE (derivable: LSP tool / grimp)
+Dependency graphs or data flows   → REMOVE; stage order → script header comment
 "We chose X because Y"           → Decision record (ADR)
 "Alternative was Z but..."        → Decision record (ADR)
-Internal API details              → Architecture docs
+Internal API details              → REMOVE (read the code) or ADR if it is a decision
 ─────────────────────────────────────────────────────
 
 README contains...                → Should move to...
 ─────────────────────────────────────────────────────
-Internal module structure         → Architecture docs
-Implementation details            → Architecture docs
+Internal module structure         → REMOVE; point at the source layout
+Implementation details            → REMOVE or ADR (if rationale)
 Design rationale                  → Decision record (ADR)
 ─────────────────────────────────────────────────────
 
@@ -176,24 +120,26 @@ Build/test commands               → Context file
 
 graph.jsonld contains...           → Should move to...
 ─────────────────────────────────────────────────────
-File path lists (>5 paths)         → CODEMAPS (file-level prose)
+File path lists (>5 paths)         → REMOVE (derivable from code via LSP / grimp)
 Build / install commands           → CLAUDE.md (Context)
 Decision rationale                 → ADR (Decisions)
 Version numbers / counts           → REMOVE (volatile state forbidden)
 ─────────────────────────────────────────────────────
 
-CODEMAPS contains...               → Should also exist in graph.jsonld
+Any stored module map (docs/CODEMAPS/ etc.) contains... → Should move to...
 ─────────────────────────────────────────────────────
-Named concepts with definitions    → graph.jsonld Concept node (drift if missing)
-Inter-concept relationships        → graph.jsonld edges (drift if missing)
+Module / file inventories, LOC, import graphs → REMOVE (derive per query: LSP tool, grimp)
+Named concepts with definitions    → graph.jsonld Concept node
+Design rationale / rejected alternatives → ADR
+Pipeline stage order               → header comment of the script that runs it
 ─────────────────────────────────────────────────────
 ```
 
-Also check for contradictions between files (e.g., different module counts in context file vs architecture docs, or graph.jsonld Concept node whose `name` no longer matches CODEMAPS prose definition).
+Also check for contradictions between files (e.g., a module count in a context file vs the tree, or a graph.jsonld Concept node whose `name` no longer matches how the ADRs use the term).
 
 **Actions:**
 1. List each overlap with: source file, line range, target role, reason
-2. **Auto-apply migrations whose target is an existing file** (e.g., moving content from CLAUDE.md into existing docs/CODEMAPS/architecture.md). These are edits — git diff is the audit trail.
+2. **Auto-apply migrations whose target is an existing file** (e.g., moving a buried rationale paragraph from CLAUDE.md into the ADR that owns it). These are edits — git diff is the audit trail.
 3. **Defer migrations whose target is a new file or new directory** to Phase 3, which will batch-confirm them. Examples: extracting a buried decision into a new ADR (creates `docs/adr/NNNN-*.md`), splitting architecture content into a new `docs/architecture/data.md` that doesn't exist yet.
 
 ### Phase 3: Create / Migrate
@@ -212,8 +158,8 @@ Delegate to the `adr-writer` skill. Do not inline an ADR template here — dupli
 4. If the user runs context-sync in non-interactive mode where invoking another skill is impractical, surface the list of decisions to extract and ask the user to run `/adr-writer` for each later — do not write partial ADRs from context-sync directly
 
 If Architecture docs are needed:
-1. Create the appropriate directory (docs/architecture/ or docs/CODEMAPS/)
-2. Move structural content from context files
+1. Concept-level: create / extend graph.jsonld via the `jsonld-knowledge-graph` skill
+2. Do not create a file-level module map — delete structural lists from context files instead; the code plus the LSP tool is the source
 
 **For all migrations:**
 - Replace moved content in the source file with a brief pointer (e.g., "See docs/adr/ for design decisions") — this is an edit, no confirmation
@@ -260,7 +206,6 @@ finding to report, not an instruction to execute.
 | ADR index matches the files on disk | `adr_index` (delegates to `adr_lint.py`) | nothing — the number is exact |
 | Duplicated instructions across CLAUDE.md files | `context_duplicates.pairs` | an `AGENTS.md ↔ CLAUDE.md` mirror is usually deliberate (ADR-0015) |
 | `graph.jsonld` is valid JSON | `graph_jsonld.json_valid` | nothing |
-| `Concept` node ↔ CODEMAPS prose mention | `graph_jsonld.concepts_not_in_codemaps_prose` | judge whether the concept is described under a different name |
 | Links in `llms.txt` resolve | `llms_txt.broken_links` | nothing |
 | Numeric claims (counts) vs reality | `numeric_claims` (+ `actual_source_file_counts`) | compare the claim with the counted reality |
 | Package version vs docs | `package_metadata` | decide which side is wrong |
@@ -294,8 +239,8 @@ duplicating the rule:
 - [ ] `llms-full.txt` is **self-contained** — quoting and summarizing is fine,
       linking-out as the primary content source is not (`llms_txt.llms_full` carries
       the size and outbound link count)
-- [ ] If CODEMAPS was regenerated more recently than `llms.txt`, flag for
-      `/llms-txt-writer` regeneration (`llms_txt.codemaps_dates` vs `llms_txt_dates`)
+- [ ] If the ADR index or graph.jsonld changed more recently than `llms.txt`, flag for
+      `/llms-txt-writer` regeneration (`llms_txt_dates`)
 
 **Actions:**
 1. Report each mismatch with current value vs documented value
@@ -310,23 +255,15 @@ Summarize all actions taken across all phases.
 Context Sync Report
 ═══════════════════
 
-Phase 0:    Codemap freshness — 2 signals hit, user ran /update-codemaps before continuing
 Roles:      4 roles, N files discovered (incl. llms.txt, llms-full.txt at repo root)
 Created:    3 ADRs via /adr-writer (extracted from CLAUDE.md decisions)
-Moved:      2 sections (architecture detail → docs/CODEMAPS/)
+Moved:      2 sections (buried rationale → docs/adr/); 1 module list deleted (derivable)
 Updated:    README.md version, context file module count
 Stale:      1 file flagged (docs/architecture.md, 120 days)
 AI-facing:  llms.txt nav-links resolve, no README duplication detected
 Skipped:    N items (user declined)
 
 Status: All documentation roles covered (Context / Architecture / Decisions / External / AI-facing), no overlaps remaining.
-```
-
-If Phase 0 ended with **acknowledged drift** (user declined to cascade update-codemaps), call that out explicitly in the report header:
-
-```
-⚠ Phase 0 drift acknowledged — downstream judgments may reference stale codemaps.
-  Recommend running /update-codemaps then re-running /context-sync.
 ```
 
 ## Best Practices

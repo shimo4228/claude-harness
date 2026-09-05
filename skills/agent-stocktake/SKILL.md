@@ -172,7 +172,7 @@ rest the **body layer** (invocation):
   the rich-context pull (ADR-0024): a **frozen-input render contract** — the caller
   freezes a self-contained packet before invocation, so conversation context is not
   needed by design (adr-writer per ADR-0016, prompt-writer; likewise repo-grounded
-  work whose input is the codebase, not the conversation — codemap-writer, scout) —
+  work whose input is the codebase, not the conversation — scout) —
   and **bulk context isolation** — the work reads or produces volume that would
   pollute the main context (e2e-runner, refactor-cleaner)
 - [ ] *Technical references current?* — commands, flags, model names, tool lists

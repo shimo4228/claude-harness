@@ -159,7 +159,7 @@ root files 不可侵・commit しない、は共通。
 (ADR-0018 / ADR-0035 「圧縮版を配布 repo へ同期しない」)。script は固定
 allowlist 方式: 9 skills (AKC cycle phase binding: search-first / learn-eval /
 skill-stocktake / skill-health / rules-stocktake / rules-distill / skill-comply /
-context-sync / repo-asset-stocktake) + 2 agents (adr-writer / codemap-writer) を
+context-sync / repo-asset-stocktake) + 1 agent (adr-writer) を
 staging → prune → YAML frontmatter 検証 → secret scan → subtree 置換 (skills/ agents/)。
 allowlist の component が harness に無い / origin marker が無いと abort (silently drop
 しない)。**`.claude-plugin/plugin.json` / `marketplace.json` と `rules/common/akc-cycle.md`

@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+accepted — **superseded by [ADR-0062](./0062-retire-codemap-machinery.md)（2026-09-05）**: codemap 機構ごと退役し、本 ADR の script `codemap_evidence.py` も削除
 
 ## Date
 

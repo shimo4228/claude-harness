@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+accepted — **2026-09-05 注記（[ADR-0062](./0062-retire-codemap-machinery.md)）**: Phase 0（Codemap Freshness Pre-check）と `codemap-writer` agent は退役。adr-writer と context-sync Phase 1〜4 の判断は有効
 
 ## Date
 

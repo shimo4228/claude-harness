@@ -16,7 +16,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`) — applies to skills, agents, and rules; ADRs sync wholesale and hooks come from a curated allowlist
 - **Hooks directory**: `hooks/` — five PreToolUse hooks at the `git commit` boundary (secret scan, repo-owned gate runner, bandit, `ruff format --check`, review reminder) plus shared parts; wired manually into `settings.json`, install guide at `docs/hooks.md`
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
-- **Agents directory**: `agents/` — prompt generation (scout, prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR/codemap tooling
+- **Agents directory**: `agents/` — prompt generation (scout, prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR tooling (adr-writer, adr-reviewer)
 - **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, root-cause-first debugging, skill origin tracking, knowledge staleness, and the Contemplative Constitutional AI clauses
 - **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health
 - **Python build**: uv (or pip install -e .), Python 3.10+
@@ -96,7 +96,7 @@ The skill-comply skill is defined as a behavioral compliance measurement system.
 
 ## What is the context-sync skill?
 
-The context-sync skill is defined as a project documentation auditor. It detects role overlap between context files (CLAUDE.md, CODEMAPS, ADR, README), migrates misplaced content to the correct file type, checks numeric claims (file counts, test counts, version numbers) against the live codebase, and creates missing documentation files where roles are vacant. The skill enforces the Maintain phase of AKC: every documentation file should serve exactly one of the four canonical roles — Context, Architecture, Decisions, or External. Run after major refactoring or when context files exceed roughly 200 lines.
+The context-sync skill is defined as a project documentation auditor. It detects role overlap between context files (CLAUDE.md, ADR, README, graph.jsonld), migrates misplaced content to the correct file type, checks numeric claims (file counts, test counts, version numbers) against the live codebase, and creates missing documentation files where roles are vacant. The skill enforces the Maintain phase of AKC: every documentation file should serve exactly one of the four canonical roles — Context, Architecture, Decisions, or External. Run after major refactoring or when context files exceed roughly 200 lines.
 
 ## What is the llms-txt-writer skill?
 

@@ -243,7 +243,7 @@ def _gate_llms_txt(checks: dict) -> list[str]:
     # "3 gated check(s) ran, 0 violations" (2026-08-27, cross-model review and
     # silent-failure-hunter reproduced it independently).
     # Turning all of degraded[] into violations is not the fix: this check also
-    # degrades on an unreadable README.md or CODEMAPS, and GATE_SCOPE means those
+    # degrades on an unreadable README.md too, and GATE_SCOPE means those
     # to stay advisory.
     full = llms.get("llms_full") or {}
     if full.get("status") == "unreadable":

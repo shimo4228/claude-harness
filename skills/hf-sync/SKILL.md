@@ -1,6 +1,6 @@
 ---
 name: hf-sync
-description: Hugging Face Datasets mirror sync for graph.jsonld-bearing research repos. `<Owner/dataset>` を引数に取り、cwd の graph.jsonld を flatten して graph.jsonl と一緒に HF dataset へ upload する。`release-doi` Phase 5 末尾の `gh release create` 後、または ad-hoc resync で起動する（tag push は webhook を発火させないので契機にしない）。Local の `hf auth login` token を使うので GitHub Actions / CI auth は不要。
+description: Hugging Face Datasets mirror sync for graph.jsonld-bearing research repos. `<Owner/dataset>` を引数に取り、cwd の graph.jsonld を flatten して graph.jsonl と一緒に HF dataset へ upload する。`release-doi` Phase 4 末尾の `gh release create` 後、または ad-hoc resync で起動する（tag push は webhook を発火させないので契機にしない）。Local の `hf auth login` token を使うので GitHub Actions / CI auth は不要。
 user-invocable: true
 origin: shimo4228
 ---
@@ -11,7 +11,7 @@ origin: shimo4228
 
 ## When to use
 
-- `release-doi` の Phase 5 末尾、`gh release create` 後の HF mirror 反映
+- `release-doi` の Phase 4 末尾、`gh release create` 後の HF mirror 反映
 - Graph に手を加えた直後の ad-hoc resync（release を切らずに HF だけ更新したい）
 - HF token を rotate した後の動作確認
 
@@ -63,7 +63,7 @@ shimo4228 系の現行 mapping は `~/MyAI_Lab/shimo4228/CLAUDE.md` の "HF Data
 ## Related skills
 
 - [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — `graph.jsonld` の **設計** layer。本 skill はその **operational mirror** に対応
-- [`release-doi`](../release-doi/SKILL.md) — Zenodo DOI release flow。Phase 5 末尾で本 skill を呼ぶ
+- [`release-doi`](../release-doi/SKILL.md) — Zenodo DOI release flow。Phase 4 末尾で本 skill を呼ぶ
 
 ## Failure modes
 

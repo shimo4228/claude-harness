@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+accepted — **2026-09-05 注記（[ADR-0062](./0062-retire-codemap-machinery.md)）**: 例に挙げた `codemap-writer` agent は退役。semantic authority による委譲境界の判断自体は有効
 
 ## Date
 

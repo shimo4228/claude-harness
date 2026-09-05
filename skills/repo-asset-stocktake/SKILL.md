@@ -1,6 +1,6 @@
 ---
 name: repo-asset-stocktake
-description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"which configs/workflows/runbooks are dead\", \"repo asset stocktake\", 「非コード資産を棚卸しして」「使われてない設定/workflow/runbook を洗い出して」. NOT for — dead code → refactor-clean; doc-role overlap across CLAUDE.md/CODEMAPS/ADR/README → context-sync; ~/.claude config GC → config-gc; skills or rules → skill-stocktake / rules-stocktake."
+description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"which configs/workflows/runbooks are dead\", \"repo asset stocktake\", 「非コード資産を棚卸しして」「使われてない設定/workflow/runbook を洗い出して」. NOT for — dead code → refactor-clean; doc-role overlap across CLAUDE.md/graph.jsonld/ADR/README → context-sync; ~/.claude config GC → config-gc; skills or rules → skill-stocktake / rules-stocktake."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:
@@ -136,7 +136,7 @@ Persist verdicts so `changed` mode can carry them forward. Written inline via Re
 ## Related
 
 - **`refactor-clean`** — its Non-Code Assets sweep covers **code-consumed** data (files a program loads by glob/registry); its test is *structural* — whether any consumption edge exists at all. This skill covers **non-code-consumed** assets (tool / CI / human consumers) and judges *semantic value* — an asset can have a live edge and still be dead (a workflow that fires but no-ops). Structural deadness → refactor-clean; diminished value → here.
-- **`context-sync`** — audits the four documentation *roles* (CLAUDE.md / CODEMAPS / ADR / README) for placement overlap and freshness against code. Runbooks are the overlap zone — context-sync asks "is this doc in the right role and consistent with the code," this skill asks "does this doc still describe something that exists / earn its place at all."
+- **`context-sync`** — audits the four documentation *roles* (CLAUDE.md / graph.jsonld / ADR / README) for placement overlap and freshness against code. Runbooks are the overlap zone — context-sync asks "is this doc in the right role and consistent with the code," this skill asks "does this doc still describe something that exists / earn its place at all."
 - **`config-gc`** — GC over `~/.claude` *harness* config (hooks / permissions / MCP / cache). This skill targets a **project repository** — different directory, same confirm-each gate.
 - **`skill-stocktake` / `rules-stocktake`** — the same stocktake pattern over a different asset class (installed skills / always-loaded rules). This skill is their sibling for a project repo's non-code assets.
 - **`harness-sync`** — syncs this `origin: shimo4228` skill to its public repo after edits.

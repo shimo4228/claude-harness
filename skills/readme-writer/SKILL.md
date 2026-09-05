@@ -182,7 +182,7 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
    readme-clarity-reviewer の Cross-language 軸 + readme-judge 最終判定を各言語版に 1 回
 9. fact 一致 — read-only の照合に限定（allowlist: README 各言語版 / llms.txt / llms-full.txt /
    graph.jsonld / glossary / README を参照する docs）。context-sync はここでは起動しない
-   （codemap 再生成・文書移送まで自動適用しうる）
+   （文書移送まで自動適用しうる）
 10. About 変更案 — description は README の lead と同じ主張・1 文目で機能が伝わる構成、
     topics は実勢を測ってから（細則 `references/about.md`）。成果物は「現状 → 提案」で、適用しない
     ⏸ 著者通読 GO（README 全文 + 判定結果 + About 案を一括）— 著者通読が常に最上位のゲート

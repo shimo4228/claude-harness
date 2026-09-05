@@ -29,9 +29,9 @@ SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "context_evidence.py"
 
 
 def test_path_tokens_finds_inline_code_and_links():
-    md = "See `docs/adr/README.md` and [the map](docs/CODEMAPS/INDEX.md).\n"
+    md = "See `docs/adr/README.md` and [the cycles](docs/CYCLES.md).\n"
     tokens = ce.path_tokens(md)
-    assert {t.token for t in tokens} == {"docs/adr/README.md", "docs/CODEMAPS/INDEX.md"}
+    assert {t.token for t in tokens} == {"docs/adr/README.md", "docs/CYCLES.md"}
     assert all(t.line == 1 for t in tokens)
 
 
@@ -339,8 +339,8 @@ def test_version_mentions_ignore_bare_numbers_without_version_framing():
 
 
 def test_md_link_paths_ignores_inline_code_mentions():
-    md = "The module `core/llm.py` is described in [the map](docs/CODEMAPS/INDEX.md).\n"
-    assert [t.token for t in ce.md_link_paths(md)] == ["docs/CODEMAPS/INDEX.md"]
+    md = "The module `core/llm.py` is described in [the cycles](docs/CYCLES.md).\n"
+    assert [t.token for t in ce.md_link_paths(md)] == ["docs/CYCLES.md"]
 
 
 def test_context_files_exclude_template_directories(tmp_path: Path):

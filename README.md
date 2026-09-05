@@ -74,7 +74,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [scout](agents/scout.md) | Pre-implementation solution discovery. Searches npm / PyPI / MCP registries / GitHub for existing solutions |
 | [prompt-writer](agents/prompt-writer.md) | Generates concise prompts using a lightweight model. Creates and rewrites LLM prompt templates |
 | [adr-writer](agents/adr-writer.md) | Generates the 7-section ADR body (incl. `Review-when` expiry conditions) from supplied input only — never invents context, expiry conditions, or alternatives |
-| [codemap-writer](agents/codemap-writer.md) | Generates / refreshes `docs/CODEMAPS/` — token-lean architecture documentation, ~1000 tokens per map |
 | [readme-reviewer](agents/readme-reviewer.md) | Strict README / repo top-page review — LLM-read floor, lead clarity, human hook, scannability, length discipline, visual effectiveness. Companion to readme-writer |
 | [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | First-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register (ですます). Parallel partner of readme-reviewer |
 | [adr-reviewer](agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, `Review-when` names an observable expiry trigger, Alternatives are real rather than straw men (a live 「未決」 rival is allowed), Consequences show both sides, and override relations with prior ADRs are stated (dated 注記 on partial weakening) |
@@ -163,12 +162,13 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, loop-design-check, python-patterns, refactor-clean, tdd, update-codemaps | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, loop-design-check, python-patterns, refactor-clean, tdd | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
 | [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) + local modifications | mondo | — | — |
 | [cursor/plugins](https://github.com/cursor/plugins) | thermo-nuclear-code-quality-review | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |
+| [tt-a1i/archify](https://github.com/tt-a1i/archify) | archify | — | — |
 <!-- END GENERATED: upstream-components -->
 
 ## Related repos

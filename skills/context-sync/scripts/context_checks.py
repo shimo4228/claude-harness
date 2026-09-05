@@ -469,7 +469,7 @@ def _claim_corpus(root: Path, docs: list[Path], context_files: list[Path]) -> li
         role_doc_at_root = path.parent == root and (
             path.name.startswith("README") or path.name.startswith("llms")
         )
-        if path in context_files or "CODEMAPS" in path.parts or role_doc_at_root:
+        if path in context_files or role_doc_at_root:
             keep.append(path)
     return keep
 
@@ -584,32 +584,6 @@ def check_package_metadata(cx: Corpus, docs: list[Path], context_files: list[Pat
     }
 
 
-def _codemaps_prose(cx: Corpus, check: str) -> dict:
-    codemaps = cx.root / "docs" / "CODEMAPS"
-    if not codemaps.is_dir():
-        return {"present": False, "files": 0, "read": 0, "unread": [], "text": ""}
-    files = sorted(codemaps.glob("*.md"))
-    parts: list[str] = []
-    unread: list[str] = []
-    for path in files:
-        text = cx.text(
-            path,
-            check,
-            "that CODEMAP's prose was missing from the comparison",
-        )
-        if text is None:
-            unread.append(_rel(cx.root, path))
-            continue
-        parts.append(text)
-    return {
-        "present": bool(parts),
-        "files": len(files),
-        "read": len(parts),
-        "unread": unread,
-        "text": "\n".join(parts),
-    }
-
-
 def check_graph_jsonld(cx: Corpus) -> dict:
     path = cx.root / "graph.jsonld"
     if not path.is_file():
@@ -654,16 +628,12 @@ def check_graph_jsonld(cx: Corpus) -> dict:
     concepts = sorted(
         n["name"] for n in nodes if "Concept" in _types(n) and isinstance(n.get("name"), str)
     )
-    prose = _codemaps_prose(cx, "graph_jsonld")
-    unmentioned = sorted(c for c in concepts if c not in prose["text"]) if prose["present"] else []
     return {
         "status": "present",
         "json_valid": True,
         "shape": shape,
         "nodes_total": len(nodes),
         "concepts": concepts,
-        "concepts_not_in_codemaps_prose": unmentioned,
-        "codemaps_prose": {k: prose[k] for k in ("present", "files", "read", "unread")},
         "dois": sorted({m.group(0) for m in _DOI_RE.finditer(raw)}),
         "urls": sorted({m.group(0) for m in _URL_RE.finditer(raw)}),
         "delegated": delegated,
@@ -725,9 +695,6 @@ def check_llms_txt(cx: Corpus) -> dict:
                 "broken_links": sorted({t.token for t in full_paths if not cx.resolves(t.token)}),
                 "note": "self-containment is a semantic judgment; only links and counts are measured",
             }
-    prose = _codemaps_prose(cx, "llms_txt")
-    if prose["present"]:
-        out["codemaps_dates"] = _freshness_dates(prose["text"])[:5]
     return out
 
 

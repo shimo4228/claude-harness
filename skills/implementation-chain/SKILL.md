@@ -87,8 +87,8 @@ routing を自発的に行うようになったら、この段落を外す。）
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
 - `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y
 - 全種別 × Doc Sync: 変更が以下のいずれかに該当する場合のみ Y。該当 doc を**同じ diff** で更新する（後追い PR にしない）
-  - 機構・ゲート・閾値・段構成の変更 → CODEMAPS の Data Flow / architecture（プロジェクトに鮮度規約があればそれに従う）
-  - ADR 新設・廃止 → knowledge graph（graph.jsonld 等）+ CODEMAPS 言及（両面更新）
+  - 機構・ゲート・閾値・段構成の変更 → 所有 ADR の追補 + それを走らせる script の冒頭コメント（プロジェクトに鮮度規約があればそれに従う）
+  - ADR 新設・廃止 → knowledge graph（graph.jsonld 等）
   - パッケージ資産（プロンプト・シード・テンプレート・サービス定義）の増減 → 設定リファレンスの canonical 節
   - CLI / user-facing 挙動の変更 → README / llms.txt
   - 数値クレームの規律: 集約カウントの正本は 1 箇所のみ（他はポインタ）。機械検証可能な doc↔実体対応は prose 修正でなくテストで固定する（検出は code、削除判断は人間）

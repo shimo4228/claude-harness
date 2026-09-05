@@ -1,6 +1,6 @@
 ---
 name: release-doi
-description: DOI-registered research repo (Zenodo) のリリース手順。CODEMAPS / README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映し、Software Heritage archive + SWHID 記録 (intrinsic identifier 層) まで行う 5 phase + post-release ワークフロー。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
+description: DOI-registered research repo (Zenodo) のリリース手順。README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映し、Software Heritage archive + SWHID 記録 (intrinsic identifier 層) まで行う 4 phase + post-release ワークフロー。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -15,7 +15,7 @@ Zenodo に DOI 登録された research repo のリリース手順。`/release-d
 
 - 直近の refactor / 新機能 / sunset ADR を Zenodo に新 version DOI として記録したい
 - pyproject.toml / CITATION.cff / 多言語 README の version drift を解消したい
-- CODEMAPS / glossary / llms.txt が code 実態とズレているのを release ゲートで揃えたい
+- glossary / llms.txt が code 実態とズレているのを release ゲートで揃えたい
 
 **Skip when**:
 - DOI 登録のない repo (Zenodo 連携していない) — `CITATION.cff` の有無で判定
@@ -78,19 +78,7 @@ git tag --sort=-creatordate | head -5
 
 判定: 既存 doc に統計値の二重記述がある場合 (header と stats table で異なる数値等) は **両方とも実コマンド出力に揃える**。single-source-of-truth 原則。
 
-## Phase 2: CODEMAPS regeneration (該当 repo のみ)
-
-`docs/CODEMAPS/` がある repo (contemplative-agent 等) は `/update-codemaps` skill を起動して再生成。
-
-**Drift 解消ルール**:
-- header 部 / stats table / 各 module 行の数値を Phase 1 ground truth に揃える
-- 削除済み module への言及を削除 (履歴注釈として残す場合は「retired by ADR-XXXX」形式)
-- 新規 module を追加 (purpose 1 行 + ADR 出典)
-- 30% 超の構造変化があれば user 承認待ち
-
-CODEMAPS のない repo (AKC / AAP は ADR 中心) はこの phase をスキップ。
-
-## Phase 3: Cross-doc consistency
+## Phase 2: Cross-doc consistency
 
 `/context-sync` を入口で起動して役割重複・migrated content・freshness を一括検出してから、以下を順次更新:
 
@@ -99,7 +87,7 @@ CODEMAPS のない repo (AKC / AAP は ADR 中心) はこの phase をスキッ�
 | `CHANGELOG.md` | `## vX.Y.Z — <title> (YYYY-MM-DD)` を Unreleased セクションから繰り出す。**3 カテゴリ最低限**: Sunset (削除/withdraw)、Added (新規 ADR / module / feature)、Changed (動作/設定の変化)。Notes に migration 影響を記述 |
 | `pyproject.toml` | `version = "X.Y.Z"` |
 | `CITATION.cff` | `version: "X.Y.Z"`、`date-released: "YYYY-MM-DD"`。**DOI 欄は前 release の値を据え置き** (Post-release で新 version DOI に差し替え) |
-| `codemeta.json` (存在する repo のみ) | **CITATION.cff の派生物、手編集しない**。`version` / `datePublished` / `identifier` を CITATION.cff から引くので、CITATION.cff を更新したら `uvx cffconvert -f codemeta -o codemeta.json` で**再生成**する (Phase 5 / Post-release の git add 直前で実行)。SWH の metadata indexer が直接読む層で、`CITATION.cff` は読まない (ADR-0013 の intrinsic identifier 層の補完) |
+| `codemeta.json` (存在する repo のみ) | **CITATION.cff の派生物、手編集しない**。`version` / `datePublished` / `identifier` を CITATION.cff から引くので、CITATION.cff を更新したら `uvx cffconvert -f codemeta -o codemeta.json` で**再生成**する (Phase 4 / Post-release の git add 直前で実行)。SWH の metadata indexer が直接読む層で、`CITATION.cff` は読まない (ADR-0013 の intrinsic identifier 層の補完) |
 | `.zenodo.json` | **citation surface 同期**: 前回 release 以降に repo docs (policy-mapping / glossary / papers 等) が新たに引用した外部文献 (arXiv / DOI 付き論文) を `related_identifiers` に追加 — `{"identifier": "10.48550/arXiv.<id>", "relation": "references", "resource_type": "publication-article", "scheme": "doi"}` (arXiv は DataCite DOI 形式 `10.48550/arXiv.NNNN.NNNNN`)。既存 entry との重複を排除。description 内の framework 列挙等も実態に揃える |
 | `README.md` + 多言語版 | BibTeX `version = {X.Y.Z}`、badge tests 数、prompts/module count、sunset 文 sentence-level の削除。glossary 規約準拠。**BibTeX `doi` / `url` および "How to cite" 引用文の DOI は Post-release で新 version DOI に差し替え。DOI badge は concept DOI で固定済みなので触らない** |
 | `llms.txt` | header version、ADR 一覧の追加、prompts count |
@@ -114,7 +102,7 @@ CODEMAPS のない repo (AKC / AAP は ADR 中心) はこの phase をスキッ�
 - 同じ統計値を 2 箇所以上に書かない。書くなら一箇所を canonical にして他は参照に
 - 例: test 数は llms-full.txt に書き、README badge と llms.txt は llms-full.txt 経由で揃える
 
-## Phase 4: Verify (read-only)
+## Phase 3: Verify (read-only)
 
 ```bash
 # CITATION.cff schema validation (yaml.safe_load below only checks syntax, not
@@ -157,7 +145,7 @@ git status --short
 
 全 PASS で次へ。FAIL があれば停止して user に報告。
 
-### Phase 4b: sibling backend の適合 (該当 repo のみ)
+### Phase 3b: sibling backend の適合 (該当 repo のみ)
 
 `LLMBackend` 型の Protocol を外部 repo に公開している repo（現状 `contemplative-agent`）では、push の前に sibling 適合を確認する。手順・判断基準の正本は repo 内:
 
@@ -165,7 +153,7 @@ git status --short
 
 リリースは契約を publish する行為なので、契約変更が sibling に伝わったかを確認する最後の地点がここ。この gate が無かった 3 か月、`contemplative-agent-cloud` は呼べない状態のまま誰にも気づかれなかった（ADR-0088）。
 
-## Phase 5: Release execution
+## Phase 4: Release execution
 
 `git push` および `gh release create` は **user 明示依頼があれば実行**。既定は「user に提案して止まる」だが、user が「push して」「release を切って」と言ったら実行する。**Release object 作成 = Zenodo webhook trigger** なので irreversible (DOI 採番が動き始める)。
 
@@ -176,7 +164,7 @@ test -f codemeta.json && uvx cffconvert -f codemeta -o codemeta.json
 # specific files で stage (git add -A 禁止 — 意図しないファイル混入防止)
 git add CHANGELOG.md CITATION.cff pyproject.toml \
   README.md README.<langs>.md \
-  docs/CODEMAPS/*.md docs/glossary.md \
+  docs/glossary.md \
   llms.txt llms-full.txt
 test -f codemeta.json && git add codemeta.json
 
@@ -187,7 +175,7 @@ release: vX.Y.Z — <one-line title>
 - ADR-XXXX <主要変更 1>
 - ADR-YYYY <主要変更 2>
 - ...
-- CODEMAPS / README N lang / llms.txt(/full) / glossary / CHANGELOG synced
+- README N lang / llms.txt(/full) / glossary / CHANGELOG synced
 
 <diff stats>: N files changed, +M / -K since vA.B.C. P tests across Q files.
 EOF
@@ -237,7 +225,7 @@ curl -sI "https://web.archive.org/save/https://github.com/<owner>/<repo>" | grep
 
 ## Post-release: DOI 反映
 
-Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 5 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
+Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 4 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
 
 ```bash
 # 採番確認 (Zenodo の repo ページ or DOI badge URL を fetch)
@@ -264,7 +252,7 @@ git commit -m "chore: update DOI to vX.Y.Z"
 git push origin main
 ```
 
-**SWHID 取得・記録** (authorship-strategy ADR-0013 の intrinsic identifier 層): Phase 5 で投げた Save Code Now request の完了を確認し、snapshot SWHID を CITATION.cff に記録する。DOI 反映 commit と同じ commit にまとめてよい (ただし snapshot は DOI 反映 push **前** の状態を指す点は許容 — SWHID は release tag 時点の content 証明が目的):
+**SWHID 取得・記録** (authorship-strategy ADR-0013 の intrinsic identifier 層): Phase 4 で投げた Save Code Now request の完了を確認し、snapshot SWHID を CITATION.cff に記録する。DOI 反映 commit と同じ commit にまとめてよい (ただし snapshot は DOI 反映 push **前** の状態を指す点は許容 — SWHID は release tag 時点の content 証明が目的):
 
 ```bash
 # archive 完了確認 + snapshot SWHID 取得 (visit endpoint は save とは別の rate limit)
@@ -391,10 +379,9 @@ script 化はしない判断 (2026-08-29、RFC-0004)。頻度が年数回で、�
 
 - **Pre-flight で Zenodo webhook 未登録** → user に opt-in 依頼で停止 (上の "Zenodo opt-in" 参照)。新規 DOI repo の最初の release で頻発する漏れ
 - Phase 1 で `LAST_TAG..HEAD` の commit が空 → release 不要、user に報告
-- Phase 2 で CODEMAPS の構造変化が >50% → user 承認待ち (大規模架構変更の可能性)
-- Phase 4 で test FAIL / secret detection HIT / lint error → 停止して報告
-- Phase 5 で `git status` に意図しない modified file → user 承認待ち
-- Phase 5 で `gh release create` を忘れて tag だけ push してしまった → 後追いで `gh release create vX.Y.Z --notes-file ... --latest` を実行 (tag が既にあれば release object のみ追加される)
+- Phase 3 で test FAIL / secret detection HIT / lint error → 停止して報告
+- Phase 4 で `git status` に意図しない modified file → user 承認待ち
+- Phase 4 で `gh release create` を忘れて tag だけ push してしまった → 後追いで `gh release create vX.Y.Z --notes-file ... --latest` を実行 (tag が既にあれば release object のみ追加される)
 - **Post-release で webhook delivery が 4xx** (`gh api repos/<owner>/<repo>/hooks/<hook_id>/deliveries` で `status_code: 403` 等) → opt-in 漏れの可能性が高い。webhook event 自体は届いているが Zenodo が受理していない。下の "復旧手順" 参照
 - Post-release で `gh release create` 実行後 30 分以内に Zenodo が DOI 採番しない → Zenodo dashboard の webhook delivery ログを user に確認依頼 (GitHub-Zenodo 連携が外れている / 認証切れの可能性)
 
@@ -432,22 +419,21 @@ GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/rel
 ## Notes — 設計判断の根拠
 
 - **`.zenodo.json` references = 被引用研究者への passive シグナル**: repo markdown 内の引用は Google Scholar / arXiv "cited by" の citation graph に一切入らない (被引用側から不可視)。`.zenodo.json` の `references` 辺は release 時に DataCite metadata として propagate し、OpenAIRE / Scholix の citation graph に機械可読な辺を張る。引用した文献の著者周辺に届く数少ない受動経路なので、新規引用が増えた release では必ず同期する (authorship-strategy の citation-graph federation tactic)。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
-- **DOI 欄は Phase 5 で据え置き**: tag push 前に新 DOI を埋めると Zenodo 採番前なので必ず壊れる。Post-release で 1 commit 増やす方が安全
+- **DOI 欄は Phase 4 で据え置き**: tag push 前に新 DOI を埋めると Zenodo 採番前なので必ず壊れる。Post-release で 1 commit 増やす方が安全
 - **Numeric cap を quality filter にしない**: `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う
 - **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し
 - **SWHID は DOI の補完であって代替ではない** (authorship-strategy ADR-0013): DOI は extrinsic (registry 依存、metadata record を指す)、SWHID は intrinsic (content hash 由来、registry なしで検証可能)。各層が他方の failure mode をカバーする。DOI 登録が impractical な genre (blog 等) では SWHID が substitute priority-claim mechanism。Software Heritage は code 系 LLM training corpus (The Stack v2 系) の直接 ingest source でもあり、archive は parametric channel への第二の ingest surface を兼ねる
-- **新規 DOI repo は Zenodo opt-in が事前必須**: Zenodo の GitHub 連携は repo ごとの opt-in 設計。toggle ON 前に作成された release は遡及的に拾われない (公式仕様)。Pre-flight で `gh api repos/<owner>/<repo>/hooks` を確認しないと、Phase 5 まで進めて Zenodo に何も届いていないことを Post-release で初めて発見してリカバリーすることになる。**新規 repo のたびに必要だが忘れがち** — sibling repo (AKC / AAP / contemplative-agent / authorship-strategy) では既に opt-in 済みのため、慣れていると新規 repo で初回 release を切る時の盲点になる。doctrine-corpus v0.1.0 (2026-05-22) でこの漏れが発生し、tag/release 再作成でリカバリーした事例あり
+- **新規 DOI repo は Zenodo opt-in が事前必須**: Zenodo の GitHub 連携は repo ごとの opt-in 設計。toggle ON 前に作成された release は遡及的に拾われない (公式仕様)。Pre-flight で `gh api repos/<owner>/<repo>/hooks` を確認しないと、Phase 4 まで進めて Zenodo に何も届いていないことを Post-release で初めて発見してリカバリーすることになる。**新規 repo のたびに必要だが忘れがち** — sibling repo (AKC / AAP / contemplative-agent / authorship-strategy) では既に opt-in 済みのため、慣れていると新規 repo で初回 release を切る時の盲点になる。doctrine-corpus v0.1.0 (2026-05-22) でこの漏れが発生し、tag/release 再作成でリカバリーした事例あり
 
 ## Worked example (abstracted)
 
 contemplative-agent v2.3.0 (2026-05-05) で実行した内容の構造:
 
 - **Phase 1 baseline**: 16 commits since v2.2.1, 110 files changed, +2170/-5772, 49 modules / 11390 LOC / 29 test files / 1032 tests
-- **Phase 2 CODEMAPS**: 6 ファイル更新 — INDEX.md の statistics drift (51→49 modules, 13400→11400 LOC, 35→29 test files) 解消、新規 helper module 3 件追加、削除済み module への言及削除
-- **Phase 3 cross-doc**: 18 ファイル更新 — CHANGELOG v2.3.0 セクション追加、6 言語 README BibTeX bump、llms.txt の ADR list 拡充、glossary から retired 用語削除
-- **Phase 4 verify**: pytest 1032/1032 PASS, ruff PASS, secret scan clean, version triple 一致
-- **Phase 5 release**: 1 commit + 1 tag + main/tag 両 push + `gh release create v2.3.0 --notes-file <(awk ... CHANGELOG.md) --latest` で Release object 作成 (Zenodo webhook の trigger)
+- **Phase 2 cross-doc**: 18 ファイル更新 — CHANGELOG v2.3.0 セクション追加、6 言語 README BibTeX bump、llms.txt の ADR list 拡充、glossary から retired 用語削除
+- **Phase 3 verify**: pytest 1032/1032 PASS, ruff PASS, secret scan clean, version triple 一致
+- **Phase 4 release**: 1 commit + 1 tag + main/tag 両 push + `gh release create v2.3.0 --notes-file <(awk ... CHANGELOG.md) --latest` で Release object 作成 (Zenodo webhook の trigger)
 - **Post-release**: Release object 作成で Zenodo webhook が発火 → 数分後 DOI 採番 → CITATION.cff の DOI 差し替え 1 commit
 
 具体 commit / file path は repo ごとに変わる。本 skill 本文は構造のみを保持し、実数値・パスは実行時に Phase 1 baseline で取得する。

@@ -31,31 +31,25 @@ user-invocable: true
 
 `graph.jsonld` は prose の代替ではなく **補完**。prose で表現しきれない構造があるとき、その構造をやっと拾える。
 
-## CODEMAPS との関係（正本）
+## file-level 構造との関係（正本）
 
-`graph.jsonld` と CODEMAPS（典型的には `docs/CODEMAPS/architecture.md`）は **同じ project を異なる abstraction 層で扱う**:
+`graph.jsonld` は **concept 層だけ** を保存する。file-level 構造（「X はどのファイルに住むか」「誰が誰を呼ぶか」）は保存せず、問いのたびにコードから導出する:
 
-| | CODEMAPS | graph.jsonld |
+| | file-level（導出、保存しない） | graph.jsonld（保存） |
 |---|---|---|
-| **対象** | ファイル / モジュール | 概念 / エンティティ |
-| **抽象層** | file-level | concept-level |
-| **答える質問** | 「X はどのファイルに住んでいるか」 | 「X とは何か、X と Y はどう関係するか」 |
-| **形式** | prose（Markdown） | JSON-LD triples |
-| **主読者** | 人間 + agent が code を navigate する時 | AI search engine + LLM が entity を citation する時 |
-| **trigger** | code 構造の変化 | concept / 関係の変化 |
+| **対象** | ファイル / モジュール / call 関係 | 概念 / エンティティ |
+| **答える質問** | 「X はどのファイルに住んでいるか」「誰が Y を呼ぶか」 | 「X とは何か、X と Y はどう関係するか」 |
+| **源** | コードそのもの — Claude Code の LSP tool（`workspaceSymbol` / `findReferences` / `incomingCalls`）、`grimp` 等の import グラフ | JSON-LD triples（手で書く） |
+| **主読者** | 作業中の agent | AI search engine + LLM が entity を citation する時 |
+| **trigger** | なし（都度計算） | concept / 関係の変化 |
 
-両者は **重複せず相補的**。同じ entity を別角度から見る。例えば AAP の `Quadrant` ノード:
-
-- CODEMAPS は「Quadrants の解説は `docs/quadrants/README.md` に住む、`governance-mapping.md` が matrix 表」と書く（file-level）
-- graph.jsonld は「Quadrant 3 (LLM Workflow) に ADR-0001/0003-0007 が `appliesTo`、`governanceTier: medium`、`xAxis: semantic-judgment`」と書く（concept-level）
+graph にコードのノード（file path・module・LOC）を置かない。置くと第 2 の module map になり、ソース commit ごとに同期コストを払う鏡が育つ（contemplative-agent ADR-0102: 手書き module map 6 枚がソース 197 commit に対し 159 commit の同期を要し、読者は観測されなかった）。設計理由は ADR、パイプラインの段構成はそれを走らせる script の冒頭コメントが持つ。
 
 ### Drift 防止のための運用規約
 
-新規 entity を追加する時は **両面で更新する**:
-
-- 新規 ADR / Concept / Quadrant 等を追加 → graph.jsonld にノード追加 + CODEMAPS の該当 file path 言及を更新
-- ファイルパスが変わった → CODEMAPS 更新（graph.jsonld の `@id` は GitHub blob URL を使っているなら追従が必要）
-- 概念の semantics が変わった → graph.jsonld の description 更新（CODEMAPS は触らなくてよい）
+- 新規 ADR / Concept / Quadrant 等を追加 → graph.jsonld にノード追加（`@id` は GitHub blob URL）
+- ファイルパスが変わった → graph.jsonld の `@id` が blob URL ならそこだけ追従。他に更新する文書は無い
+- 概念の semantics が変わった → graph.jsonld の description 更新
 
 context-sync skill（Maintain phase 担当）がこの drift を audit する。詳細は `~/.claude/skills/context-sync/SKILL.md` 参照。
 
@@ -343,7 +337,7 @@ graph.jsonld を更新したら、Hugging Face Datasets 上の mirror にも同�
 
 前提条件・repo mapping・token scope の扱いは **hf-sync に再掲しない**（正本の改名時にコピーだけ取り残された前例あり — `hf login` → `hf auth login`）。
 
-`release-doi` skill の Phase 5 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
+`release-doi` skill の Phase 4 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
 
 **graph の `sameAs` は self-sovereign または earned な解決先のみ**（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）。Wikidata QID は張らない（authorship-strategy ADR-0021 — host governance による一括削除の実測）。dead QID を検出したら purge する。
 
@@ -362,7 +356,7 @@ graph.jsonld を **編集してはいけない trigger**（routine release で�
 
 - 任意 module の `vX.Y.Z` release
 - ADR count, skill count, test count, version bump
-- 内部 module の restructuring（CODEMAPS は更新するが graph は触らない）
+- 内部 module の restructuring（file-level は保存していないので触る文書が無い。blob URL の `@id` だけ追従）
 - model version bump（`qwen3.5:9b` から `qwen4:9b` 等）
 
 schema に version / count / churning field を持たせていない限り、これらは graph に **そもそも encode できない** ので構造的に強制される。
@@ -382,11 +376,10 @@ schema に version / count / churning field を持たせていない限り、こ
 
 - llms.txt / llms-full.txt の文章設計 — use `llms-txt-writer`
 - Project doc role の overlap 検出 / 整理 — use `context-sync`
-- CODEMAPS の生成 / 更新 — use `update-codemaps`
+- file-level の module map の生成 — 作らない（LSP tool / grimp で都度導出。上の「file-level 構造との関係」）
 - Articles / blog post の文体 設計 — use `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）
 
 ## Related
 
 - `llms-txt-writer` — llms.txt / llms-full.txt 本体の書き方、navigator 設計、GEO/AEO 最適化
-- `context-sync` — graph.jsonld と CODEMAPS の drift audit（Maintain phase）
-- `update-codemaps` — file-level architecture documentation の正本
+- `context-sync` — graph.jsonld と prose docs の drift audit（Maintain phase）
