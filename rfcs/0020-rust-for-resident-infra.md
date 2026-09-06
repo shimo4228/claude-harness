@@ -1,5 +1,5 @@
 ---
-state: draft 2026-08-31
+state: accepted 2026-09-06
 review-when: Rust pilot が 1 件完走して運用感の実測が出たら本 RFC の発火条件を再評価。または python3 同梱前提が macOS 側で崩れたら緊急度を引き直す
 ---
 ## Summary
@@ -49,8 +49,10 @@ LLM-first code 前提（rule: `llm-first-code.md`）での言語評価は 4 軸 
 
 ## Status
 
-draft 2026-08-31 — 方針は著者合意済みだが、着手可能な作業項目は無い（発火条件待ち）。ready に載せないため draft のまま置く。
+accepted 2026-09-06 — **著者が発火条件 2（新規常駐道具の機会）を能動的に立てる判断をした**。Fable セッションを立てて Rust 実装のプランを起こす（plan mode、`.claude` cwd）。
+
+（旧 Status: draft 2026-08-31 — 方針は著者合意済みだが着手可能な作業項目は無く、ready に載せないため draft のまま置いていた。採否は済んでいるのに `draft` を表示挙動のために使っており、語彙の定義と食い違っていた点は 2026-09-06 の triage が指摘。着手判断で解消した）
 
 ## Next action
 
-発火条件 1〜3 のいずれかが立ったら該当節に従って再評価。それまで動かない。
+プラン用の Fable セッションが本 RFC を claim し、pilot 対象（どの常駐道具を最初に Rust で書くか）とUnresolved questions の計測最小セット（toolchain セットアップ時間 / build セッション bounce / hook レイテンシ）を決める。プランが固まったら実装は build-tier へ dispatch。
