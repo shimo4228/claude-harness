@@ -278,7 +278,6 @@ Status: All documentation roles covered (Context / Architecture / Decisions / Ex
 
 - Code quality checks (linting, testing, building) — use the Verify gate in
   `rules/common/planning.md`, or `/code-review` for review（PR を対象に取るときは
-  `/code-review <PR#>`、plugin 経由なら `pr-review-toolkit:review-pr`。発火条件の正本は
-  skill: `implementation-chain`）
+  `/code-review <PR#>`。発火条件の正本は skill: `implementation-chain`）
 - Agent-specific memory management (e.g., auto-memory systems)
 - `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`

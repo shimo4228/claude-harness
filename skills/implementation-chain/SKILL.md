@@ -124,6 +124,13 @@ adversarial review 1 段」。多段構成はレビュー起点のオーバー�
 - security 深掘り = plugin `claude-security`（全 repo スキャン）
 - cross-model = skill: `codex-review`（diff review・plan 段の前提反証とも）
 
+plugin `pr-review-toolkit` の `code-reviewer` / `code-simplifier` は **Code Review 行の代替に
+しない**（`/code-review` の fan-out 先にも指定しない）。description に自発発火を持つため
+built-in の代わりに自発選択され、多角 fan-out が単一 agent（confidence ≥ 80 のみ）に縮退する
+（実測は ADR-0042 の 2026-09-12 注記）。plugin は他の agent（silent-failure-hunter 等、
+opt-in の受け皿）のため有効のまま — 発火の正本はこの Review 表と opt-in 名簿で、agent の
+description ではない。
+
 adr-reviewer は opt-in ではなく skill: `adr-writer` の内部ステップ（ADR 執筆時は
 省略しない — 配線は同 skill のみ、この chain は持たない）。swift-reviewer は Swift diff で
 Review 表の Code Review 行に従い併用（ADR-0042 が去就を保留した項目）。

@@ -131,6 +131,25 @@ built-in `/security-review` は 3 段（発見 → 並列 FP フィルタ → co
    **過去の出来事の記録**なので書き換えない。
 7. `swift-reviewer` は本 ADR では判断しない（下記）。
 
+> **注記（2026-09-12）**: plugin `pr-review-toolkit`（2026-08-21 導入）の `code-reviewer` が
+> description の自発発火（"This agent should be used proactively after writing or modifying code"）で
+> Code Review 行を代替していた。
+> `metrics/agent-usage.jsonl` で導入日から継続起動（08-22: 4 / 08-30: 3 / 09-05: 3 / 09-12: 5、
+> 計 20 — **この日別カウントの正本は本注記**）。09-12 の build セッションは
+> `Skill(code-review, medium)` の 15 秒後に plugin agent を 1 本起動し（同セッションは packet の
+> Code Review でも built-in を通さず plugin agent を直呼びしていた）、built-in の 8 finder
+> angle + verify を単一 agent（confidence ≥ 80 のみ報告）で置き換えていた。CLI 側に named agent
+> への dispatch は無く（2.1.269 バイナリに `pr-review-toolkit:code-reviewer` は 0 件）、
+> Alternatives「ECC 上流を取り込む」の却下理由（PROACTIVELY 付き agent は Matrix と二重指揮）が
+> plugin でも再現した実測。同 plugin の他 agent は ADR-0055（08-27）以降ゼロ
+> （silent-failure-hunter 9 / code-simplifier 3 / pr-test-analyzer 1、`review-pr` 0）。
+> plugin は他 agent（opt-in の受け皿）のため有効のままとし、対処は implementation-chain の
+> opt-in 名簿に「`code-reviewer` / `code-simplifier` を Code Review 行の代替にしない」と明記する
+> こと（著者判断、同日）。文言で自発選択を抑える経路は ADR-0018 の実測で伸びなかったので、
+> 効いたかは `metrics/agent-usage.jsonl` の `pr-review-toolkit:code-reviewer` 行が本注記以降に
+> 止まるかで判定する。止まらなければ `review-model-notice.sh` に `subagent_type` 完全一致の
+> block（誤検知の余地が無い判定）を足す。Decision 1 の built-in 一本化は不変。
+
 ## Alternatives Considered
 
 ### ECC 上流を取り込んで更新する
