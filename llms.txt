@@ -69,6 +69,8 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [llm-as-judge](skills/llm-as-judge/SKILL.md): design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation
 - [git-workflow](skills/git-workflow/SKILL.md): permission-friction discipline for running git in this environment — git-to-git chaining is auto-allowed (segments match independently), but cd must never be mixed with git (use git -C; that combination always prompts), commit messages must avoid command substitution, and push needs the sandbox disabled
 - [headline-craft](skills/headline-craft/SKILL.md): craft skill for the one line that makes readers open — title / tagline / subtitle / SNS-post candidate generation with concrete techniques, evaluated per traffic channel (search vs feed)
+- [growth-astra](skills/growth-astra/SKILL.md): writes and revises the north star of a GitHub follower campaign (`.growth/NORTH_STAR.md`); the escalation target of growth-fable
+- [growth-fable](skills/growth-fable/SKILL.md): plans experiments toward that north star, dispatches them to worker sessions, records outcomes in `.growth/EXPERIMENTS.md`
 
 ## Agents
 

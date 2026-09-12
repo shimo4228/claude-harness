@@ -27,7 +27,7 @@ origin: shimo4228
 
 埋めているギャップは **cwd の壁**であって、セッション数の壁ではない（2026-08-01 に公式 docs で確認）。公式 Remote Control には server mode があり `--spawn <same-dir|worktree|session>` / `--capacity <N>`（既定 32）/ `--[no-]create-session-in-dir` で **1 プロセスから複数セッション**を持てる。ただし **server mode の全セッションはその server プロセスの cwd（= 1 repo）に縛られる** — `same-dir` は cwd 共有、`worktree` はその repo の worktree。**別プロジェクトのセッションを起こす手段が公式には無い**。回避策: 生きている任意のセッションが Bash で別の `claude --remote-control "<名前>"` を、指定した repo の cwd で Herdr の pane 内に detached 起動する。新プロセスが自分の RC を登録し、アプリ一覧に出る。Herdr の persistent session（server）が pty を保持するので、Ghostty/SSH の切断や起動元セッションの終了後も生き残る。server が動いていなければ spawn.sh が headless server を自動起動する（tmux のサーバー自動起動と同等のセマンティクス）。
 
-配置は repo 単位 workspace 運用に合わせる: **同じルート（cwd）の workspace が既にあればそこに新 tab、無ければ新 workspace を作成**（workspace label は repo 名、表示名は tab label）。
+配置は repo 単位 workspace 運用に合わせる: **同じ repo の workspace が既にあればそこに新 tab、無ければ新 workspace を作成**（workspace label は repo 名、表示名は tab label）。同じ repo かは git の main worktree root で判定するので、linked worktree（`<repo>/.claude/worktrees/<name>` や scratchpad 下）を渡しても repo の workspace に合流し、tab の cwd だけが worktree になる。
 
 前提: 呼び出し元として **最低 1 つのセッションが生きている**こと（Mac 稼働中は通常複数生存している）。Mac 再起動直後で何も動いていない場合は Mac の前で 1 つ起動する。どのみち Mac が落ちていればモバイル側からは何もできない。
 
@@ -42,8 +42,10 @@ origin: shimo4228
 2. **起動する。** `spawn.sh` は本 SKILL.md と同じディレクトリにある（直置きなら
    `~/.claude/skills/spawn-session/`、plugin 導入なら plugin の skill ディレクトリ）:
    ```
-   bash <この skill のディレクトリ>/spawn.sh <解決した絶対パスの project-dir> "<表示名>"
+   bash <この skill のディレクトリ>/spawn.sh <解決した絶対パスの project-dir> "<表示名>" [--model <model>]
    ```
+   `--model` は省略時 settings.json の既定（判断層 = fable）。build 層の worker session
+   （task-triage / growth-fable の dispatch）は `--model opus` で立てる（三役: ADR-0043）。
 
 3. **報告する。** 返ってきたセッション名をユーザーに伝える（アプリ一覧で何をタップすればよいかの目印になる）。
 
@@ -83,10 +85,10 @@ origin: shimo4228
 
 ## Plan mode で起動したいとき
 
-**`spawn.sh` は claude のフラグを転送しない。** 起動行は
-`agent start ... -- --remote-control "$NAME"` に固定で、`--permission-mode plan`
-を通す口が無い（引数 `$2` は表示名として消費される）。フラグを増やしたくなったら
-それは spawn.sh の変更であって、呼び出し側の工夫では届かない。
+**`spawn.sh` が転送する claude のフラグは `--model` だけ。** 起動行は
+`agent start ... -- --remote-control "$NAME" [--model <m>]` で、`--permission-mode plan`
+を通す口は無い。フラグを増やしたくなったらそれは spawn.sh の変更であって、
+呼び出し側の工夫では届かない。
 
 **効く手順は「起動 → 最初のプロンプトで入らせる」。** plan mode は
 `EnterPlanMode` で新セッション自身が入れるので、kickoff プロンプトの冒頭に

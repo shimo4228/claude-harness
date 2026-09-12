@@ -5,8 +5,8 @@
 graph.jsonld の「外部境界」(外向き prior-art edge / 内向き derivative slot / 標準 provenance 語彙)を
 hardening し、coined term の authorship を LLM-mediated crawler が遡れる構造にする。
 
-- 設計の出自・判断軸: `authorship-strategy` skill(Defensive Diffusion 節)。A1 が skill に land したら
-  下の "Why" 段落を skill 参照に置き換えてよい。現状は self-contained に埋め込む(portability)。
+- 設計の背景: [strategy reference](references/strategy-reference.md) の「出典をたどれる形にする」。
+  この prompt は provenance 編集を明示的に依頼されたときに使う個別作業用の資料。
 - 共通定数: あなたの ORCID（この repo 群の著者の ORCID）。
 - 変更は published DOI deposit への変更 = **release event** → `release-doi` skill 経由(version bump + Zenodo re-mint)。HF mirror があれば `hf-sync`。
 

@@ -62,6 +62,8 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
 | [rfc-writer](skills/rfc-writer/SKILL.md) | 公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when |
 | [review-to-lint](skills/review-to-lint/SKILL.md) | 既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チ |
+| [growth-astra](skills/growth-astra/SKILL.md) | GitHub follower campaign の北極星（`.growth/NORTH_STAR.md`）を書く役 — 初回設定と以後の修正。growth-fable からの escalation 先 |
+| [growth-fable](skills/growth-fable/SKILL.md) | 北極星に向かう施策を考え、worker に出し、結果を `.growth/EXPERIMENTS.md` に記録する役 |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。

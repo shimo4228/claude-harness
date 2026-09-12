@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # spawn.sh — 新しい Claude Code (Remote Control) セッションを Herdr 内に detached 起動する。
 #
-# Usage: spawn.sh <project-dir> [display-name]
+# Usage: spawn.sh <project-dir> [display-name] [--model <model>]
+#   --model: 新 session の model（例: opus）。省略時は settings.json の既定（判断層 = fable）。
+#   build 層の worker session を立てるときに opus を渡す（三役: harness ADR-0043 / ADR-0064）。
 #   起動後、Claude モバイルアプリのセッション一覧に [display-name] が出る。
 #   Herdr の persistent session (server) が pty を保持するので、Ghostty/SSH の
 #   切断や起動元セッションの終了後も生き残る。
@@ -9,22 +11,52 @@
 # 値の解決（"AAP" -> agent-attribution-practice 等）は呼び出し側 (SKILL.md の
 # 指示に従う Claude) が行う。このスクリプトは解決済みの dir と名前を受け取るだけ。
 #
-# 配置規則: 同じルート (cwd) の workspace が既にあればそこに新 tab、無ければ
-# 新 workspace を作成（repo 単位 workspace 運用に合わせる）。
+# 配置規則: 同じ repo の workspace が既にあればそこに新 tab、無ければ
+# 新 workspace を作成（repo 単位 workspace 運用に合わせる）。「同じ repo」は
+# git の main worktree root で判定する — linked worktree（build セッションの
+# `<repo>/.claude/worktrees/<name>` や scratchpad 下の worktree）を渡しても
+# repo の workspace に合流し、worktree 名の workspace が増殖しない。
+# tab の cwd は渡された dir（worktree）のまま。
 set -euo pipefail
 
-PROJECT="${1:?usage: spawn.sh <project-dir> [display-name]}"
+PROJECT="${1:?usage: spawn.sh <project-dir> [display-name] [--model <model>]}"
 PROJECT="${PROJECT/#\~/$HOME}"                       # 先頭 ~ を展開
 [[ -d "$PROJECT" ]] || { printf 'spawn.sh: no such directory: %s\n' "$PROJECT" >&2; exit 1; }
 PROJECT="$(cd "$PROJECT" && pwd -P)"                 # pane cwd との文字列照合のため symlink/相対を正規化
+
+# --- repo root 解決 ---------------------------------------------------------
+# linked worktree なら --git-common-dir は main worktree の .git を指す。その親が
+# repo root。git 管理外や取得失敗時は PROJECT 自身を root と扱う（従来挙動）。
+ROOT="$PROJECT"
+if common="$(git -C "$PROJECT" rev-parse --git-common-dir 2>/dev/null)"; then
+  [[ "$common" = /* ]] || common="$PROJECT/$common"
+  common="$(cd "$common" 2>/dev/null && pwd -P || printf '%s' "$common")"
+  [[ "$(basename "$common")" == ".git" ]] && ROOT="$(dirname "$common")"
+fi
 
 HERDR_BIN="$(command -v herdr || true)"
 : "${HERDR_BIN:=/opt/homebrew/bin/herdr}"            # PATH 外でも拾えるよう fallback
 [[ -x "$HERDR_BIN" ]] || { printf 'spawn.sh: herdr not found (install: brew install herdr)\n' >&2; exit 1; }
 command -v jq >/dev/null || { printf 'spawn.sh: jq not found (install: brew install jq)\n' >&2; exit 1; }
 
-NAME="${2:-$(basename "$PROJECT")}"                  # 省略時はディレクトリ名
+NAME="$(basename "$PROJECT")"                        # 表示名の既定はディレクトリ名
+MODEL=""
+shift
+while [[ $# -gt 0 ]]; do                             # 2 つ目の位置引数 = 表示名、--model は任意
+  case "$1" in
+    --model)
+      [[ -n "${2:-}" ]] || { printf 'spawn.sh: --model needs a value\n' >&2; exit 64; }
+      MODEL="$2"; shift ;;
+    --model=*) MODEL="${1#--model=}" ;;
+    --*) printf 'spawn.sh: unknown option %s\n' "$1" >&2; exit 64 ;;
+    *) NAME="$1" ;;
+  esac
+  shift
+done
 NAME="${NAME//[\"\']/}"                              # 後段で pane のシェルへ打鍵するためクォート文字は除去
+[[ "$MODEL" =~ ^[A-Za-z0-9._-]*$ ]] || { printf 'spawn.sh: bad --model value\n' >&2; exit 64; }
+CLAUDE_ARGS=(--remote-control "$NAME")
+[[ -n "$MODEL" ]] && CLAUDE_ARGS+=(--model "$MODEL")
 
 # --- server 確保 -------------------------------------------------------------
 # socket 越しの read-only コマンドで生存確認。不在なら headless server を起動
@@ -59,11 +91,13 @@ done < <(
 )
 [[ "$live" -gt 0 ]] && NAME="$NAME #$((live + 1))"
 
-# --- workspace 解決: 同ルートがあれば合流、無ければ新規 ----------------------
+# --- workspace 解決: 同 repo があれば合流、無ければ新規 ----------------------
+# pane の cwd が ROOT そのもの、または ROOT 配下（他の worktree・サブディレクトリ）
+# なら同 repo とみなす。
 WS_ID=""
 while IFS= read -r ws; do
   if "$HERDR_BIN" pane list --workspace "$ws" |
-       jq -e --arg cwd "$PROJECT" '.result.panes[] | select(.cwd == $cwd)' >/dev/null; then
+       jq -e --arg root "$ROOT" '.result.panes[] | select(.cwd == $root or (.cwd | startswith($root + "/")))' >/dev/null; then
     WS_ID="$ws"
     break
   fi
@@ -73,7 +107,7 @@ done < <("$HERDR_BIN" workspace list | jq -r '.result.workspaces[].workspace_id'
 # あると誤 workspace に合流しうるが、tab 自体の cwd は正しいので機能上は無害
 if [[ -z "$WS_ID" ]]; then
   WS_ID=$("$HERDR_BIN" workspace list |
-    jq -r --arg l "$(basename "$PROJECT")" '[.result.workspaces[] | select(.label == $l) | .workspace_id] | first // empty')
+    jq -r --arg l "$(basename "$ROOT")" '[.result.workspaces[] | select(.label == $l) | .workspace_id] | first // empty')
 fi
 
 # --- tab / workspace 作成 ----------------------------------------------------
@@ -83,7 +117,7 @@ if [[ -n "$WS_ID" ]]; then
   resp=$("$HERDR_BIN" tab create --workspace "$WS_ID" --cwd "$PROJECT" --label "$NAME" --no-focus)
 else
   NEW_WS=1
-  resp=$("$HERDR_BIN" workspace create --cwd "$PROJECT" --label "$(basename "$PROJECT")" --no-focus)
+  resp=$("$HERDR_BIN" workspace create --cwd "$PROJECT" --label "$(basename "$ROOT")" --no-focus)
   WS_ID=$(jq -r '[.. | .workspace_id? // empty] | first // empty' <<<"$resp")
   [[ -n "$WS_ID" ]] || { printf 'spawn.sh: workspace create の応答から workspace_id を読めませんでした:\n%s\n' "$resp" >&2; exit 1; }
 fi
@@ -116,7 +150,7 @@ AGENT_NAME="${AGENT_NAME}-$$"
 start_ok=0
 for _ in $(seq 1 20); do
   err=$("$HERDR_BIN" agent start "$AGENT_NAME" --kind claude --pane "$PANE_ID" --timeout 30000 \
-          -- --remote-control "$NAME" 2>&1 >/dev/null) && { start_ok=1; break; }
+          -- "${CLAUDE_ARGS[@]}" 2>&1 >/dev/null) && { start_ok=1; break; }
   [[ "$err" == *agent_pane_busy* ]] || break
   sleep 0.5
 done

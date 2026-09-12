@@ -69,6 +69,7 @@
 | [0061](0061-prompt-audit-version-diff-markers-and-lint-gate.md) | Fable 5.1 向け prompt-audit（88 件 / 44 ファイル適用、1d 版差 marker が 55 件）の実施記録と再発防止 — skill-creator §3 に「現行規則として書く / tombstone・経緯物語・同一ファイル内 2 版・tie-breaker・register 例を置かない」の 6 規律、skills.md に常駐 3 行、harness_lint 検査 13（同一括弧内の日付 + edit 動詞。退役 / 廃止など as-of 記述は対象外）。ADR-0018 / 0035 の rightsize 第 3 波 | accepted | 2026-09-02 |
 | [0062](0062-retire-codemap-machinery.md) | codemap 機構の退役 — `update-codemaps` skill / `codemap-writer` agent / context-sync Phase 0 / release-doi 再生成を撤去。file-level 構造は保存せず LSP tool / grimp で都度導出、理由は ADR、段構成は script header。CA 実測（159/197 commit、読者証拠ゼロ、LSP 実走）が根拠。architect の per-repo opt-out 勧告を著者が global 撤去に上書き（Scaffold Dissolution Downward）。ADR-0060 を supersede、他 9 repo の静的 codemap は次回接触時に削除 | accepted | 2026-09-05 |
 | [0063](0063-rfc-0020-rust-pilot-hooklint.md) | RFC-0020 pilot — `hooks/*.sh` の兄弟一貫性 lint `hooklint` を Rust（std のみ）で新設し `.claude/verify.sh` に配線。撤退条件 5 件中 size 上限（400 行）のみ発火（非テスト非空行 564）— review 由来の fail-open / security 修正分で、著者判断で 600 に引き直して accept（事後の goalpost 移動を明記）。n=1 読み値: cold build 1.2 s / latency 3.9 ms / bounce 0 / FAIL_OPEN report-only 5/23 hook | accepted | 2026-09-06 |
+| [0064](0064-astra-fable-growth-loop.md) | Astra–Fable growth loop — 戦略 / 制御 / 実行 / 観測 / 人間の五役を既存の triage loop 基盤の上に建て、状態は `.growth/` の 3 ファイルだけ持つ | accepted | 2026-09-08 |
 
 ## Template
 

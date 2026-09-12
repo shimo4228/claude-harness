@@ -62,6 +62,8 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
 | [rfc-writer](skills/rfc-writer/SKILL.md) | 公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when |
 | [review-to-lint](skills/review-to-lint/SKILL.md) | 既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チ |
+| [growth-astra](skills/growth-astra/SKILL.md) | writes the north star for a GitHub follower campaign (`.growth/NORTH_STAR.md`) — initial pass and later revisions; escalation target of growth-fable |
+| [growth-fable](skills/growth-fable/SKILL.md) | plans experiments toward the north star, dispatches them to workers, records results in `.growth/EXPERIMENTS.md` |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.
