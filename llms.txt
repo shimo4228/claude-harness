@@ -82,18 +82,18 @@ Specialized agents in `agents/`, each with its own tool allowlist.
 
 ## Rules
 
-Behavioral principles auto-loaded every session from `rules/common/`. Rules fire deterministically; skills fire probabilistically.
+Environment-specific facts, wiring, and traps auto-loaded every session from `rules/common/`. Rules load deterministically; skills fire probabilistically. Procedures live in skills, time-critical checks in hooks, general judgment in the model.
 
-- [agents](rules/common/agents.md): agent orchestration conventions — when to use which agent, parallel execution patterns, author-reviewer separation
-- [akc-cycle](rules/common/akc-cycle.md): six-phase behavioral conventions of the Agent Knowledge Cycle (Research, Extract, Curate, Promote, Measure, Maintain) plus the scaffold-dissolution principle
-- [debugging](rules/common/debugging.md): root-cause-first debugging flow (hypothesis → evidence → confirm → fix), AI recency-bias guards, retry-with-context with bounded backoff
-- [planning](rules/common/planning.md): planning standards — required What / Why / Alternatives, Phase 0 external research mandate, evidence-based decision-making, prototype-before-scale
-- [skills](rules/common/skills.md): skill origin tracking spec, knowledge placement decision (existing skill vs new skill vs MEMORY.md), skill portability guidelines
+- [agents](rules/common/agents.md): pointer to the agent catalog (the frontmatter of `agents/*.md` is canonical), the rule that review runs in a different agent process from the implementer, and the entry points to the Herdr delegation skills
+- [akc-cycle](rules/common/akc-cycle.md): pointer edition of the Agent Knowledge Cycle — maps each mechanism (six phases, judge / build / human loop, LLM-first readability, expiry-conditioned knowledge) to the skill or rule that owns it, states the Scaffold Dissolution criteria, and says how ADRs are treated (dated records, supersede with dated annotations, a two-condition filing bar)
+- [debugging](rules/common/debugging.md): rate-limit signal — repeated rate limits during bulk writes to an external platform are a policy signal, not a transient error: stop the burst and report to the human instead of backing off through it
+- [planning](rules/common/planning.md): planning wiring — search-first before anything that may already exist, build-tier dispatch as the default for implementing from a judge-tier session, implementation-chain for chain type and reviewer conditions, and the repo's `.claude/verify.sh` as the canonical Verify
+- [skills](rules/common/skills.md): origin vocabulary for skills / agents / rules (the canonical table), the `replaces:` lineage field, the imperative wiring to skill-creator before writing or overhauling a skill, and the writing rule — positive form by default, prohibitions only under three stated conditions
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care
-- [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
+- [task-tracking](rules/common/task-tracking.md): one canonical pending-task ledger per repo in one of two shapes — a single table (`.notes/TASKS.md`) or a public store of one-file-per-task RFCs (`rfcs/`) queried through `claims.py ready`; claim / release for concurrent sessions; review findings are filed only when they break the loop itself, with a producer → sink citation
 - [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
 - [llm-first-code](rules/common/llm-first-code.md): code is optimized for its actual reader — the next LLM session, not humans; preserve verifiability (types, tests, golden files) over readability, enforce quality through machine gates, spend human-readability budget only on READMEs and output text
-- [boundary](rules/common/boundary.md): the single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking (ff-only merges of verified task branches, destructive work inside a worktree), and when to stop and report (ADR-0069)
+- [boundary](rules/common/boundary.md): the single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking, and when to stop and report (ADR-0069)
 - [practitioner-identity](rules/common/practitioner-identity.md): the author's self-definition, verbatim — a practitioner searching for good ideas and means in the AI era, not a researcher; DOIs are a means, and the work is not reframed into existing categories
 
 ## Hooks

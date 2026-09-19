@@ -84,22 +84,22 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 
 ### Rules
 
-Behavioral principles auto-loaded every session (under `rules/common/`):
+Environment-specific facts, wiring, and traps auto-loaded every session (under `rules/common/`). Procedures live in skills, time-critical checks in hooks:
 
 <!-- BEGIN GENERATED: rules-table -->
 | Rule | Purpose |
 | --- | --- |
-| [agents](rules/common/agents.md) | Agent orchestration conventions. When to use which agent, parallel execution patterns |
-| [akc-cycle](rules/common/akc-cycle.md) | Six-phase behavioral conventions of the Agent Knowledge Cycle (Research / Extract / Curate / Promote / Measure / Maintain) |
-| [debugging](rules/common/debugging.md) | Root-cause-first debugging flow (hypothesis → evidence → confirm → fix), AI recency-bias guards, retry-with-context |
-| [planning](rules/common/planning.md) | Required items for planning (What / Why / Alternatives). Mandates Phase 0 external research |
-| [skills](rules/common/skills.md) | Skill origin tracking spec and knowledge placement principles |
+| [agents](rules/common/agents.md) | Pointer to the agent catalog (the frontmatter of `agents/*.md` is canonical), the rule that review runs in a different agent process from the implementer, and the entry points to the Herdr delegation skills |
+| [akc-cycle](rules/common/akc-cycle.md) | Pointer edition of the Agent Knowledge Cycle — maps each mechanism (six phases, judge / build / human loop, LLM-first readability, expiry-conditioned knowledge) to the skill or rule that owns it, states the Scaffold Dissolution criteria, and says how ADRs are treated (dated records, supersede with dated annotations, a two-condition filing bar) |
+| [debugging](rules/common/debugging.md) | Rate-limit signal — repeated rate limits during bulk writes to an external platform are a policy signal, not a transient error: stop the burst and report to the human instead of backing off through it |
+| [planning](rules/common/planning.md) | Planning wiring — search-first before anything that may already exist, build-tier dispatch as the default for implementing from a judge-tier session, implementation-chain for chain type and reviewer conditions, and the repo's `.claude/verify.sh` as the canonical Verify |
+| [skills](rules/common/skills.md) | Origin vocabulary for skills / agents / rules (the canonical table), the `replaces:` lineage field, the imperative wiring to skill-creator before writing or overhauling a skill, and the writing rule — positive form by default, prohibitions only under three stated conditions |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
-| [task-tracking](rules/common/task-tracking.md) | Single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents |
+| [task-tracking](rules/common/task-tracking.md) | One canonical pending-task ledger per repo in one of two shapes — a single table (`.notes/TASKS.md`) or a public store of one-file-per-task RFCs (`rfcs/`) queried through `claims.py ready`; claim / release for concurrent sessions; review findings are filed only when they break the loop itself, with a producer → sink citation |
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | Treats external LLM-domain knowledge as going stale on a one-week scale — never assert tooling, specs, or going rates from memory; check at search time, date the evidence, and attach an expiry condition to any recommendation |
 | [practitioner-identity](rules/common/practitioner-identity.md) | Author's self-definition, verbatim — searching for what counts as a good idea and a good means in the AI era; DOI is one means, not a researcher career; code fades, ideas persist |
 | [llm-first-code](rules/common/llm-first-code.md) | Optimizes code for its actual reader — the next LLM session, not humans: preserve verifiability (types, tests, goldens) over readability, enforce quality through machine gates, and spend human-readability budget only on READMEs and output text |
-| [boundary](rules/common/boundary.md) | — |
+| [boundary](rules/common/boundary.md) | The single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking, and when to stop and report |
 <!-- END GENERATED: rules-table -->
 
 ### Hooks

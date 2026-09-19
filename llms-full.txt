@@ -17,7 +17,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **Hooks directory**: `hooks/` — five PreToolUse hooks at the `git commit` boundary (secret scan, repo-owned gate runner, bandit, `ruff format --check`, review reminder) plus shared parts; wired manually into `settings.json`, install guide at `docs/hooks.md`
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
 - **Agents directory**: `agents/` — prompt generation (prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR review (adr-reviewer)
-- **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, root-cause-first debugging, skill origin tracking, knowledge staleness, and the Contemplative Constitutional AI clauses
+- **Rules directory**: `rules/common/` — environment-specific facts, wiring, and traps: planning wiring, the AKC pointer table and Scaffold Dissolution criteria, the human / agent boundary, skill origin vocabulary, task-ledger conventions, the rate-limit policy signal, knowledge staleness, LLM-first code, the author's practitioner identity, and the Contemplative Constitutional AI clauses
 - **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health
 - **Python build**: uv (or pip install -e .), Python 3.10+
 - **AKC components**: six skills implement individual AKC phases (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync)
@@ -68,7 +68,7 @@ Origin tracking is defined as a per-file metadata field that records who authore
 
 ## What is the difference between rules and skills in this harness?
 
-Rules and skills are defined by their loading semantics. Rules in `rules/common/` are auto-loaded into every Claude Code session, so they fire deterministically and have a strong influence on behavior. Skills in `skills/` are triggered probabilistically based on Claude's judgment of whether the user's request matches the skill description. Rules are short, principle-oriented, and concise; skills are longer reference material with detailed workflows. The rules-distill skill exists specifically to promote recurring guidance from the probabilistic skill layer to the deterministic rule layer once a pattern appears in three or more places.
+Rules and skills are defined by their loading semantics. Rules in `rules/common/` are auto-loaded into every Claude Code session, so they fire deterministically and have a strong influence on behavior. Skills in `skills/` are triggered probabilistically based on Claude's judgment of whether the user's request matches the skill description. Rules hold only what is specific to this environment — facts, wiring, and traps — and point to the skill that owns each procedure; skills are longer reference material with detailed workflows, time-critical checks live in hooks, and general judgment is left to the model. Each rule carries `origin`, `rationale`, and `review-when` metadata. The rules-distill skill promotes environment-specific guidance from the probabilistic skill layer to the always-loaded rule layer, and rules-stocktake audits the rule layer in the opposite direction.
 
 ## How are skills invoked in Claude Code?
 
@@ -109,10 +109,6 @@ The four Contemplative AI axioms are defined as Emptiness, Non-Duality, Mindfuln
 ## What is the planning rule's Phase 0 external research mandate?
 
 Phase 0 external research is defined as the step, required for `feat` tasks in the implementation-chain matrix, that runs the search-first skill before an implementation plan introduces a new feature, a new dependency, or a custom utility that may already exist. The skill returns a report (scope searched, found, still unknown) and the main loop decides from it; there is no verdict vocabulary. When the report contains an existing solution that changes the implementation approach, the chain stops and the plan is redone. Bug fixes, refactors, chores, and prototypes skip this step.
-
-## What is the prototype-before-scale principle?
-
-Prototype-before-scale is defined as a planning rule requiring a small-scale trial (3 to 5 items, one cycle) before any large-scale execution such as data generation, autonomous agent loops, or API migrations. The trial output establishes a quality baseline that the maintainer reviews before committing to the full run. This catches systemic issues — bad prompts, broken pipelines, costly assumptions — when they are still cheap to fix. The principle lives in `rules/common/planning.md` and is enforced by maintainer discipline rather than tooling. It is the planning-time complement to iteration bounds in the coding-style rule.
 
 ## How do I install claude-harness components?
 

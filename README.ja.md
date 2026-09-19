@@ -84,22 +84,22 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 
 ### Rules
 
-毎セッション自動ロードされる行動原則 (rule/common/ 配下):
+毎セッション自動ロードされる、この環境固有の事実・配線・罠（`rules/common/` 配下）。手順は skill、発火時刻を要する検査は hook が持つ:
 
 <!-- BEGIN GENERATED: rules-table -->
 | Rule | Purpose |
 | --- | --- |
-| [agents](rules/common/agents.md) | Agent orchestration 規約。いつどの agent を使うか、並列実行のパターン |
-| [akc-cycle](rules/common/akc-cycle.md) | Agent Knowledge Cycle の 6 フェーズ行動規約 (Research / Extract / Curate / Promote / Measure / Maintain) |
-| [debugging](rules/common/debugging.md) | 根本原因優先のデバッグフロー (仮説 → 証拠 → 確認 → 修正)、AI のリーセンシーバイアス対策、retry-with-context |
-| [planning](rules/common/planning.md) | 計画時の必須項目 (What / Why / Alternatives)。Phase 0 外部調査の義務化 |
-| [skills](rules/common/skills.md) | Skill origin tracking の仕様と knowledge placement の原則 |
+| [agents](rules/common/agents.md) | agent catalog へのポインタ（正本は `agents/*.md` の frontmatter）、Review は実装者と別の agent process で走らせる規則、Herdr 委譲 skill への入口 |
+| [akc-cycle](rules/common/akc-cycle.md) | Agent Knowledge Cycle のポインタ版 — 各機構（6 phase / judge・build・human の三役ループ / LLM-first 可読性 / 失効条件つき知識）と所有する skill・rule の対応表、Scaffold Dissolution の判定基準、ADR の扱い（日付つき経緯記録・supersede と日付つき注記・起票の 2 条件） |
+| [debugging](rules/common/debugging.md) | Rate limit signal — 外部 platform への大量書き込み中の rate limit 連発は transient error でなく policy signal。backoff で踏み抜かず burst を止めて人間へ報告 |
+| [planning](rules/common/planning.md) | Planning の配線 — 既存解がありうるものの前は search-first、judge-tier セッションからの実装は build-tier への dispatch が既定、chain 種別と reviewer 条件は implementation-chain、Verify の正本は repo の `.claude/verify.sh` |
+| [skills](rules/common/skills.md) | skill / agent / rule の origin 語彙（正本の表）、系譜を残す `replaces:` field、skill を書く・大改修する前に skill-creator を読む命令形の配線、文書の書き方（既定は肯定形、禁止は 3 条件を満たすときだけ） |
 | [contemplative-axioms](rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |
-| [task-tracking](rules/common/task-tracking.md) | 単一タスク台帳（1 repo 1 ファイル）の原則 — 詳細資料にタスク行の正本を持たせない、MEMORY.md はポインタのみ、完了行は Done 節へ |
+| [task-tracking](rules/common/task-tracking.md) | Pending task の正本は repo ごとに 1 つ、形は 2 つ — 単一表 `.notes/TASKS.md` か、1 タスク 1 ファイルの公開 store `rfcs/`（`claims.py ready` で問う）。並行セッションの claim / release、レビュー指摘は loop 自身を壊す欠陥だけを producer→sink 引用つきで起票 |
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | LLM 分野の外部知識は 1 週間スケールで陳腐化するという世界観を既定にする — 手法・仕様・相場観を記憶から断言せず検索時点で照合し、根拠に as-of 日付を、推奨に失効条件を付ける |
 | [practitioner-identity](rules/common/practitioner-identity.md) | 著者の自己定義 (verbatim) — AI 時代に何が良い考え・良い手段かを探し続ける。DOI は手段の一つで研究者志向ではない。コードは消えるが考えは消えない |
 | [llm-first-code](rules/common/llm-first-code.md) | コードを実際の読者 = 次セッションの LLM に最適化する — 可読性でなく検証可能性（型・テスト・golden）を保存し、品質は機械ゲートで執行、人間可読性の予算は README と出力の文面にだけ払う |
-| [boundary](rules/common/boundary.md) | — |
+| [boundary](rules/common/boundary.md) | 境界の正本 — 人間に渡す操作（公開・課金・外部送信・台帳の起票・permissions / hooks / rules / ADR の無人変更）、確認を待たずにとってよいリスク、止まって報告する条件 |
 <!-- END GENERATED: rules-table -->
 
 ### Hooks
