@@ -19,7 +19,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 <!-- BEGIN GENERATED: skills-table -->
 | Skill | Purpose |
 | --- | --- |
-| [search-first](skills/search-first/SKILL.md) | Research-before-coding workflow. Invokes the scout agent to discover existing tools |
+| [search-first](skills/search-first/SKILL.md) | Look outside before deciding — searches the live web, registries, and primary sources, and returns a report the caller picks from |
 | [learn-eval](skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
 | [skill-stocktake](skills/skill-stocktake/SKILL.md) | Skill quality audit — inline Glob inventory + single-context holistic evaluation, Keep/Improve/Update/Retire/Merge verdicts |
 | [skill-health](skills/skill-health/SKILL.md) | Structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts / agents / sibling skills that don't resolve on disk). Deterministic; delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply |
@@ -33,7 +33,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [collect-context](skills/collect-context/SKILL.md) | Gathers in-session and external context into source material for article writing |
 | [authorship-strategy](skills/authorship-strategy/SKILL.md) | 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos |
 | [release-doi](skills/release-doi/SKILL.md) | Cuts a versioned release of a DOI-registered research repo (Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging) |
-| [adr-writer](skills/adr-writer/SKILL.md) | Records design decisions as numbered ADRs — directory detection, sequence numbering, index update; prose delegated to the adr-writer agent |
+| [adr-writer](skills/adr-writer/SKILL.md) | Records design decisions as numbered ADRs — directory detection, sequence numbering, index update; the main loop writes the body from a settled decision packet, checked by an evidence script and the adr-reviewer agent |
 | [readme-writer](skills/readme-writer/SKILL.md) | Writes human-facing READMEs — deterministic structural lint plus holistic LLM review (no scores) |
 | [hf-sync](skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
 | [spawn-session](skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session in a Herdr pane, visible in the mobile app session list |
@@ -73,9 +73,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 <!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
 | --- | --- |
-| [scout](agents/scout.md) | Pre-implementation solution discovery. Searches npm / PyPI / MCP registries / GitHub for existing solutions |
 | [prompt-writer](agents/prompt-writer.md) | Generates concise prompts using a lightweight model. Creates and rewrites LLM prompt templates |
-| [adr-writer](agents/adr-writer.md) | Generates the 7-section ADR body (incl. `Review-when` expiry conditions) from supplied input only — never invents context, expiry conditions, or alternatives |
 | [readme-reviewer](agents/readme-reviewer.md) | Strict README / repo top-page review — LLM-read floor, lead clarity, human hook, scannability, length discipline, visual effectiveness. Companion to readme-writer |
 | [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | First-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register (ですます). Parallel partner of readme-reviewer |
 | [adr-reviewer](agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, `Review-when` names an observable expiry trigger, Alternatives are real rather than straw men (a live 「未決」 rival is allowed), Consequences show both sides, and override relations with prior ADRs are stated (dated 注記 on partial weakening) |
@@ -101,6 +99,7 @@ Behavioral principles auto-loaded every session (under `rules/common/`):
 | [knowledge-staleness](rules/common/knowledge-staleness.md) | Treats external LLM-domain knowledge as going stale on a one-week scale — never assert tooling, specs, or going rates from memory; check at search time, date the evidence, and attach an expiry condition to any recommendation |
 | [practitioner-identity](rules/common/practitioner-identity.md) | Author's self-definition, verbatim — searching for what counts as a good idea and a good means in the AI era; DOI is one means, not a researcher career; code fades, ideas persist |
 | [llm-first-code](rules/common/llm-first-code.md) | Optimizes code for its actual reader — the next LLM session, not humans: preserve verifiability (types, tests, goldens) over readability, enforce quality through machine gates, and spend human-readability budget only on READMEs and output text |
+| [boundary](rules/common/boundary.md) | — |
 <!-- END GENERATED: rules-table -->
 
 ### Hooks
@@ -164,9 +163,9 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | agent-harness-construction, ai-regression-testing, config-gc, e2e, loop-design-check, python-patterns, refactor-clean, tdd | architect, e2e-runner, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| ECC + local modifications | config-gc, loop-design-check, refactor-clean, tdd | architect, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| [anthropics/claude-code](https://github.com/anthropics/claude-code) | — | Explore | — |
 | [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) + local modifications | mondo | — | — |
-| [cursor/plugins](https://github.com/cursor/plugins) | thermo-nuclear-code-quality-review | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |

@@ -53,6 +53,8 @@ enumerate/decide seam、[ADR-0010](0010-context-sync-cascade-and-writer-agents.m
    （提案者と検査者が同一システムなら検査は提案者の盲点を継承する）を持つため、
    承認は「決定論ゲートの PASS」＋「人間の intent 判断」で構成し、LLM 単独の承認経路を作らない。
 
+   > **注記（2026-09-15, ADR-0069）**: admitted task の build 出力に限り、承認は「決定論ゲートの PASS（`verify.sh` を main で再実行）+ 判断役の検収」で閉じ、判断役が ff-only 取り込みと push を行う。人間の intent は task の admission / 受入条件と、revert 数の撤回条件に置く。behavior-shaping artifact（rules / hooks / permissions / gate script / ADR / skills）の無人変更は人間のまま — 本条項はそこに残る（`rules/common/boundary.md`）。
+
 3. **ゲートの提示物は対象で分岐する。**
    - **behavior-shaping artifact**（rules / skills / identity / 憲法 / 公開ドキュメント）と
      **control plane**（hooks / `permissions` 設定 / `--allowedTools` 等の権限定義 / scheduled task 定義）
@@ -161,7 +163,7 @@ self-attested）と呼ぶものの**実装記録**にあたり、instance は po
    ゲートが防ぐはずの漏洩を会話・承認画面・ログへ広げる）。
 
 常駐コスト: `human-gate.md` は 145 → 約 330 words。`rules/common` 全体は 2,756 → 約 2,940。
-[ADR-0018](0018-rules-rightsize-for-claude5.md) の rightsize 水準（2,463）からは離れるが、
+[ADR-0018](0018-rules-rightsize-for-claude5.md) の rightsize 水準（2,314）からは離れるが、
 固定スキーマは**毎回発火するゲートの手順**であり、skill の確率的トリガーに委ねると守られない
 （[`skills.md`](../../rules/common/skills.md) の Rules vs Skills 判定）。
 

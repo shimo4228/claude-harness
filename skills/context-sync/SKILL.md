@@ -154,7 +154,7 @@ Delegate to the `adr-writer` skill. Do not inline an ADR template here — dupli
 
 1. For each decision to extract, gather the 7 inputs (Title / Status / Context / Decision / Review-when / Alternatives / Consequences) from the source file — Review-when (expiry conditions) is rarely written down in a CLAUDE.md; ask the user rather than inventing it
 2. Invoke `/adr-writer` once per decision with those inputs
-3. `adr-writer` handles: directory creation, sequence numbering, README index update, body generation via the adr-writer agent
+3. `adr-writer` handles: directory creation, sequence numbering, README index update, body generation in the main loop (ADR-0072)
 4. If the user runs context-sync in non-interactive mode where invoking another skill is impractical, surface the list of decisions to extract and ask the user to run `/adr-writer` for each later — do not write partial ADRs from context-sync directly
 
 If Architecture docs are needed:

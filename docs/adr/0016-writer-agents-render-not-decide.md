@@ -47,6 +47,11 @@ Writer agent の委譲境界を **semantic authority 基準** で ref 定義す�
 
 1. **EN→JA 翻訳は主にメインループ skill** (`en-to-ja-translation`)。専用 translation/reviewer agent を作らない（姉妹 `ja-to-en-translation` の skill-only 設計を鏡像）。翻訳の変換ステップは非収束な著者 voice を狙う高権限作業のため。超長文のみ、継承モデルの subagent を skill 内オプションモードとして許可し、voice sample + term 表 + localization policy を明示的に手渡す。機械的前処理（term 抽出・保護スパン検出・一貫性 grep）は軽量モデルへ委譲可、最終 prose はメインループ。
 2. **`adr-writer` は render agent として残す**（skill-only には崩さない）。ADR は decide（synthesis, 高権限）と render（固定ハウススタイルへの清書, 低権限・検証可能）にきれいに割れ、後者だけの委譲は安全。近隣 ADR 走査 + テンプレ機械処理 = observation の隔離実利も残る。ただし `adr-writer.md` の consequence 膨張許可を撤回し、`adr-writer` skill に「メインループが decision packet を確定・承認してから agent 起動、起動後にメインループが fidelity check」の規律を明文化する。
+   > **注記（2026-09-19, [ADR-0072](./0072-retire-adr-writer-agent-and-narrow-adr-filing.md)）**: `adr-writer`
+   > render agent は退役し、skill の主ループが packet から直接書く。render / decide の分離は
+   > packet 規律（Step 3 → Step 4）として残り、process 境界（別 agent）としては持たない。
+   > 委譲基準（本 Decision の冒頭 2 節）は他の writer agent に対して有効。
+
 3. ADR-0010 の「agent = subjective body generation」framing を、本 ADR が **「agent = 承認済み packet の rendering」** に ref 定義する。
 
 ## Alternatives Considered

@@ -1,6 +1,6 @@
 ---
 name: readme-writer
-description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直すときに使う。こんな時に呼ぶ — README が長い／継ぎ足しで文脈が重くなり初見で分からない、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、長い rationale・ADR 参照・内部史を docs/ に逃がしたい、研究・DOI repo の README を引用付きで読める長さにまとめたい、GitHub の About（description / topics）が README と食い違っている。証拠スクリプト（readme_evidence.py）+ fresh context の判定器（readme-judge）+ 上限 2 ラウンドの改稿ループ + review panel + 著者通読 GO で回す。短く・走査しやすくしつつ、LLM が README 一枚で要点を復元できる情報フロアは残す。CLI でも研究 repo でも、日本語でも英語でも、新規作成でも既存改善でも対象。AI 専用ドキュメント（llms.txt 等）は → llms-txt-writer、記事・エッセイは → writing-ecosystem。
+description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直すときに使う。こんな時に呼ぶ — README が長い／継ぎ足しで文脈が重くなり初見で分からない、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、長い rationale・ADR 参照・内部史を docs/ に逃がしたい、研究・DOI repo の README を引用付きで読める長さにまとめたい、GitHub の About（description / topics）が README と食い違っている。CLI でも研究 repo でも、日本語でも英語でも、新規作成でも既存改善でも対象。AI 専用ドキュメント（llms.txt 等）は → llms-txt-writer、記事・エッセイは → writing-ecosystem。
 compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -20,10 +20,11 @@ origin: shimo4228
 
 - README.md / README.ja.md を新規作成・改善する
 - 継ぎ足しで育った README（ADR 参照・姉妹 repo・造語・内部史の密度が上がり、初見で読めない）を根本から作り直す
-- GitHub の **About（description / topics / homepage）** を README と同じ主張に揃える
+- GitHub の **About（description / topics）** を README と同じ主張に揃える
 
 **使わない場面**: `llms.txt` / `llms-full.txt` / FAQ など AI 専用 doc（→ `llms-txt-writer`）、
-記事・エッセイ（→ `writing-ecosystem`）、graph.jsonld の設計（→ `jsonld-knowledge-graph`）。
+記事・エッセイ（→ `writing-ecosystem`）、graph.jsonld の設計（→ `jsonld-knowledge-graph`）、
+social-preview 画像の作成と外部ディレクトリ・awesome-list への掲載申請。
 
 ---
 
@@ -80,8 +81,9 @@ lead が産物（「憲法がどう変わったかの履歴」型）を約束し
 
 `graph.jsonld` / `llms.txt` を README から作る場合、**README prose を構造ソースにしない**。識別子・
 graph 辺は `CITATION.cff` / `.zenodo.json` / frontmatter の小さな manifest から derive する。
-GitHub のメタ面のうち description / topics / homepage は本 skill が Workflow Step 10 で担当する
-（social-preview・CITATION ファイル・release metadata は → `release-doi`）。
+GitHub のメタ面のうち description / topics は本 skill が Workflow Step 10 で担当する。
+homepage・social-preview・CITATION ファイル・release metadata は `release-doi` の所有
+（細則 → `references/about.md`）。
 
 ---
 
@@ -153,8 +155,8 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 
 ## Workflow（証拠 → fresh 判定器の改稿ループ → panel → binding 最終判定 → 著者通読 GO）
 
-**判定器は fresh contextの別agent processで起動し、執筆セッションの文脈を渡さない**
-（自己批評は検出率が落ちる）。
+**判定器は fresh contextの別agent processで起動し、執筆セッションの文脈も repo の他ファイルも
+渡さない**（自己批評は検出率が落ち、repo 文脈は未定義語を補完して判定を甘くする）。
 
 ```
 1. 入口の設計 — フロア 5 要素の確定 + 造語予算表（残す語 / 平易化する語 / docs へ落とす語）
@@ -205,25 +207,6 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 ```
 /codex-review "Review the README as prose, not code: does the first screen say what / for whom / where it runs without insider terms, does every paragraph answer a reader question, are ADR / sibling-repo references pointers rather than the only explanation, is anything load-bearing hidden in images or collapsed sections?"
 ```
-
----
-
-## What This Skill Does NOT Do（境界）
-
-- `llms.txt` / `llms-full.txt` を書かない（→ `llms-txt-writer`）、`graph.jsonld` を設計しない（→ `jsonld-knowledge-graph`）
-- cross-surface の drift 検出 / 同期をしない（→ `context-sync` / `release-doi`）。Step 9 は read-only 照合まで
-- 記事 / エッセイを編集しない（→ `writing-ecosystem`）
-- social-preview 画像を作らない。外部ディレクトリ・awesome-list への掲載申請をしない
-- **品質スコア / grade / 評点を出さない**（verdict は named — Publishable / Fix / Rewrite）
-
----
-
-## Anti-patterns
-
-- AI surface の数値指標（ski-ramp / entity density）を人間 README に流用する
-- 「ビジュアル優先」を散文の画像化と解釈する（raster 図は text-only LLM に不可視）
-- 判定器に repo の他ファイルを先に読ませる（未定義語を repo 文脈で補完して甘くなる）
-- description を README lead と別の主張にする（cloaking）/ topics を実勢を測らずに選ぶ
 
 ---
 

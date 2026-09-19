@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted — **2026-09-05 注記（[ADR-0062](./0062-retire-codemap-machinery.md)）**: Phase 0（Codemap Freshness Pre-check）と `codemap-writer` agent は退役。adr-writer と context-sync Phase 1〜4 の判断は有効
+accepted — **2026-09-05 注記（[ADR-0062](./0062-retire-codemap-machinery.md)）**: Phase 0（Codemap Freshness Pre-check）と `codemap-writer` agent は退役。adr-writer と context-sync Phase 1〜4 の判断は有効。**2026-09-19 注記（[ADR-0072](./0072-retire-adr-writer-agent-and-narrow-adr-filing.md)）**: `adr-writer` agent も退役し、本 ADR の writer agent 2 本はともに無い。skill `adr-writer` の boilerplate（採番・index）と context-sync の delegation 先としての skill は有効
 
 ## Date
 

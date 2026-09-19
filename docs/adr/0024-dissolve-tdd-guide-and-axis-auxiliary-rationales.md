@@ -25,8 +25,13 @@ fresh/rich context 軸を、ユーザーの提案（「この観点で他のエ�
     [ADR-0016](./0016-writer-agents-render-not-decide.md) の render-not-decide 契約、
     prompt-writer も同型。入力が会話でなく repo / レジストリである codemap-writer /
     scout もこの群に属する。
+
+    > **注記（2026-09-14, ADR-0066）**: scout は退役。外部調査の Full Mode は skill
+    > `search-first` が general-purpose subagent に tools を絞って委譲する。frozen-input
+    > render 群の例としては adr-writer / prompt-writer が残る。
   - **bulk context isolation** — 大量のファイル読み・出力をメイン context から隔離すること
     自体が価値。e2e-runner / refactor-cleaner が該当する。
+    > **注記（2026-09-15, ADR-0068）**: e2e-runner は退役した。bulk context isolation の現存例は refactor-cleaner のみ。
 - **(3) tdd-guide 1 件だけが planner と同型のミスマッチとして残った**。Write / Edit / Bash
   を持つ実装 agent であり、テストと最小実装を書く作業は会話中の仕様・制約という rich
   context が資産になる生成作業である。absorber は具体名で指せる — skill `tdd`

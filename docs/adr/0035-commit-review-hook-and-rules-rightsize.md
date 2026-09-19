@@ -61,6 +61,8 @@ hook を薄型化する過程で、global skill `when-code-when-llm` の構造 /
    global harness では局所的な構造 / 意味分離を一般原則へ膨らませ、hook の過剰設計を誘発した。
    standalone repo は研究履歴として残すが、global skill の同期対象から外す。
 
+   > **注記（2026-09-15, ADR-0069）**: 停止手順の退役はそのまま。境界の**事実**（このハーネスで不可逆・対外に当たる操作と、確認なしで取ってよいリスク）だけを `rules/common/boundary.md` が持つ。
+
 ## Alternatives Considered
 
 ### Review hook を削除し、名簿を rules に戻す

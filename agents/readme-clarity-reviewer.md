@@ -2,7 +2,7 @@
 name: readme-clarity-reviewer
 description: First-contact reader clarity reviewer for READMEs / repo top pages. Reads the README as a visitor who just landed on the repo — knows the general field but nothing of the author's other repos, internal glossary, harness, or editorial process. Flags coined-term overuse, insider-context dependency, Japanese register violations (README ja must be ですます調), lead-density failures, and first-screen comprehension failures. Use PROACTIVELY after drafting or substantially revising a README, in parallel with readme-reviewer as a panel reviewer (findings; the verdict belongs to readme-judge), before the binding final judgment and the human gate. Works on both language versions (e.g. README.md / README.ja.md).
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: sonnet
+model: opus
 origin: shimo4228
 ---
 

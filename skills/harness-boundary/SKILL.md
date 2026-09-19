@@ -1,6 +1,6 @@
 ---
 name: harness-boundary
-description: "agent 環境に mechanism（rule / skill / hook / agent / workflow / runtime 拡張 / prompt chain）を追加・変更・レビューするとき、それが 6 層（model capability / skill = 手続き記憶 / values・policy / eval / data・memory / runtime）のどこに属するか、なぜモデル自身に任せられないか、次のモデル世代で不要になるか、runtime を Claude Code → Pi → Codex と交換しても残す価値があるかを問い、Keep / Move / Simplify / Make temporary / Delete / Defer を返す設計レンズ。Use when — 「これはハーネスに入れるべきか」「どの層に置くか」「モデルに任せられないか」「runtime 変えても残るか」「harness が肥大している」「この hook / rule / workflow を足していい？」, when implementation-chain の Plan で harness 自体（~/.claude の rules / skills / hooks / agents / settings）を変更する task と判定されたとき, or /harness-boundary. Delete / Simplify は成功として扱う。NOT for — 未構築物の build-or-not 単体（→ agent architect）、設置済み資産の定期監査と Retire / Dissolve の verdict（→ rules-stocktake / skill-stocktake / agent-stocktake。本 skill は証拠を渡すだけ）、世代交代時の一括照合（→ generation-audit）、loop 構造の妥当性（→ loop-design-check）、harness の作り方の処方（→ agent-harness-construction）。"
+description: "agent 環境に mechanism（rule / skill / hook / agent / workflow / runtime 拡張 / prompt chain）を追加・変更・レビューするとき、それが 6 層（model capability / skill = 手続き記憶 / values・policy / eval / data・memory / runtime）のどこに属するか、なぜモデル自身に任せられないか、次のモデル世代で不要になるか、runtime を Claude Code → Pi → Codex と交換しても残す価値があるかを問い、Keep / Move / Simplify / Make temporary / Delete / Defer を返す設計レンズ。Use when — 「これはハーネスに入れるべきか」「どの層に置くか」「モデルに任せられないか」「runtime 変えても残るか」「harness が肥大している」「この hook / rule / workflow を足していい？」, when implementation-chain の Plan で harness 自体（~/.claude の rules / skills / hooks / agents / settings）を変更する task と判定されたとき, or /harness-boundary. Delete / Simplify は成功として扱う。NOT for — 未構築物の build-or-not 単体（→ agent architect）、設置済み資産の定期監査と Retire / Dissolve の verdict（→ rules-stocktake / skill-stocktake / agent-stocktake。本 skill は証拠を渡すだけ）、世代交代時の一括照合（→ generation-audit）、loop 構造の妥当性（→ loop-design-check）。"
 user-invocable: true
 origin: shimo4228
 disable-model-invocation: true
@@ -104,7 +104,6 @@ Recommendation        : Keep / Move / Simplify / Make temporary / Delete / Defer
   どの層に・いつまで」を答える
 - loop 構造の妥当性（servo / 判定可能性 / damping）→ skill: `loop-design-check`
 - 世代交代時の一括照合 → skill: `generation-audit`
-- harness の作り方（action space / observation / recovery）→ skill: `agent-harness-construction`
 - 人間可搬性（他人が install して使えるか）→ `skill-creator/references/portability.md`
 
 ## 失効条件
@@ -123,7 +122,6 @@ Recommendation        : Keep / Move / Simplify / Make temporary / Delete / Defer
 - `rules-stocktake` / `skill-stocktake` / `agent-stocktake` — verdict の正本。本 skill の
   Delete / Move は設置済み資産ではこれらへの証拠になる
 - `rules-distill` — skill → rule の昇格基準（tests 1–3 は問い A・B の rule 版）
-- `agent-harness-construction` — 作り方の処方。本 skill は置き場と寿命の判断
 - `rules/common/akc-cycle.md` — Scaffold Dissolution（Inward / Downward）。問い C はその予測版
 - ADR-0012 / 0015 / 0038 — runtime 可搬性の先例（skills → symlink 共有、rules → reference-first、
   hooks / permissions は共有外だが hooks 配線節は移植可）。問い D の実測根拠

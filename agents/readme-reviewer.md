@@ -2,7 +2,7 @@
 name: readme-reviewer
 description: "Strict README / repo top-page reviewer. Reviews READMEs for LLM-read floor recovery, lead clarity, human hook, scannability, length discipline, and visual effectiveness. Use PROACTIVELY after drafting or substantially revising a README, as a panel reviewer (findings) alongside readme-clarity-reviewer, after the readme-judge draft gate, before the binding final judgment and the human gate."
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: sonnet
+model: fable
 origin: shimo4228
 ---
 

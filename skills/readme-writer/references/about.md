@@ -1,7 +1,11 @@
 <!-- origin: shimo4228 -->
-# About（description / topics / homepage）細則（readme-writer の参照資料）
+# About（description / topics）細則（readme-writer の参照資料）
 
-規約の骨格は `../SKILL.md` の Workflow Step 10。ここは UI 実測の記録・topics の実勢測定・`gh` コマンド表で、2026-08-19 の棚卸しで SKILL.md 本文から移送した。
+規約の骨格は `../SKILL.md` の Workflow Step 10。ここは UI 実測の記録・topics の実勢測定・`gh` コマンド表。
+
+homepage は `release-doi` の所有で、DOI repo では concept DOI に固定したまま変えない。DOI の無い
+repo でだけ docs サイト / その repo を解説した記事 / hub を入れ、該当が無ければ空のままにする
+（無関係な URL を埋めない）。
 
 repo トップは README 本文と **About サイドバー**で 1 つの第一画面を作る。README がどれだけ良くても
 **About が空なら「到達した人」にしか効かない** — topics は*まだ来ていない人*を索引から連れてくる
@@ -10,7 +14,6 @@ repo トップは README 本文と **About サイドバー**で 1 つの第一�
 | 要素 | 出る場所 | 規約 |
 |---|---|---|
 | **description** | topic ページ・repo リスト・検索結果・外部ディレクトリ掲載時の唯一の一文 | README の lead と**同じ主張**にする（食い違いは cloaking）。**1 文目だけで機能が伝わる**構成にする（下記） |
-| **homepage** | About と repo カードのリンク | docs サイト / その repo を解説した記事 / hub。**無いなら空のまま**（無関係な URL を埋めない） |
 | **topics** | topic ページ・topic 付き検索の索引 | 最大 20。小文字英数字とハイフンのみ |
 
 ## description に文字数目標を置かない
@@ -58,7 +61,7 @@ gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'
 ## 現状の把握（read-only。ここで書き込まない）
 
 ```bash
-gh api repos/OWNER/REPO --jq '{description, homepage, topics}'   # 現状の 3 要素
+gh api repos/OWNER/REPO --jq '{description, topics}'   # 現状の 2 要素
 gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'  # 候補 topic の実勢
 ```
 
@@ -66,14 +69,12 @@ gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'  # �
 書き込みなので、著者通読 GO（SKILL.md Workflow Step 10）の承認を得るまで実行しない（可逆であっても「消す / 変える」の判断
 自体はユーザーのもの）。
 
-変更案は 3 要素それぞれについて **現状 → 提案** の形で書き出す。homepage を**空にする**提案なら
-それも明示する（無変更と区別がつかなくなるため）。
+変更案は description / topics それぞれについて **現状 → 提案** の形で書き出す。
 
 ## 適用と検証（承認後）
 
 ```bash
 gh repo edit OWNER/REPO --description "..."            # description
-gh repo edit OWNER/REPO --homepage "https://..."       # homepage（空にするなら --homepage ""）
 gh repo edit OWNER/REPO --add-topic X --add-topic Y    # --add-topic は追加のみ（既存を消さない）
 gh repo edit OWNER/REPO --remove-topic Z               # 削除は明示的に
 ```
@@ -81,7 +82,7 @@ gh repo edit OWNER/REPO --remove-topic Z               # 削除は明示的に
 検証:
 
 ```bash
-gh api repos/OWNER/REPO --jq '{description, homepage, topics}'         # 適用の確認
+gh api repos/OWNER/REPO --jq '{description, topics}'                   # 適用の確認
 gh api "search/repositories?q=topic:X+user:OWNER" --jq '.total_count'  # 索引反映の確認（数秒）
 ```
 

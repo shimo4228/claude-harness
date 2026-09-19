@@ -91,6 +91,11 @@ security review を残す判断材料とした。
    `task-stocktake` 「レビュー指摘の起票規律」）。build セッションからの即時起票は
    「loop 自身を壊す欠陥」のみとする。それ以外は severity 不問で commit body に 1 行
    （producer 付き）残して捨てる。回収機構（tick sweep 等）は作らない。
+
+   > **注記（2026-09-16, ADR-0071）**: reviewer 履歴の手調査が 2 回目（2026-08-29 に続き
+   > 2026-09-16、RFC-0005）を要求され、「作らない」の再訪条件が成立した。ADR-0071 は抽出 script を
+   > 作らず scratchpad で書いて捨てる判断を維持し、3 回目で supersede 込みの提案に進む（著者判断）。
+
 6. `hooks/simplify-order-notice.sh` と `tests/simplify-order-notice.bats` を退役する
    （Simplify 前置き順序の強制対象が消滅）。`settings.json` の当該エントリと
    `hooks/README.md` の行も削除する。`review-model-notice.sh`（judge-tier の直呼び

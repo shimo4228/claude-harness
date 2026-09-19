@@ -45,6 +45,8 @@ accepted
    loop は skill（手順）+ 既存 `claims.py` + git だけで回し、台帳を parse する script を足さない
    （消費側から台帳側へ機能が逆流したのが 5,000 行版の育ち方）。
 
+   > **注記（2026-09-15, ADR-0069）**: 最後のスイッチは人間から判断役へ移った。判断役が §4 の検収を通した branch を ff-only で取り込み push する。人間は方向決めと digest への回答。無人時に rules / hooks / permissions / gate script を含む diff の取り込みだけ人間に残る（`rules/common/boundary.md`）。撤回条件は ADR-0069 Review-when。
+
    > **注記（2026-08-25, ADR-0049）**: store 形台帳は公開 `rfcs/` へ一元化され、台帳は公開物に
    > なりうる。上 3 の red line「公開物に無人で触らない」は「無人 triage は working tree の
    > 台帳ファイルへは書けるが、公開へ出る commit / push / merge は人間の側」という形で維持する。

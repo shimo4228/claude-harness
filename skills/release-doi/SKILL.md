@@ -1,6 +1,6 @@
 ---
 name: release-doi
-description: DOI-registered research repo (Zenodo) のリリース手順。README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映し、Software Heritage archive + SWHID 記録 (intrinsic identifier 層) まで行う 4 phase + post-release ワークフロー。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
+description: DOI-registered research repo (Zenodo) のリリース手順。README 多言語 / CHANGELOG / CITATION.cff / pyproject.toml / llms.txt / glossary を整合させてから tag push、Zenodo 自動採番後に新 DOI を反映し、Software Heritage archive + SWHID 記録 (intrinsic identifier 層) まで行う 4 phase + post-release ワークフロー。post-release は Wayback snapshot / Zenodo community 収載 / DeepWiki onboarding と、release を待たずに published record の metadata だけを直す retrofit 経路を含む。AKC / AAP / contemplative-agent など shimo4228 系の研究 repo で再利用する。
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -80,7 +80,7 @@ git tag --sort=-creatordate | head -5
 
 ## Phase 2: Cross-doc consistency
 
-`/context-sync` を入口で起動して役割重複・migrated content・freshness を一括検出してから、以下を順次更新:
+`/context-sync` を入口で起動して役割重複・migrated content・freshness を一括検出してから、以下を順次更新。**`/context-sync` が自動適用した編集は `git status --short` で拾い、下の表に無いファイルも含めて Phase 4 の `git add` 明示リストに足す** (明示 stage なので、控えないと release commit から落ちる):
 
 | File | 更新内容 |
 |---|---|
@@ -149,9 +149,9 @@ git status --short
 
 `LLMBackend` 型の Protocol を外部 repo に公開している repo（現状 `contemplative-agent`）では、push の前に sibling 適合を確認する。手順・判断基準の正本は repo 内:
 
-**[`docs/runbooks/sibling-backend-conformance.md`](../../../MyAI_Lab/contemplative-agent/docs/runbooks/sibling-backend-conformance.md)**（`./scripts/check-sibling-backends.sh` を実行し、出力の読み方に従う）
+対象 repo の **`docs/runbooks/sibling-backend-conformance.md`**（`./scripts/check-sibling-backends.sh` を実行し、出力の読み方に従う）
 
-リリースは契約を publish する行為なので、契約変更が sibling に伝わったかを確認する最後の地点がここ。この gate が無かった 3 か月、`contemplative-agent-cloud` は呼べない状態のまま誰にも気づかれなかった（ADR-0088）。
+リリースは契約を publish する行為なので、契約変更が sibling に伝わったかを確認する最後の地点がここ（ADR-0088）。
 
 ## Phase 4: Release execution
 
@@ -167,9 +167,11 @@ git add CHANGELOG.md CITATION.cff pyproject.toml \
   docs/glossary.md \
   llms.txt llms-full.txt
 test -f codemeta.json && git add codemeta.json
+# Phase 2 で /context-sync が自動適用したファイルもここに足す (git status --short で確認)
 
 # commit message はファイル経由（`$( )` は harness の PreToolUse hook が block する — skill: git-workflow）
-cat > "$SCRATCH/release-msg.txt" <<'EOF'
+MSG_DIR=$(mktemp -d)
+cat > "$MSG_DIR/release-msg.txt" <<'EOF'
 release: vX.Y.Z — <one-line title>
 
 - ADR-XXXX <主要変更 1>
@@ -179,7 +181,7 @@ release: vX.Y.Z — <one-line title>
 
 <diff stats>: N files changed, +M / -K since vA.B.C. P tests across Q files.
 EOF
-git commit -F "$SCRATCH/release-msg.txt"
+git commit -F "$MSG_DIR/release-msg.txt"
 
 git tag -a vX.Y.Z -m "vX.Y.Z — <one-line title>"
 
@@ -200,7 +202,7 @@ gh release create vX.Y.Z \
 
 **Branch 切らない・PR 作らない** (個人研究 repo の規約: main 直 push、`gh pr create` 自動実行禁止)。`gh release create` は別物 — Zenodo DOI 連鎖の起点なので、user 明示依頼下では実行する。
 
-**HF dataset sync** (`graph.jsonld` を持つ repo のみ): `gh release create` の後、project root で `/hf-sync <Owner/dataset>` を起動して HF mirror を反映する。Local の `hf login` token を使うので CI / token secret 管理は不要。詳細は `hf-sync` skill 参照。
+**HF dataset sync** (`graph.jsonld` を持つ repo のみ): `gh release create` の後、project root で `/hf-sync <Owner/dataset>` を起動して HF mirror を反映する。Local の `hf auth login` token を使うので CI / token secret 管理は不要。反映確認・失敗時対応の正本は skill: `hf-sync`。
 
 **Software Heritage archive request** (全 DOI repo、authorship-strategy ADR-0013): tag push / release 作成後、Save Code Now API に明示的な archival request を投げる。periodic crawl 任せでは snapshot が release 状態をカバーする保証がないため、release ごとに明示 request する:
 
@@ -231,17 +233,7 @@ Zenodo は **GitHub Release object** に対して webhook が発火する。tag 
 # 採番確認 (Zenodo の repo ページ or DOI badge URL を fetch)
 # 新 DOI: 10.5281/zenodo.<new>
 
-# 触る: version DOI を埋める citation 系のみ
-#   - CITATION.cff (doi: / url:)
-#   - README BibTeX (doi = {...} / url = {...}) — 全言語版
-#   - README "How to cite" plain-text 引用
-#   - llms-full.txt Citation 欄 (該当 fields があれば)
-#
-# 触らない: concept DOI で固定済みの display 系
-#   - GitHub repo `homepage` field
-#   - README DOI badge (badge SVG URL + click target、全言語版)
-#
-# (詳細は本 skill 末尾の "Concept DOI vs Version DOI 役割分離 policy" 表を参照)
+# 触る / 触らない の正本は本 skill 末尾の "Concept DOI vs Version DOI 役割分離 policy" 表
 
 # codemeta.json は CITATION.cff の派生物 — DOI 反映後に再生成 (存在する repo のみ)
 test -f codemeta.json && uvx cffconvert -f codemeta -o codemeta.json
@@ -276,30 +268,15 @@ identifiers:
 - Archive 内の閲覧 URL: `https://archive.softwareheritage.org/swh:1:snp:<hash>;origin=https://github.com/<owner>/<repo>`
 - **Review-when — SWHID の DataCite 投影** (as-of 2026-08-25): DataCite schema 4.7 (2026-03) は `SWHID` を relatedIdentifierType として正式追加したが、Zenodo の deposit 語彙 (`zenodo.org/api/vocabularies/relationtypes`, 34 種 ≒ 4.5 相当) は未対応で swhid scheme が無い。**Zenodo が 4.6/4.7 語彙に追随したら**、release 時に `.zenodo.json` へ version DOI → `swh:1:snp:` の relation を追加し、SWHID 層を CITATION.cff だけでなく DataCite registry にも投影する (URL 押し込みは意味が濁るので追随前はやらない)
 
-**Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は `~/.config/zenodo/credentials.env`)。
+**Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は著者ローカルの credentials file、例: `~/.config/zenodo/credentials.env`)。
 
 **community-authority-record への self-registration はしない**（Wikidata 等。authorship-strategy ADR-0021: アカウント無期限ブロック + 全 item 削除の実測。別アカウント・代理依頼も同じ）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
 
 **AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (現行 DeepWiki は "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく (authorship-strategy framework の Layer 4 tactic: derivation 型 diffusion 面 + regurgitation-test 診断面)。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
 
-**HF dataset 反映** (`graph.jsonld` を持つ repo のみ): project root で `hf-sync` skill を起動して mirror を更新する。
-
-```bash
-# Project root の cwd で実行 (graph.jsonld が存在することが前提)
-/hf-sync <Owner/dataset>
-# または同等:
-bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>
-
-# 反映確認 (内容照合。時刻の前後比較は「無関係な更新」でも通るので使わない)
-curl -sL "https://huggingface.co/datasets/<Owner/dataset>/resolve/main/graph.jsonld" \
-  | diff -q - graph.jsonld && echo "HF PASS"
-```
-
-失敗時 (`hf upload` の 401 / 403、HF dataset 404 等) は `hf-sync` skill の "Failure modes" section に従う。
-
 **Concept DOI vs Version DOI — 役割分離 policy**:
 
-display 用 link は **concept DOI**、citation は **version DOI**、と用途で分ける。混同すると「badge / homepage が古い版を指したまま」または「citation がどの版か不明」のいずれかが発生する。shimo4228 系 (AAP / AKC / contemplative-agent) は 2026-05 にこの policy に統一済み。
+display 用 link は **concept DOI**、citation は **version DOI**、と用途で分ける。混同すると「badge / homepage が古い版を指したまま」または「citation がどの版か不明」のいずれかが発生する。
 
 | 用途 | 場所 | DOI 種別 | 更新頻度 |
 |---|---|---|---|
@@ -330,9 +307,7 @@ curl -s https://zenodo.org/api/records/<any_version_id> \
 4. README DOI badge を concept DOI に設定 — badge SVG URL と click target の両方
 5. 全言語 README の DOI badge も同じ concept DOI に揃える
 
-以降、release のたびに badge / homepage は **触らない**。Citation 系のみ Post-release で version DOI に差し替える。
-
-**移行 (既存 repo で badge が version DOI のまま残っている場合)**: 新規 release 時に concept DOI へ差し替える。過去 commit log や tag history に version DOI 形式の badge が残っていても問題ない (HTML/SVG snapshot として保存されるため citation は破壊されない)。
+以降、release のたびに badge / homepage は **触らない**。Citation 系のみ Post-release で version DOI に差し替える。badge が version DOI を指している repo は、次の release 時に concept DOI へ差し替える。
 
 ### Published record の metadata edit (retrofit — release を待たない例外経路)
 
@@ -377,7 +352,7 @@ script 化はしない判断 (2026-08-29、RFC-0004)。頻度が年数回で、�
 
 ## Early stop conditions
 
-- **Pre-flight で Zenodo webhook 未登録** → user に opt-in 依頼で停止 (上の "Zenodo opt-in" 参照)。新規 DOI repo の最初の release で頻発する漏れ
+- **Pre-flight で Zenodo webhook 未登録** → user に opt-in 依頼で停止 (上の "Zenodo opt-in" 参照)
 - Phase 1 で `LAST_TAG..HEAD` の commit が空 → release 不要、user に報告
 - Phase 3 で test FAIL / secret detection HIT / lint error → 停止して報告
 - Phase 4 で `git status` に意図しない modified file → user 承認待ち
@@ -420,11 +395,10 @@ GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/rel
 
 - **`.zenodo.json` references = 被引用研究者への passive シグナル**: repo markdown 内の引用は Google Scholar / arXiv "cited by" の citation graph に一切入らない (被引用側から不可視)。`.zenodo.json` の `references` 辺は release 時に DataCite metadata として propagate し、OpenAIRE / Scholix の citation graph に機械可読な辺を張る。引用した文献の著者周辺に届く数少ない受動経路なので、新規引用が増えた release では必ず同期する (authorship-strategy の citation-graph federation tactic)。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
 - **DOI 欄は Phase 4 で据え置き**: tag push 前に新 DOI を埋めると Zenodo 採番前なので必ず壊れる。Post-release で 1 commit 増やす方が安全
-- **Numeric cap を quality filter にしない**: `max_rules=N` 型の機械的 cap を CHANGELOG / release notes に持ち込まない
+- **数値キャップを quality filter にしない** — 正本は skill: `measurement-discipline` 原則 4
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う
-- **Substrate migration sweep**: schema/storage/primary index を変えた release では、全 command pipeline を grep で棚卸し
+- **schema / storage を変えた release は全消費者を棚卸す** — 正本は skill: `repair-discipline` 原則 2
 - **SWHID は DOI の補完であって代替ではない** (authorship-strategy ADR-0013): DOI は extrinsic (registry 依存、metadata record を指す)、SWHID は intrinsic (content hash 由来、registry なしで検証可能)。各層が他方の failure mode をカバーする。DOI 登録が impractical な genre (blog 等) では SWHID が substitute priority-claim mechanism。Software Heritage は code 系 LLM training corpus (The Stack v2 系) の直接 ingest source でもあり、archive は parametric channel への第二の ingest surface を兼ねる
-- **新規 DOI repo は Zenodo opt-in が事前必須**: Zenodo の GitHub 連携は repo ごとの opt-in 設計。toggle ON 前に作成された release は遡及的に拾われない (公式仕様)。Pre-flight で `gh api repos/<owner>/<repo>/hooks` を確認しないと、Phase 4 まで進めて Zenodo に何も届いていないことを Post-release で初めて発見してリカバリーすることになる。**新規 repo のたびに必要だが忘れがち** — sibling repo (AKC / AAP / contemplative-agent / authorship-strategy) では既に opt-in 済みのため、慣れていると新規 repo で初回 release を切る時の盲点になる。doctrine-corpus v0.1.0 (2026-05-22) でこの漏れが発生し、tag/release 再作成でリカバリーした事例あり
 
 ## Worked example (abstracted)
 

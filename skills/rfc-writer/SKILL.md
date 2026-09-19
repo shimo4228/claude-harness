@@ -79,7 +79,6 @@ rfcs/ は**提案と作業項目の公開台帳**（判断は ADR-0049/0050）�
 | 由来 | 対応 |
 |---|---|
 | playbook intent.md | problem → Motivation / proposed outcome → Summary / affected users and systems → Guide-level（users）・Reference-level explanation（systems）/ constraints → Reference-level explanation / open questions → Unresolved questions |
-| Build-or-not（implementation-chain） | ①既存流用の検討 → Rationale and alternatives / ③誰が消費するか → Motivation / ④失効条件 → frontmatter `review-when:` |
 | search-first / Phase 0 の結果 | → Prior art（AKC Research phase の受け皿） |
 
 ## 3. repo に rfcs/ が無いとき（初設）

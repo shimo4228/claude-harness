@@ -124,6 +124,8 @@ Swift 6 strict concurrency 等の判定を code-reviewer が同等に代替で�
 - agent 1 + skill 1 の退役で catalog とメンテ面積が減る
 - 決定論チェックの正本が verify.sh / hook の層に保たれる（agent による再実行の廃止）
 - framework 固有チェックリストは `python-patterns` に残り、参照経路は保たれる
+> **注記（2026-09-15, ADR-0068）**: framework 固有チェックリストは 980463f（2026-09-02）で本文から消え、`python-patterns` 自体も 2026-09-15 に退役した。参照経路は無い。
+
 
 ### Negative
 

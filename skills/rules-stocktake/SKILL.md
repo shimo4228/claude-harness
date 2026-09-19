@@ -1,6 +1,6 @@
 ---
 name: rules-stocktake
-description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken See-skill pointers, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"which rules should be demoted or dissolved\", 「rules が肥大化してきた」「ルールを棚卸しして」, or when the model generation changed and over-constraints written for the previous one may now be net-negative (「新しいモデルに合わせて rules を見直したい」「rightsize したい」). NOT for — skill quality → skill-stocktake; promoting skill patterns INTO rules → rules-distill (this is its inverse); runtime compliance → skill-comply; whole-config GC → config-gc."
+description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken skill pointers, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"which rules should be demoted or dissolved\", 「rules が肥大化してきた」「ルールを棚卸しして」, or when the model generation changed and over-constraints written for the previous one may now be net-negative (「新しいモデルに合わせて rules を見直したい」「rightsize したい」). NOT for — skill quality → skill-stocktake; promoting skill patterns INTO rules → rules-distill (this is its inverse); runtime compliance → skill-comply; whole-config GC → config-gc."
 license: MIT
 metadata:
   author: shimo4228
@@ -43,10 +43,10 @@ instruction dilution.
 find ~/.claude/rules -name "*.md" -newermt "$(jq -r .evaluated_at ~/.claude/skills/rules-stocktake/results.json)"
 ```
 
-**Correction that keeps `changed` mode honest**: cross-reference breakage is invisible to
-rule mtimes — retiring a *skill* silently breaks a `See skill:` pointer in an unmodified
-*rule*. So the Phase 1 integrity checks **always run over the full set** (they are grep,
-seconds of work), and any rule with a newly broken reference is promoted into the
+**The Phase 1 integrity checks always run over the full set, including in `changed`
+mode**: cross-reference breakage is invisible to rule mtimes — retiring a *skill*
+silently breaks a ``skill: `name` `` pointer in an unmodified *rule*. They are grep,
+seconds of work, and any rule with a newly broken reference is promoted into the
 re-evaluation set even if its mtime is old.
 
 ## Phase 1 — Inventory + mechanical integrity checks
@@ -60,13 +60,13 @@ in Phase 3 and the `lines` field in the ledger.
 Run the mechanical checks with throwaway bash/grep (detection is structural → code;
 judgment on what the findings mean → LLM, per the enumerate/decide split):
 
-- [ ] Every `See skill:` / `See skills:` target exists under `~/.claude/skills/<name>/`
+- [ ] Every ``skill: `name` `` pointer in a rule resolves to `~/.claude/skills/<name>/`
 - [ ] Every relative link between rule files resolves
 - [ ] Every rule file's line 1 carries `<!-- origin: X -->`
 - [ ] Every `rules/common/` file carries `<!-- rationale: ... -->` and
-  `<!-- review-when: ... -->` within its first 10 lines (ADR-0021; harness_lint
-  checks presence deterministically — read its result instead of re-grepping)
-- [ ] `rules/README.md`'s tree matches the actual file list (no missing, no phantom entries)
+  `<!-- review-when: ... -->` within its first 10 lines (ADR-0021; run
+  `python3 ~/.claude/scripts/hooks/harness_lint.py` and read its output instead of re-grepping)
+- [ ] `rules/README.md`'s table matches the actual file list (no missing, no phantom entries)
 
 State the scan result up front: files found, total lines, integrity failures. Carry the
 failures into Stage 1 as pre-computed evidence — do not re-grep there.
@@ -81,11 +81,14 @@ rule. Record answers internally; **surface only the No answers**:
 - [ ] No content overlap with other rules? (a rule that **declares** another as 正本 and
   points at it is NOT overlap — that is the intended layering. Copied prose is.)
 - [ ] No overlap with skills / MEMORY.md / CLAUDE.md? (the division "principle in the rule,
-  detail in the skill, `See skill:` bridging them" is NOT overlap — a full procedure
+  detail in the skill, a ``skill: `name` `` pointer bridging them" is NOT overlap — a full procedure
   residing in the rule body **is**, and signals Demote)
 - [ ] All cross-references resolve? (read off the Phase 1 results)
-- [ ] Technical references current? (if CLI flags / APIs / tool names look stale, confirm
-  with WebSearch)
+- [ ] Technical references current? **Unconditionally verify** every artifact the rule
+  names — `ls` each referenced path (skills, agents, hooks, scripts) and run `--help` /
+  version checks for named CLI flags. "Verify if it looks stale" is banned phrasing:
+  the condition is what dilutes. Deterministically checkable claims get deterministic
+  checks, every time.
 - [ ] Not yet absorbed by the substrate or the conversation? (downward: does the harness —
   system prompt, tool descriptions, native plan/review machinery — now cover this domain
   natively? inward: is the principle so internalized that behavior no longer depends on the
@@ -139,7 +142,7 @@ the user's). An absorbed rule is more urgent than an unused skill — the unused
 sleeps harmlessly; the absorbed rule actively overrides evolving harness defaults.
 
 **README.md special case**: `rules/README.md` is an index, not a rule — it gets only the
-tree-consistency and currency checks, and a two-value verdict (Keep or Update).
+table-consistency and currency checks, and a two-value verdict (Keep or Update).
 
 ## Phase 3 — Summary
 
@@ -161,13 +164,13 @@ any point; `skip` records the verdict in the ledger unactioned.
   applied edit changes the rule's reason-to-exist or expiry conditions, refresh its
   `rationale:` / `review-when:` comments in the same diff (ADR-0021).
 - **Demote to skill**: hand off skill creation to `skill-creator`; then reduce the rule
-  to a 1–3 line principle + `See skill:` pointer.
+  to a 1–3 line principle + a ``skill: `name` `` pointer.
 - **Dissolve / Retire**: per file, present (1) the absorption evidence or defect, (2) what
   covers the need instead (Dissolve: the named harness feature; Retire: the replacement
   rule/skill), (3) removal impact — **other rules referencing it and the public repo copy**.
   Act only after the user confirms. For Dissolve, offer to record the why via `adr-writer`
-  (akc-cycle.md: "record the why in an ADR, not a standing rule").
-- **Sync README.md**: any file added/renamed/removed → update the tree and its one-line
+  (akc-cycle.md 「ADR の扱い」).
+- **Sync README.md**: any file added/renamed/removed → update the table row and its one-line
   description (pairs with the Phase 1 consistency check).
 - **Update the ledger**: Read `results.json` → merge this run's verdicts → Write it back
   (`evaluated_at` = real UTC from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode,
@@ -180,7 +183,7 @@ any point; `skip` records the verdict in the ledger unactioned.
 Every `reason` must be **self-contained** — decision-enabling on its own. "unchanged"
 alone is banned. For non-Keep verdicts, cite the No answers (question + one-line evidence):
 
-- **Demote**: name what stays and what moves. Bad: `"Too detailed"` / Good: `"109 lines of pytest fixture recipes; only the 80%-coverage principle changes per-session behavior. Keep 3 lines + pointer, move recipes to python-patterns skill."`
+- **Demote**: name what stays and what moves. Bad: `"Too detailed"` / Good: `"109 lines of pytest fixture recipes; only the 80%-coverage principle changes per-session behavior. Keep 3 lines + pointer, move recipes to the language-specific skill."`
 - **Dissolve**: name the absorber. Bad: `"Not needed anymore"` / Good: `"Harness plan mode now enforces the plan-file workflow natively (system prompt §Plan Workflow); the rule's manual checklist duplicates and predates it. ADR the why, then delete."`
 - **Merge**: name the target + what to integrate. Bad: `"Overlaps"` / Good: `"§Retry duplicates debugging.md's Retry with Context; only the backoff constants are unique — fold them into debugging.md L40."`
 - **Keep** (carry-forward in `changed` mode): restate the rationale. Bad: `"Unchanged"` / Good: `"Content unchanged. 42-line fix-chain gate referenced by planning.md's 2-intervention model; no absorber in current harness."`
@@ -217,6 +220,8 @@ not a script. Created on the first run — do not pre-seed an empty file.
 - `skill-comply` — measures whether rules are actually *followed* (dynamic). rules-stocktake stays static: never issue a compliance-based verdict without a skill-comply run; existing skill-comply results may serve as Stage 2 evidence (read, never require).
 - `generation-audit` — on a model-generation change, collects runtime-layer evidence (conflict / redundancy / drift classification against the live system prompt and tool descriptions) and hands the rules slice here as Stage 2 evidence, same read-never-require contract as skill-comply results.
 - `config-gc` — whole-config GC across hooks/permissions/MCP; rules-stocktake judges rule *quality*.
+- `agent-stocktake` — the same audit for `~/.claude/agents/`; rules-stocktake covers `~/.claude/rules/`.
+- `skill-health` — the mechanical dangling-reference scan across skills; its output feeds the Phase 1 integrity checks.
 - `skill-creator` — handoff target for the skill-creation half of Demote.
 - `adr-writer` — records the why of a Dissolve.
 - `harness-sync` — syncs surviving `origin: shimo4228` rules to the public repo after edits/retirements.
@@ -227,7 +232,7 @@ not a script. Created on the first run — do not pre-seed an empty file.
 The two-stage binary-question design (screen → verdict pressure-test, holistic verdict,
 no score aggregation) is inherited from skill-stocktake and follows the
 checklist-decomposition evaluation line: BinEval "Ask, Don't Judge"
-([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)), CheckEval (arXiv:2403.18771),
+([arXiv:2606.27226](https://arxiv.org/abs/2606.27226), as-of 2026-09-15), CheckEval (arXiv:2403.18771),
 TICK (arXiv:2410.03608) — over-decomposition degrades correlation on holistic quality,
 hence six questions and no score. The absorption question and the Dissolve verdict
 implement `rules/common/akc-cycle.md` — the Curate checks (redundancy / staleness /

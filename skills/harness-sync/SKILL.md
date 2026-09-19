@@ -1,6 +1,6 @@
 ---
 name: harness-sync
-description: "ローカル harness (~/.claude) の origin-filtered コンポーネントを公開 repo (claude-harness 集約 repo + 単独 skill repo 群) へ一方向同期する。Use when the user says 「ハーネスを公開 repo に同期して」「claude-harness を更新して」「スキルを公開して」「skill repo を同期して」 or invokes /harness-sync. 収集 → secret scan → subtree 置換は決定論的 script が行い、diff レビュー・README/llms.txt の整合・コミットは会話で行う。NOT for: 公開 repo から ~/.claude への逆方向取り込み、ECC 等外部 origin の公開判断、汎用化 fork を持つ curated skill repo (script 同期は汎用化を壊すため手動 curation)。"
+description: "ローカル harness (~/.claude) の origin-filtered コンポーネントを公開 repo (claude-harness 集約 repo + 単独 skill repo 群) へ一方向同期する。Use when the user says 「ハーネスを公開 repo に同期して」「claude-harness を更新して」「スキルを公開して」「skill repo を同期して」 or invokes /harness-sync. NOT for: 公開 repo から ~/.claude への逆方向取り込み、ECC 等外部 origin の公開判断、汎用化 fork を持つ curated skill repo (script 同期は汎用化を壊すため手動 curation)。"
 user-invocable: true
 origin: shimo4228
 ---
@@ -93,18 +93,12 @@ exit 3 は**リンク切れ専用ではない** — gate scope は `adr_index` /
 文書のまま残る。つまり skill を 1 つ退役させるたび、AI 向け導線だけが消えた path を
 指し続ける — 人間の README と違い、この故障は読んで気づく人がいない。
 
-実例（2026-08-27 に検出、RFC-0012）: `en-to-ja-translation` / `ja-to-en-translation` /
-`substack-publishing` の 3 skill が harness 側で退役した後、集約 repo の `llms.txt` は
-`skills/<name>/SKILL.md` を指したままだった。llms-full.txt 側のリンクも同じ検査が
-解決する（同 RFC で追加）。
-
 **この step は暫定（interim）**。不変条件は「publish されない component を AI 向け doc が
 指さない」で、その roster を機械で知っているのは harness ではなく公開 repo の
 `scripts/sync-from-local.sh`（origin filter から README の表を GENERATED marker 間へ
 再生成し、secret / frontmatter / allowlist の 4 箇所で abort する）。**正しい置き場所は
 その abort 連鎖の 5 番目**か、より深くは llms.txt の component 行自体を GENERATED marker
-にすること — 後者は検出でなくクラスごと消える。ここが checklist 側にあるのは RFC-0012 の
-作業境界（ミラー repo を触らない）の産物であって設計判断ではない。**agent を経由しない
+にすること — 後者は検出でなくクラスごと消える（RFC-0012）。**agent を経由しない
 sync はこの検査を通らない。**
 
 ### 5. コミット
@@ -157,9 +151,9 @@ root files 不可侵・commit しない、は共通。
 `akc-cycle` は **rule + Claude Code plugin** repo。**rule は sync 対象外**: repo が自己完結版
 (self-contained edition) を所有し、harness 側はポインター版 — 別内容が意図
 (ADR-0018 / ADR-0035 「圧縮版を配布 repo へ同期しない」)。script は固定
-allowlist 方式: 9 skills (AKC cycle phase binding: search-first / learn-eval /
-skill-stocktake / skill-health / rules-stocktake / rules-distill / skill-comply /
-context-sync / repo-asset-stocktake) + 1 agent (adr-writer) を
+allowlist 方式: 対象 skills / agents の正本は script の `SKILLS=` / `AGENTS=` 配列（AKC cycle
+phase binding の skill 群 + adr-writer）。allowlist に harness 側で退役した component が
+残っていると sync は abort する（codemap-writer は ADR-0062 で退役 — allowlist から外す）。
 staging → prune → YAML frontmatter 検証 → secret scan → subtree 置換 (skills/ agents/)。
 allowlist の component が harness に無い / origin marker が無いと abort (silently drop
 しない)。**`.claude-plugin/plugin.json` / `marketplace.json` と `rules/common/akc-cycle.md`
@@ -167,7 +161,7 @@ allowlist の component が harness に無い / origin marker が無いと abort
 plugin.json を repo 側で手動 bump する。plugin は rules を運べない (Claude Code plugin
 仕様) ため、rule file は plugin payload 外の copy-install 経路のまま。
 
-`herdr-toolkit` (2026-08-03 公開) は同型の **skills-only plugin variant**: 固定 allowlist は
+`herdr-toolkit` は同型の **skills-only plugin variant**: 固定 allowlist は
 2 skills (herdr-delegate / spawn-session) のみで rule / agent 収集ブロックを持たない。
 外部 origin の `herdr` skill 本体は Herdr 自身の integration が配るため対象外
 (ADR-0036)。
@@ -196,25 +190,24 @@ skill repo を GitHub 公開する際の規約（正本）:
   ~/.claude/agents/` または `install.sh` を実行）。
 - **公開用 packaging metadata は local 正本に持たせる**: `compatibility:` 等の公開向け
   frontmatter を repo 側で足すと、丸ごと置換のたびに消える（= 恒常的な偽 drift 源）。
-  local SKILL.md の frontmatter に持たせる — Claude Code は未知キーを無視するので無害
-  （learn-eval が先例、2026-07-03 第二波で全 skill repo に適用済み）。
+  local SKILL.md の frontmatter に持たせる — Claude Code は未知キーを無視するので無害。
 
 ## Repo mapping (project-specific)
 
 | target | 種別 | script | 正本 |
 |---|---|---|---|
 | `~/MyAI_Lab/claude-harness` ([repo](https://github.com/shimo4228/claude-harness)) | 集約 (skills + agents + rules + ADRs) | `scripts/sync-from-local.sh` (集約版) | `~/.claude` |
-| `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を 2026-07-09 retire — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `search-first` 等の消費 skill — 常駐の Signal-first 節は 2026-07-31 に退役、ADR-0026) |
+| `~/MyAI_Lab/signal-first-research` ([repo](https://github.com/shimo4228/signal-first-research)) | 単独 skill | script sync 停止 (local 正本を retire 済み — abort する) | なし (repo 凍結 — AKC の citable design-pattern artifact として存続。原則の正本は `search-first` 等の消費 skill、ADR-0026) |
 | `~/MyAI_Lab/citation-sync` ([repo](https://github.com/shimo4228/citation-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/paper-lab/.claude/skills/citation-sync`（RFC-0019） |
 | `~/MyAI_Lab/generation-audit` ([repo](https://github.com/shimo4228/generation-audit)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/generation-audit` |
 | `~/MyAI_Lab/agent-stocktake` ([repo](https://github.com/shimo4228/agent-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/agent-stocktake` |
-| `~/MyAI_Lab/human-gate` ([repo](https://github.com/shimo4228/human-gate)) | retired rule artifact | sync abort（2026-08-02 に local scaffold を退役） | なし（公開記録として凍結） |
+| `~/MyAI_Lab/human-gate` ([repo](https://github.com/shimo4228/human-gate)) | retired rule artifact | sync abort（local scaffold は退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/rules-stocktake` ([repo](https://github.com/shimo4228/rules-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-stocktake` |
 | `~/MyAI_Lab/learn-eval` ([repo](https://github.com/shimo4228/learn-eval)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/learn-eval` |
 | `~/MyAI_Lab/rules-distill` ([repo](https://github.com/shimo4228/rules-distill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/rules-distill` |
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
-| `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (9 skills + 2 agents) + repo 所有 rule (自己完結版、sync 対象外 — 2026-09-01 二版化) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist) | 対象 skills/agents のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
+| `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (skills + agents、固定 allowlist) + repo 所有 rule (自己完結版、sync 対象外) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist) | 対象 skills/agents のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
 | `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/herdr-delegate` + `~/.claude/skills/spawn-session` |
 | `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
@@ -227,8 +220,8 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/codex-review` |
 | `~/MyAI_Lab/repo-asset-stocktake` ([repo](https://github.com/shimo4228/repo-asset-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/repo-asset-stocktake` |
 | `~/MyAI_Lab/llm-as-judge` ([repo](https://github.com/shimo4228/llm-as-judge)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llm-as-judge` |
-| `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/paper-lab/.claude/skills/paper-ecosystem` + 同 `paper-writing`（RFC-0019。同梱 agent 5 本の正本は `~/MyAI_Lab/paper-lab/.claude/agents/`、script の対象外で手動 diff） |
-| `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem`（RFC-0019。同梱 agent 6 本の正本は `~/MyAI_Lab/zenn-content/.claude/agents/`、script の対象外で手動 diff） |
+| `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/paper-lab/.claude/skills/paper-ecosystem` + 同 `paper-writing`（RFC-0019。同梱 agents の正本は `~/MyAI_Lab/paper-lab/.claude/agents/`、script の対象外で手動 diff） |
+| `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem`（RFC-0019。同梱 agents の正本は `~/MyAI_Lab/zenn-content/.claude/agents/`、script の対象外で手動 diff） |
 
 共通 env: origin filter `shimo4228` (`HARNESS_SYNC_ORIGIN`)、source (`HARNESS_SYNC_SOURCE`)。source の既定は
 `~/.claude` だが、正本を移設した 3 repo（citation-sync / paper-ecosystem / writing-ecosystem）だけは
@@ -239,11 +232,11 @@ script 側の既定が移設先を指す（RFC-0019 手段 A）。既定以外�
 skill 本体の drift は script が拾う。手動 diff の対象は **script が置換しない同梱物だけ**:
 
 - **agents/*.md**（`claude-skill-paper-ecosystem` / `claude-skill-writing-ecosystem` の
-  同梱 subagent。正本は writing 系 6 本が `~/MyAI_Lab/zenn-content/.claude/agents/`、
-  paper 系 5 本は `~/MyAI_Lab/paper-lab/.claude/agents/`）
+  同梱 subagent。正本は writing 系が `~/MyAI_Lab/zenn-content/.claude/agents/`、
+  paper 系が `~/MyAI_Lab/paper-lab/.claude/agents/`）
 - **hook script**（例: skill-stocktake の `hooks/log-skill-usage.sh`。正本 `~/.claude/hooks/`）
 - **repo root の `inspiration.md`**（repo 固有文書。harness に正本なし — diff 対象外だが、
-  `skills/<name>/` 配下に置くと置換で消えるため root に置く。2026-07-03 に 3 repo で root へ移動済み）
+  `skills/<name>/` 配下に置くと置換で消えるため root に置く）
 
 **script を置かない repo**: 汎用化 fork の curated repo（`code-and-llm-collaboration`,
 `llm-agent-security-principles` — 意図的に乖離、diff 同期しない）と、harness に正本を

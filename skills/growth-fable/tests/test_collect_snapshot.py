@@ -13,8 +13,14 @@ from scripts import collect_snapshot as cs
 NOW = datetime(2026, 9, 8, 3, 0, tzinfo=UTC)
 TODAY = NOW.date()
 
+# The collector's JSON values are `JsonDict = dict[str, object]`, so every nested read below is
+# `object` to the type checker. Narrow through the collector's own boundary helpers
+# (scripts/collect_snapshot.py:49-55) in one place instead of scattering casts across assertions.
+_d = cs.as_dict  # object -> JsonDict
+_l = cs.as_list  # object -> list[object]
 
-def _row(d: str, views: int, clones: int) -> dict:
+
+def _row(d: str, views: int, clones: int) -> cs.JsonDict:
     return {
         "date": d,
         "views": {"count": views, "uniques": 1},
@@ -33,11 +39,11 @@ def test_traffic_windows_anchor_on_last_data_date_not_today():
     assert out["last_date"] == "2026-09-05"
     assert out["staleness_days"] == 3
     # current window = 08-23 .. 09-05 (14 days): 9 Aug days ×1 + 5 Sep days ×3 = 24 views
-    assert out["current"]["views"] == 24
-    assert out["current"]["days"] == 14
+    assert _d(out["current"])["views"] == 24
+    assert _d(out["current"])["days"] == 14
     # previous window = 08-09 .. 08-22: 14 Aug days ×1
-    assert out["previous"]["views"] == 14
-    assert out["previous"]["clones"] == 28
+    assert _d(out["previous"])["views"] == 14
+    assert _d(out["previous"])["clones"] == 28
 
 
 @pytest.mark.unit
@@ -70,21 +76,24 @@ def test_star_velocity_empty():
 # ----------------------------------------------------------------------------- series
 @pytest.mark.unit
 def test_merge_series_dedupes_same_day_and_sorts():
-    prev = [{"date": "2026-09-07", "count": 60}, {"date": "2026-09-01", "count": 58}]
+    prev: list[cs.JsonDict] = [
+        {"date": "2026-09-07", "count": 60},
+        {"date": "2026-09-01", "count": 58},
+    ]
     out = cs.merge_series(prev, date(2026, 9, 7), 61)
     assert out == [{"date": "2026-09-01", "count": 58}, {"date": "2026-09-07", "count": 61}]
 
 
 @pytest.mark.unit
 def test_merge_series_caps_oldest():
-    prev = [{"date": f"2026-01-{d:02d}", "count": d} for d in range(1, 11)]
+    prev: list[cs.JsonDict] = [{"date": f"2026-01-{d:02d}", "count": d} for d in range(1, 11)]
     out = cs.merge_series(prev, date(2026, 2, 1), 99, cap=3)
     assert [p["date"] for p in out] == ["2026-01-09", "2026-01-10", "2026-02-01"]
 
 
 @pytest.mark.unit
 def test_series_delta_uses_point_at_or_before_target_and_none_when_absent():
-    series = [
+    series: list[cs.JsonDict] = [
         {"date": "2026-08-30", "count": 58},
         {"date": "2026-09-05", "count": 60},
         {"date": "2026-09-08", "count": 61},
@@ -169,7 +178,7 @@ def _responses(user: str = "u") -> dict[str, object]:
 @pytest.mark.unit
 def test_build_snapshot_assembles_sources_and_series(tmp_path: Path):
     api = FakeApi(_responses())
-    prev = {
+    prev: cs.JsonDict = {
         "followers": {"series": [{"date": "2026-09-01", "count": 58}]},
         "stars_total": {"series": []},
     }
@@ -183,21 +192,25 @@ def test_build_snapshot_assembles_sources_and_series(tmp_path: Path):
         referrers=True,
         mentions=True,
     )
-    assert snap["followers"]["count"] == 61
-    assert snap["followers"]["delta_7d"] == 3
-    assert snap["followers"]["delta_30d"] is None
-    assert snap["followers"]["series"][-1] == {"date": "2026-09-08", "count": 61}
-    assert snap["stars_total"]["count"] == 6  # forks excluded
+    followers = _d(snap["followers"])
+    assert followers["count"] == 61
+    assert followers["delta_7d"] == 3
+    assert followers["delta_30d"] is None
+    assert _l(followers["series"])[-1] == {"date": "2026-09-08", "count": 61}
+    assert _d(snap["stars_total"])["count"] == 6  # forks excluded
     assert snap["tracked_repos"] == ["alpha"]
-    alpha = snap["repos"]["alpha"]
+    repos = _d(snap["repos"])
+    alpha = _d(repos["alpha"])
     assert alpha["stars_7d"] == 1 and alpha["stars_30d"] == 1
-    assert alpha["referrers_14d"][0]["referrer"] == "github.com"
-    assert alpha["code_mentions"]["total"] == 4
-    assert '"github.com/u/alpha" -user:u' == alpha["code_mentions"]["query"]
-    assert alpha["traffic"]["available"] is True and alpha["traffic"]["last_date"] == "2026-08-31"
-    assert snap["traffic_total_tracked"]["views_14d"] == 28
+    assert _d(_l(alpha["referrers_14d"])[0])["referrer"] == "github.com"
+    mentions = _d(alpha["code_mentions"])
+    assert mentions["total"] == 4
+    assert '"github.com/u/alpha" -user:u' == mentions["query"]
+    traffic = _d(alpha["traffic"])
+    assert traffic["available"] is True and traffic["last_date"] == "2026-08-31"
+    assert _d(snap["traffic_total_tracked"])["views_14d"] == 28
     assert snap["top_movers_14d"] == [{"repo": "alpha", "stars_14d": 1, "stars": 6}]
-    assert "beta" in snap["repos"] and "tracked" not in snap["repos"]["beta"]
+    assert "beta" in repos and "tracked" not in _d(repos["beta"])
     assert snap["errors"] == []
     # search is never paginated; listing and stargazers are
     assert ("search/code", False) in api.calls
@@ -220,13 +233,13 @@ def test_build_snapshot_records_errors_and_nulls_instead_of_fabricating(tmp_path
         referrers=True,
         mentions=False,
     )
-    alpha = snap["repos"]["alpha"]
+    alpha = _d(_d(snap["repos"])["alpha"])
     assert alpha["stars_7d"] is None and alpha["referrers_14d"] is None
     assert "code_mentions" not in alpha
-    scopes = {e["scope"] for e in snap["errors"]}
+    scopes = {_d(e)["scope"] for e in _l(snap["errors"])}
     assert scopes == {"alpha:stargazers", "alpha:referrers"}
     assert snap["top_movers_14d"] == []  # no velocity → no movers, not zero movers
-    assert snap["followers"]["delta_7d"] is None  # first run: no history
+    assert _d(snap["followers"])["delta_7d"] is None  # first run: no history
 
 
 @pytest.mark.unit
@@ -242,15 +255,15 @@ def test_build_snapshot_without_hub_dir_has_no_traffic_fields():
         referrers=False,
         mentions=False,
     )
-    assert "traffic" not in snap["repos"]["alpha"]
-    assert snap["sources"]["traffic"] is None
-    assert snap["traffic_total_tracked"]["views_14d"] == 0
+    assert "traffic" not in _d(_d(snap["repos"])["alpha"])
+    assert _d(snap["sources"])["traffic"] is None
+    assert _d(snap["traffic_total_tracked"])["views_14d"] == 0
 
 
 @pytest.mark.unit
 def test_build_snapshot_user_failure_yields_null_followers_and_keeps_series():
     api = FakeApi(_responses(), fail={"users/u"})
-    prev = {"followers": {"series": [{"date": "2026-09-01", "count": 58}]}}
+    prev: cs.JsonDict = {"followers": {"series": [{"date": "2026-09-01", "count": 58}]}}
     snap = cs.build_snapshot(
         api,
         user="u",
@@ -261,6 +274,7 @@ def test_build_snapshot_user_failure_yields_null_followers_and_keeps_series():
         referrers=False,
         mentions=False,
     )
-    assert snap["followers"]["count"] is None
-    assert snap["followers"]["series"] == [{"date": "2026-09-01", "count": 58}]
-    assert any(e["scope"] == "user" for e in snap["errors"])
+    followers = _d(snap["followers"])
+    assert followers["count"] is None
+    assert followers["series"] == [{"date": "2026-09-01", "count": 58}]
+    assert any(_d(e)["scope"] == "user" for e in _l(snap["errors"]))

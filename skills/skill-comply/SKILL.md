@@ -1,9 +1,9 @@
 ---
 name: skill-comply
-description: Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines
+description: Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines. Use when a rule's or skill's real adherence is in question or right after adding one — 「この rule 守られてる？」「skill の発火率を測って」「/skill-comply」. NOT for — 静的な品質棚卸し（→ skill-stocktake / rules-stocktake）、参照整合性の検査（→ skill-health）、with/without ablation（→ skill-creator §5）。
 compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
-tools: Read, Bash
+user-invocable: true
 ---
 
 # skill-comply: Automated Compliance Measurement
@@ -32,28 +32,23 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 ## Usage
 
 ```bash
-# 前提: scripts/ と pyproject.toml はこのスキルのディレクトリにあり、
-# `python -m scripts.run` の解決は cwd 依存のため、まずスキルディレクトリへ cd する
-# （`uv run --project` だけでは module 解決できないことを 2026-07-13 に実測確認）
-cd ~/.claude/skills/skill-comply
-
 # Full run
-uv run python -m scripts.run ~/.claude/rules/common/testing.md
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run ~/.claude/rules/common/testing.md
 
 # Dry run (no cost, spec + scenarios only)
-uv run python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
 
 # Custom models
-uv run python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
 
 # 直列に戻す（レートリミットに当たったとき）
-uv run python -m scripts.run --concurrency 1 <path>
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run --concurrency 1 <path>
 
 # Bash を要する spec のみ (既定は off — 下の「信頼境界」を読んでから)
-uv run python -m scripts.run --allow-bash <path>
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run --allow-bash <path>
 
 # 保存済み spec を再利用して run 間比較 (LLM 再生成をスキップ)
-uv run python -m scripts.run --spec results/<skill-name>.spec.yaml <path>
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run --spec results/<skill-name>.spec.yaml <path>
 ```
 
 **spec の固定と run 間比較**: spec は「試験問題」。LLM 生成のたびに required steps 数も
@@ -80,10 +75,10 @@ scenario の非決定性は現状スコープ外。
 
 ```bash
 # 進捗が見える。stdout だけが tail に入り、stderr は端末へ直接届く
-uv run python -m scripts.run <path> | tail -40
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run <path> | tail -40
 
 # 進捗もログに残したい
-uv run python -m scripts.run <path> 2>&1 | tee run.log
+uv run --project ~/.claude/skills/skill-comply python -m scripts.run <path> 2>&1 | tee run.log
 ```
 
 **`2>&1 | tail -40` にすると何も見えなくなる。** `tail` は `-f` なしだと
@@ -99,8 +94,6 @@ uv run python -m scripts.run <path> 2>&1 | tee run.log
 
 対象がどこにあるかで、子から見えるかどうかが変わる。**見えないまま測ると、
 skill 遵守ではなく「skill を持たないエージェントの素の挙動」を測ることになる。**
-2026-08-02 まではそれが黙って起きていた（実例: project skill の run で
-`Skill(...)` → `Unknown skill` のまま 75% / 50% / 25% が出ていた）。
 
 | 対象 | 子から見えるか | 測定 |
 |---|---|---|
@@ -137,13 +130,11 @@ Glob / Grep を持つ子に有効な命令を書ける。Tier 1 と Tier 2 の�
 対象ファイルの本文は untrusted data として扱う（2026-07-25 security scan F2/F3/F4/F18）。
 
 - **`setup_commands` は実行されない。** `mkdir` / `touch` の 2 語彙だけを pathlib で
-  解釈し、パスは sandbox 内に解決されることを検証する。それ以外は拒否して stderr に
-  出す。以前は `shlex.split` + `subprocess` だったため、community 由来スキル 1 本で
-  ホスト上の任意コマンド実行になっていた
-- **パス検証は `..` を先に潰してから symlink を解決する。** 2026-08-01 まで、存在しない
-  要素の後ろに置かれた `..`（`a/../../elsewhere/x`）が解決されずに残り、`Path.parents` が
-  それをただのディレクトリ名として扱って sandbox 外への作成を通していた。
-  sandbox は直前に消して作り直されるので最初の要素は必ず存在せず、抜け道は常に開いていた
+  解釈し、パスは sandbox 内に解決されることを検証する。それ以外は拒否して stderr に出す
+- **パス検証は `..` を先に潰してから symlink を解決する。** sandbox は直前に消して
+  作り直されるので最初の要素は必ず存在せず、存在しない要素の後ろに置かれた `..`
+  （`a/../../elsewhere/x`）は解決されずに残る。`Path.parents` はそれをただの
+  ディレクトリ名として扱うので、潰す前に判定すると sandbox 外への作成を通す
 - **子のツールは `permissions.deny` で外す。`--allowedTools` では外れない。**
   `claude --help` の言うとおり `--allowedTools` は「allow するツール名の列」＝自動承認
   リストであって、載せなかったツールは**消えない**。2026-08-02 に Claude Code 2.1.220 で
@@ -169,15 +160,14 @@ Glob / Grep を持つ子に有効な命令を書ける。Tier 1 と Tier 2 の�
   1 回だけ解決して追従する — 封じ込め判定を毎回 link 越しにやり直さない
 - **`<sandbox>/.claude/` と `<sandbox>/.git/` はツール専有。監査対象由来の指定は受け付けない。**
   sandbox は子にとっての**プロジェクトルート**で、そこでは一部のファイル名が
-  「置いてあるだけ」ではなく読み込まれる。実測（2026-08-02）: 一度も信頼していない
-  workspace でも `<sandbox>/.claude/settings.json` の `hooks.SessionStart` は
-  **無言でホスト上のコマンドを実行した**（同じファイルの `permissions.allow` は
-  「信頼されていない」と明示的に拒否されるのに）。`<sandbox>/CLAUDE.md` も読まれて従われる。
+  「置いてあるだけ」ではなく読み込まれる — 信頼していない workspace でも
+  `<sandbox>/.claude/settings.json` の `hooks.SessionStart` は**無言でホスト上の
+  コマンドを実行し**、`<sandbox>/CLAUDE.md` も読まれて従われる。
   子自身の Write は substrate が止めるが、**このツールの pathlib 書き込みは止まらない**ので
   ここで塞ぐ。`CLAUDE.md` / `AGENTS.md` / `.mcp.json` / `settings.json` /
   `settings.local.json` / `.gitignore` は深さを問わず拒否。
   **判定は case-fold する** — APFS は case-insensitive なので `.CLAUDE/Settings.json` は
-  書けてしまえば `.claude/settings.json` として読まれる（2026-08-02 にすり抜けを実測して修正）。
+  書けてしまえば `.claude/settings.json` として読まれる。
   `.git/` を含めるのは、`_setup_sandbox` が `git init` を先に走らせるので書き込み可能で、
   `core.fsmonitor` / `core.pager` / `alias.*` が**実行ビット無しで git が実行する設定文字列**
   だから（実測: `files:` で `.git/config` を置き、`git status` でホスト上のコマンドが走った。

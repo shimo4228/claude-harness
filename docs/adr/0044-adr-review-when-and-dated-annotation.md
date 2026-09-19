@@ -68,6 +68,11 @@ scaffold は溶ける）なので、ADR を軽く持つことに構造上の障�
    これは main loop の明示ステップであり、`adr-writer` agent は既存 ADR に触らない
    （[ADR-0016](./0016-writer-agents-render-not-decide.md) 不変）。Status enum に `weakened`
    は足さない。
+
+   > **注記（2026-09-19, [ADR-0072](./0072-retire-adr-writer-agent-and-narrow-adr-filing.md)）**: `adr-writer`
+   > agent は退役し、新 ADR も注記も skill `adr-writer` の主ループが書く。「注記は main loop の明示
+   > ステップ」は変わらず、template の担い手は `docs/adr/README.md` と skill Step 1（Context L32 /
+   > Consequences L175 の `agents/adr-writer.md` は存在しない）。
 4. 読み方 protocol を拘束箇所へ入れる。`rules/common/akc-cycle.md` の「ADR も足場である」節に
    「ADR は日付つき仮説。Date と Review-when（無い旧 ADR は Context の前提と Date で重み）を
    先に見る。失効条件が発火した・前提が消えた ADR に拘束力は無い — 衝突は supersede 候補として
@@ -103,6 +108,11 @@ grill-me / adr-reviewer / plan が Review-when と Date を読まずに旧 ADR �
 節を Consequences 内の任意項目へ降格する（0041/0043 の形へ戻す）ことを検討する。substrate が
 決定記録の鮮度管理（日付・失効条件の照合）を native に持ったら downward dissolution の対象。
 
+> **注記（2026-09-14, ADR-0065）**: 第 1 トリガー（rule 層の protocol が効いていない）が著者観測で
+> 発火。対処は本節が挙げた「命令形に強める / planning.md へ移す」の逆で、読み方 protocol と
+> 拘束箇所の配線を撤去した（Decision 4 の配線 5 箇所のうち akc-cycle は「ADR の扱い」3 行に、
+> grill-me / AGENTS.md / architect / README template は参照句を削除）。Decision 1・2・3・5・6 は現行。
+
 ## Alternatives Considered
 
 ### 何もしない（`akc-cycle.md` の宣言だけで運用を続ける）
@@ -129,6 +139,10 @@ enum を増やし状態遷移の churn を生む。日付つき注記が同じ�
 
 未決 — 再訪条件: Review-when 導入後も「ADR に縛られる」観測が続いたら再訪する。~/.claude は
 single-mind scaffold なので溶かすこと自体は可能。
+
+> **注記（2026-09-14, ADR-0065）**: 再訪条件が発火した（著者観測 2026-09-14、根拠の頻度は
+> ADR > memory > Build-or-not 4 問）。先に取った段は「変更前に ADR を確認せよ」型の配線 5 箇所の
+> 撤去と memory 却下記録の削除。廃止案は ADR-0065 Review-when の第 1 項へ引き継ぎ、未決のまま。
 
 ## Consequences
 

@@ -49,7 +49,11 @@ Herdr の pane に Codex 等の対話セッションを立て、指示書ファ�
   相手はこの repo の CLAUDE.md を読むとは限らない — 必要な不変条件は指示書に転記する）
 - **検証手順**（build / test / lint のコマンド列）と「自分で green にしてから完了報告」
 - **`git commit はしないこと`**（ワーキングツリー残置。検収とコミットはこちら）
-- sleep 禁止・決定論などテスト規律（`rules/common/testing.md` から該当分を転記）
+- **テスト規律を指示書に転記する**（相手の repo 知識に依存させない）:
+  待ち合わせは固定長 `sleep` でなく条件待ち（poll / ready 判定）で書く、
+  テストは実行順・他テストの残留状態に依存せず単体でも suite でも同じ結果を出す、
+  coverage は 80% 以上で状態を変える E2E / integration は production に向けない
+  （後者の正本は `rules/common/testing.md`）
 - **サンドボックスで実行できない検証の代替**を指定する — Codex の seatbelt からは
   iOS Simulator（CoreSimulatorService）に接続できない（2026-07-31 実測）。
   simulator を要するテストは「コンパイル検証（`xcodebuild build-for-testing`）までを
@@ -66,24 +70,22 @@ herdr agent prompt <name> "指示書が <指示書の絶対パス> にある。�
 ```
 
 `--ignore-user-config --ignore-rules` を外さない。`~/.codex/config.toml` の
-`approvals_reviewer=auto_review` と `.rules` の `git push` / `uv run` pre-approve が
+`approvals_reviewer=auto_review` と `~/.codex/rules/*.rules` の `git push` / `uv run` pre-approve が
 sandbox escalation を自動承認しうる（2026-08-22 security-reviewer HIGH。`codex-review` が
 read-only seam に同じ pin を入れた根拠と同一で、write 権限を渡すここでは効き方がより大きい）。
 
-`--wait` は使わない（foreground の Bash が待ち続ける形になり、途中経過に手を出せなくなる）。
-**vendor skill `herdr` は「For normal agent work, `--wait` is enough」と書いているが、
-それは実測で否定されている** — `agent start` の `interactive_ready: true` も
-`agent_status` も信用しない（2026-08-01 に `agent prompt` 成功直後の `agent read` が
-`agent_not_found` を返した）。確実な信号は「esc to interrupt」表示の消失。
-vendor file は origin を反転させずに編集できないので、反証はここに置く。
-監視は次項の形で行う。
+kickoff の prompt は `--wait --timeout <ms>` の形で送る（`herdr agent prompt <name> "<text>"
+--wait --timeout 180000` — spawn-session の Execution 5 と同形）。`--timeout` 無しの `--wait` は
+使わない（foreground の Bash が無期限に待ち、途中経過に手を出せなくなる）。`--wait` が返す
+settled 状態は**着弾の確認まで**に使い、完了の信号にはしない（vendor skill `herdr` の
+「For normal agent work, `--wait` is enough」は短い単発仕事の話。委譲した実装の完了判定は §3 の
+画面監視で行う。vendor file は origin を反転させずに編集できないので、反証はここに置く）。
 
 **prompt を送ったら、必ず `herdr agent read` で着弾を目視する。** レスポンスは成功を保証しない
 （2026-08-01 実測）: `agent start` が `interactive_ready: true` を返し、続く `agent prompt` も
 `agent_prompted` を返したのに、pane の実体は **codex が起動時に自己アップデートして exit した後の
 シェルプロンプト**で、直後の `agent read` が `agent_not_found` を返した。
 `Update ran successfully! Please restart Codex.` が出ていたら、もう一度 `agent start` からやり直す。
-既知の「working 中に `idle` が返る」フラッピングとは別種で、**プロセスが無いのに成功が返る**ケース。
 
 ### 3. 完了監視 — status ではなく画面を見る
 

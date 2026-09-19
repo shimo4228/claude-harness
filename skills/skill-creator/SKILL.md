@@ -39,20 +39,22 @@ skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全�
 
 ## 3. 書き方 — Fable 向け
 
-- **判断基準と罠を書く。手順の羅列・反復強調・トリビアルな禁止列挙は書かない** —
-  禁止は原理原則へ畳む。ただし grep 可能な検出語・自己執行力のある禁止・数値閾値は
-  畳まない（抽象化すると機能を失う — ADR-0058）。迷ったら generation-audit の
-  4 観点（意図 / 根拠 / 鮮度 / 失効条件）で各行を見る
+- **既定は肯定形で書く。** 判断基準と罠を書き、やめる項目は本文から消す。禁止を書けるのは、
+  対象が grep 可能な具体的動作で、既定挙動が逆だと観測されていて、機械ゲートが無いとき —
+  理由を 1 句添える。文体・内部過程への禁止は肯定形に言い換える（否定形は対象を選択肢として
+  呼び戻す。ADR-0065 / ADR-0070）。外部 repo 由来の未改変 prompt（origin が外部）は写しのまま置く。
+  grep 可能な検出語・自己執行力のある規則・数値閾値は原文のまま残し（抽象化すると機能を
+  失う — ADR-0058）、それ以外の制約は原理原則へ畳む。迷ったら generation-audit の 4 観点（意図 / 根拠 / 鮮度 / 失効条件）で
+  各行を見る
 - **現行規則として書く — 前版との差分を書かない。** 「（日付 追加 / 追記 / 移設 / 移管 /
   再編 / 明文化）」「Y から降格」「旧 X は廃止、no longer」「日付 に復活」は edit 履歴で、
   git と ADR が持つ。本文は現在の規則 + 理由 1 句 + ADR/RFC 番号。**as-of 日付は claim に
   だけ付ける**（knowledge-staleness — 外部事実の検索時点、実測の観測日）。edit の日付は
   付けない。改修時に入る型で、新規作成ゲートを通らない — `harness_lint.py` が同一括弧内の
   日付 + edit 動詞を止める（実測: 2026-09-02 prompt-audit で 88 件中 55 件。ADR-0061）
-- **存在しないものを「やらない」と書かない（tombstone）。** 退役した step / store / 機構は
-  消し、禁止の実体があれば正の形で書く（「Wikidata 連邦 — RETIRED、この step は実行しない」
-  → 「sameAs は self-sovereign な解決先のみ」）。モデルは見たことのない選択肢を幻の代替
-  として読む
+- **退役したものは本文から消す。** 退役した step / store / 機構は削除し、残す規則は正の形で
+  書く（「Wikidata 連邦 — RETIRED、この step は実行しない」→ 「sameAs は self-sovereign な
+  解決先のみ」）。モデルは見たことのない選択肢を幻の代替として読む
 - **経緯は ADR、本文は規則。** 「初見では X と推定しかけたが…」「第一波 / 第二波で移行」型の
   物語は残さない。理由が 1 句で言えるなら 1 句（「正本の改名時にコピーが取り残された前例あり」）
 - **改修は置換であって追記ではない。** 規則を変えたら旧記述を grep して消す — 同一ファイル内に
@@ -60,8 +62,8 @@ skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全�
   authorship-strategy の型 (b) 配置で実例）
 - **条件を列挙したら tie-breaker を置かない。** 「判断に迷ったら Y」は条件付きに降格した
   gate を Y 側へ戻す（implementation-chain feat×TDD で実例）
-- **例は出力の register を固定する。** 例の文体・長さ・言語がそのまま出力に写る。GitHub
-  コメント調の小文字例 9 本（thermo-nuclear）のような register 例は置かない。format を pin
+- **例は出力の register を固定する。** 例の文体・長さ・言語がそのまま出力に写る。文体を
+  写させるだけの register 例（コメント調の小文字例を 9 本並べる等）は置かない。format を pin
   する例だけ、illustrative と明記して置く
 - 重なる内容は**参照**で済ませる（正本は 1 か所。複製した版は誰も刈らず drift する）
 - frontmatter: `name`（dir と一致）/ `description`（発話例 + NOT for）/ `user-invocable` /
@@ -88,7 +90,9 @@ skill の本文は渡さない（anchoring）。
 
 - Actionability / Scope fit / Uniqueness（**library 全体**）/ Currency（名指し資産の
   **無条件**検証 — Glob か Read で存在確認、「古そうなら」は禁句）/ Hygiene（トリビアルな
-  禁止列挙・反復強調の肥大、版差 marker・退役物の tombstone・同一ファイル内の 2 版が無いか）
+  禁止列挙・反復強調の肥大、版差 marker・退役物の tombstone・同一ファイル内の 2 版が無いか、
+  禁止が §3 の条件 — 具体的動作 / 観測済み / ゲート無し / 理由 1 句 — を満たし、それ以外は
+  肯定形か）
 - 追加 2 問 — Generation fit（旧世代向け記述が無いか）/ Trigger realism（自発発火に
   依存した設計になっていないか）
 
@@ -99,11 +103,18 @@ skill の本文は渡さない（anchoring）。
 
 ## 5. 行動 gate（検証可能な出力を持つ skill だけ）
 
-同じ prompt を **with / without の 2 subagent で同時に**走らせ、両出力を著者が読む。
-差が無ければ Drop（skill は行動を変えていない）。集計・viewer・grader agent は持たない —
-2 ケースを人が読む方が速く、それで足りないなら skill の設計が悪い。
-`claude plugin eval --ablation with-without` が有効化されたらここを置換する
-（台帳 T-SKILL-CREATOR-EVAL-NATIVE）。
+**差の有無は native eval で screening する。**
+`claude plugin eval <skill dir> --ablation with-without --runs 3` を走らせ、arm 別 score と
+delta を読む（1 skill 約 $1 / 5 分、2026-09-13 実測）。`--runs 3` は run 間の分散を露出させる —
+1 run では結論が逆に転ぶ。`arm: with-only` の `tool_used: Skill` grader 1 本が発火検出になる
+（score に入らず、skill が実際に読まれたかだけを示す）。delta が無ければ Drop（skill は行動を
+変えていない）。defer 先の skill / agent が実行環境に無いと、その不在の断り書きで with arm が
+落ちる偽陰性になる（global に無い移設済み資産を名指す skill は要注意）。各 run の tool trace は
+`--keep-temp` 無しで消える（残るのは grader が見た最終メッセージ）。
+
+**差の中身は著者が読む。** 同じ prompt を **with / without の 2 subagent で同時に**走らせ、
+両出力を著者が読む。集計・viewer・grader agent は持たない — 2 ケースを人が読む方が速く、
+それで足りないなら skill の設計が悪い。
 
 ## 6. 配線と公開
 

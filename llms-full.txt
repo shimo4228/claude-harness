@@ -16,7 +16,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`) — applies to skills, agents, and rules; ADRs sync wholesale and hooks come from a curated allowlist
 - **Hooks directory**: `hooks/` — five PreToolUse hooks at the `git commit` boundary (secret scan, repo-owned gate runner, bandit, `ruff format --check`, review reminder) plus shared parts; wired manually into `settings.json`, install guide at `docs/hooks.md`
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
-- **Agents directory**: `agents/` — prompt generation (scout, prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR tooling (adr-writer, adr-reviewer)
+- **Agents directory**: `agents/` — prompt generation (prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR review (adr-reviewer)
 - **Rules directory**: `rules/common/` — planning, AKC cycle, authorship strategy, root-cause-first debugging, skill origin tracking, knowledge staleness, and the Contemplative Constitutional AI clauses
 - **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health
 - **Python build**: uv (or pip install -e .), Python 3.10+
@@ -76,7 +76,7 @@ Skills are invoked in two ways. First, the user types `/<skill-name>` as a slash
 
 ## What is the search-first skill?
 
-The search-first skill is defined as a research-before-coding workflow that invokes the scout agent to discover existing libraries, MCP servers, GitHub repositories, or PyPI packages before any custom code is written. The skill is required by the planning rule's Phase 0 mandate: any task introducing a new dependency or creating a utility that might already exist must run external research first. The output is a verdict — Adopt, Extend, Compose, or Build — that directly shapes the implementation plan. Build is reserved for cases where no fitting external solution exists.
+The search-first skill is defined as a look-outside-before-deciding workflow: it searches the live web, package registries, and primary sources at decision time and brings back a report the caller picks from. It takes six kinds of question — choosing a library or tool, prior implementations of a design problem, whether a paper's or post's claim applies here, what an official spec or CLI does now, the current state of practice, and checking a claim against its primary source. The report is the deliverable and has three sections: scope searched, found, and still unknown. Judgement is written as prose backed by facts (dates, versions, the concrete feature match) rather than as a verdict line or a score. The planning rule points to the skill before any new feature, dependency, or custom utility that may already have an existing solution. An earlier design returned a package-axis verdict (Adopt / Extend / Compose / Build) through a separate scout agent; that verdict and the agent were retired in ADR-0066 because nearly every harness question landed on Build and the verdict carried none of what the search had learned.
 
 ## What is the learn-eval skill?
 
@@ -102,17 +102,13 @@ The context-sync skill is defined as a project documentation auditor. It detects
 
 The llms-txt-writer skill is defined as an AI-facing document writer covering both Answer.AI's llms.txt standard and GEO/AEO static analysis. It produces three artifacts: `llms.txt` (a navigator file modeled on robots.txt for AI), `llms-full.txt` (a self-contained reference around 20 KB), and standalone FAQ or glossary pages. The companion script `geo_check.py` runs five GEO-SFE checks: ski-ramp score, chunk self-containment, question-form heading rate, entity density, and definitional expression density. The skill is explicitly not for human-facing READMEs or articles.
 
-## What does the scout agent do?
-
-The scout agent is defined as a pre-implementation solution discovery specialist. It searches npm, PyPI, MCP registries, GitHub, and the web for battle-tested alternatives to a proposed custom implementation, then returns a verdict: Adopt (use as-is), Extend (use with a thin wrapper), Compose (use multiple together), or Build (no fitting external solution). The agent is invoked by the search-first skill and triggered by the planning rule's Phase 0 mandate. It runs in a separate context to avoid polluting the main conversation with raw search results, returning only the verdict and supporting evidence.
-
 ## What are the four Contemplative AI axioms used here?
 
 The four Contemplative AI axioms are defined as Emptiness, Non-Duality, Mindfulness, and Boundless Care, taken verbatim from Appendix C of Laukkonen et al. (2025) "Contemplative Artificial Intelligence" (arXiv:2504.15125). Emptiness instructs the agent to hold all directives as contextually sensitive guidelines rather than fixed imperatives. Non-Duality removes rigid self/other separation in decision-making. Mindfulness mandates continuous introspective awareness and self-correction. Boundless Care prioritizes alleviation of suffering as the foundational interpretive criterion. All four are loaded as a single rule file `rules/common/contemplative-axioms.md` and apply to every Claude Code session.
 
 ## What is the planning rule's Phase 0 external research mandate?
 
-Phase 0 external research is defined as a mandatory step before drafting any implementation plan that introduces a new dependency or creates a utility that might already exist. The maintainer must run the search-first skill (delegating to the scout agent) and include an "External Research Findings" section in the plan with the scout's Verdict. The Verdict — Adopt, Extend, Compose, or Build — directly shapes the plan: Adopt becomes integration-only work, Extend adds a thin wrapper, Compose evaluates integration cost, Build records why no external solution fit. Skipped only for bug fixes, refactors, or prototypes.
+Phase 0 external research is defined as the step, required for `feat` tasks in the implementation-chain matrix, that runs the search-first skill before an implementation plan introduces a new feature, a new dependency, or a custom utility that may already exist. The skill returns a report (scope searched, found, still unknown) and the main loop decides from it; there is no verdict vocabulary. When the report contains an existing solution that changes the implementation approach, the chain stops and the plan is redone. Bug fixes, refactors, chores, and prototypes skip this step.
 
 ## What is the prototype-before-scale principle?
 

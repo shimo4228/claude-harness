@@ -61,6 +61,8 @@ campaign と衝突しうる既存判断（Explore agent の報告、2026-09-08�
    する唯一の repo」で Phase 3 = reach、local-only（remote 無し）。Fable session の cwd をここに
    すると同 repo の CLAUDE.md / strategy / ADR が制約として自動で載る。`~/.claude` は control
    plane で campaign 状態を持たない。
+> **注記（2026-09-15, ADR-0068 監査時）**: campaign 状態の正本は著者の台帳追記（personal-branding/.growth/EXPERIMENTS.md 追記 5）と `~/MyAI_Lab/growth/README.md` により `~/MyAI_Lab/growth/.growth/` へ移った。personal-branding/.growth/ は凍結。skill growth-fable と plist は growth を指す。新 repo の台帳は `GX-NNN` / `status` / `Next review` の契約を持たず、次 cycle で migrate するか契約側を緩めるかを決める。
+
 3. **collector は local script** `skills/growth-fable/scripts/collect_snapshot.py`（stdlib + `gh`、
    tests 12 本）。hub の traffic JSONL を読み（既存 collector の再利用）、`gh api` で followers /
    stars / `starred_at` からの star velocity（7・14・30 日、履歴不要）/ 14 日 referrers / code-search
@@ -76,6 +78,8 @@ campaign と衝突しうる既存判断（Explore agent の報告、2026-09-08�
    立てて `/growth-astra` を打たせる（timer は 1 本）。定例の間隔は phase 依存 — active な Major Bet が
    無い間は 7 日、active な window があれば 14 日（window 前の数字で thesis を書き換えない。著者
    2026-09-08「最初は週 1 の方がよい」）。変更なしのレビューは日付更新だけで終わる。
+> **注記（2026-09-15, ADR-0068 監査時）**: launchd 登録は著者が 2026-09 に解除し `~/Library/LaunchAgents/…plist.disabled` になっている（cycle は手動 `/growth-fable`）。prompt 本文は `scripts/launchd/growth-fable-prompt.txt`（skill の references/ は撤去、6072dab）。再登録時は repo 版 plist（cwd = `~/MyAI_Lab/growth`）を copy する。
+
 5. **worker は既存 skill / agent / session 機構から選び、model は Opus（build 層）に固定する。**
    Fable と Astra は判断層（settings.json の既定 model = fable）、worker は `Agent(model: "opus")` /
    `spawn.sh --model opus` / `claude --bg --model opus` のどれか（tier 分担は ADR-0043 と同じ。

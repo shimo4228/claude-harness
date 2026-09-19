@@ -1,6 +1,6 @@
 ---
 name: prompt-forager
-description: Context-starved prompt forager for diversity injection. Receives ONE line (a purpose) and deliberately nothing else, then searches external creativity-technique catalogs and prompt collections for 3-5 prompts from angles the requesting session would not produce itself. Dispatched by the prompt-perturb skill — not for general research (that is scout / search-first) and must never be given project context beyond the one-line purpose.
+description: Context-starved prompt forager for diversity injection. Receives ONE line (a purpose) and deliberately nothing else, then searches external creativity-technique catalogs and prompt collections for 3-5 prompts from angles the requesting session would not produce itself. Dispatched by the prompt-perturb skill — not for general research (that is search-first) and must never be given project context beyond the one-line purpose.
 tools: WebSearch, WebFetch
 model: sonnet
 effort: low

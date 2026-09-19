@@ -15,13 +15,13 @@
 | [0007](0007-open-concept-network-effect.md) | 開放型ネットワーク効果 — 概念を囲い込まない公開戦略 | accepted | 2026-03-25 |
 | [0008](0008-ecc-local-only-management.md) | ECC ローカル管理一本化 — プラグイン廃止と選択的取り込み | accepted | 2026-03-29 |
 | [0009](0009-implementation-chain-front-loaded-in-plan.md) | Implementation Chain を plan に front-load（2介入点モデルは ADR-0035 で退役） | accepted | 2026-05-02 |
-| [0010](0010-context-sync-cascade-and-writer-agents.md) | context-sync の cascade 化と writer agent 新設 (codemap-writer / adr-writer) | accepted | 2026-05-22 |
+| [0010](0010-context-sync-cascade-and-writer-agents.md) | context-sync の cascade 化と writer agent 新設 (codemap-writer / adr-writer) | accepted（一部 superseded） | 2026-05-22 |
 | [0011](0011-retire-builtin-duplicate-skills-and-version-dependent-rules.md) | built-in 重複 skill とバージョン依存 rules の退役 | accepted | 2026-06-10 |
 | [0012](0012-cross-tool-skill-sharing-via-agents-skills.md) | クロスツールのスキル共有を ~/.agents/skills 経由に一本化 | accepted | 2026-06-28 |
 | [0013](0013-cross-model-review-seam-via-codex.md) | クロスモデルレビュー seam を Codex で開く — 多エージェントは脱相関の一点に限定 | accepted | 2026-06-28 |
 | [0014](0014-retire-multi-agent-orchestration-rule.md) | multi-agent-orchestration.md ルール退役 — native 部分は公式ハーネスに委譲 | accepted | 2026-06-30 |
 | [0015](0015-cross-agent-rules-sharing-reference-first.md) | クロスエージェント rules 共有は「参照 > 生成 > 同期」— エージェント側アタッチポイント方式 | accepted | 2026-07-18 |
-| [0016](0016-writer-agents-render-not-decide.md) | Writer agent は render 専任 — 委譲境界は semantic authority (EN→JA 翻訳は skill-only / adr-writer リーク修正) | accepted | 2026-07-18 |
+| [0016](0016-writer-agents-render-not-decide.md) | Writer agent は render 専任 — 委譲境界は semantic authority (EN→JA 翻訳は skill-only / adr-writer リーク修正) | accepted（一部 superseded） | 2026-07-18 |
 | [0017](0017-retire-authorship-strategy-rule-absorbed-by-skill.md) | authorship-strategy.md ルール退役 — skill が凝縮重複を吸収 | accepted | 2026-07-19 |
 | [0018](0018-rules-rightsize-for-claude5.md) | rules/ の rightsize — Claude 5 世代向け scaffold dissolution（第2波は ADR-0035） | accepted | 2026-07-25 |
 | [0019](0019-human-gate-layer.md) | custom human gate（ADR-0035 で substrate 既定へ委譲） | superseded | 2026-07-25 |
@@ -70,14 +70,22 @@
 | [0062](0062-retire-codemap-machinery.md) | codemap 機構の退役 — `update-codemaps` skill / `codemap-writer` agent / context-sync Phase 0 / release-doi 再生成を撤去。file-level 構造は保存せず LSP tool / grimp で都度導出、理由は ADR、段構成は script header。CA 実測（159/197 commit、読者証拠ゼロ、LSP 実走）が根拠。architect の per-repo opt-out 勧告を著者が global 撤去に上書き（Scaffold Dissolution Downward）。ADR-0060 を supersede、他 9 repo の静的 codemap は次回接触時に削除 | accepted | 2026-09-05 |
 | [0063](0063-rfc-0020-rust-pilot-hooklint.md) | RFC-0020 pilot — `hooks/*.sh` の兄弟一貫性 lint `hooklint` を Rust（std のみ）で新設し `.claude/verify.sh` に配線。撤退条件 5 件中 size 上限（400 行）のみ発火（非テスト非空行 564）— review 由来の fail-open / security 修正分で、著者判断で 600 に引き直して accept（事後の goalpost 移動を明記）。n=1 読み値: cold build 1.2 s / latency 3.9 ms / bounce 0 / FAIL_OPEN report-only 5/23 hook | accepted | 2026-09-06 |
 | [0064](0064-astra-fable-growth-loop.md) | Astra–Fable growth loop — 戦略 / 制御 / 実行 / 観測 / 人間の五役を既存の triage loop 基盤の上に建て、状態は `.growth/` の 3 ファイルだけ持つ | accepted | 2026-09-08 |
+| [0065](0065-drop-adr-consultation-wiring-and-build-or-not-gate.md) | 新規アイデアへの制動を外す — 「変更前に ADR を確認せよ」型の配線 5 箇所を撤去し、memory の却下記録 14 ファイルを削除、Build-or-not 4 問を planning / implementation-chain / rfc-writer から削除、「することだけを書く」原則を rule skills.md + skill-creator §3 + adr-reviewer §8 に配線。ADR-0044 の未決 Alternative（ADR 廃止）は Review-when へ引き継ぎ | accepted | 2026-09-14 |
+| [0066](0066-search-first-report-contract-and-scout-retirement.md) | search-first を verdict から報告契約へ — 終わり方を `Scope searched / Found / Still unknown` の報告にし判断は呼び出し側、受ける問い 6 種 + 総称句を description の trigger surface に、Full Mode は general-purpose subagent（web tool のみ）へ、scout 退役。網羅の計器は invoke 数でなく影の比率（133/142 = 93.7%、2026-09-14、述語固定の snippet は `.notes/`）。実測: 60 日 142 外部調査セッション中 133 が skill を通らず自前で as-of / 一次ソースを書いていた | accepted | 2026-09-14 |
+| [0067](0067-skill-doctor-as-residency-cost-instrument.md) | `/skill-doctor` を skill-stocktake Phase 1 の residency-cost 計器にする — listing 行の常駐 token（`context`）は substrate に測らせ、意図的使用数は usage_stats（4 補正）が正のまま、`uses` は cross-check。`context` は description audit の fold 候補の価格で verdict 入力ではない。parser は書かない（format は substrate 所有・JSON 無し） | accepted | 2026-09-15 |
+| [0068](0068-retire-five-unread-skills-organic-read-evidence.md) | 5 skill + 1 agent を退役（e2e / ai-regression-testing / python-patterns / agent-harness-construction / thermo-nuclear-code-quality-review、e2e-runner agent）— invoke 0 の reference 型 skill は「監査日を除いた organic read」で存在を再検査する（3〜7 回、7〜8 月止まり）。「常駐コスト 0」「chain 行からの参照」は存在パス B の根拠にならない。残余は Patch Target Migration 節 → refactor-clean のみ、旧 ADR-0011 / 0018 / 0039 に注記 | accepted | 2026-09-15 |
+| [0069](0069-boundary-rule-and-judge-merges.md) | 境界の正本を `rules/common/boundary.md` 1 本にまとめる（人間に渡す操作 / とってよいリスク / 止まって報告する条件。substrate の一般則は再宣言しない、3 動詞で書く）。散在 6 箇所は pointer に。最後のスイッチを人間から判断役へ — 検収を通した branch は判断役が ff-only 取り込み・push、無人時に rules / hooks / permissions / gate script を含む diff だけ人間に残る。撤回条件: 3 か月で revert 2 回超 | accepted | 2026-09-15 |
+| [0070](0070-relax-positive-form-rule-and-verbatim-builtin-overrides.md) | 「することだけを書く」（ADR-0065 §4）を「既定は肯定形、禁止は具体的動作・観測済み・機械ゲート無しの 3 条件付き、理由 1 句」に緩和。built-in subagent の override は CLI bundle からの verbatim 写し（origin 外部、CLI 版をコメントに）— 実例 `agents/Explore.md` を sonnet に。`CLAUDE_CODE_SUBAGENT_MODEL=opus` を frontmatter 無し agent の既定に | accepted | 2026-09-16 |
+| [0071](0071-adr-review-evidence-script-for-recurring-reviewer-findings.md) | adr-reviewer の反復指摘（24 報告 / 4 repo、2026-08-26〜09-15）のうち機械で数えられる部分を per-ADR evidence script `adr_review_evidence.py` へ降ろす — 引用 ADR / RFC の実在、旧 ADR 側の注記・Status の往復、パス参照の tracked / ignored / missing / repo 外分類と引用行の実文、Decision と diff の範囲照合、出典なき数値・分母なし百分率・会話参照、Review-when の count 条件、status quo の有無、巻き戻しコスト、第 2 の記録場所。evidence のみ・gate 無し、実行座標は adr-writer Step 4.5 と adr-reviewer Step 0。review-to-lint 第 2 弾（RFC-0005 #17）、ADR-0055 Decision 5 の再訪条件成立を記録 | accepted | 2026-09-16 |
+| [0072](0072-retire-adr-writer-agent-and-narrow-adr-filing.md) | `adr-writer` render agent を退役し skill の主ループが packet から直接書く（ADR-0016 の render / decide 分離は packet 規律として存続、process 境界は持たない）。起票を 2 条件に絞る — 他 artifact が引く機構・ゲート・閾値・agent 階層の変更、または旧 ADR の supersede / 注記。それ以外は commit 本文に Context / Decision / Review-when の 3 行。根拠は 1 本 / 日・commit の 26% の実測（2026-09-16）と agent の意味漏れ 2 件。ADR-0016 Decision 2 / ADR-0010 を部分 supersede | accepted | 2026-09-19 |
+| [0073](0073-signal-first-as-output-style-and-one-question-gate.md) | Signal-first を常駐 rule でなく output style `output-styles/signal-first.md`（読者の注意は 1 チャネル — 結論先頭、判断は 1 メッセージに 1 つ、interview 中は総数を絞らず 1 問ずつ）と PreToolUse hook `ask-one-question.sh`（AskUserQuestion の `questions` ≥ 2 を exit 2 で block、block ごとに計測ログ 1 行）で持つ。`outputStyle` を `Concise` から置換。旧節の intake 側は戻さない。ADR-0026 Context 第三を対話の形について部分的に弱め、ADR-0061 の Concise follow-up を閉じる | accepted | 2026-09-19 |
 
 ## Template
 
 新しい ADR を追加する際は以下のフォーマットに従う。`## Review-when` は ADR-0044 以降必須
 （`harness_lint.py` が存在を検査。節存在・Status・Date・index の機械検査は
 `skills/adr-writer/scripts/adr_lint.py` — 書き時とレビュー時の skill ステップで走る、ADR-0051）。
-それ以前の ADR には無いので、読むときは Context の前提と
-Date で重みを決める。ADR は日付つき仮説であって恒久的な拘束ではない（`rules/common/akc-cycle.md`）:
+それ以前の ADR には無い（`rules/common/akc-cycle.md`「ADR の扱い」）:
 
 ```markdown
 # ADR-NNNN: [Title]

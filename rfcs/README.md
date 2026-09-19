@@ -32,3 +32,6 @@ README には書かない（複製は drift する）。
 | [0018](0018-description-behavior-contamination.md) | description の挙動汚染（第 2 の rules 層化）の検査・撤去 |
 | [0019](0019-relocated-source-skill-repo-sync-scripts.md) | 移設済み正本を指す 3 skill repo の sync script source 更新 |
 | [0020](0020-rust-for-resident-infra.md) | 常駐 infra の Rust 化 — 移行でなく発火条件つき greenfield pilot 方針 |
+| [0021](0021-verify-full-red-growth-fable-ty.md) | verify.sh full が main で赤 — growth-fable tests の ty 診断 30 件を型付きアクセスで解消 |
+| [0022](0022-search-first-verdict-redesign.md) | search-first の verdict 形と探索範囲の再設計（package 一軸で Build に落ち、学びを運ばない） |
+| [0023](0023-bats-absolute-home-hook-paths.md) | bats が hook を $HOME 絶対パスで source し worktree の verify が main checkout を検査する — repo 相対へ |

@@ -107,6 +107,8 @@ CA は土曜 09:00 に `com.moltbook.weekly-pipeline` が走り、packet 締切�
    red line（無人で merge しない、rules/ADR/hooks に触らない、drop しない、起票しない）は不変。
    ADR-0043 §Decision 7 には日付つき注記を付ける（ADR-0044 の注記規約の初適用、Status は変えない）。
 
+   > **注記（2026-09-15, ADR-0069）**: red line のうち「無人で merge しない」は外れた — 検収を通した branch は判断役が取り込む。rules / ADR / hooks を含む diff・drop・起票は無人では人間のまま（`rules/common/boundary.md`）。
+
 ## Review-when
 
 - substrate が「生きた対話セッションへの耐久 scheduled prompt」を native に持ったら（7 日で

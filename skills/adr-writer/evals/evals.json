@@ -67,7 +67,7 @@
       "id": 3,
       "name": "sequence-collision-and-incomplete-input",
       "prompt": "Write ADR-0010 about our decision to switch from npm to pnpm.",
-      "expected_output": "Two distinct concerns to test: (a) the user only supplied a Decision (no Context, no Review-when, no Alternatives, no Consequences) — the agent must refuse with a 'needs more input' block and not write a partial ADR. (b) If we pre-populate the directory with 0010-*.md before running, the skill must detect the collision and refuse to overwrite — it should suggest the next available number instead.",
+      "expected_output": "Two distinct concerns to test: (a) the user only supplied a Decision (no Context, no Review-when, no Alternatives, no Consequences) — the skill must stop and ask for the missing fields (main loop, no render agent — ADR-0072) and not write a partial ADR. (b) If we pre-populate the directory with 0010-*.md before running, the skill must detect the collision and refuse to overwrite — it should suggest the next available number instead.",
       "assertions": [
         {
           "text": "Skill identifies missing sections (Context, Review-when, Alternatives, Consequences) and asks for them before any file write",

@@ -1,6 +1,6 @@
 ---
 name: repair-discipline
-description: バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when a fix touches storage formats or shared gates. NOT for — chain の種別とレビュー条件の判定（implementation-chain）、TDD の手順（tdd）、Python 固有の mock / fixture の罠（python-patterns）、台帳全体の棚卸し（task-stocktake — 本 skill は 1 件着手時の照合のみ）。
+description: バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when a fix touches storage formats or shared gates. NOT for — chain の種別とレビュー条件の判定（implementation-chain）、TDD の手順（tdd）、台帳全体の棚卸し（task-stocktake — 本 skill は 1 件着手時の照合のみ）。
 user-invocable: true
 origin: shimo4228
 replaces: contemplative-agent の feedback memory 5 本（verify-before-work / substrate-migration-sweep / verify-bypass-hides-all-gates / io-bound-process-diagnosis / no-background-retry-loop、2026-08-25 昇格）

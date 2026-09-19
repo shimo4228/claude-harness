@@ -20,7 +20,7 @@ rules 13 / CLAUDE.md / settings.json）に対して実行した。結果は 88 �
 coaching 18 件 / Group 2 history narrative・volatile 9 件 / 1a 圧力語 7 件 / 1f 数値上限 1 件 /
 Group 3 1 件。1a の CAPS 圧力語と 1b（think step by step / scratchpad / budget_tokens /
 prefill）は grep で 0 件 —
-[ADR-0018](./0018-rules-rightsize-for-claude5.md)（2026-07-25、常駐 5,789→2,463 words）と
+[ADR-0018](./0018-rules-rightsize-for-claude5.md)（2026-07-25、常駐 5,789→2,314 words）と
 [ADR-0035](./0035-commit-review-hook-and-rules-rightsize.md) で潰した旧世代向け
 over-constraint は再発していない。再発している型は「改修時に前版との差分を本文へ書く」で、
 これは skill-creator §3 の文章規律が既にある下で入った — 小さな追記は新規作成ゲート
@@ -121,6 +121,10 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
 ### Neutral / Follow-ups
 
 - `outputStyle: Concise` の update-suppressor 矛盾は flag のみ（著者判断待ち）
+
+  > **注記（2026-09-19, ADR-0073）**: `outputStyle` を自作 `Signal-first` に替え、`Concise` を
+  > 選ばなくなったのでこの follow-up は閉じる
+  > （[ADR-0073](./0073-signal-first-as-output-style-and-one-question-gate.md)）。
 - `generation-audit` Related への `/claude-api prompt-audit` ポインタ追加は任意
 - 監査 report と diff は scratchpad 保存で repo には残さない（commit message に件数を残す）
 - [ADR-0018](./0018-rules-rightsize-for-claude5.md)・

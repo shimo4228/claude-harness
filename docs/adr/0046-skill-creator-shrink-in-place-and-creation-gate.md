@@ -91,6 +91,7 @@ commit は `b81683e`（hook + rule。**旧資産の削除 5,363 行もここに�
 
 - `claude plugin eval` がこのアカウントで単体 skill を target に有効化されたら、§5 を native に
   置き換える（台帳 T-SKILL-CREATOR-EVAL-NATIVE）。
+  - 2026-09-14 注記: 発火した（CLI 2.1.270、2026-09-13）。判断は置換でなく**併記** — native `--ablation with-without --runs 3` を差の有無の screening、手動 2 arm を差の中身を読む段に置く（commit 13079dd）。実測は `.notes/s1-eval-native-reading-2026-09-13.md`
 - 3 回連続の skill 作成で著者の通読指摘数が平均 2 件以上になったら、inline subagent では足りず
   専用 judge agent + checklist を Build する（Decision 5）。
 
@@ -151,6 +152,7 @@ description 最適化 loop 以外の部分も旧世代向けの逐条手順の�
 
 - with/without の集計・世代管理・旧版 baseline・非弁別検出という native に無い 4 点
   （台帳 T-SKILL-CREATOR-EVAL-NATIVE に記録）を失い、2 ケースを人が読む形に縮退する
+  - 2026-09-14 注記: 4 点のうち分散・非弁別検出は native の `--runs` で埋まった。世代管理は timestamp dir のみ、人間 feedback ループと旧版 baseline は native に無いまま（同上の実測）
 - `skill-create-notice.sh` は Write/Edit 経由の作成しか見ない（`cat >` 等は素通りする）。30 日の
   発火実績を見て `validate-bash.sh` への追加要否を判断する
 - 大幅改修（既存 SKILL.md の書き直し）の検知は rule の命令形だけに依存し、hook の後ろ盾が無い

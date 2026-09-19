@@ -43,6 +43,8 @@ cwd 制約: `graph.jsonld` が存在する project root で実行する。
 
 **Source repo は汚さない**: `graph.jsonl` は HF clone 側でだけ生成・存在し、source の git tree には残らない。
 
+HF 側の `README.md`（dataset card）はこの sync の対象外。HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えるときは手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
+
 Auth は `~/.cache/huggingface/token`（`hf auth login` で保存されたもの）を `hf` CLI が自動で読む。
 
 ## Repo mapping

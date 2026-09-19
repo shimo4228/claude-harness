@@ -24,7 +24,7 @@ candidates and verdicts; it **never edits rules without your approval**.
 Enumerate with Glob (no script):
 
 - Skills: `~/.claude/skills/*/SKILL.md`
-- Rules: read every `~/.claude/rules/**/*.md` in full — the corpus is small (measure live with `wc -l`; do not hardcode the count here, it drifts every time a rule is added or rightsized), so no grep pre-filter is needed
+- Rules: read every `~/.claude/rules/**/*.md` in full — the corpus is small, so no grep pre-filter is needed
 
 > Glob targets only skill definition files, so dependency markdown under `.venv` /
 > `.pytest_cache` is excluded structurally.
@@ -51,8 +51,9 @@ recurrence count exact and the "not already in rules" test reliable.
 5. **Clear violation risk** — what goes wrong if ignored, in one sentence
 6. **Not already in rules** — check the full rules text, including the same idea in different words
 
-> Tests 1–3 are `rules/README.md`'s admission criterion (「この環境固有の事実・
-> 配線・罠。思考や作業の手順は skill、一般的な判断は substrate が持つ」), established by
+> Tests 1–3 are `rules/README.md`'s admission criterion (「この環境固有の事実・配線・罠。
+> 思考や作業の手順は skill、発火時刻を要する検査は hook、一般的な判断は substrate が持つ」),
+> established by
 > [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md) and
 > [ADR-0035](../../docs/adr/0035-commit-review-hook-and-rules-rightsize.md).
 >
@@ -78,6 +79,8 @@ in language-specific rules or skills), and code examples / commands (belong in s
 ### Verdict quality
 
 Each verdict must be self-contained — target, evidence, and rationale on its own.
+Draft text links back to the detailed How with the pointer form the rules corpus uses:
+``skill: `name` ``.
 
 ```
 # Bad
@@ -117,7 +120,7 @@ candidate, one decision); skipped candidates go to the ledger with `status: skip
 **Never modify rules automatically. Always require user approval.** This is the one
 hard gate — rules load every session, so a bad rule has outsized blast radius.
 
-Then update the ledger inline (Read → merge → Write):
+Then update the ledger `~/.claude/skills/rules-distill/results.json` inline (Read → merge → Write):
 
 ```json
 {
@@ -136,13 +139,6 @@ Then update the ledger inline (Read → merge → Write):
 
 `distilled_at` is real UTC (`date -u +%Y-%m-%dT%H:%M:%SZ`); candidate IDs are
 kebab-case derived from the principle.
-
-## Design Principles
-
-- **What, not How**: extract principles (rules territory) only. Code examples and commands stay in skills.
-- **Link back**: draft text includes `See skill: [name]` so readers can find the detailed How.
-- **Glob = exhaustive collection, LLM = judgment**: Glob guarantees the inventory is complete; the single-context cross-read guarantees contextual understanding.
-- **Anti-abstraction safeguard**: the candidate filter (environment-specific / not substrate-native / not a procedure, plus the actionable-behavior and violation-risk tests) keeps overly abstract principles out of rules — abstraction is now rejected by test 1 directly, not inferred from frequency.
 
 ## Related
 

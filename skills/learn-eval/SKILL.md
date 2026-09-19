@@ -31,7 +31,9 @@ Look for:
 
    - **Absorb into an existing asset** — the pattern belongs inside a skill, rule, or
      `hooks/README.md` section that already owns the topic. Name the file and the section.
-     This is the default: an addition to a reachable asset beats a new file.
+     This is the default: an addition to a reachable asset beats a new file. A skill's value
+     lies in its comprehensiveness, so appending improves it — "I don't want to pollute the
+     existing skill" routes the pattern to a file nothing reaches.
    - **Promote to a skill** — the pattern has its own independent trigger (a user request
      that no installed skill answers). Run skill: **skill-creator** (required by
      `rules/common/skills.md` before writing any skill).
@@ -108,7 +110,16 @@ description: "Description in 130 characters or less"
      Measured 2026-08-26 against the live 67-skill library: a draft whose
      knowledge already had a home scored **0.600** against that skill and ≤0.143
      against everything else; a genuinely new draft topped out at 0.100. Treat a
-     tight cluster below ~0.2 as "no candidate", not "five near-misses".
+     tight cluster below ~0.2 as "no candidate", not "five near-misses". That floor
+     is language-conditioned — `normalize_terms` tokenizes each CJK run into
+     character bigrams (n−1 per n-character run, no stopword list) but Latin text
+     into stopword-filtered whole words, and the score divides by the candidate
+     description's own term count, so the same knowledge covers far more of a
+     Japanese description than of an English one (measured 2026-09-15: a Japanese
+     twin scored 0.605 while an English twin carrying the identical shared terms
+     scored 0.079, under the floor) — so compare a score only against candidates
+     written in the draft's language, and read `shared_terms` before calling an
+     English pair "no candidate".
    - `memory_candidates` — an index line carries 3–8 terms, so the score is noisy
      and `shared_concepts` is the signal. **Concepts, not terms**: a Japanese
      word of n characters produces n−1 matching bigrams, so counting raw terms
@@ -134,7 +145,7 @@ description: "Description in 130 characters or less"
    - [ ] Stated, per surviving candidate, whether it is really the same knowledge —
      quoting its `shared_terms` or the cited MEMORY.md line. "Nothing survived the
      floor and the top skill scored 0.09" is a valid answer; "I grepped" is not
-   - [ ] Considered appending to an existing skill instead (see knowledge-placement-decision)
+   - [ ] Considered appending to an existing skill instead (Step 3, Absorb)
    - [ ] Confirmed the pattern is reusable, not a one-off fix
    - [ ] Checked the pattern against the **session's observational record** (actual tool output, errors, user corrections). Is it grounded in "what actually happened" rather than your own summary or paraphrase?
 
@@ -200,7 +211,7 @@ description: "Description in 130 characters or less"
 
 7. Save to the destination chosen in Step 3
 
-   - **Absorb**: edit the named asset in place and show the diff. Do not create a file.
+   - **Absorb**: append to the named asset in place and show the diff. Do not create a file.
    - **Promote**: hand the draft to skill: **skill-creator** — it fixes the intent packet,
      draws the boundary against neighbouring skills, structures it as
      `~/.claude/skills/<name>/SKILL.md`, and passes it through a fresh-context draft gate
@@ -235,10 +246,6 @@ description: "Description in 130 characters or less"
 
 **Rationale:** (1–2 sentences explaining the verdict; always mention any No questions)
 ```
-
-## Notes
-
-- On an Absorb verdict, do not create a new file — append to the existing skill instead
 
 ## References
 

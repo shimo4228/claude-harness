@@ -43,30 +43,22 @@ exists to prevent:
   Also an enumeration, and it answers a different question from the other two:
   not "is this skill correct?" but **"would a fix applied here survive?"** It
   would not — the owning tree overwrites it on its next upgrade, and the change
-  never reaches version control. Route these **upstream** (issue / PR); do not
-  hand them a local verdict.
+  never reaches version control (`git ls-files` cannot even be *asked* about a
+  path behind a symlink: `fatal: pathspec ... is beyond a symbolic link`, so
+  ownership is decided by `is_symlink()` alone). Route these **upstream**
+  (issue / PR); do not hand them a local verdict. References *inside* an
+  external skill are still scanned: ownership changes where a fix goes, not
+  whether the defect is real.
 
 The asymmetry is structural, not conservatism: the slash-command namespace a
 user actually types **is not enumerable from disk**, and the harness hides
-user-only commands from the agent entirely. On 2026-07-25 that produced a real
-misdiagnosis — `/code-review` was declared nonexistent (absent from the skills
-root, from `enabledPlugins`, from `installed_plugins.json`, and from the agent's
-own skill listing) and three skills were "fixed" to stop pointing at a command
-that was live all along. Code enumerates the names it cannot resolve; a human or
+user-only commands from the agent entirely — an unresolved name has been live all
+along before (`/code-review`, 2026-07-25, absent from the skills root, from
+`enabledPlugins`, from `installed_plugins.json`, and from the agent's own skill
+listing). Code enumerates the names it cannot resolve; a human or
 a holistic pass decides which are real (enumerate/decide, per
 structural checks). `_KNOWN_NON_FILE_SKILLS` in the scanner is noise
 reduction only — never an authority on what exists.
-
-Ownership is decided by `is_symlink()` alone — no git call. `git ls-files` cannot
-even be *asked* about a path behind a symlink (`fatal: pathspec ... is beyond a
-symbolic link`), so the link itself is the boundary of what this repository owns.
-This category exists because of a live miss on 2026-07-25: a stocktake assigned
-`hunk-review` an Improve verdict for a stale flag table, and the fix was written
-straight into `/opt/homebrew/Cellar/hunk/0.17.1/libexec/skills/` — invisible to
-git and due to vanish on the next `brew upgrade`. It was reverted and filed as
-[modem-dev/hunk#595](https://github.com/modem-dev/hunk/issues/595) instead.
-Note that references *inside* an external skill are still scanned: ownership
-changes where a fix goes, not whether the defect is real.
 
 ## Boundary (read first — this skill does not overlap its neighbours)
 
@@ -102,7 +94,7 @@ reference from each SKILL.md (`python -m scripts.X`, `bash …/x.sh`,
 reports those whose target does not exist:
 
 ```bash
-uv run --directory ~/.claude/skills/skill-health \
+uv run --project ~/.claude/skills/skill-health \
   python -m scripts.scan_refs ~/.claude/skills --json
 ```
 
@@ -120,16 +112,15 @@ placeholders (`<your-repo>/x.sh`), illustrative example links (`[](url)`), and
 than a missed one. Run `--help` for flags; omit `--json` for a human report.
 
 The same run also reports **external skills** (`external` in JSON). Surface these
-before any repair is proposed: they set *where* a fix can go. For each one, say
-who owns it and route the fix upstream — an issue or PR against the owning
-project — rather than editing the symlinked file. Editing it "works" until the
-owner's next upgrade, and git never sees it.
+before any repair is proposed — they set *where* a fix can go — and name the
+owner of each (handling per the External skills category above).
 
 Present each dangling reference with: skill, ref type, the raw reference, the
 resolved path, and the line. Do not auto-fix — a dangling reference may mean the
 artifact was deleted (remove the reference) **or** renamed (repoint it) **or**,
 for a `../`-escaping link, that the skill was authored in a repo and vendored
-into the harness (a portability issue per the skills portability rules). The
+into the harness (a portability issue per
+`~/.claude/skills/skill-creator/references/portability.md`). The
 repair is a human judgment; surface the fact, let the user decide.
 
 ## Phase 3 — Federate the other three dimensions (read, don't re-implement)
@@ -151,10 +142,11 @@ health view — **labelling each value's source**, never recomputing it:
   from "never". If `measurable` is false, or `span_shorter_than_window` is true, render
   usage as `unmeasured` — never `0`.
 
-  From the same output, **enumerate residency-fold candidates** (RFC-0017): skills with
-  `deliberate` 0 but read events > 0 in the window. Their description has not driven a
-  single selection while the body is demonstrably reached another way — the description
-  is a fold candidate. Hand the list to the author with the decision axis attached
+  **Enumerate residency-fold candidates** (RFC-0017): skills with nonzero `context` (the
+  `/skill-doctor` residency column; `-` means the description is already off the listing
+  and there is nothing left to fold) and zero `deliberate` use in the window. Their
+  description resides in every system prompt without having driven a single selection —
+  the description is the fold candidate. Hand the list to the author with the decision axis attached
   (default: add an explicit one-line reference from a related skill / rule, then
   `disable-model-invocation: true` — even a one-line description still resides in the
   system prompt as an unaudited instruction, RFC-0018; a one-line description is the
@@ -172,10 +164,11 @@ health view — **labelling each value's source**, never recomputing it:
   if present; if none/stale, recommend running `/claude-security`. Do not
   re-scan for vulnerabilities here.
 - **Validation** — note (**missing validators** debt) which scanned skills have
-  no `skill-comply` spec and no record of passing `skill-creator`'s draft gate (the
-  fresh-context verdict in its §4; the with/without benchmark was retired 2026-08-22),
-  i.e. no way to verify their behaviour. Judge **[LLM]** trigger↔body consistency only where it is in
-  doubt.
+  no `skill-comply` spec and no record of passing `skill-creator`'s gates — the
+  fresh-context draft verdict (its §4) and, for a skill with verifiable output, the
+  native ablation screen `claude plugin eval <skill dir> --ablation with-without --runs 3`
+  (its §5) — i.e. no way to verify their behaviour. Judge **[LLM]** trigger↔body
+  consistency only where it is in doubt.
 
 > Not measured: skill *success rate* (did using the skill improve the outcome,
 > not just fire?). It needs counterfactuals the harness does not capture; left as

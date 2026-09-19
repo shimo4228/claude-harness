@@ -197,6 +197,10 @@ lychee の CLI 面（`--files-from -`、accept 集合、per-host interval）は�
   いれば両 script を削除する（`review-to-lint` §5 の「形骸化が観測されたら」の適用）
 - **substrate が skill 使用統計を native に持った** — Scaffold Dissolution の downward
 
+  > **注記（2026-09-15, ADR-0067）**: `/skill-doctor`（Claude Code 2.1.269）で発火。substrate の
+  > `uses` は窓が無く sandbox 子セッションを含むため、本 ADR の 4 補正の代替にならない。usage_stats は
+  > 意図的使用の正のまま維持し、`uses` は cross-check に置く。
+
 ## Alternatives Considered
 
 - **`lychee` を採用して薄いラッパーで包む** — 却下。blocked/dead の再導出と 429 停止は

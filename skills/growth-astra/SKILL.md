@@ -12,7 +12,7 @@ origin: shimo4228
 `.growth/EXPERIMENTS.md` と `.growth/SNAPSHOT.json` が示す状況に合わせて修正する。
 中身の形式は決めない — 到達に必要だと判断したことを、Fable が施策を考えられる粒度で書く。
 
-公開・評判に関わる action は著者が実行する（Astra も Fable も草稿で止める）。
+公開・評判に関わる action は著者が実行する（Astra も Fable も草稿で止める。境界は rule `boundary.md`）。
 
 `SNAPSHOT.json` が無い / 2 日より古ければ先に collector を回す:
 `uv run --project ~/.claude/skills/growth-fable python ~/.claude/skills/growth-fable/scripts/collect_snapshot.py --user shimo4228 --out .growth/SNAPSHOT.json --pull`

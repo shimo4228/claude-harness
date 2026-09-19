@@ -33,7 +33,7 @@
 
 Each skill defines a workflow that Claude can invoke via slash command (`/<skill-name>`) or naturally trigger from its description.
 
-- [search-first](skills/search-first/SKILL.md): research-before-coding workflow — invokes the scout agent to discover existing libraries, MCP servers, or GitHub solutions before writing custom code
+- [search-first](skills/search-first/SKILL.md): look outside before deciding — searches the live web, registries, and primary sources at decision time and returns a report the caller picks from (scope searched / found / still unknown; judgement as prose backed by facts, no verdict line — ADR-0066)
 - [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
 - [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — inline Glob inventory + single-context holistic evaluation (full / changed modes), Keep/Improve/Update/Retire/Merge verdicts
 - [skill-health](skills/skill-health/SKILL.md): structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts, agents, or sibling skills that don't resolve on disk); deterministic, delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply
@@ -53,7 +53,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [collect-context](skills/collect-context/SKILL.md): gathers in-session and external context into source material files for article writing
 - [authorship-strategy](skills/authorship-strategy/SKILL.md): 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered idea-rescue research repos
 - [release-doi](skills/release-doi/SKILL.md): cuts a versioned release of a DOI-registered research repo — Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging
-- [adr-writer](skills/adr-writer/SKILL.md): records design decisions as numbered ADRs — directory detection, sequence numbering, index update; prose generation delegated to the adr-writer agent
+- [adr-writer](skills/adr-writer/SKILL.md): records design decisions as numbered ADRs — directory detection, sequence numbering, index update; the main loop writes the 7-section body from a settled decision packet, then a mechanical evidence script and the adr-reviewer agent check it (ADR-0072)
 - [readme-writer](skills/readme-writer/SKILL.md): writes human-facing READMEs — deterministic structural lint plus holistic LLM review without scores
 - [hf-sync](skills/hf-sync/SKILL.md): mirrors graph.jsonld-bearing research repos to Hugging Face Datasets — flattens the graph and uploads alongside graph.jsonl
 - [spawn-session](skills/spawn-session/SKILL.md): launches a new detached Claude Code Remote Control session inside Herdr, visible in the mobile app session list
@@ -76,9 +76,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 
 Specialized agents in `agents/`, each with its own tool allowlist.
 
-- [scout](agents/scout.md): pre-implementation solution discovery — searches npm, PyPI, MCP registries, GitHub, and the web for battle-tested alternatives before writing custom code
 - [prompt-writer](agents/prompt-writer.md): generates concise, focused prompts using a lightweight model (Haiku)
-- [adr-writer](agents/adr-writer.md): generates the 7-section ADR body (Status / Date / Context / Decision / Review-when / Alternatives / Consequences) from supplied input only — never invents content
 - [readme-reviewer](agents/readme-reviewer.md): strict README / repo top-page review — LLM-read floor recovery, lead clarity, human hook, scannability, length discipline, visual effectiveness
 - [readme-clarity-reviewer](agents/readme-clarity-reviewer.md): first-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register; parallel partner of readme-reviewer
 
@@ -95,6 +93,8 @@ Behavioral principles auto-loaded every session from `rules/common/`. Rules fire
 - [task-tracking](rules/common/task-tracking.md): single task ledger per repo — one canonical pending-task file, Done-section history, pointer-only discipline for MEMORY.md and detail documents
 - [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
 - [llm-first-code](rules/common/llm-first-code.md): code is optimized for its actual reader — the next LLM session, not humans; preserve verifiability (types, tests, golden files) over readability, enforce quality through machine gates, spend human-readability budget only on READMEs and output text
+- [boundary](rules/common/boundary.md): the single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking (ff-only merges of verified task branches, destructive work inside a worktree), and when to stop and report (ADR-0069)
+- [practitioner-identity](rules/common/practitioner-identity.md): the author's self-definition, verbatim — a practitioner searching for good ideas and means in the AI era, not a researcher; DOIs are a means, and the work is not reframed into existing categories
 
 ## Hooks
 

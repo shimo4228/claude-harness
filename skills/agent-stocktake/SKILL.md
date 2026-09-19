@@ -27,8 +27,8 @@ this skill exists as a third sibling next to skill-stocktake and rules-stocktake
 > different questions for each layer.
 
 > Design note 2 — edits are applied in-session. Same reasoning as rules-stocktake: no
-> improvement engine exists for agent definitions, and the corpus is ~20 small files —
-> delegation would be overengineering. The handoff exception is Demote to skill
+> improvement engine exists for agent definitions, and the corpus is small enough to
+> read in one context — delegation would be overengineering. The handoff exception is Demote to skill
 > (creating a skill is skill-creator's job).
 
 ## Modes (`$ARGUMENTS`)
@@ -106,8 +106,7 @@ output; do not re-implement:
 `lint_markdown_links` sees only link syntax, and `skill-health`'s `scan_refs.py`
 scans the *skills* tree. A path written as prose inside an agent body
 (`~/.claude/hooks/foo.sh`, `skills/foo/SKILL.md`) is covered by neither. Grep the
-corpus for them and `ls` each one. This is the check the `changed`-mode rule above
-depends on, so it runs over the full set even in `changed` mode.
+corpus for them and `ls` each one.
 
 ### Step 4 — Inventory
 
@@ -146,8 +145,7 @@ rest the **body layer** (invocation):
 - [ ] *Description truthful to the body?* — what it promises is what the body does
   (a drifted description misroutes delegation every session, even if the body is fine)
 - [ ] *Body free of suppression instructions?* — start from this agent's
-  `suppression_candidates` in the Phase 1 JSON, read each cited line, then keep
-  reading for phrasings the catalog does not know (it is a floor, not a census).
+  `suppression_candidates` in the Phase 1 JSON, handled per Step 1.
   What counts: confidence thresholds ("only report findings you are ≥N% sure of",
   「確信度を付け、低いものは捨てる」), severity floors ("only high-severity"), "be
   conservative" framings. The current-generation guidance is: report everything,
@@ -155,6 +153,12 @@ rest the **body layer** (invocation):
   silently drops findings. A No here is an **Improve-by-inversion** candidate:
   rewrite the instruction in the opposite direction, never just delete the section
   (deleting leaves the suppressive frame; inverting replaces it)
+- [ ] *External-origin copy current?* — for an agent whose `origin` is an external repo
+  and whose body is a verbatim copy (e.g. a built-in override such as `Explore`), the
+  source version named in the body's leading comment matches the installed tool
+  (`claude --version`); a mismatch is an Update (diff against the bundle and re-copy).
+  The two body questions below are skipped for such copies — the body is the vendor's,
+  not ours (ADR-0070)
 - [ ] *Body free of previous-generation over-constraint?* — exhaustive step-by-step
   procedures for judgment the current model holds natively, repeated emphasis,
   ALWAYS/NEVER pairs that the surrounding-context judgment should own. Phase 1's
@@ -171,12 +175,14 @@ rest the **body layer** (invocation):
   loop itself counts as an absorber. Two auxiliary rationales legitimately override
   the rich-context pull (ADR-0024): a **frozen-input render contract** — the caller
   freezes a self-contained packet before invocation, so conversation context is not
-  needed by design (adr-writer per ADR-0016, prompt-writer; likewise repo-grounded
-  work whose input is the codebase, not the conversation — scout) —
+  needed by design (adr-writer per ADR-0016, prompt-writer) —
   and **bulk context isolation** — the work reads or produces volume that would
-  pollute the main context (e2e-runner, refactor-cleaner)
-- [ ] *Technical references current?* — commands, flags, model names, tool lists
-  (verify with `--help` / WebSearch when they look stale)
+  pollute the main context (refactor-cleaner)
+- [ ] *Technical references current?* — **unconditionally verify** every artifact the
+  body names: `ls` each referenced path, run `--help` / version checks for named
+  commands, flags, model names and tool lists. "Verify if it looks stale" is banned
+  phrasing — the condition is what dilutes; deterministically checkable claims get
+  deterministic checks, every time
 - [ ] *Unique within the set?* — no other agent (or skill) owns the same job; a
   documented orchestrator→sub-agent split is NOT overlap
 
@@ -193,8 +199,8 @@ capability the substrate counterpart lacks (a tool, a wired sub-agent), one
 counter-question is mandatory before accepting the refutation: *"Is the subagent the
 right place to use that capability — or does the main loop hold it anyway?"* Capability
 existence is necessary but not sufficient; the fresh/rich context axis decides where the
-capability belongs (precedent: planner's `Agent(scout)` refutation collapsed because the
-main loop holds the full Agent tool, ADR-0023). Keep-bound agents get no dynamic questions.
+capability belongs (precedent: the planner refutation collapsed because the main loop
+holds the full Agent tool, ADR-0023). Keep-bound agents get no dynamic questions.
 
 Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence,
 never aggregated into a score. Evaluation is **origin-blind** (ECC / shimo4228 /

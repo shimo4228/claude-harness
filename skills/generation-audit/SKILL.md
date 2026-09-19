@@ -124,7 +124,7 @@ Scaffold Dissolution（`rules/common/akc-cycle.md`）の**第 3 トリガー = �
 ## References
 
 手順の実証元は 2026-07-25〜26 の Claude 5 世代交代監査（ADR-0018、常駐 5,789 →
-2,463 words）。runtime 層 / guidance 層の区別、競合・冗長・ドリフトの 3 分類、
+2,314 words）。runtime 層 / guidance 層の区別、競合・冗長・ドリフトの 3 分類、
 4 観点判定枠、反転の必要性、検証ステップ誤診の回避は、この実施で得た手順を
 一般化したもの。次の世代交代が本スキルの初回フル実行になる（それまでの機能検証は
 Phase 1 の 1 テーマ dry-run に限る）。

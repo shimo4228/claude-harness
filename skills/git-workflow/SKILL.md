@@ -21,11 +21,11 @@ origin: shimo4228
 3. コミットメッセージは `-m "…"` の単純形（複数 `-m` 可）または `-F <file>`。
    バッククォート・`$( )`・heredoc は injection 検出で必ず承認要求になる
    （公式 security doc: 「Suspicious bash commands require manual approval even if
-   previously allowlisted」。なお `$( )` を含む **catastrophic removal** は 2.1.208 以降
-   `--dangerously-skip-permissions` でも昇格する — 一般の `$( )` はこの特例の対象外）
+   previously allowlisted」）
 4. `git push` は sandbox の network / credential 制約で失敗するため
    `dangerouslyDisableSandbox: true` を付けて実行する
-   （認証は `gh auth setup-git` 済み — memory: github-auth-git-gh-disconnect-2026-06）
+   （認証は `gh auth setup-git` 済みで、`credential.https://github.com.helper` に
+   `gh auth git-credential` が入っている）
 5. commit 前の secret scan は PreToolUse hook が自動実行する（rules/common/security.md）。
    手動で scan を連結する必要はない。連結 commit でも hook は全 git ターゲットを走査する
    （ADR-0038）が、迷ったら commit だけ単発にするのが安全側
@@ -44,4 +44,6 @@ PreToolUse に配線）が `cd ... && git` 形と `git commit` + `$(` 形を blo
 
 本 skill は Claude Code の permission 実装（v2.1.x、as-of 2026-08-13）に依存する。
 cd + git 特例の緩和・injection 検出の変更・sandbox 内 push の解禁があれば該当規則を再監査する。
+2.1.208 以降は `$( )` を含む catastrophic removal が `--dangerously-skip-permissions` でも
+昇格する（一般の `$( )` はこの特例の対象外）— 昇格対象の拡大があれば規則 3 を再監査する。
 規則がすべて product / allowlist 側に吸収されたら skill ごと退役する。

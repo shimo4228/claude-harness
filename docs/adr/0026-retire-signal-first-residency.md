@@ -36,11 +36,22 @@ planning.md の 2 介入点モデル + system prompt の autonomous 既定）が
 判断した。これは `akc-cycle.md` 自身の Scaffold Dissolution が定義する「モデル世代交代 =
 downward トリガー」に該当する。
 
+> **注記（2026-09-19, ADR-0073）**: この判断は対話の形について弱まった。著者が対話セッションで
+> 応答の肥大と「一度に複数のことを聞いてくる」を観測し、読者に求める判断を 1 メッセージに 1 つへ
+> 直列化する挙動は既定では出ていなかった。output style `output-styles/signal-first.md` と
+> AskUserQuestion の 1 問ゲートで持つ（[ADR-0073](./0073-signal-first-as-output-style-and-one-question-gate.md)）。
+> 常駐節の退役、score を出さない類の出力規律が消費 skill 側で足りている点、grill-me の
+> Interview mode は変わらない。
+
 ## Decision
 
 1. `rules/common/akc-cycle.md` から Signal-first 節（Output discipline 小節を含む）を
    削除し、常駐を退役する。原則の正本は消費 skill 側（`search-first` Step 2 /
    `wiki-harvest` Step 3 ほか）に移す。
+
+   > **注記（2026-09-14, ADR-0066）**: search-first の改修で「evidence, not scores」の
+   > 置き場は §3 Report（verdict 行は廃止、肯定形「Judgement is prose backed by facts」）。
+   > 正本が消費 skill 側にある点は変わらない。
 2. 参照の後始末を行う: `rules/README.md` のツリー行と履歴行、`wiki-harvest` SKILL.md
    Step 3 の正本ポインタ（自己完結化）、`harness-sync` SKILL.md の signal-first-research
    行 2 箇所（原則正本ポインタの差し替え）。

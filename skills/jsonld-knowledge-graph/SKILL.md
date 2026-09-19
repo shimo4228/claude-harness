@@ -79,6 +79,10 @@ custom namespace type（domain semantics を持つ）+ schema.org base type（AI
 
 **1 file で en/ja 両対応**。`graph.ja.jsonld` を別ファイルにするのは禁止（同期負債が発生する）。Concept DOI / repo URL / `@id` は言語中立なので二重管理不要。
 
+- ResearchLine の `name` / `alternateName`、および concept-level node（Concept / Axiom / Quadrant 等）の `alternateName` は両言語で置く
+- 多言語化する literal には必ず `@language` を付ける（無いと default 言語が不明で crawler の解釈が undefined）
+- description と ADR title は en 単独でよい（prose の正本は llms-full.txt / GitHub の英語 prose、graph は entity 識別が主目的）
+
 ### 3. Schema absence で禁止関係を構造的に強制
 
 「X と Y は **絶対に dependency 関係ではない**」を保証したい場合、`dependsOn` のような edge type を **そもそも `@context` に定義しない**。schema の vocabulary 自体が構造的 commitment になり、表現できない関係は表現されない。
@@ -141,14 +145,7 @@ schema.org `Dataset` は Google AI Overviews / Perplexity が structured data �
 
 ### 9. Reverse-link で hub-and-spoke 経路双方向化
 
-hub-and-spoke topology の場合、各 line repo の README に **hub graph への逆リンク**を置く:
-
-```markdown
-For the canonical relationship map of <ecosystem>'s research ecosystem, see:
-https://github.com/<owner>/<hub>/blob/main/graph.jsonld
-```
-
-LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
+hub-and-spoke topology の場合、各 line repo の README に **hub graph への逆リンク**を置く。README 側の置き方の正本は [`readme-writer`](../readme-writer/SKILL.md)（末尾に平文 1–2 行）。LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
 
 **散文リンクだけでは不十分** — README 逆リンクは人間/プレーンテキスト向け。グラフ層でも各 spoke の **self-node に機械可読な上向き edge** を張る:
 
@@ -191,6 +188,8 @@ LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる
 
 namespace は dereferenceable である必要なし（典型的な "private vocab" pattern）。重要なのは **byte-identical re-use** が cross-graph で実現できること。
 
+`sameAs` の解決先は **self-sovereign または earned なもののみ**（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）。Wikidata QID は張らない（authorship-strategy ADR-0021 — host governance による一括削除の実測）。dead QID を検出したら purge する。
+
 ## Cross-graph @id Discipline
 
 hub-and-spoke topology で複数 graph を持つ場合の規約:
@@ -210,32 +209,6 @@ jq -r '.["@graph"][] | select(.["@type"][] | contains("ResearchLine")) | .["@id"
 grep -h "doi.org/10.5281/zenodo" */graph.jsonld | sort -u
 ```
 
-## Bilingual Strategy
-
-JSON-LD 1.1 の language-tagged literal を使い、**1 file で en/ja を保持**:
-
-```json
-{
-  "alternateName": [
-    {"@value": "Agent Knowledge Cycle", "@language": "en"},
-    {"@value": "エージェント知識サイクル", "@language": "ja"}
-  ]
-}
-```
-
-### やってはいけないこと
-
-- `graph.ja.jsonld` を別ファイルにする → 同期負債発生
-- 一部の literal だけ多言語化する → 一貫性が崩れて LLM 解釈に揺れ
-- `@language` を省略する → デフォルト言語が不明、crawler の解釈が undefined
-
-### やるべきこと
-
-- ResearchLine `name` と `alternateName` は必ず両言語
-- Concept / Axiom / Quadrant など concept-level node は `alternateName` で両言語
-- description は en 単独でもよい（prose は llms-full.txt が正本、graph は entity 識別が主目的）
-- ADR title は en 単独でよい（GitHub の英語 prose が正本）
-
 ## Companion File Wiring
 
 graph.jsonld を作っただけでは crawler に見つからない。`llms.txt` / `llms-full.txt` / README に wiring が必要:
@@ -244,59 +217,16 @@ graph.jsonld を作っただけでは crawler に見つからない。`llms.txt`
 |---|---|
 | `llms.txt` | (1) 冒頭に Graph-first reading order blockquote と numbered section、(2) Core documentation navigator の最上位に graph.jsonld entry |
 | `llms-full.txt` | 末尾に question-form H2（"How do X and Y relate as a graph?"）+ graph.jsonld への link + 3 つ程度の load-bearing design choice 説明 |
-| `README.md` (人間向け) | 冒頭に `<details><summary>AI-facing reading order</summary>` 折りたたみ block。維持している language mirror があれば同 block を mirror にも入れる |
-| `README.{lang}.md` (追加 mirror がある場合) | summary tag と intro 行のみ localize、bullet list は paths なので en 共通でよい。mirror を維持するか（traffic-data 基準）の判断は `llms-txt-writer` の Companion JSON-LD Graph セクションが正本 |
-| hub-and-spoke の line README | hub graph への reverse-link を上記 block 内に追加 |
+| `README.md` と維持している language mirror | 末尾に平文 1–2 行で graph.jsonld / llms.txt への導線（hub-and-spoke の line README はこの行に hub graph への reverse-link も含める）。置き方の正本は [`readme-writer`](../readme-writer/SKILL.md) |
 
 詳細な wording は `~/.claude/skills/llms-txt-writer/SKILL.md` の Companion JSON-LD Graph セクション参照。
 
 ## Verification Workflow
 
-graph.jsonld を作成・編集したら以下を実行:
+graph.jsonld を作成・編集したら、同梱の lint script を走らせる。JSON validity / expansion / DROPPED-KEY / URL-LITERAL / VOLATILE を一括で決定論的に検査する:
 
 ```bash
-# 1. JSON 構文
-python3 -m json.tool < graph.jsonld > /dev/null
-
-# 2. JSON-LD expansion + N-Quads triple count
-uvx --quiet --from pyld python3 -c "
-from pyld import jsonld
-import json
-doc = json.load(open('graph.jsonld'))
-expanded = jsonld.expand(doc)
-nquads = jsonld.to_rdf(doc, {'format': 'application/n-quads'})
-lines = [l for l in nquads.strip().split(chr(10)) if l]
-print(f'{len(expanded)} nodes / {len(lines)} triples')
-"
-
-# 3. Volatile state 検出（empty が期待値）
-grep -E '"version"|"versionNumber"|"adrCount"|"testCount"|v[0-9]+\.[0-9]+' graph.jsonld
-
-# 4. Reading-order presence in llms.txt
-head -30 llms.txt | grep -c "Recommended reading order\|graph.jsonld"
-
-# 5. Concept DOI 整合（latest ではなく concept DOI が @id に使われている）
-# (manual: 各 ResearchLine @id を Zenodo で開いて parent record であることを確認)
-```
-
-### Context pitfalls — edge が静かに消える 2 パターン
-
-production graph 6 本の監査 (2026-06) で実際に発生した。いずれも JSON は valid のまま、
-triple count も変わらないため、上記 step 1-2 では検出できない:
-
-1. **IRI 文字列の literal 化**: `@vocab` があっても、context で `@type: "@id"` 強制の
-   ない property（schema.org の `author` / `creator` 等）に IRI を文字列で渡すと literal
-   になり、node への edge にならない。Person node が graph に居ても誰からも参照されない。
-   - 対策: IRI 参照は常に `{"@id": "https://..."}` オブジェクト形式で書く
-2. **未定義 key の無言ドロップ**: `@vocab` なしの明示マッピング型 context では、context に
-   無い key（`sameAs` 等）が expansion で警告なく消える。
-   - 対策: graph に新しい property を導入する前に context マッピングの存在を確認する
-
-検出は同梱の lint script が決定論的に行う（上記 step 1-3 の機械チェックも包含するので、編集後はこれ 1 コマンドでよい）:
-
-```bash
-# 6. graph lint — JSON validity / expansion / DROPPED-KEY / URL-LITERAL / VOLATILE を一括検査
-#    exit 0 = clean, 1 = findings, 2 = fatal。複数ファイル可
+# exit 0 = clean, 1 = findings, 2 = fatal。複数ファイル可
 uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph_lint.py graph.jsonld
 
 # locator 系 property（url / license / contentUrl）は literal URL を許容。変更する場合:
@@ -310,6 +240,20 @@ uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph
 ```
 
 修正の定石: 値の書き換えではなく **@context への coercion 追加** で直す（`"sameAs": {"@id": "https://schema.org/sameAs", "@type": "@id"}` を足せば既存の文字列値がそのまま IRI として解釈される。diff が context の数行で済む）。
+
+### Context pitfalls — edge が静かに消える 2 パターン
+
+production graph 6 本の監査 (2026-06) で実際に発生した。いずれも JSON は valid のまま
+triple count も変わらないので、構文チェックと expansion だけでは見えない（lint の
+DROPPED-KEY / URL-LITERAL が拾う層）:
+
+1. **IRI 文字列の literal 化**: `@vocab` があっても、context で `@type: "@id"` 強制の
+   ない property（schema.org の `author` / `creator` 等）に IRI を文字列で渡すと literal
+   になり、node への edge にならない。Person node が graph に居ても誰からも参照されない。
+   - 対策: IRI 参照は常に `{"@id": "https://..."}` オブジェクト形式で書く
+2. **未定義 key の無言ドロップ**: `@vocab` なしの明示マッピング型 context では、context に
+   無い key（`sameAs` 等）が expansion で警告なく消える。
+   - 対策: graph に新しい property を導入する前に context マッピングの存在を確認する
 
 #### なぜ自作 lint か（external research, 2026-06）
 
@@ -325,6 +269,8 @@ uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph
 
 ### Manual checks
 
+- **llms.txt reading order**: `head -30 llms.txt | grep -c "Recommended reading order\|graph.jsonld"`
+- **Concept DOI 整合**: 各 ResearchLine `@id` を Zenodo で開き、latest ではなく parent record（concept DOI）であることを確認
 - **JSON-LD playground**: https://json-ld.org/playground/ に paste して `@context` が解決し triple として展開されることを確認
 - **schema.org validator**: https://validator.schema.org/ で `Dataset` / `ScholarlyArticle` 等の type が認識されることを確認
 - **LLM citation probe**: graph push 後 1-2 週間（crawler refresh 待ち）、ChatGPT / Perplexity に「<project> の X と Y はどう関係しますか？graph.jsonld を参照してください」と質問し、graph が citation されるか確認
@@ -333,15 +279,7 @@ uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph
 
 graph.jsonld を更新したら、Hugging Face Datasets 上の mirror にも同期する。HF は LLM training pipeline / knowledge-graph crawler の primary ingest source として機能する（HF dataset は Auto-converted to Parquet が走り、`pandas` / `Polars` / `Datasets` ライブラリから直接 load 可能になる）。
 
-**正本は [`hf-sync`](../hf-sync/SKILL.md) skill にある**。`/hf-sync <Owner/dataset>` または `bash ~/.claude/skills/hf-sync/sync.sh <Owner/dataset>` を project root で実行すれば、`graph.jsonld` の structural check → `graph.jsonl` flatten → `hf upload` 2 ファイルが 1 コマンドで走る。Local の token を使うので CI auth setup は不要。
-
-前提条件・repo mapping・token scope の扱いは **hf-sync に再掲しない**（正本の改名時にコピーだけ取り残された前例あり — `hf login` → `hf auth login`）。
-
-`release-doi` skill の Phase 4 末尾（tag push + `gh release create` の後）で呼ぶのが標準フロー。ad-hoc resync にも同じ skill を使う。
-
-**graph の `sameAs` は self-sovereign または earned な解決先のみ**（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）。Wikidata QID は張らない（authorship-strategy ADR-0021 — host governance による一括削除の実測）。dead QID を検出したら purge する。
-
-HF 側の `README.md` (dataset card) は graph 更新では同期しない。Dataset card は HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えたい場合は手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
+手順・前提条件・repo mapping・token scope の正本は [`hf-sync`](../hf-sync/SKILL.md)。`release-doi` skill の Phase 4 末尾（tag push + `gh release create` の後）で呼ぶのが標準フローで、ad-hoc resync にも同じ skill を使う。
 
 ## Maintenance Contract
 

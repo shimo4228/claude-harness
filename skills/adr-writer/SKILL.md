@@ -1,32 +1,38 @@
 ---
 name: adr-writer
-description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, delegates 7-section body generation (incl. `Review-when` expiry conditions) to the adr-writer agent, and updates the ADR index. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
+description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, writes the 7-section body (incl. `Review-when` expiry conditions) in the main loop, runs the mechanical evidence and the adr-reviewer, and updates the ADR index. Also the canonical place for the filing bar — an ADR is written only for a mechanism / gate / threshold / agent-tier change that other artifacts cite, or for superseding / annotating a prior ADR; everything else goes into the commit body. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
 user-invocable: true
 origin: shimo4228
 ---
 
 # ADR Writer
 
-Capture a design decision as a numbered ADR with consistent structure. The skill handles the boilerplate (directory detection, sequence numbering, index update); the `adr-writer` agent handles the prose.
+Capture a design decision as a numbered ADR with consistent structure. The skill handles the boilerplate (directory detection, sequence numbering, index update) in scripted steps, and the main loop writes the prose.
 
-## Why a Skill + Agent Split
+## Why the main loop writes
 
-The skill owns deterministic concerns: where the ADR goes, what number it gets, which index needs updating. These are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift) so they live in scripted steps.
+Deterministic concerns — where the ADR goes, what number it gets, which index needs updating — are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift), so they live in scripted steps. The prose is written by the main loop that holds the decision: rendering to the house template is cheap for it, and the decision packet (Step 3) is the discipline that keeps *decide* and *render* apart — the packet is settled first, the file is a faithful expression of it, nothing is inferred while writing. That principle is [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) (writer agents render, they do not decide); the separate render agent that used to embody it was retired by [ADR-0072](../../docs/adr/0072-retire-adr-writer-agent-and-narrow-adr-filing.md) — the main loop re-read the file for fidelity anyway, and the evidence script (Step 4.5) now catches what the agent's calibration pass used to cover.
 
-The agent owns **rendering**, not deciding: given a frozen, already-approved decision packet, it re-expresses each section into the template, calibrates against neighbouring ADRs' house style, resolves links, and writes the file. What the ADR *means* — the real Context, the actual Decision, why each Alternative was rejected, which Consequences follow — is a **semantic decision that stays with the caller (the main loop)**. The agent has no authority to infer or invent it; it refuses to write when the packet is incomplete. See [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) — writer agents render, they do not decide. (This split does not exist merely to isolate context: rendering to a fixed house-style template is low-authority and cheaply verifiable, which is exactly what makes delegation safe here — unlike translation, whose prose carries the author's non-convergent voice and stays in the main loop.)
+## When to Use（起票の条件 — 正本）
 
-## When to Use
+Write an ADR when at least one holds:
 
-- The user says "let's ADR this", "record this decision", "write an ADR for X"
-- `context-sync` Phase 3 has extracted a decision from CLAUDE.md / README that needs ADR form
-- The user is about to merge a PR with an irreversible architectural change and wants a record
-- A debate concluded in chat and the user wants the outcome durable
+- The change moves a **mechanism, gate, threshold, or agent tier that other artifacts cite** (a hook, a lint boundary, a chain step, a rule's default, a model pin) — the ADR is what those artifacts point at
+- The decision **supersedes or partially weakens a prior ADR** (a Status flip or a dated 注記 is needed on the old one)
 
-## When NOT to Use
+Entry points are the same as before: the user says "let's ADR this" / "record this decision", `context-sync` Phase 3 surfaced a buried decision, a debate concluded and the outcome must outlive the session. Apply the two conditions to the request; when neither holds, say so and use the commit body.
 
-- Bug fix records (use the commit message)
-- Reversible refactors (commit message is enough)
-- Personal preferences ("I like spaces over tabs") — those go in a style guide, not an ADR
+## When NOT to Use — the commit body carries it
+
+Everything else is recorded in the commit body, in three lines, so `git log --grep` finds it later:
+
+```
+Context: <what was observed, with its source>
+Decision: <what changed, as a commitment>
+Review-when: <the observation that would void it, or "none — record">
+```
+
+This covers bug fixes, reversible refactors, wording changes to rules / skills that nothing else cites, stocktake outcomes (retire / keep verdicts — the stocktake's own results file plus the commit), and personal preferences. When a commit-body decision later gets superseded or cited by another artifact, promote it: write the ADR then, quoting the commit.
 
 ## Workflow
 
@@ -130,27 +136,25 @@ gitignored パス参照、数値の出典と分母、カウント条件の固定
 
 **Assemble and approve the decision packet before delegating.** The main loop holds the semantic authority for this ADR, so it — not the agent — must settle the actual content: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4. The agent that follows only renders what you hand it; it will not fill a gap you leave. If the decision is still fuzzy, resolve it here in the main loop — do not expect the agent to infer it.
 
-### Step 4: Delegate body generation to the adr-writer agent
+### Step 4: Write the file (main loop)
 
-Invoke the `adr-writer` agent via the Agent tool with:
+Read the 2 most recent ADRs in `$ADR_DIR` for house style (heading form, link style, whether
+Consequences splits into Positive / Negative / Neutral), then write
+`$ADR_DIR/$NEXT_NUM-<title>.md` from the Step 3 packet:
 
-- ADR number (`$NEXT_NUM`)
-- Repo root (`$REPO_ROOT`)
-- ADR directory (`$ADR_DIR`)
-- Title (kebab-case slug)
-- Status / Date / Context / Decision / Review-when / Alternatives / Consequences
+- Heading `# ADR-NNNN: <title>`, then the 7 sections in template order (Step 1's template, or
+  the repo's own `docs/adr/README.md` Template block when it differs)
+- Every Context fact, Decision clause, rejection reason and Consequence comes from the packet.
+  Writing is expression, not synthesis — a consequence that feels "logically entailed" but is not
+  in the packet goes back to Step 3 for the user to approve, not into the file
+- Decision in imperative voice (「〜する」「〜に固定する」); Review-when as observable triggers;
+  each Alternative with its rejection reason or 「未決 — 再訪条件: …」
+- Links to sibling ADRs are relative (`./NNNN-slug.md`) and the file name is copied from `ls`,
+  not typed from memory — Step 4.5's `refs.links_broken` is the check
 
-The agent will:
-- Read the 2 most recent ADRs in `$ADR_DIR` for style calibration
-- Fill the 7 sections from your input (no invention)
-- Write the file at `$ADR_DIR/$NEXT_NUM-<title>.md`
-- Return a summary block
+If a packet field is missing, stop and ask; do not write a partial ADR.
 
-If the agent returns "needs more input", surface the missing-fields message to the user and stop. Do not push partial ADRs.
-
-**Fidelity check (main loop, after the agent writes).** Because the agent only renders, verify it added nothing semantic: read the written file and confirm every Context fact, Decision clause, rejection reason, and Consequence traces back to the packet you approved in Step 3. If the agent introduced an inferred claim (a "logically entailed" consequence, an unstated rationale), strike it or send it back — the render must not exceed the packet.
-
-### Step 4.5: Run the mechanical lint
+### Step 4.5: Run the mechanical lint and the per-ADR evidence
 
 ```bash
 python3 ~/.claude/skills/adr-writer/scripts/adr_lint.py --root "$REPO_ROOT"
@@ -164,6 +168,22 @@ Evidence モード（判定しない・exit 0）。出力 JSON のうち**今書
 ad hoc で blocking 判定が欲しいときは `--gate` を足す。免除境界は既定で無制限なので
 repo ごとの値を渡す — harness は `--sections-from 44 --require-review-when-from 44`
 （ADR-0009 の 2 節欠落と 0043 以前の Review-when 無しを免除、ADR-0051）。
+
+続けて、今書いた 1 本の per-ADR evidence を取る（ADR-0071 — adr-reviewer が 24 報告で反復した
+指摘のうち、機械で数えられる部分）:
+
+```bash
+python3 ~/.claude/skills/adr-writer/scripts/adr_review_evidence.py --root "$REPO_ROOT" --adr "$NEXT_NUM" --diff worktree
+```
+
+JSON のうち**書き時に直せるもの**をここで直す — `refs.unresolved`（実在しない ADR / RFC 番号）、
+`refs.links_broken`、`paths.flagged` の `missing`（実在しないパス）と `ignored`（gitignored の
+根拠 — `docs/evidence/` へ昇格するかパス非依存に書き換える）、`paths.line_refs_out_of_range`、
+`numbers.percent_without_denominator`、`numbers.relative_referents`（会話参照）、
+`relations.targets` で `annotation_lines` が空の target（旧 ADR 側の注記 — Edge cases 表の
+partial weakening 行）。`diff_scope.changed_not_mentioned` に ADR が触れていない変更があれば、
+Decision に書くか別 commit へ分ける。残りの key（`numbers.unanchored`、`review_when`、
+`alternatives`、`consequences`、`second_record`）は判断を要するので Step 4.6 の reviewer に渡る。
 
 ### Step 4.6: Run the semantic review (adr-reviewer)
 
@@ -220,15 +240,17 @@ Index:   updated (+1 row)
 ## Boundaries
 
 - **Do not** invent missing sections. Refuse to write an ADR with `Context: [TBD]` or similar placeholders.
-- **Do not** modify ADRs other than the new one and (optionally) the index, except the two explicit main-loop steps above (Status flip on full supersede; dated 注記 on partial weakening). The `adr-writer` agent itself never touches an existing ADR (ADR-0016).
+- **Do not** modify ADRs other than the new one and (optionally) the index, except the two explicit main-loop steps above (Status flip on full supersede; dated 注記 on partial weakening).
 - **Do not** infer the user's decision from chat history without confirming. Ask, even if the answer feels obvious.
 - **Do not** commit the file. The user owns the commit step.
 
 ## Reference Files
 
 - ADR template canonical source: read the target repo's existing ADRs to mirror their voice. For the harness itself, see `~/.claude/docs/adr/README.md`.
-- Agent that fills the body: `~/.claude/agents/adr-writer.md`.
 - Mechanical lint (evidence mode + `--gate`): `scripts/adr_lint.py`（ADR-0051。repo の
   `docs/adr/README.md` Template からテンプレを自動適応、tests は `tests/test_adr_lint.py`）。
+- Per-ADR review evidence (evidence mode のみ): `scripts/adr_review_evidence.py`（ADR-0071。
+  引用の実在・注記の往復・パス分類・diff 範囲・出典なき数値、tests は
+  `tests/test_adr_review_evidence.py`）。
 - レビュー頻出指摘の事例集: `references/review-findings.md`（Step 3 の予防チェックで読む）。
 - Evals: `evals/evals.json` (3 scenarios — new ADR / missing docs-adr / sequence collision).

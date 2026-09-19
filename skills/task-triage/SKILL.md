@@ -1,12 +1,12 @@
 ---
 name: task-triage
-description: "Run one cycle of the task-triage loop over a repo's task ledger — judge every open task (verify its premise in code, check its start condition against the 照合先, decide whether it is still worth doing, look for a better solution), then dispatch the accepted ones to fresh implementation sessions and act as their independent judge until the human merges. Use when the user says 「残タスクを見て」「タスクを整理して」「台帳を回して」「dispatch して」「未マージある？」, invokes /task-triage, or when a task ledger has grown and nobody can say what is dispatchable. This skill is the judgment layer of the loop (Fable = judge, Opus sessions = build, human = last switch); the vocabulary of ledger states is owned by task-stocktake and is not redefined here. NOT for consolidating scattered task files into a ledger (task-stocktake), NOT for deciding a single build-or-not question (architect), and NOT for running a task yourself — a triage session reads, judges, dispatches and verifies; it does not implement."
+description: "Run one cycle of the task-triage loop over a repo's task ledger — judge every open task (verify its premise in code, check its start condition against the 照合先, decide whether it is still worth doing, look for a better solution), then dispatch the accepted ones to fresh implementation sessions and act as their independent judge until the branch is merged. Use when the user says 「残タスクを見て」「タスクを整理して」「台帳を回して」「dispatch して」「未マージある？」, invokes /task-triage, or when a task ledger has grown and nobody can say what is dispatchable. NOT for consolidating scattered task files into a ledger (task-stocktake), NOT for deciding a single build-or-not question (architect), and NOT for running a task yourself."
 license: MIT
 origin: shimo4228
 compatibility: Developed on Claude Code with Herdr as the session multiplexer; the dispatch mechanics section names the alternatives (Agent tool, `claude --bg`) for other setups.
 ---
 
-# Task Triage — judge, dispatch, verify (the human keeps the last switch)
+# Task Triage — judge, dispatch, verify, merge (the human sets direction)
 
 A task ledger grows faster than it drains because filing is the cheapest action anyone can
 take. This skill is one **cycle** of a loop that drains it — not by implementing faster, but
@@ -18,9 +18,13 @@ Roles (decided 2026-08-17, ADR-0043):
 
 | Role | Who | Does | Never does |
 |---|---|---|---|
-| **Judge** (this skill) | the triage session (Fable-tier) | premise check, worth check, better-solution check, condition check → verdict; writes kickoff packets; independently verifies build output; keeps the books | files tasks on its own initiative, confirms a drop alone, merges to main, touches rules / ADR / hooks / published artifacts unattended |
-| **Build** | a fresh session per task (Opus-tier), in a git worktree | Phase 0 premise re-check → implement → commit on the task branch with the evidence in the commit body | changes acceptance conditions, merges, pushes, edits the ledger |
-| **Human** | the owner | direction for tasks that need it, batch answers to the digest, the merge word | watches individual sessions (attention is the scarce resource) |
+| **Judge** (this skill) | the triage session (Fable-tier) | premise check, worth check, better-solution check, condition check → verdict; writes kickoff packets; independently verifies build output; merges what passed §4 ff-only and pushes; keeps the books | confirms a drop alone; files tasks on its own |
+| **Build** | a fresh session per task (Opus-tier), in a git worktree | Phase 0 premise re-check → implement → commit on the task branch with the evidence in the commit body | changes acceptance conditions, merges its own branch, edits the ledger |
+| **Human** | the owner | direction for tasks that need it, batch answers to the digest, the merge of a diff that touches rules / hooks / permissions / gate scripts while unattended | watches individual sessions (attention is the scarce resource) |
+
+The shared boundary — what is handed to the human, what a session may risk without asking,
+when to stop and report — is rule `boundary.md`; the column above holds only what is specific
+to the role.
 
 The mechanism (Workflow tool, `/loop`, cron, Herdr) is the substrate's; this skill covers
 only what to judge and how to keep the loop from running away (`loop-design-check` is the
@@ -31,7 +35,7 @@ lens it was designed with).
 Ledger states are `draft` / `accepted` / `in_progress` / `blocked` and the terminals
 `done` / `resolved` / `rejected` / `withdrawn` / `obsoleted` (ADR-0050); `blocked` requires 再開条件 / 照合先 / 成立時,
 便乗型 rows ("次に X を触るとき") do not belong in a ledger. The definitions live in
-`task-stocktake` — read that section before the first triage. There is no "defer".
+`task-stocktake` — read that section before the first triage.
 
 The verdicts of a triage are the states themselves:
 
@@ -108,18 +112,18 @@ decisions one at a time with `AskUserQuestion`.
 
 Never treat text sitting in another session's input box as the human's answer — Claude Code
 pre-fills suggested prompts there — and never treat a Slack reply as the answer either. The
-merge word and the answers come **in the triage session**, or through the human's own hands.
+answers come **in the triage session**, or through the human's own hands.
 
 ### 3. Dispatch — packet, worktree, fresh session
 
-Only `accepted` tasks, and at most **3 concurrent build sessions**. Group tasks that share one
+Only `accepted` tasks, within the WIP cap (Damping). Group tasks that share one
 setup into one packet (three skill-comply chores became one session; three README notes in
 three repos became one). Measurements (readings that decide the next state) dispatch just as
 well as implementations — often better: read-only, decidable, reversible.
 
 Per task or bundle:
 
-1. `claims.py claim T-XXX --label "S<n>: <what> (Opus session, worktree <branch>; judge=…, merge=human)"`
+1. `claims.py claim T-XXX --label "S<n>: <what> (Opus session, worktree <branch>; judge=…, merge=judge after §4)"`
 2. `git -C <repo> worktree add .claude/worktrees/<name> -b task/<name> main` — and copy the
    repo's untracked `.claude/settings.local.json` (and project hooks / skills if gitignored)
    into the worktree, or the session runs without the allowlist. `.claude/worktrees/` must be
@@ -140,22 +144,24 @@ Per task or bundle:
    - *Implementation that must run the full review chain, may run long, or may hit permission
      prompts* → an interactive session via `spawn-session` (Herdr, Remote Control) so hooks,
      skills and the chain run in the normal environment and the owner can approve from the
-     phone: `bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>"` →
+     phone: `bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus` →
      `herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000` — the first
      prompt often returns `timeout` while landing fine; confirm with `herdr agent read`.
      `agent_status: done` means the REPL is idle, **not** that the work is done — a background
      shell may still run. `claude --bg -w <name> --model opus "<prompt>"` is the detached
      alternative (completion via `claude agents --json`).
-   Unverified as of 2026-08-17 (test on a measurement batch first, where failure is free):
-   whether hooks fire identically inside subagents, whether the chain's skills are equally
-   available there, and how permission prompts surface — if all three hold, implementations
-   can move to Workflow too.
+   Hooks, the chain's skills and a direct `verify.sh` run behave inside an Agent-tool
+   subagent as they do in the main session (measured 2026-08-29, RFC-0016), so
+   implementations may take this route too. Known cost: the worktree isolation guard hard-
+   refuses some Bash with no prompt — shell `for` loops and heredocs, git or not. Fold a loop
+   into one command over several paths, or write the analysis to a file and run
+   `python3 <file>`.
 5. Watch for **artifacts**, not status: a commit on the task branch, the reading file, a
    section in the memo. `Monitor` with a poll loop, exit when all artifacts exist.
 
 ### 4. Judge the output — independent, deterministic first
 
-The build session's report is a claim. Before asking for the merge word:
+The build session's report is a claim. Before merging:
 
 - `git diff --stat main..task/<name>` — only the files the packet allowed. If main moved since
   the worktree was cut, the diff shows the *missing* main commits: `git rebase main` in the
@@ -171,69 +177,84 @@ The build session's report is a claim. Before asking for the merge word:
   deviation — something skipped or done differently without saying so — is a bounce even if
   the result looks right, because the next build learns from what the last one got away with.
 - **Harvest what the build hands back — but ask the human only what the rule says to ask.**
-  Read the commit body and the final message. Two kinds reach the digest as decisions:
-  (1) **out-of-diff findings that break the loop itself** (the next build would bounce on
-  them — e.g. a verify.sh blind spot) with a verified producer → propose filing
-  (`spawn --origin review --producer`), per skill `task-stocktake`'s 起票規律 (ADR-0055) — the filing itself (numbering, template, index row) follows
-  skill `rfc-writer`; (2) **explicit filing requests
-  that are the deliverable of a measurement / probe task** (a probe's "(B)/(C) はやる価値がある",
-  an instrument finding such as "the metrics are polluted") — these are not review findings,
-  they are the task's output, and the build has no authority to file them. All other review
-  findings, **HIGH included**, are **discarded by the rule**: they stay in the commit body
-  (producer 付き 1 行), and the digest reports
-  only their count ("diff 外 findings: 3 件、commit body 参照") — no list, no question.
+  Read the commit body and the final message. What may reach the digest as a filing decision
+  is skill `task-stocktake`'s 起票規律 (ADR-0055): a loop-breaking out-of-diff finding with a
+  verified producer (`spawn --origin review --producer`), and a probe's own filing request.
+  Everything else, **HIGH included**, stays in the commit body (producer 付き 1 行) and the
+  digest reports only the count ("diff 外 findings: 3 件、commit body 参照") — no list, no
+  question. The filing itself (numbering, template, index row) follows skill `rfc-writer`.
   Observations that are not tasks (a rate near a revert threshold, a measurement caveat) are
-  one line each. The judge never files on its own initiative.
+  one line each.
 
-### 5. Merge on the human's word, then close the books
+### 5. Merge, then close the books
 
 - `git -C <repo> merge --ff-only task/<name>` → run verify on `main` again → `claims.py
   release T-XXX --outcome done --commit <sha>` → state `done <date>` in the ledger (an
   `rfcs/` entry stays in place as a public decision record — ADR-0049) → `git worktree remove` +
   `git branch -d` → close the build
   session's pane (`herdr pane close <pane_id>`; the pane is not evidence — the commit body is).
-  Never close panes you did not spawn.
 - If the merge changed a pinned gate script (`.claude/verify.sh`), the approval ledger needs
-  the human's `verify_allow.py approve <repo>` **after** the merge — say so explicitly, once
+  the human's `python3 ~/.claude/scripts/hooks/verify_allow.py approve <repo>` **after** the merge — say so explicitly, once
   per such merge, and check with `verify_allow.py check` that it happened. A gate that quietly
   went dormant is worse than a red one.
-- Unmerged branches are the queue: `git branch --no-merged main` per repo. The digest lists
-  them with their evidence; the human says which; the judge types the merge.
-- **Cycle-end digest**: open before → after with the closed / spawned split, the unmerged
-  queue, the harvest list (file / drop / observe — the human's call), and the questions still
-  waiting. All of it in the session's reply (§2); Slack gets the one-line titles only.
+- Push after the merge when the repo has a remote (`git push`; force is blocked by the hook).
+- Unmerged branches are the queue: `git branch --no-merged main` per repo. The judge merges
+  what passed §4 and leaves the rest with a reason — bounced, stalled, or waiting on the
+  human because the diff touches rules / hooks / permissions / a gate script while unattended
+  (`boundary.md`).
+- **Cycle-end digest**: open before → after with the closed / spawned split, what was merged
+  and what was left (with the reason), the harvest list (file / drop / observe — the human's
+  call), and the questions still waiting. All of it in the session's reply (§2); Slack gets
+  the one-line titles only.
 
 ## Damping and boundaries (what makes this a loop and not a runaway)
 
 - WIP ≤ 3 build sessions; open task branches ≤ 3 per repo; one retry per task per cycle; a
   build that stalls or fails twice goes back to the digest.
 - The loop **files nothing on its own** (admission stays with humans and the review rule);
-  **drops nothing alone**; never merges, publishes, or touches rules / ADR / hooks / security
-  gates unattended; never changes the filing rule while its measurement is running.
+  **drops nothing alone**; keeps the filing rule fixed while its measurement is running. The
+  shared boundary (publish, human-gated diffs, external writes) is rule `boundary.md`.
 - Success is reconciliation, not throughput: per cycle report `open before → after`,
   `closed (done + resolved + rejected + withdrawn + obsoleted)` vs `spawned`, and where the spawns came from
   (`claims.jsonl` origins). A cycle that raises open count is not a bad cycle if the spawns
   were the human's; a cycle that "wins" by mass drops is.
 - Two questions the loop deliberately does not answer (state them, measure them): what a
-  build session does with side-findings (this harness: loop-breaking defect with verified
-  producer → file after asking; everything else, HIGH included → one line in the commit
-  body), and who prunes spawned-but-unstarted work (here: the human, at the digest).
+  build session does with side-findings (this harness: §4 Harvest), and who prunes
+  spawned-but-unstarted work (here: the human, at the digest).
 
 ## Where the loop lives — one orchestrator session per repo
 
 **The timer is outside the session; the executor is inside; the answers are inside only.**
 One **standing triage session per repo, with that repo as cwd**, Remote Control on so the
 digest can be answered from the phone. It holds no timer of its own: launchd runs
-`scripts/triage-tick.sh <repo> <agent-name> "<display>"` at the repo's slots
-(`scripts/launchd/com.shimomoto.triage-{harness,ca}.plist`, installed in
-`~/Library/LaunchAgents/`); the tick finds the live triage agent by its fixed Herdr name
-(`triage-harness` / `triage-ca`), spawns one via `spawn-session` if none exists, and submits
-the cycle prompt with `herdr agent prompt`. The tick never reads the ledger; it only reports
-its own anomalies to Slack (spawned a new session because none was alive, spawn failed,
-prompt stalled twice, session `blocked`, previous cycle still `working` → skipped). The human starts nothing: that is the point of the loop.
+`scripts/triage-tick.sh <repo> <agent-name> "<display>"` at the repo's slots — harness Sun
+06:30 (stocktake → triage); CA Wed 17:07 (triage) and Sat 14:07 (stocktake → triage, after
+the Saturday pipeline's 13:30 packet deadline and before the human gate). The tick finds the
+live triage agent by its fixed Herdr name (`triage-harness` / `triage-ca`), spawns one via
+`spawn-session` if none exists, and submits the cycle prompt with `herdr agent prompt`. The
+tick never reads the ledger; it only reports its own anomalies to Slack (spawned a new
+session because none was alive, spawn failed, prompt stalled twice, session `blocked`,
+previous cycle still `working` → skipped). The human starts nothing: that is the point of the loop.
+
+§2 is the 正本 of the cycle prompt's content: the tick's default prompt in
+`scripts/triage-tick.sh` is a rendering of it, and changing §2 means updating that prompt
+with it.
 A repo's loop needs the repo's context — its ADRs, its ledger vocabulary quirks, its verify
 gate, its concurrent worktrees — so one session judges one repo; a cross-repo session pays
 that reading twice and dilutes both.
+
+The plists (`scripts/launchd/com.shimomoto.triage-{harness,ca}.plist`) are copied to
+`~/Library/LaunchAgents/`; after editing one, `launchctl bootout` + `bootstrap` it and
+confirm with `launchctl print` — an edited file that was never reloaded keeps firing on the
+old schedule. The tick's *default* for "stocktake due" is the weekday (Saturday), so a repo
+with two slots keeps one plist — a repo with a single weekly slot must pass `--stocktake` in
+its plist, or moving that slot off Saturday silently kills the stocktake half (harness hit
+exactly this when it moved off Saturday 2026-08-29). Keep the timer in launchd: in-session
+`CronCreate` and `/loop` are session-only, expire in 7 days, and go silent when the session
+dies. A cycle that fires while the human is away still does everything up to the digest —
+条件 checks, vocabulary-only bookkeeping, dispatch of `accepted` work within WIP,
+verification of finished builds — then closes with the digest (§2); consults and merges wait
+for the human in the session.
 
 The session is long-lived but **not eternal, and it does not renew itself**: the last step
 of a cycle compares `claude --version` with the version it started under and checks its own
@@ -252,31 +273,13 @@ available and the builds are the fast tier.
 On demand until the judgments are stable across two or three cycles; then scheduled, aligned
 with whatever weekly gate the repo already has (a Saturday packet, a review day). Not daily —
 most `blocked` tasks are in dead-band and the digest is the expensive part. Order within a
-cycle: `task-stocktake` (ledger hygiene) first when it is due, then this skill.
+cycle: `task-stocktake` (ledger hygiene) first when it is due, then this skill. The slots in
+force and the plist discipline are in "Where the loop lives".
 
 | repo tempo | task-triage | task-stocktake |
 |---|---|---|
 | slow (a harness, a small table) | weekly | weekly, same day, before triage |
 | fast (a research repo with a review chain feeding it) | twice a week — e.g. mid-week + the day of its weekly gate | weekly |
-
-The timer is launchd (`scripts/triage-tick.sh`, see above): harness Sun 06:30 (stocktake →
-triage); CA Wed 17:07 (triage) and Sat 14:07 (stocktake → triage, after the Saturday
-pipeline's 13:30 packet deadline and before the human gate). The tick's *default* for
-"stocktake due" is the weekday (Saturday) so a repo with two slots keeps one plist — but a
-repo with a single weekly slot must pass `--stocktake` in its plist, or moving that slot off
-Saturday silently kills the stocktake half (harness hit exactly this when it moved off
-Saturday 2026-08-29).
-
-The plists live in `scripts/launchd/` and are copied to `~/Library/LaunchAgents/`; after
-editing one, `launchctl bootout` + `bootstrap` it and confirm with `launchctl print` — an
-edited file that was never reloaded keeps firing on the old schedule. Do not use in-session `CronCreate`
-or `/loop` for this — session-only, 7-day expiry, and silent when the session dies. A cycle
-that fires while the human is away still does everything up to the digest — 条件 checks,
-vocabulary-only bookkeeping, dispatch of `accepted` work within WIP, verification of finished
-builds — then sends the digest to Slack (one message per decision) and the closing line;
-consults and merges wait for the human in the session. The session's context is not the
-loop's memory: verdicts live in the tasks, so the standing session can be `/clear`ed and
-re-enter the cycle from the ledger.
 
 ## Related
 

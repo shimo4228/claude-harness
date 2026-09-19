@@ -51,6 +51,8 @@ accepted
    |---|---|
    | `refactor-clean` | `refactor-cleaner` agent の user-invocable 入口として固有の役割がある |
    | `e2e` | Playwright artifact 収集の具体的手順を持ち、built-in に相当物がない |
+   > **注記（2026-09-15, ADR-0068）**: `e2e` は退役した。built-in に相当物が無いことは変わらないが、95 日間 invoke 0 / organic read 3（7 月止まり）で需要側が消えた。
+
    | `security-scan` | AgentShield wrapper として固有機能。`SKILL.md:90` の「Opus 4.6 Deep Analysis」は ECC 原本につき不改変で known-stale として容認 |
    | `skill-comply` | Haiku timeout 記述は実測根拠があり自明化していない |
 

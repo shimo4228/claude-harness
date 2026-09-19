@@ -34,6 +34,23 @@ skill 新設時の適用候補リスト（SKILL.md 末尾、citation-formatter �
 | 14 | **同一の値・narrative の複数箇所ハードコード** — 正本参照でなく複製。実測: Chain Matrix セル値が hook に直書き、baseline 実測値が 3 箇所、「実測 4.3ms」が 1 commit 内で 2 値、advisory truncation が 2 箇所 | 保留 | 履歴掘削で発見（2026-08-29）。hybrid — script が「2 箇所以上に現れる数値リテラル / 固有文字列」を列挙し、LLM が正本かを判定。producer: 5 セッション（`9e6c8386` / `ceb75c19` / `9032200a` / `d16c74ae` / `9b5187d8`）。採用実績: `references/review-output-format.md` への統合、ADR-0055「重複配線の解消」。#4 の「description 近似重複」は skill description のみで射程が違う |
 | 15 | **hook の fail-open** — helper 不在・`source` 失敗・marker 不在で検査が黙って無効化される | 保留 | 履歴掘削で発見（2026-08-29）。hybrid〜semantic — `\|\| exit 0` / `\|\| true` が block 判定より前にある形は grep できるが、意図的な fail-soft との区別に LLM が要る。producer: 6 セッション（`9032200a` / `f041e797` / `9e6c8386` / `f9ef3213` / `ceb75c19` / `12692db3`）。採用実績: ADR-0057 / commit `90a92c8` |
 | 16 | **codemap chain（update-codemaps / codemap-writer）** — freshness gate（Source sha / behind）と produced header 検収を `update-codemaps/scripts/codemap_evidence.py` へ抽出。実測: 10 repo / 24 codemap 全件 legacy header（spec 準拠 0）→ gate は `--produced` 限定 | **実施済（ADR-0060）** | 著者明示指示 2026-09-01（sweep 時の 12+3 候補に無かった漏れ — sweep は agents/skills のチェックリスト起点で、skill 本文内のインライン shell 検査を候補化していなかった） |
+| 17 | **adr-reviewer の反復指摘（第 2 弾）** — ADR-0051 が降ろした構造項目の外側で reviewer が毎回手で集めていた evidence: 引用 ADR / RFC の実在、旧 ADR 側の注記・Status の往復、パス参照の tracked / ignored / missing / repo 外分類と引用行の実文、Decision と diff の範囲照合、出典なき数値・分母なし百分率・会話参照、Review-when の count 条件、status quo の有無、巻き戻しコスト、第 2 の記録場所。`adr-writer/scripts/adr_review_evidence.py`（per-ADR、evidence のみ） | **実施済（ADR-0071）** | 著者明示指示 2026-09-16（/review-to-lint）。履歴掘削 2 回目 — 下の「履歴掘削の実測（2026-09-16）」 |
+
+### 履歴掘削の実測（2026-09-16）
+
+reviewer 1 種（adr-reviewer）に絞った 2 回目の手調査。corpus は 2026-08-26 以降の subagent
+transcript（`~/.claude/projects/*/*/subagents/agent-*.jsonl`）から `**Verdict**` を持つ最終
+assistant message を抽出した **24 報告 / 4 repo / 約 200 指摘**。repo 別内訳・クラス別の出現
+報告数は ADR-0071 Context が正本（ここには複製しない）。閾値は 2026-08-29 と同じ
+（3 回以上・2 セッション以上・採用実績あり）。免除境界の sweep も使い捨てで、再現は
+`for f in docs/adr/[0-9]*.md; do python3 ~/.claude/skills/adr-writer/scripts/adr_review_evidence.py --root . --adr "$f"; done`
+を各 repo で回して key ごとに件数を足す（`.ja.md` twin は除く）。
+
+結果: 上の #17。#14（同一の値の複数箇所
+ハードコード）は ADR スコープに限って #17 の `second_record` に吸収した（一般の hook / skill 層は
+保留のまま）。2 回目の手調査が要求されたので ADR-0055 Decision 5 の再訪条件が成立している —
+抽出 script（transcript から reviewer 報告を取る 60 行）は本 RFC の scratchpad で書いて捨てた。
+3 回目が要るなら、そのとき ADR-0055 の supersede 込みで script を提案する（判断は著者）。
 
 ### 履歴掘削の実測（2026-08-29）
 

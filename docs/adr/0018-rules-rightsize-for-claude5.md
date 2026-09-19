@@ -38,6 +38,8 @@ Troubleshooting Test Failures（`testing.md`）は当初どこにも着地させ
 2. **Parallel Group 記法と構造化サマリ強制フォーマットは移設せず退役**した（downward dissolution — substrate が同じことをより新しい形で運んでおり、静的コピーは drift して新しい既定を劣化させる）。
 
 3. **`rules/python/` を廃止**（`git rm`、6 ファイル）。`security.md`（redirect token leak / case-insensitive sanitizer bypass / fail-fast secret）と `lint-gates.md`（ruff B/I/T20 / zip strict= 判定 / import-linter contract / frozen AST ゲート / 導入の規律）と `hooks.md`（ruff-autofix.sh、pyright-lsp が型担当）は `skills/python-patterns/SKILL.md` へ全文吸収。`coding-style.md`（PEP 8 / black / isort）と `patterns.md`（Protocol / dataclass DTO / context manager）は Claude が既に持つ内容として退役。`testing.md` は `python-patterns` の Pytest Patterns 節が既に mark / coverage / strict-markers を網羅していたため固有内容なしとして退役。`rules/` は 2 層構造から common 単層になった。
+> **注記（2026-09-15, ADR-0068）**: 吸収先 `skills/python-patterns/SKILL.md` は 2026-09-15 に退役した（organic read 7 回、7 月末止まり）。本項で吸収した内容は git 履歴（`deff89d:skills/python-patterns/SKILL.md`）に残り、harness 内の文章版正本は無い。Python 慣行は機械強制層 + verify-bootstrap の再選定だけが持つ。
+
 
 4. **over-constraint を緩和**した。「ALWAYS create new / NEVER mutate」→「既定はイミュータブル。in-place が正しい場面（numpy / builder / accumulator / 測定済みホットパス）では**周囲のコードの慣行に合わせる**」。記事が新システムプロンプトで採った "Write code that reads like the surrounding code" と同じ形。
 

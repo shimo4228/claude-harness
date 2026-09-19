@@ -1,6 +1,6 @@
 ---
 name: task-stocktake
-description: "Consolidate a repo's pending-task tracking into its single task ledger (default .notes/TASKS.md) — bootstrap it if missing, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines, verify pending entries against git log and actual code, archive detail files of completed tasks. Use when the user says 「残タスクを棚卸しして」「タスク台帳を作って/整理して」「残っているタスクは？」, \"task stocktake\", when task lines are scattered across notes files, or when a repo's ledger may be stale. NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools."
+description: "Consolidate a repo's pending-task tracking into its single task ledger (default .notes/TASKS.md) — bootstrap it if missing, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines, verify pending entries against git log and actual code, archive detail files of completed tasks. Use when the user says 「残タスクを棚卸しして」「タスク台帳を作って/整理して」「残っているタスクは？」, \"task stocktake\", when task lines are scattered across notes files, or when a repo's ledger may be stale. Also the 正本 for two questions the library routes here: 状態語をどれにするか（draft / accepted / in_progress / blocked と終端 5 語、`blocked` の入場条件）と、レビュー指摘を起票すべきか（起票規律の足切りと producer 引用）— 「この状態でいい？」「blocked にしていい？」「このレビュー指摘は起票する？」. NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools."
 user-invocable: true
 origin: shimo4228
 ---
@@ -44,9 +44,9 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 ## 状態語彙（この skill が正本）
 
 開いている状態は 4 つ。**この節が語彙の唯一の正本** — rule / ADR / 他 skill は
-ここを参照し、定義を複製しない（4 文書に分散した版は誰も刈らず 6 語まで肥大した。
-CA 2026-08-16）。語は標準語彙（RFC 標準 + issue-tracker 標準 — 非標準語彙は
-セッションごとに写像がずれる。[ADR-0050](../../docs/adr/0050-standardize-ledger-state-vocabulary.md)）。
+ここを参照し、定義を複製しない（分散した版は誰も刈らず肥大する。
+[ADR-0050](../../docs/adr/0050-standardize-ledger-state-vocabulary.md)）。語は標準語彙
+（RFC 標準 + issue-tracker 標準 — 非標準語彙はセッションごとに写像がずれる）。
 
 | 状態 | 定義 |
 |---|---|
@@ -84,12 +84,12 @@ CA 2026-08-16）。語は標準語彙（RFC 標準 + issue-tracker 標準 — �
 同じことは **成立時 が名指す機構**（閾値 / rule / 判定器）にも当てはまる — 再開条件が生きて
 いても、成立時に回すはずの機構が撤廃されていれば条件は決着している。`obsoleted` か条件の
 書き直し（先例: harness T-002 は「log 90 日 → zero-usage rule」を待っていたが、rule は
-2026-08-15 に撤廃済で、無人 cycle 2 回は日付だけ照合して待ち続けた）。
+撤廃済で、無人 cycle 2 回は日付だけ照合して待ち続けた）。
 
 条件を発火させる主体が先に消えると、タスクは不死化する — 時間窓なら経過で必ず判定できるが、
-イベント条件は「発火した」と「発火源が消えた」を区別しないと永久に待ち続ける（先例: CA の
-`T-B4` は「view seed text の変更」を待っていたが、seed は ADR-0073 で**削除**された。
-2026-08-16 の棚卸しまで 1 ヶ月半気付かれなかった）。
+イベント条件は「発火した」と「発火源が消えた」を区別しないと永久に待ち続ける。先例: CA の
+`T-B4` は「view seed text の変更」を待っていたが、seed は CA ADR-0073 で**削除**された —
+棚卸しで気付くまで 1 ヶ月半止まっていた。
 
 ### 台帳に置かない型 — 便乗（「次に X を触る時に同 PR で」）
 
@@ -126,8 +126,8 @@ audit ログは付かなかった）。配送機構を台帳に足して解く�
 観察タスクを閉じるときは特に混ざりやすい。「観察して結論が出た」＝ `done`、
 「観察対象が退役して観察が無意味になった」＝ `obsoleted`。後者を `done` に丸めると、
 **読みが取得されたのか取得されなかったのかが台帳から消える**（先例: CA の §B2 は
-ADR-0082 が観察対象アームを退役させたので `obsoleted`、§B5 は
-同じ B 系列だが読みが実在するので `done`。2026-08-16）。
+CA ADR-0082 が観察対象アームを退役させたので `obsoleted`、§B5 は
+同じ B 系列だが読みが実在するので `done`）。
 
 日付を続けてよい（`done 2026-06-17`）。**日付は台帳に書いた日でなく、終わった日を書く** —
 棚卸しで遅れて気付いた終端は、気付いた日でなく実際の決着日を入れると滞留が見える。
@@ -135,9 +135,8 @@ ADR-0082 が観察対象アームを退役させたので `obsoleted`、§B5 は
 **store 形式の repo**（1 タスク 1 ファイル、frontmatter の `state:` が状態。配線の正本は
 rule `common/task-tracking.md`）では、状態別の列挙は
 `python3 ~/.claude/scripts/claims.py ready --state <state>` で引く。store の家は下節の
-`rfcs/`（`.notes/archive/tasks/` は旧 store の歴史記録で台帳ではない — RFC-0001。
-rfcs/ 側は下節の通り archive しない）。この skill が担うのは意味的な判定（散在タスク行の sweep、着手条件が
-開いたかの解釈、単一表 repo の archive 候補の選定）。
+`rfcs/` で、終端エントリもその場に残す（archive しない）。この skill が担うのは意味的な
+判定（散在タスク行の sweep、着手条件が開いたかの解釈、単一表 repo の archive 候補の選定）。
 
 ## store の家 rfcs/（棚卸し側の規定）
 
@@ -163,11 +162,17 @@ reviewer が隣接コードの既存問題を平均 1.3 件出し、全部起票
 commit message に 1 行（producer 付き）残して捨てる。起票する側は「所有者の判断が要る」なら
 `state: draft`。
 
-再絞り込みの根拠（数値の正本は ADR-0055）: 規約「HIGH + producer」を守った指摘 6 件のうち、
-即時対応が結果を変えたのは loop を壊す欠陥の 1 件だけ、と遡及判定した（反実仮想を含む —
-詳細は ADR-0055 Context）。イベント駆動の起票はレビュー → 修理 → 再レビューの補充エンジンになり
-台帳が収束しない。回収機構（commit body の定期 sweep 等）は**作らない** — durable な
-記録は commit body が既に担っている。
+**probe の例外**: measurement / probe タスクの成果物そのものである起票要求（probe の
+「(B)/(C) はやる価値がある」、計器の発見「metrics が汚染されている」）はレビュー指摘ではなく
+タスクの出力なので、足切りに掛けない。ただし起票の権限は build 側に無い — 判断役が digest に
+出し、所有者が決める。
+
+捨てた指摘を後から拾い直す回収機構（commit body の定期 sweep 等）は**作らない** — durable な
+記録は commit body が既に担っており、イベント駆動の起票はレビュー → 修理 → 再レビューの
+補充エンジンになって台帳が収束しないため。この足切りの根拠は実測: 規約「HIGH + producer」を
+守った指摘 6 件のうち、即時対応が結果を変えたのは loop を壊す欠陥の 1 件だけだった（遡及判定、
+反実仮想を含む。数値の正本は
+[ADR-0055](../../docs/adr/0055-review-chain-single-pass-regression.md) Context）。
 
 **severity だけでは濾せない。** severity を付けるのは reviewer で、濾す側は同じ次元で
 測っている。CA 2026-08-16 に T-PACKET-FLOOR-BYPASS が HIGH として起票され、**その 1 件が

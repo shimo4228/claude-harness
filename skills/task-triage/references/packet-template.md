@@ -16,8 +16,8 @@ reading that decides the next state; read-only, output is a memo).
 # Kickoff packet — S<n>: <T-ID or bundle name>（<one-line what>）
 
 あなたは task-triage loop の **build 役**です。cwd は `<repo>` の git worktree（branch `task/<name>`）。
-**main には触らない、merge しない、push しない、台帳（.notes/…）の状態を書き換えない。** 成果は
-branch 上の commit だけで返し、判断役が検収、オーナーの「merge」で main へ ff-only 取り込みます。
+成果は branch 上の commit で返し、判断役が検収して main へ ff-only 取り込みます。境界（人間に渡す
+操作 / とってよいリスク / 止まる条件）は rule `boundary.md` — build は task branch まで。
 <measurement variant: 「書いてよいのは読みメモ 1 ファイル `<path>` と分析スクリプトだけ」>
 
 最初に読む: <task file(s)>、<repo rule that applies — e.g. security.md threat surface for gate work>、
@@ -52,7 +52,7 @@ branch 上の commit だけで返し、判断役が検収、オーナーの「me
 
 ## Must-not（境界 = Goodhart 対策）
 - <files / dirs that may not change> ; テストを弱めない・消さない・設定で黙らせない
-- `git add -A` を使わない ; main への merge・push・台帳の状態変更はしない
+- `git add -A` を使わない ; 台帳の状態は判断役が書く
 - <time cap> を超えたら打ち切って、そこまでの diff とテスト状況で報告
 - shell ループで複数 path / repo を回すときは **zsh の word-split 罠**を踏まない: 未クオートの `$files` は
   1 語のまま渡る（`git add -- $files` が 1 つの長い pathspec になる）。`while read` でファイルから回すか
@@ -68,6 +68,7 @@ Regression: <test names, RED→GREEN の確認方法>
 Verify: <command exit / test counts / 日時>
 Review: <chain どおりに回した reviewer と結果> / Deviations: <逸脱の名指しと理由、無ければ none>
 Approval ledger: <if a pinned gate script changed: 未実施、人間が approve>
+Risk: <とったリスク / 戻し方（1 分で戻せるか）>
 Out-of-diff findings (for the judge): <severity + 1 行ずつ、HIGH は producer 付き / none>
 
 最後のメッセージで commit SHA・verify の結果・所要時間を報告して終了してください。

@@ -64,17 +64,14 @@ routing を自発的に行うようになったら、この段落を外す。）
 | Code Review | Y | Y | Y | C | - |
 | Security Review | C | C | - | C | - |
 | Doc Sync (context files) | C | C | C | C | - |
-| E2E / 回帰テスト（skills: `e2e` / `ai-regression-testing`） | C | C | C | - | - |
 | Verify (build / types / lint / tests / secrets / deps / doc sync / git status) | Y | Y | Y | Y | - |
 
 **条件付き発火 `C` の発動条件**:
 
 - `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない
-- 全種別 × E2E / 回帰テスト: **ユーザー可視のフロー（画面遷移・API の外形）を変えたら `e2e`**、**AI に広く編集させた diff で同種のバグが再発しうるなら `ai-regression-testing`** を Y。いずれも Verify の coverage floor（`rules/common/testing.md`）の**上に足す**もので、置き換えではない。純粋な内部リファクタや設定変更だけなら `-`
-- `feat` / `chore` × Build-or-not: **新規機構・計器・常駐資産（skill / rule / hook / agent）・依存の追加を含む plan のみ Y**。plan 本文に 4 問の答えを必須で書く — ①存在すべきか（削除・既存流用で解けないか）②適正な大きさ（行数・段数の上限を先に宣言）③誰が消費するか（読み手のいない出力は建てない）④失効条件。**セッションが judge-tier ならこの自答で足りる（agent 呼び出しは冗長 — 同一モデル）。build-tier セッションのみ agent: `architect`（model: fable）を必須**とし、verdict が Don't build なら chain はそこで止まる。実測根拠: CA ADR-0095（この問いを持たない無人 chain が 30 時間で 5,000 行）
 - `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。着手時の照合規律（既済照合・schema 変更の全消費者棚卸し等）は skill: `repair-discipline`
 - 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
-- `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら上の Build-or-not 行に従う（judge-tier は 4 問自答、build-tier は agent: `architect`。実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
+- `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら plan にその旨と大きさを 1 行書く（実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（ADR-0042）。
   脅威面 = 資格情報の取得・保管・送出 / 外部 IO / 公開経路（外部に出るデータの内容と範囲）/
   無人実行の起動経路とブラスト半径 / 外部コンテンツを LLM 文脈へ取り込む経路 / 権限と bypass の境界。
@@ -156,7 +153,7 @@ TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（
 | 学術論文 / preprint / position paper | `paper-ecosystem`（正本は `~/MyAI_Lab/paper-lab` — 論文作業はその repo を working dir に含めて行う） |
 | README / repo トップページ | `readme-writer` |
 | llms.txt 等 AI-doc | `llms-txt-writer` |
-| ADR（設計判断の記録） | `adr-writer`（生成。adr-reviewer の配線は同 skill 内） |
+| ADR（設計判断の記録） | `adr-writer`（主ループが書く。起票の 2 条件と adr-reviewer の配線は同 skill 内） |
 
 チェーン本体（agent 起動順・並列化・最終 gate）の**正本は各 skill の定義**（ここに複製しない）。
 記事 / paper の chain 詳細（reviewer panel・verdict・機械検査）は移設先 repo の orchestrator と
@@ -187,5 +184,5 @@ prose は prompt-driven、private ドラフト・下書き段階は `-`（writin
 - Code Review / Security Review が **`CRITICAL`** を返した
 - Verify ステップで build / types / tests のいずれかが失敗
 - `fix` で根本原因の仮説が証拠で支持されない
-- Phase 0 (`/search-first`) で `Adopt` Verdict → 実装方針の再 plan を要請
+- Phase 0 (`/search-first`) の報告に、実装方針を変える既存解が含まれる → 再 plan を要請
 - `writing` で Verdict マッピング表の CRITICAL 相当（MAJOR ISSUES）を検出（記事 / paper の停止条件は各 repo の orchestrator が持つ）

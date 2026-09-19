@@ -244,3 +244,11 @@ skeleton 作成が壊れる。代わりに生成器プロンプト側を相対�
 この run は 2026-08-17 の sandbox 実行単位分離（`SANDBOX_BASE/run-<pid>/<id>`）も同時に通しており、
 3 シナリオは `run-<pid>` 配下に分かれて作られた。上の「sandbox の分離が慣行から保証に変わる」は
 プロセス内の保証で、プロセス間はこの日まで開いていた。
+
+> **注記（2026-09-15, ADR-0068 / ADR-0061 の規律で本文から移した経緯）**: skill-comply 本文から次の発見譚を削除し、規則だけを残した。経緯はここに置く。
+> (a) `setup_commands` は当初 `shlex.split` + `subprocess` で実行しており、community 由来 skill 1 本でホスト上の任意コマンド実行になっていた（2026-07-25 security scan F2 / F3 / F4 / F18）。
+> (b) sandbox を直前に作り直すため最初の要素が存在せず、未解決の `..` を `Path.parents` がただのディレクトリ名として扱い sandbox 外へ書けた（2026-08-01）。
+> (c) 一度も信頼していない workspace でも `<sandbox>/.claude/settings.json` の `hooks.SessionStart` が無言でホストコマンドを実行した（2026-08-02。同ファイルの `permissions.allow` は「信頼されていない」と明示拒否される）。
+> (d) APFS の case-insensitive で `.CLAUDE/Settings.json` が拒否リストをすり抜けた（2026-08-02、case-fold を追加して修正）。
+> (e) 「`uv run --project` だけでは module 解決できない」（2026-07-13 実測）は誤りで、原因は pyproject に `[build-system]` と `packages = ["scripts"]` が無かったこと（2026-09-15 修正・検証。cd 前提の起動形は廃止）。
+

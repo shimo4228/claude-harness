@@ -1,6 +1,6 @@
 ---
 name: verify-bootstrap
-description: "repo に機械ゲート（format / lint / type check / security / dependency audit / test）を立てる、または既存のゲートが古びていないか棚卸しする。Use when starting a new project, when a repo has no automated quality gate, when the user says 「lint を入れて」「この repo にゲートを立てて」「型チェックを入れたい」「静的解析を整備して」「ツールが古い」「verify を棚卸しして」, \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. 使うツールは skill が知っているのではなく、その時点で search-first に調べさせる — repo のスタックが何であれ同じ手順で回る。NOT for — 既に立っているゲートを 1 回実行するだけ（それは repo の verify entrypoint を直接実行）、ハーネス自身の設定監査（→ config-gc）、コードの意味的レビュー（→ implementation-chain の Review 群）。"
+description: "repo に機械ゲート（format / lint / type check / security / dependency audit / test）を立てる、または既存のゲートが古びていないか棚卸しする。Use when starting a new project, when a repo has no automated quality gate, when the user says 「lint を入れて」「この repo にゲートを立てて」「型チェックを入れたい」「静的解析を整備して」「ツールが古い」「verify を棚卸しして」, \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. ツール表を持たない設計なので、未知のスタックでも同じ手順で使える。NOT for — 既に立っているゲートを 1 回実行するだけ（それは repo の verify entrypoint を直接実行）、ハーネス自身の設定監査（→ config-gc）、コードの意味的レビュー（→ implementation-chain の Review 群）。"
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:
@@ -46,7 +46,7 @@ origin: shimo4228
 # 追跡ファイルの拡張子分布（上位）— 生成物・依存ディレクトリは除く
 git ls-files | sed -n 's/.*\.\([A-Za-z0-9_]*\)$/\1/p' | sort | uniq -c | sort -rn | head -20
 # ビルド/依存マニフェストの実在
-git ls-files | grep -iE '(^|/)(pyproject\.toml|package\.json|Cargo\.toml|go\.mod|Gemfile|pom\.xml|build\.gradle.*|\*\.xcodeproj|Package\.swift|mix\.exs|composer\.json|Makefile|justfile)$' 
+git ls-files | grep -iE '(^|/)(pyproject\.toml|package\.json|Cargo\.toml|go\.mod|Gemfile|pom\.xml|build\.gradle.*|[^/]*\.xcodeproj/.*|Package\.swift|mix\.exs|composer\.json|Makefile|justfile)$'
 # 既存のゲート痕跡（重複導入の防止）
 git ls-files | grep -iE '(pre-commit-config|lefthook|\.github/workflows/|trunk\.yaml|\.golangci|\.eslintrc|ruff\.toml)'
 ```
@@ -105,7 +105,7 @@ verify.md に 1 行記録するだけでよい。閾値は global に定めな�
 「**今日の日付時点で**」の時点指定と「既存の代替から乗り換えが起きていないか」を含める。
 記憶している定番を答えにしない — この skill が防ごうとしているのはまさにそれ。
 
-Verdict が出たら、次を確認してから採用する:
+報告を受けたら、次を確認してから採用する:
 
 - **最終リリースが 12 ヶ月以内か**（放置プロジェクトを新規 repo に入れない）
 - **単一バイナリ / on-demand 実行が可能か**（`uvx` / `npx` / `brew` 等。repo の
@@ -123,6 +123,8 @@ Verdict が出たら、次を確認してから採用する:
 - 版を **pin する**（`ruff==0.16.0` のように。supply chain の固定。bump は手動）
 - 例外は**インラインの抑制コメントでなく、設定ファイルの許可リストで理由付き**に
   （インライン抑制は理由が消えて無限増殖する）
+- repo 固有の例外が要るときは、**まずスタックを標準に寄せる** — 寄せた上で残る分だけ
+  理由付きで許可リストへ（「この repo だけ独自」は設計不足のサイン）
 
 **新規 repo は初日から最大 strict**（drain すべき負債がゼロなので ratchet 不要）。
 **既存 repo への後付けだけ ratchet を使う** — 全 rule を warn で入れ、既存違反を
@@ -223,17 +225,6 @@ as-of** も記録する（例: `C901=15 — p99=14、2026-08-28 実測`。audit 
 3. 差分を提示: 現行 → 候補、乗り換えコスト、据え置きの理由
 4. 判断はユーザー。**自動で乗り換えない** — ツール変更は repo 全体の diff を生み、
    元に戻すコストが導入コストを上回る
-
-## アンチパターン
-
-- **固定のツール表をこの skill に足す** — 表が腐り、腐った表が全 repo に配られる。
-  Step 1–2 を回すコストを惜しんで表を作った時点でこの skill は死ぬ
-- **インラインの抑制コメントを許す** — 理由が消え、例外が無限に増える
-- **警告を warning のまま運用する** — 誰も見ない。error にするか、消すか
-- **repo 固有の特殊ルールを積む** — 「この repo だけ独自」は設計不足のサイン。
-  まずスタックを標準に寄せ、それでも要る例外だけ理由付きで許可リストへ
-- **遅い検査を `--staged` に入れる** — commit のたびに数十秒待たされ、bypass が常態化
-- **生成して実行せずに終える** — 動作未確認のゲートは、無いゲートより悪い（あると誤認する）
 
 ## 関連
 
