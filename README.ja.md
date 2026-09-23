@@ -65,6 +65,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [growth-astra](skills/growth-astra/SKILL.md) | GitHub follower campaign の北極星（`.growth/NORTH_STAR.md`）を書く役 — 初回設定と以後の修正。growth-fable からの escalation 先 |
 | [growth-fable](skills/growth-fable/SKILL.md) | 北極星に向かう施策を考え、worker に出し、結果を `.growth/EXPERIMENTS.md` に記録する役 |
 | [jev-skill-router](skills/jev-skill-router/SKILL.md) | prompt に合う skill を TypeSafe Jev に選ばせる UserPromptSubmit hook。shadow 計測が先、inject は精度が出てから |
+| [jev-judgment-design](skills/jev-judgment-design/SKILL.md) | LLM の閉じた判定（関係あるか・新しいか・証拠の強さ）を TypeSafe Jev に移す設計。比べる相手を state に入れ、採否は Jev の確率からコードが決め、canary で落としすぎを見る |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。
