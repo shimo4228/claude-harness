@@ -35,3 +35,6 @@ README には書かない（複製は drift する）。
 | [0021](0021-verify-full-red-growth-fable-ty.md) | verify.sh full が main で赤 — growth-fable tests の ty 診断 30 件を型付きアクセスで解消 |
 | [0022](0022-search-first-verdict-redesign.md) | search-first の verdict 形と探索範囲の再設計（package 一軸で Build に落ち、学びを運ばない） |
 | [0023](0023-bats-absolute-home-hook-paths.md) | bats が hook を $HOME 絶対パスで source し worktree の verify が main checkout を検査する — repo 相対へ |
+| [0024](0024-typesafe-jev-as-offload-for-max-quota.md) | TypeSafe Jev で判定を Max 枠の外へ逃がす — 探索と実測は済み。候補 2（skill ルーター）のみ 2026-09-21 着手、他候補は Fable 枠の回復待ち |
+| [0025](0025-jev-decision-contract-registry.md) | Jev 判定を版付きで貯める registry — 質問文ごと残し、閾値はデータが溜まってから引く |
+| [0026](0026-jev-agent-trace-sensor.md) | 走り終わりの done / stuck を Noul で分ける sensor — loop-design-check の semantic 側の空白を埋める |

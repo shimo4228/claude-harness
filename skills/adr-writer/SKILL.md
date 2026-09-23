@@ -251,6 +251,8 @@ Index:   updated (+1 row)
   `docs/adr/README.md` Template からテンプレを自動適応、tests は `tests/test_adr_lint.py`）。
 - Per-ADR review evidence (evidence mode のみ): `scripts/adr_review_evidence.py`（ADR-0071。
   引用の実在・注記の往復・パス分類・diff 範囲・出典なき数値、tests は
-  `tests/test_adr_review_evidence.py`）。
+  `tests/test_adr_review_evidence.py`）。実行・import の入口はこの 1 本で、検査の本体は
+  `scripts/adr_evidence_common.py` / `_paths.py` / `_prose.py` に分かれている（ADR-0056 の
+  file-LOC 予算）。
 - レビュー頻出指摘の事例集: `references/review-findings.md`（Step 3 の予防チェックで読む）。
 - Evals: `evals/evals.json` (3 scenarios — new ADR / missing docs-adr / sequence collision).

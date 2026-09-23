@@ -64,6 +64,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [review-to-lint](skills/review-to-lint/SKILL.md) | 既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チ |
 | [growth-astra](skills/growth-astra/SKILL.md) | writes the north star for a GitHub follower campaign (`.growth/NORTH_STAR.md`) — initial pass and later revisions; escalation target of growth-fable |
 | [growth-fable](skills/growth-fable/SKILL.md) | plans experiments toward the north star, dispatches them to workers, records results in `.growth/EXPERIMENTS.md` |
+| [jev-skill-router](skills/jev-skill-router/SKILL.md) | UserPromptSubmit hook that asks TypeSafe Jev which installed skill fits the prompt; shadow-first, injects only after measured accuracy |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.

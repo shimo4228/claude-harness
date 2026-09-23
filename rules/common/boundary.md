@@ -1,6 +1,6 @@
 <!-- origin: shimo4228 -->
 <!-- rationale: ADR-0069 — 境界が packet / task-triage / tick prompt / growth-* / agents.md の 6 箇所に文面違いで散っていた。substrate の一般則（hard to reverse or outward-facing → confirm first）は再宣言せず、このハーネスで何がそれに当たるかと、確認なしで取ってよいリスクだけを置く -->
-<!-- review-when: 人間に渡す操作の列挙を足す / 減らす時。判断役の取り込みで main が壊れ人間が revert した回数が 3 か月で 2 回を超えた時（取り込みを人間へ戻す）。substrate が台帳・gate script・scheduled task を outward-facing として自ら扱うようになった時 -->
+<!-- review-when: 人間に渡す操作の列挙を足す / 減らす時。判断役の取り込みで main が壊れ人間が revert した回数が 3 か月で 2 回を超えた時（取り込みを人間へ戻す）。聞かずに直した範囲外修正を人間が revert した回数が 1 か月で 2 回を超えた時（軽微の定義を狭める）。substrate が台帳・gate script・scheduled task を outward-facing として自ら扱うようになった時 -->
 # 境界 — 人間に渡す操作と、とってよいリスク
 
 **人間に渡す**（このハーネスで不可逆・対外に当たるもの。substrate の「confirm first」の対象）:
@@ -14,7 +14,11 @@ server 稼働だけを前提に実行してよい。明示指示は要る）。
 **とる**（確認を待たない）: 検収を通した task branch の main への ff-only 取り込みと push
 （force は hook が止める）/ worktree と task branch の中の破壊・方針転換・粗い代替案 1 本・
 赤テストのまま次の仮説へ（記録する。commit には verify を通す）/ scratchpad・下書き・`.notes/`
-`.growth/` への記録・task branch への commit。「もっと安全な設計を先に」は止まる理由にしない。
+`.growth/` への記録・task branch への commit / 作業中に見つけた依頼範囲外の軽微な修正 —
+答えが一つに決まり git で戻せるもの（typo・リンク切れ・実装とずれたコメントや doc・明白な
+小 bug・lint 赤）は聞かずに直し、依頼の diff と別 commit に分け、完了報告の末尾に 1 行ずつ
+載せる。「人間に渡す」の列挙に当たるものと、設計の選択を含むものは直さず同じ末尾に 1 行で渡す。
+「もっと安全な設計を先に」は止まる理由にしない。
 
 **止まって報告する**: 同じ方針で 2 回失敗 / time cap / 前提の反証 / 外部 platform の rate limit
 連発（policy signal — `debugging.md`）。そこまでを残して報告する。

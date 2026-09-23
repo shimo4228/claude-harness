@@ -6,7 +6,9 @@ Each test names the reviewer finding class it pins (2026-09-16 mining of 24 repo
 from __future__ import annotations
 
 import json
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -365,3 +367,31 @@ def test_resolve_prefers_canonical_over_language_twin(repo: Path) -> None:
     (adr_dir / "0002-second.md").write_text(_adr("0002", "second"), encoding="utf-8")
     (adr_dir / "0002-second.ja.md").write_text(_adr("0002", "second"), encoding="utf-8")
     assert resolve_adr(repo, "docs/adr", "0002") == (adr_dir / "0002-second.md").resolve()
+
+
+def test_index_rows_key_order_survives_a_different_hash_seed(repo: Path) -> None:
+    """The JSON is machine-parsed: key order must not move with PYTHONHASHSEED."""
+    (repo / "docs" / "adr" / "0002-second.md").write_text(
+        _adr("0002", "second", status="accepted, supersedes 0009 0003 0005 0001"),
+        encoding="utf-8",
+    )
+    script = Path(__file__).resolve().parents[1] / "scripts" / "adr_review_evidence.py"
+
+    def run(seed: str) -> str:
+        return subprocess.run(
+            [sys.executable, str(script), "--root", str(repo), "--adr", "0002"],
+            check=True,
+            capture_output=True,
+            text=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+        ).stdout
+
+    first, second = run("1"), run("999983")
+    assert list(json.loads(first)["relations"]["index_rows"]) == [
+        "ADR-0001",
+        "ADR-0002",
+        "ADR-0003",
+        "ADR-0005",
+        "ADR-0009",
+    ]
+    assert first == second

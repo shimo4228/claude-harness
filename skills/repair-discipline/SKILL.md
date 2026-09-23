@@ -8,7 +8,7 @@ replaces: contemplative-agent の feedback memory 5 本（verify-before-work / s
 
 # Repair Discipline
 
-直す前に、いま何が真かを一次証拠で確定する。5 原則、いずれも実地の失敗から
+直す前に、いま何が真かを一次証拠で確定する。6 原則、いずれも実地の失敗から
 （出所は CA repo での実測。原則自体はどの repo でも同じ形で壊れる）。
 
 ## 1. 着手前に既済照合
@@ -43,6 +43,17 @@ I/O バウンドなプロセス（LLM 推論・ネットワーク待ち）は CP
 失敗したテストをバックグラウンドで連発しない。1 回フォアグラウンドで走らせ、出力を
 読み切ってから次の仮説へ。連発は失敗ログを積むだけで情報を増やさず、リソース競合で
 新しい偽の失敗を作る。
+
+## 6. 断続的な失敗と時間の飛びは、環境の覆いを先に外す
+
+「たまに成功する外部 API」と「wall time が job 自身のログの時刻より大きく飛ぶ処理」は、
+コードの仮説より先に環境で説明できないかを一次記録で見る。**成功した応答の `x-cache` /
+`age` / `via`**（HIT なら origin を通っていない。比較は cache に無い新しい query を client
+ごとに 1 本ずつ）と、**macOS の `pmset -g log | grep -E " Sleep | Wake "`**（その区間の
+sleep / hibernate）。
+（出所: jev-research-pipeline 2026-09-23 — arXiv の 406 を CDN の罰則と誤診したが、実際は
+httpx2 だけが cache miss で 406、cache hit は誰からでも 200 だった。run の 104 分の空白は
+battery 1% での hibernate だった）
 
 ## 使い方
 

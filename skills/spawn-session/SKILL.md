@@ -83,6 +83,31 @@ origin: shimo4228
    **長さは無関係** — 落ち着いた agent なら 42 行の複数行プロンプトも 1 発で通り、
    短文でも起動直後なら落ちる。変数はタイミングだけ。
 
+   **作業中（`agent_status: working`、subagent が `(+N)` で走っている間を含む）に送った
+   prompt は無言で落ちる**（2026-09-23 実測 3 回: `timed out waiting for agent status` が返り、
+   `herdr agent read | grep <本文の一意な語>` が 0 件）。`send-keys escape` は `ok` を返すが
+   working を解かない（subagent は走り続ける）。`/compact` も届かない。送る前に `agent get` で
+   `working` なら送らず、`idle` / `done` を待つ。作業中に伝えたい変更は build が読む正本
+   （repo 内の設計 packet 等）に commit しておく — 実測で、届かなかった追加指示を build が
+   packet の新節から拾って実装した。context が高くても auto-compact は走る（84% → 30%）ので、
+   手動の `/compact` を送る理由はない。
+
+   **`done` は「自分の背景 shell を待っている」でも返る。** build が live run 等を自分の
+   background shell に出して待つ設計だと、run 中に `done` になる。完了の監視は
+   「`status != working` かつ関連プロセスが 90 秒以上いない」で発火させる:
+
+   ```bash
+   A=<agent>; idle=0
+   while true; do
+     s=$(herdr agent get "$A" 2>/dev/null | grep -oE '"agent_status":"[a-z_]+"' | cut -d'"' -f4)
+     if pgrep -f '<child process pattern>' >/dev/null; then idle=0
+     elif [ -n "$s" ] && [ "$s" != "working" ]; then idle=$((idle+1)); [ $idle -ge 3 ] && { echo "stopped: $s"; exit 0; }
+     else idle=0; fi
+     sleep 30
+   done
+   ```
+   （2026-09-23、6 回張って真の停止でだけ発火）
+
 ## Plan mode で起動したいとき
 
 **`spawn.sh` が転送する claude のフラグは `--model` だけ。** 起動行は

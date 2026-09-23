@@ -1,5 +1,5 @@
 ---
-state: accepted 2026-09-14
+state: blocked 2026-09-20
 review-when: "影の比率（直近 60 日の transcript で、WebSearch か外部調査 subagent を使ったセッションのうち search-first を通らなかった割合。基準値 2026-09-14: 133 / 142 = 93.7%、手順は `.notes/search-first-shadow-baseline-2026-09-14.md`）を 2026-11 に取り直し、下がっていなければ「発火しない原因は trigger surface」の仮説が崩れたとして本エントリを再読する"
 ---
 ## Summary
@@ -59,7 +59,13 @@ library 選定の決定性（1 行で Adopt / Build が読める）は失う。�
 
 ## Status
 
-accepted 2026-09-14 — skill 改修・scout 退役・消費者 6 ファイルの書き換えを実施。fresh-context 草稿ゲートと行動 gate の結果は ADR-0066 Decision 9 が持つ。
+blocked 2026-09-20 — 実装（skill 改修・scout 退役・消費者 6 ファイルの書き換え）は commit 47d51a8（2026-09-15、ADR-0066）で完了。残るのは影の比率の再測定だけで、日付条件で機械的に開く。
+
+再開条件: 2026-11-01 以降の triage cycle
+照合先:   `date` と `.notes/search-first-shadow-baseline-2026-09-14.md`（基準値 133 / 142 = 93.7%、同 snippet で再測定）
+成立時:   accepted（measurement を dispatch — 判定は再測定の読みで行う）
+
+（旧 Status: accepted 2026-09-14 — skill 改修・scout 退役・消費者 6 ファイルの書き換えを実施。fresh-context 草稿ゲートと行動 gate の結果は ADR-0066 Decision 9 が持つ）
 
 ## Next action
 
