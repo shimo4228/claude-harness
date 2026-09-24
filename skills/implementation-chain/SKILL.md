@@ -38,10 +38,13 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 走っているとき — そのまま実装に入ると、Review 群まで judge-tier を消費する（built-in `/code-review`
 と `/simplify` はセッションのモデルを継いで走り、モデル引数は無い。pin できるのは自作 agent と
 plugin agent の `model:` だけ）。**judge-tier の既定は dispatch**: 実装は build-tier の新規セッション
-（skill: `spawn-session`、または Agent tool / `claude --bg -w <name> --model opus`）へ渡し、
-本セッションは packet を書いて検証側に残る（dispatch 条件の照合は skill: `task-triage` — 前提が
-`file:line` で検証済み / worktree で可逆 / 受け入れ条件が判定可能 / 1 セッションに収まる /
-rule 変更を含まない）。**三役とティアの正本は task-triage の役割表**（ここには複製しない）。
+へ渡し、本セッションは packet を書いて検証側に残る。dispatch 先の既定は **Claude Code cloud
+session**（`bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file>` — GitHub の origin/main を
+clone し、`claude/` branch に push、verify は repo の CI が走らせる。ADR-0075）。cloud に出せない
+条件と、そのときの代替（Agent tool / skill: `spawn-session`）の正本は skill: `task-triage` §3 の表
+（ここに複製しない）。dispatch 条件の照合も `task-triage` — 前提が `file:line` で検証済み /
+branch で可逆 / 受け入れ条件が判定可能 / 1 セッションに収まる / rule 変更を含まない。
+**三役とティアの正本は task-triage の役割表**（ここには複製しない）。
 このセッションで実装してよいのは、次のいずれかを plan に 1 行記録したときだけ:
 (a) 設計文書・ADR・skill / rule の散文編集（judge-tier の本業）、(b) dispatch 条件を満たせない
 具体的理由がある、(c) ユーザーの明示指示。自己実装する場合も Review 群は下の

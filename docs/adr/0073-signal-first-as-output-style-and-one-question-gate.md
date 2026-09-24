@@ -66,6 +66,12 @@ project-local は 2 つ（`grep -rl outputStyle ~/.claude/.claude/ ~/MyAI_Lab/*/
    構成し冒頭 1〜2 文で結論を言う / 読者に求める判断は 1 メッセージに 1 つで、答えに依存しない作業は
    聞く前に進める / 問いには推奨とその帰結を添える / 明示起動された interview（`/grill-me`、
    `/mondo`）の間は問いが成果物で、総数は絞らず 1 問ずつ出す。`keep-coding-instructions: true` を付ける。
+
+   > **注記（2026-09-25、著者の不評）**: `/mondo` を interview の列から外した。著者の症状は「変な問が多くて
+   > 疲れる。十分に説明しないままこちらに質問をしてくるのがいやだ」。style のこの項は mondo 本文の「1 メッセージ
+   > 1–2 問まで・問いゼロも正常」を上書きし、4 モードすべてが「〜を聞く」で終わる本文と合わせて毎ターンの問いを
+   > 生んでいた。mondo は「出しきって終わる・著者の答え次第の分岐は問わずに枝として描く」に改修した（skill
+   > 本文が正本）。`/grill-me` は問いが成果物のまま残す。
 2. `hooks/ask-one-question.sh` を PreToolUse（matcher `AskUserQuestion`）に配線する。
    `tool_input.questions` が 2 件以上なら exit 2 + stderr の固定文言で block する。文言は tool input の
    中身も shell のエラー行も運ばない。件数が読めない入力（欠落 / 配列でない / 不正 JSON）は allow する。

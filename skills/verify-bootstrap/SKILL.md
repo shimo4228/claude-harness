@@ -211,11 +211,23 @@ tool: pyright ==1.1.x
 as-of** も記録する（例: `C901=15 — p99=14、2026-08-28 実測`。audit 時に分布の再実測と
 突き合わせる基点になる）。
 
-## Step 6 — CI に同じものを配線する（任意だが推奨）
+## Step 6 — CI に同じものを配線する
 
 ローカルゲートだけでは、bypass された commit が素通りする。CI が `.claude/verify.sh`
 を無引数で実行する job を持てば、ローカルと CI の乖離が構造的に起きない
 （**同じ入口を両方から呼ぶ**。CI 用に別のコマンド列を書くと必ず drift する）。
+build 役が cloud session で走る repo では、CI が verify の唯一の判定者になる — 判断役は
+ローカルで再実行せず、branch tip に対する run の結論を読む（ADR-0075）。CI を持たない repo は
+cloud に出せないので、github.com に remote がある repo ではこの Step を bootstrap に含める。
+
+雛形は `references/ci-verify.yml`。固定するもの: `main` と `claude/**` への push で発火 /
+actions は commit SHA で pin（tag から `gh api repos/<o>/<r>/git/ref/tags/<tag>` で引く）/
+`permissions: contents: read` / `persist-credentials: false` / 履歴全体の secret scan job
+（ローカル hook `secret-scan-precommit.sh` は staged 追加分しか見ない）。埋めるもの: verify.sh が
+PATH から解決するツールの導入（`.claude/verify.md` の選定記録が正本）と言語 setup。
+Linux runner で落ちるテスト（macOS 専用の launchd / BSD `stat`）は `skipif` で自己申告させ、
+production 側の platform ガードでテストが `SystemExit` になる形は直す — 「CI で赤 = ローカルでも
+赤」を保つため。
 
 ## audit モード
 

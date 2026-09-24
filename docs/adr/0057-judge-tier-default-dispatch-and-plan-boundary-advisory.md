@@ -42,6 +42,10 @@ Edit / Write を対象にした judge-tier 向けの hook も存在しない —
    例外 3 種の**正本は `implementation-chain`「実行者の決定」** — hook の静的文面と本 ADR の
    列挙は要約であり、drift したら SKILL.md が勝つ。
 
+   > **注記（2026-09-24, ADR-0075）**: dispatch 先の既定は Claude Code cloud session
+   > （`scripts/cloud-dispatch.sh`）。Agent tool / `spawn-session` は task-triage §3 の表の例外行
+   > （正本はその表、ここに複製しない）でだけ使う。既定反転と例外 (a)〜(c) は不変。
+
 2. **plan 承認境界の advisory hook**: `hooks/plan-executor-notice.sh` を新設する。`ExitPlanMode` の
    PostToolUse で発火し、transcript からセッションモデルを判定して fable セッションのときのみ
    通知する（判定不能時は fail-quiet）。plan 本文（`tool_input.plan` — 実 ExitPlanMode 呼び出し
@@ -75,6 +79,18 @@ Edit / Write を対象にした judge-tier 向けの hook も存在しない —
 - spawn された build セッションが judge-tier で起動する観測が出たら（環境既定モデルの変更等）、
   spawn 経路のモデル pin（Decision 4 の却下）を再訪する
 - モデルのティア区別と使用限度が消えたら本 ADR 全体を外す
+
+> **注記（2026-09-25、plan mode 廃止案）**: Decision 2 の hook は `ExitPlanMode` の PostToolUse でしか発火しない。
+> Anthropic の Thariq Shihipar が X に plan mode の廃止案を投稿し（2026-09-23 UTC、
+> https://x.com/trq212/status/2102813194196758746 — 「Shift+Tab を effort 調整に回す」）、続けて「plan mode を
+> built-in の mod にし、mod が新しいモードの追加や Shift+Tab の上書きをできるようにする」計画を出した（後者は
+> 著者のスクリーンショットで確認、URL 未取得）。docs と CHANGELOG（2.1.282 時点）には mods も廃止も載っていない。
+> この harness の依存は plan file で 7 月 94 件 / 8 月 103 件 / 9 月 56 件（25 日時点）。`ExitPlanMode` が消えるか
+> payload（`tool_input.plan`）が変わると、hook は fail-quiet 設計のため何も言わずに鳴らなくなる。失効の検出は
+> CHANGELOG に plan mode / mods の項目が出たときとし、その時点で (a) mod 化した plan mode の承認イベントへ matcher を
+> 移す、(b) 移せる経路が無ければ rules 行（`implementation-chain`）だけに縮退する、のどちらかを決める。同じ前提に
+> 依存する skill: `spawn-session`（EnterPlanMode で起動）、`grill-me`、`codex-review --plan`、`implementation-chain`
+> の Plan 行。
 
 ## Alternatives Considered
 

@@ -1,0 +1,56 @@
+# .github/workflows/verify.yml — template (verify-bootstrap Step 6)
+#
+# Runs the repo's single gate entrypoint (.claude/verify.sh) with no args on every push to
+# main and to claude/** (Claude Code cloud build branches — ADR-0075: the judge reads this
+# result instead of re-running verify). The checks live in verify.sh only; this workflow
+# provides the tools verify.sh needs and calls it. A separate job scans the history for
+# secrets (the local harness hook only sees staged additions).
+#
+# Fill in: the "Install tools" step (what verify.sh resolves from PATH — read .claude/verify.md),
+# the language setup action(s), and the Python/Node versions. Keep: SHA-pinned actions,
+# `permissions: contents: read`, `persist-credentials: false`, the branch filters.
+# Re-resolve SHAs from tags when bumping: gh api repos/<owner>/<repo>/git/ref/tags/<tag>.
+name: verify
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # <language setup — e.g. actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      #  with python-version, astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0,
+      #  actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0>
+      - name: Install tools
+        run: |
+          # <every tool verify.sh looks for on PATH, version-pinned — e.g.
+          #  pip install shellcheck-py==0.11.0.1
+          #  npm i -g markdownlint-cli2@0.23.2>
+          true
+      - name: Verify
+        run: ./.claude/verify.sh
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          # GITLEAKS_LICENSE is required for repositories owned by an organization, not for a user account.

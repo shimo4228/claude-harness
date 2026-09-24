@@ -68,6 +68,13 @@ outward-facing, confirm first" / "Stop only for destructive actions or genuine s
    人間）とその後（Review-when の revert 数）に置く。behavior-shaping artifact（rules / hooks /
    permissions / gate script / ADR / skills）の無人変更は Decision 4 のとおり人間のままで、
    ADR-0019 の条項はそこに残る。ADR-0019 に日付つき注記を付ける。
+
+   > **注記（2026-09-24, ADR-0075）**: cloud session で build した branch では「`verify.sh` を main で
+   > 再実行」を、repo の CI が branch tip（headSha 一致）と merge 後の main で走らせた `verify.sh` の
+   > 結論に置き換える。判断役はローカルで再実行しない。前提は diff が `.claude/verify.sh` /
+   > `.github/` / `.claude/settings.json` に触れていないこと（触れた diff は検収に入らない）。
+   > 決定論ゲート PASS + 判断役の検収で閉じる形、Decision 4、`verify_allow.py approve` は不変。
+
 4. **人間に残る取り込み**: 無人時に rules / hooks / permissions / scheduled task / `.claude/verify.sh`
    を含む diff。`verify_allow.py approve` は人間のまま。
 5. build の Report に `Risk: <とったリスク / 戻し方>` 1 行を足す（packet-template）。

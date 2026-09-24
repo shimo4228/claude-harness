@@ -3,7 +3,7 @@ name: task-triage
 description: "Run one cycle of the task-triage loop over a repo's task ledger — judge every open task (verify its premise in code, check its start condition against the 照合先, decide whether it is still worth doing, look for a better solution), then dispatch the accepted ones to fresh implementation sessions and act as their independent judge until the branch is merged. Use when the user says 「残タスクを見て」「タスクを整理して」「台帳を回して」「dispatch して」「未マージある？」, invokes /task-triage, or when a task ledger has grown and nobody can say what is dispatchable. NOT for consolidating scattered task files into a ledger (task-stocktake), NOT for deciding a single build-or-not question (architect), and NOT for running a task yourself."
 license: MIT
 origin: shimo4228
-compatibility: Developed on Claude Code with Herdr as the session multiplexer; the dispatch mechanics section names the alternatives (Agent tool, `claude --bg`) for other setups.
+compatibility: Developed on Claude Code. Build sessions are Claude Code cloud sessions by default (`scripts/cloud-dispatch.sh`, needs a github.com remote and a CI job that runs the repo's verify); §3 names the local alternatives (Agent tool, Herdr via `spawn-session`) and when they apply.
 ---
 
 # Task Triage — judge, dispatch, verify, merge (the human sets direction)
@@ -14,12 +14,12 @@ by putting judgment first: every open task is re-read against the code and its o
 condition, and only what survives is dispatched. `resolved` / `rejected` / `withdrawn` /
 `obsoleted` count as success exactly like `done`.
 
-Roles (decided 2026-08-17, ADR-0043):
+Roles (ADR-0043):
 
 | Role | Who | Does | Never does |
 |---|---|---|---|
 | **Judge** (this skill) | the triage session (Fable-tier) | premise check, worth check, better-solution check, condition check → verdict; writes kickoff packets; independently verifies build output; merges what passed §4 ff-only and pushes; keeps the books | confirms a drop alone; files tasks on its own |
-| **Build** | a fresh session per task (Opus-tier), in a git worktree | Phase 0 premise re-check → implement → commit on the task branch with the evidence in the commit body | changes acceptance conditions, merges its own branch, edits the ledger |
+| **Build** | a fresh session per task (Opus-tier) — by default a Claude Code **cloud session** on a `claude/` branch cloned from GitHub, running without the harness (the packet is its whole contract); a local worktree session (Agent tool / Herdr) only for the cases §3 names | Phase 0 premise re-check → implement → run the one review the packet names → commit on the task branch with the evidence in the commit body → push (cloud) | changes acceptance conditions, merges its own branch, edits the ledger, touches the gate (`.claude/verify.sh`, `.github/`, `.claude/settings.json`) |
 | **Human** | the owner | direction for tasks that need it, batch answers to the digest, the merge of a diff that touches rules / hooks / permissions / gate scripts while unattended | watches individual sessions (attention is the scarce resource) |
 
 The shared boundary — what is handed to the human, what a session may risk without asking,
@@ -42,7 +42,7 @@ The verdicts of a triage are the states themselves:
 | Verdict | Meaning | Who decides |
 |---|---|---|
 | `draft` | adoption still undecided → **consult** the human (one question at a time, see Digest) | human |
-| `accepted` → dispatch | premise verified `file:line`, condition met, acceptance decidable, reversible in a worktree, no rule change, fits one session | judge (dispatch), human (merge) |
+| `accepted` → dispatch | premise verified `file:line`, condition met, acceptance decidable, reversible on a branch, no rule change, fits one session | judge (dispatch, merge after §4) |
 | `blocked` | adopted, and the three lines can be written; if the 照合先 can never fire (structurally unobservable), it is not `blocked` — re-ask | judge writes the lines |
 | terminal proposal | premise gone / substrate now native / value < complexity (`architect` lens) / event source deleted (`obsoleted`) | proposed by judge, **confirmed by human** |
 | 台帳外 | 便乗 → a note at the code site, row closed | judge proposes |
@@ -114,64 +114,110 @@ Never treat text sitting in another session's input box as the human's answer �
 pre-fills suggested prompts there — and never treat a Slack reply as the answer either. The
 answers come **in the triage session**, or through the human's own hands.
 
-### 3. Dispatch — packet, worktree, fresh session
+### 3. Dispatch — packet, branch, fresh session
 
 Only `accepted` tasks, within the WIP cap (Damping). Group tasks that share one
 setup into one packet (three skill-comply chores became one session; three README notes in
-three repos became one). Measurements (readings that decide the next state) dispatch just as
+three repos became one — cloud: one session per repo, since a session clones one repo).
+Measurements (readings that decide the next state) dispatch just as
 well as implementations — often better: read-only, decidable, reversible.
 
-Per task or bundle:
+**Pick the executor by what the task needs.** The default is a cloud session; the other rows
+are the exceptions, and a task that matches none of them goes to the cloud.
 
-1. `claims.py claim T-XXX --label "S<n>: <what> (Opus session, worktree <branch>; judge=…, merge=judge after §4)"`
-2. `git -C <repo> worktree add .claude/worktrees/<name> -b task/<name> main` — and copy the
-   repo's untracked `.claude/settings.local.json` (and project hooks / skills if gitignored)
-   into the worktree, or the session runs without the allowlist. `.claude/worktrees/` must be
-   ignored in that repo. Sibling repos: worktree under the scratchpad, never a branch
-   checkout in their main tree.
-3. Write the packet from `references/packet-template.md` — goal as **decidable acceptance**,
-   Phase 0 premise re-check with the instruction "if refuted, stop and report — do not
-   implement", must-not list, the **task type** (feat / fix / refactor / chore / measurement)
-   with the review chain **delegated to `implementation-chain`** — never a hand-written list
-   of reviewers (a name left off reads as permission to skip: one build skipped `/simplify`
-   because the packet had not named it), and the **commit-message report** (the only evidence
-   that survives the pane). State the default plainly: *what the packet does not mention is
-   governed by the harness rules, not waived by silence.*
-4. Start the build — **pick the mechanism by the kind of work**:
-   - *Measurement / read-only / docs-only* → `Agent(model: opus, isolation: worktree)`; three or
-     more with one setup → the Workflow tool (`pipeline`, build and judge as separate `agent()`
-     calls, `schema` for the reading). The result returns in-process, no pane, no cleanup.
-   - *Implementation that must run the full review chain, may run long, or may hit permission
-     prompts* → an interactive session via `spawn-session` (Herdr, Remote Control) so hooks,
-     skills and the chain run in the normal environment and the owner can approve from the
-     phone: `bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus` →
-     `herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000` — the first
-     prompt often returns `timeout` while landing fine; confirm with `herdr agent read`.
-     `agent_status: done` means the REPL is idle, **not** that the work is done — a background
-     shell may still run. `claude --bg -w <name> --model opus "<prompt>"` is the detached
-     alternative (completion via `claude agents --json`).
-   Hooks, the chain's skills and a direct `verify.sh` run behave inside an Agent-tool
-   subagent as they do in the main session (measured 2026-08-29, RFC-0016), so
-   implementations may take this route too. Known cost: the worktree isolation guard hard-
-   refuses some Bash with no prompt — shell `for` loops and heredocs, git or not. Fold a loop
-   into one command over several paths, or write the analysis to a file and run
-   `python3 <file>`.
-5. Watch for **artifacts**, not status: a commit on the task branch, the reading file, a
-   section in the memo. `Monitor` with a poll loop, exit when all artifacts exist.
+| The task needs | Executor |
+|---|---|
+| Only the GitHub clone (tracked files), a Linux toolchain, and the repo's CI job that runs `verify.sh` | **Claude Code cloud session** — `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file>` |
+| Local data or a local model (`~/.config/moltbook`, `.notes/`, Ollama, an eval that reads them), a macOS-only toolchain (Swift / iOS, launchd, `security`), or a repo with no github.com remote or no CI running `verify.sh` | Local. *Measurement / read-only / docs-only* → `Agent(model: opus, isolation: worktree)`; three or more with one setup → the Workflow tool (`pipeline`, build and judge as separate `agent()` calls, `schema` for the reading). *Implementations that need hooks, skills and permission prompts* → `spawn-session` (Herdr, Remote Control) |
+| A private number in the packet itself (a Jev row — anything `tests/test_jev_results_stay_private.py` guards, or `.notes/` contents) | Local. A cloud packet is the session's first message, and in a public repo the branch, commits and PR are public before acceptance — the packet is written like an `rfcs/` entry (ADR-0049): pointers, not private contents |
+| harness rules / hooks / permissions / a gate script (`.claude/verify.sh`, `.github/`) | Not dispatched — the human's diff (`boundary.md`) |
+
+Per task or bundle, cloud path:
+
+1. `claims.py claim T-XXX --label "S<n>: <what> (cloud session; judge=…, merge=judge after §4)"`
+2. Make `main` what the cloud will clone: `git -C <repo> status -sb`, `git push` if ahead. The
+   cloud clones **origin/main**, never the working tree — a local-only commit is invisible to the
+   build. The dispatch script refuses to start on a dirty or unpushed `main`.
+3. Write the packet from `references/packet-template.md` (cloud variant) to a file outside the
+   tracked tree (`.notes/packets/s<n>.md` or the scratchpad). The cloud reads no `~/.claude`, so
+   the packet is **self-contained**: goal as decidable acceptance, Phase 0 with "if refuted, stop
+   and report", the build order, the one review it runs (built-in `/code-review`, effort
+   `medium`, the reviewer instruction written out), the must-nots, and the commit-body report.
+   What the packet does not say, the build will not do — no harness default stands behind it.
+4. Start: `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file>` prints
+   `session=<id> url=<url>` and appends it to `~/.claude/logs/cloud-dispatch.jsonl`. It works from
+   the Bash tool (it supplies the pty `--cloud` needs), so an unattended cycle dispatches the
+   same way — **for a private repo**. A public repo's branch and PR are public from the build's
+   first push, and publication is the human's side (`boundary.md`; ADR-0043 red line 3 with its
+   ADR-0049 note): the digest names each such task on its own line, and the dispatch starts only
+   after the human's OK for that task (a reply that names several tasks answers each of them —
+   §2). Pass `--public-ok` then; the script refuses a public repo without it and logs the flag.
+   An unattended cycle lists such tasks in the digest as "ready to dispatch" and starts nothing.
+   Put the session id in the claim label — it is the address for a bounce (§4).
+5. Watch for **artifacts**, not status: `git -C <repo> fetch origin` then
+   `git branch -r --list 'origin/claude/*'` — the build's branch is `claude/<slug>-<hash>` (the
+   session names it; the packet asks the build to report it). With several builds in flight,
+   match a new branch to its task by the T-ID in the commit subject (`git log -1 --format=%s
+   origin/claude/<name>`), never by arrival order. `gh run list -R <owner/repo>
+   --branch <branch> --json status,conclusion,headSha` for the CI verdict. `Monitor` with a poll
+   loop, exit when the commit and the CI conclusion exist. The PR the cloud opens at push is a
+   view of the same branch, not the acceptance gate.
+
+Local path (the exception rows). `Agent(isolation: worktree)` makes its own worktree and
+branch — judge and merge the branch the agent's report names (`git worktree list` shows it);
+the hand-made worktree below is the `spawn-session` path: `git -C <repo> worktree add
+.claude/worktrees/<name> -b task/<name> main`, copy the repo's untracked
+`.claude/settings.local.json` (and project hooks / skills if gitignored) into the worktree or
+the session runs without the allowlist;
+`.claude/worktrees/` must be ignored in that repo; sibling repos get their worktree under the
+scratchpad. Steps 1 and 3 are as for the cloud path (claim with the worktree branch in the
+label; packet file outside the tracked tree), using the packet's *local* lines (build or
+measurement variant), with the review chain delegated to `implementation-chain` (the harness
+is present there). `spawn-session`:
+`bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus` →
+`herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000` — the first prompt
+often returns `timeout` while landing fine; confirm with `herdr agent read`. `agent_status: done`
+means the REPL is idle, **not** that the work is done. Hooks, the chain's skills and a direct
+`verify.sh` run behave inside an Agent-tool subagent as they do in the main session (measured
+2026-08-29, RFC-0016). Known cost: the worktree isolation guard hard-refuses shell `for` loops
+and heredocs — fold a loop into one command over several paths, or write the analysis to a file
+and run `python3 <file>`.
+
+Cloud builds leave no rows in `~/.claude/metrics/skill-usage.jsonl` / `agent-usage.jsonl` (no
+harness hooks run there): `skill-comply`, `skill-stocktake` and `agent-stocktake` readings cover
+local sessions only, and a missing row is "unmeasured", never "unused".
 
 ### 4. Judge the output — independent, deterministic first
 
 The build session's report is a claim. Before merging:
 
-- `git diff --stat main..task/<name>` — only the files the packet allowed. If main moved since
-  the worktree was cut, the diff shows the *missing* main commits: `git rebase main` in the
-  worktree first (a build branch never has a right to a merge commit).
-- Run the repo's `verify.sh` (or tests) **yourself** in the worktree — the packet said the
-  session ran it; you run it again. Then read the commit body: premise, fix, verify, review,
-  out-of-diff findings.
+- `git -C <repo> fetch origin` → `git diff --stat origin/main..origin/claude/<name>` (local
+  path: `main..task/<name>`) — only the files the packet allowed. **A change under
+  `.claude/verify.sh`, `.claude/verify.md`, `.github/`, `.claude/settings.json`, or to a test's assertions the packet
+  did not name, is a bounce**: the CI verdict is evidence only while the gate itself is
+  untouched. If main moved since the branch was cut, the diff shows the *missing* main commits:
+  bounce with "rebase onto origin/main and push" (a build branch never has a right to a merge
+  commit).
+- Read the CI instead of re-running verify: `gh run list -R <owner/repo> --branch claude/<name>
+  --json status,conclusion,headSha,url` — the conclusion must be `success` **for the branch tip**
+  (`headSha` = the commit you are about to merge). A failed run: `gh run view <id> --log-failed`.
+  No run at all means the workflow did not trigger (branch outside `claude/**`, CI not installed)
+  → the branch is unverified, not passed. Local path: run the repo's `verify.sh` **yourself** in
+  the worktree. Then read the commit body: premise, fix, verify (the build's own run is advisory
+  next to CI), review, out-of-diff findings.
 - Anything the packet forbade that the diff contains → bounce, do not fix it yourself.
-- **Compliance with the packet and the chain**: did the build run the chain for its type
-  (`implementation-chain`), keep the must-nots, and stop at the acceptance line? A deviation is
+- **Bounce goes to the same session**: `claude -p "<what to change and why; stay on the branch,
+  push, report the new tip>" --cloud <session-id> --output-format json`. The session continues
+  on its branch; judge again from the new tip and its CI run. One retry per task per cycle
+  (Damping). A bounce pushes to the build's branch, so for a public repo it waits for the
+  human's OK like the dispatch (§3 step 4). `ok: false` (archived, missing) → start a new session from a packet that names the
+  branch to continue on, or let the human decide at the digest. Local path: the same message to
+  the same session — `herdr agent prompt "<agent-name>" "<message>"` for a `spawn-session` pane,
+  `SendMessage` to the Agent for an Agent-tool build; the branch stays.
+- **Compliance with the packet and the chain**: did the build run what its packet's Review
+  section names — cloud: built-in `/code-review` at effort `medium` and nothing else; local: the
+  chain for its type per `implementation-chain` — keep the must-nots, and stop at the acceptance
+  line? A deviation is
   acceptable only when the report *names it as a deviation with a reason* ("E2E 省略:
   UI 非接触" / "premise refuted, corrected instead of stopping — because …"). A silent
   deviation — something skipped or done differently without saying so — is a bounce even if
@@ -188,17 +234,22 @@ The build session's report is a claim. Before merging:
 
 ### 5. Merge, then close the books
 
-- `git -C <repo> merge --ff-only task/<name>` → run verify on `main` again → `claims.py
+- On a clean `main`: `git -C <repo> merge --ff-only origin/claude/<name>` (local path:
+  `task/<name>`) → `git push` → the CI run on `main` is the post-merge verify
+  (`gh run list --branch main`; local path: run `verify.sh` on `main` yourself) → `claims.py
   release T-XXX --outcome done --commit <sha>` → state `done <date>` in the ledger (an
-  `rfcs/` entry stays in place as a public decision record — ADR-0049) → `git worktree remove` +
-  `git branch -d` → close the build
-  session's pane (`herdr pane close <pane_id>`; the pane is not evidence — the commit body is).
+  `rfcs/` entry stays in place as a public decision record — ADR-0049).
+- Close the branch: `git push origin --delete claude/<name>` — the PR the cloud opened closes
+  itself as merged once `main` contains its head. A bounced-and-abandoned branch: `gh pr close
+  <n> --comment "<one line>"` and delete the branch; the reason lives in the ledger, not in the
+  PR. Local path: `git worktree remove` + `git branch -d`, close the pane (`herdr pane close
+  <pane_id>`; the pane is not evidence — the commit body is).
 - If the merge changed a pinned gate script (`.claude/verify.sh`), the approval ledger needs
   the human's `python3 ~/.claude/scripts/hooks/verify_allow.py approve <repo>` **after** the merge — say so explicitly, once
   per such merge, and check with `verify_allow.py check` that it happened. A gate that quietly
   went dormant is worse than a red one.
-- Push after the merge when the repo has a remote (`git push`; force is blocked by the hook).
-- Unmerged branches are the queue: `git branch --no-merged main` per repo. The judge merges
+- Unmerged branches are the queue: `git branch -r --list 'origin/claude/*'` and `git branch
+  --no-merged main` per repo. The judge merges
   what passed §4 and leaves the rest with a reason — bounced, stalled, or waiting on the
   human because the diff touches rules / hooks / permissions / a gate script while unattended
   (`boundary.md`).
@@ -209,8 +260,9 @@ The build session's report is a claim. Before merging:
 
 ## Damping and boundaries (what makes this a loop and not a runaway)
 
-- WIP ≤ 3 build sessions; open task branches ≤ 3 per repo; one retry per task per cycle; a
-  build that stalls or fails twice goes back to the digest.
+- WIP ≤ 3 build sessions; open task branches ≤ 3 per repo (remote `claude/*` branches
+  included); one retry per task per cycle; a build that stalls or fails twice goes back to the
+  digest.
 - The loop **files nothing on its own** (admission stays with humans and the review rule);
   **drops nothing alone**; keeps the filing rule fixed while its measurement is running. The
   shared boundary (publish, human-gated diffs, external writes) is rule `boundary.md`.
@@ -238,7 +290,10 @@ previous cycle still `working` → skipped). The human starts nothing: that is t
 
 §2 is the 正本 of the cycle prompt's content: the tick's default prompt in
 `scripts/triage-tick.sh` is a rendering of it, and changing §2 means updating that prompt
-with it.
+with it. The tick never dispatches; the session does, through `scripts/cloud-dispatch.sh`,
+which needs no terminal (it supplies the pty). An unattended cycle dispatches cloud builds for
+private repos and local builds within WIP; a public repo's cloud dispatch waits for the attended
+cycle (§3 step 4), because the build's first push is a publication.
 A repo's loop needs the repo's context — its ADRs, its ledger vocabulary quirks, its verify
 gate, its concurrent worktrees — so one session judges one repo; a cross-repo session pays
 that reading twice and dilutes both.
@@ -252,9 +307,10 @@ its plist, or moving that slot off Saturday silently kills the stocktake half (h
 exactly this when it moved off Saturday 2026-08-29). Keep the timer in launchd: in-session
 `CronCreate` and `/loop` are session-only, expire in 7 days, and go silent when the session
 dies. A cycle that fires while the human is away still does everything up to the digest —
-条件 checks, vocabulary-only bookkeeping, dispatch of `accepted` work within WIP,
-verification of finished builds — then closes with the digest (§2); consults and merges wait
-for the human in the session.
+条件 checks, vocabulary-only bookkeeping, dispatch of `accepted` work within WIP (a public
+repo's cloud dispatch is listed as ready, not started — §3 step 4), verification of finished
+builds — then closes with the digest (§2); consults and merges wait for the human in the
+session.
 
 The session is long-lived but **not eternal, and it does not renew itself**: the last step
 of a cycle compares `claude --version` with the version it started under and checks its own
@@ -287,7 +343,10 @@ force and the plist discipline are in "Where the loop lives".
 - `loop-design-check` — the lens: decidable goal, judge independence, red lines
 - `llm-as-judge` — how the judge speaks when a semantic verdict is unavoidable
 - `architect` agent — contested build-or-not
-- `spawn-session` — the session mechanism this harness uses for build sessions and for the
+- `scripts/cloud-dispatch.sh` — the default build mechanism: preflight (github.com remote,
+  `main` clean and pushed), `claude --cloud` under a pty with `--ref`, session id to
+  `logs/cloud-dispatch.jsonl` (ADR-0075)
+- `spawn-session` — the local session mechanism for the §3 exception rows and for the
   standing triage session (spawned by the tick when none is alive)
 - `scripts/triage-tick.sh` / `scripts/launchd/*.plist` — the timer (launchd) that drives the
   standing session; `scripts/notify-slack.sh` — the one-way Slack channel for the digest

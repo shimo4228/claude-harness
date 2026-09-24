@@ -37,6 +37,16 @@ accepted
 2. **PR は使わない。** 未マージ = `git branch --no-merged main`。判断役が digest に列挙し、人間の
    「merge」で判断役が ff-only を打つ。証拠は commit body（pane が閉じても消えない）。phone からは
    Remote Control 越しに triage セッションへ。
+
+   > **注記（2026-09-24, ADR-0075）**: 実装役の既定は Claude Code cloud session（GitHub の origin/main を
+   > clone、branch `claude/…`、`~/.claude` を読まない自己完結 packet）になり、verify は repo の CI が
+   > 走らせる。ローカル worktree（`task/<name>`）は task-triage §3 の例外行に残る。本項 2 の「PR は
+   > 使わない」は「PR は cloud が自動で開く view であり、merge 経路にはしない」へ狭まる — 人間が PR を
+   > 操作しないので当時の却下理由（ややこしさ）は当たらない。merge は ff-only のまま（ADR-0069）。
+   > 三役は不変。red line 3（公開物に無人で触らない）も不変で、public repo への cloud dispatch と
+   > 差し戻しは、digest が task を名指しして人間が OK を出したときに限る（`cloud-dispatch.sh
+   > --public-ok`。build の最初の push が公開になるため）。無人 cycle は列挙するだけで起動しない。
+
 3. **loop の境界（loop-design-check の red line）**: loop 自身は起票しない・drop を独断で確定しない・
    rules / ADR / hooks / security gate / 公開物に無人で触らない・同時 build ≤ 3、open branch ≤ 3 /
    repo・起票規約を計測中に変えない。goal は突合型（closed ≥ spawned、open が 4 週で増えない）で
