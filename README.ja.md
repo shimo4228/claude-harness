@@ -77,8 +77,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | Agent | Purpose |
 | --- | --- |
 | [prompt-writer](agents/prompt-writer.md) | 軽量モデルで簡潔な prompt を生成。LLM prompt template の作成・書き換え |
-| [readme-reviewer](agents/readme-reviewer.md) | README / repo トップページの厳格レビュアー — LLM 読解フロア / lead 明瞭性 / human hook / 走査性 / 長さ規律 / 視覚効果。readme-writer の companion |
-| [readme-clarity-reviewer](agents/readme-clarity-reviewer.md) | README の初見読者目線レビュー — 造語予算 / 内部文脈依存 / 日本語 register（ですます）。readme-reviewer の並列相方 |
 | [adr-reviewer](agents/adr-reviewer.md) | ADR の「決定」ではなく「記録」を検査する — Context が検証可能な根拠を持つか、`Review-when` が観測可能な失効条件か、Alternatives が藁人形でないか（「未決 — 再訪条件」付きの対抗案は可）、Consequences が両面あるか、先行 ADR との関係（部分弱化は日付つき注記）が明示されているか |
 | [prompt-forager](agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI レビュー — Swift 6 strict concurrency、値セマンティクス、SwiftUI の状態所有、retain cycle、HIG 準拠 |

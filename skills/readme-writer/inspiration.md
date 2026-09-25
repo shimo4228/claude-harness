@@ -1,7 +1,7 @@
 # Inspiration & Origin
 
 This file keeps the project-specific origin story and canonical pointers out of
-`SKILL.md`, so the skill stays portable (per the skill-portability rule).
+`SKILL.md`, so the skill stays portable.
 
 ## Why this skill exists
 
@@ -42,7 +42,7 @@ what markdownlint and each repo's link scan already enforce, and its five
 warnings never touched the actual failure mode of a mature README — context
 density (ADR references, sibling repos, coined terms, internal history piling up
 commit after commit). It was replaced by `scripts/readme_evidence.py`, modeled on
-zenn-content's `mechanical_checks.py`: a script that **counts and lists** but
+zenn-content's `scripts/zenn_evidence.py`: a script that **counts and lists** but
 never decides (no severity, no threshold, exit 0 regardless of content). The
 verdict moved to a fresh-context judge agent (`readme-judge`) inside a revision loop capped at two rounds, with
 a binding final judgment on the frozen candidate and the author's read-through as
@@ -158,27 +158,20 @@ identical in both modes — check contrast against *both* backgrounds before
 shipping, or stay with the adaptive default theme and use `classDef` sparingly
 for role distinction only.
 
-### Cover-art generation notes（hero 画像を AI 生成するときの作法）
+### Cover-art generation notes
 
-Operational spec (placement, ratio, no-text rule, compression) lives in
-`SKILL.md` → Visual-first → カバーアート. These are the *prompt-side* lessons
-from the first worked example (2026-07-27, hub repo `shimo4228/shimo4228`):
+The prompt-side lessons from the first worked example (2026-07-27, hub repo
+`shimo4228/shimo4228`) are operational and live in `references/visual.md` → カバーアート（hero）.
 
-- **Colors: name them, don't hex them.** Image models ignore hex codes; list
-  color names ("amber, lavender, soft blue, sage green, slate gray") and
-  follow up with "more muted, desaturated" if the output drifts.
-- **Aspect ratio is routinely ignored** — plan to crop after generation rather
-  than fighting the model for 4:1.
-- **Motif from the repo's own structure beats generic beauty.** Offer the model
-  the README's actual concepts (e.g. "five strands converging to one point" for
-  a five-line hub) and the diagram's palette; the result reads as one design
-  system instead of stock art. Style directions that worked: modern sumi-e
-  (single brushstroke + ensō) for a meditation-rooted program — chosen over
-  generic "flowing gradient lines" precisely because it encodes the program's
-  distinctive origin instead of hiding it.
-- **Identity check before prettiness:** if the style would fit any AI repo's
-  banner, it is erasing the differentiator. Pick the style that only this
-  program could justify.
+### 2026-09-25: one judge instead of a panel
+
+The three README reviewers were merged into readme-judge, which also gained a claims check
+against the repo. The decision, its evidence and its expiry conditions are in harness ADR-0077.
+
+Checklist provenance: first version 2026-08-19 from the CA README rebuild (187 commits of
+accretion) and the article review checklist; K5 / K6 added 2026-08-20 after the author found the
+CA README had no "why it exists" and the judge then caught the lead's promised "history" with
+nowhere to land.
 
 ## Canonical context
 

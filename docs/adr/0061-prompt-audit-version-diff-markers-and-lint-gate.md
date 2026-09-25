@@ -74,6 +74,7 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
 
 - 次の Claude model release で `/claude-api prompt-audit` を再実行し、1d migration-relative が
   再び最多カテゴリなら lint の動詞集合を広げる（tombstone 語の追加を検討する）
+  > **注記（2026-09-25, ADR-0078）**: Opus 5.5 で再実行した。最多は Group 2（41）で 1d（32）は 2 番目 — この条件は発火していないので lint は変えない。
 - lint が正当な as-of 記述（退役日・観測日）を偽陽性で 2 回以上止めたら、動詞集合を狭めるか
   括弧内の共起条件を見直す
 - Anthropic の migration guide が「migration-relative phrasing」を有害パターンから外したら
@@ -98,6 +99,10 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
 自作資産内部の cruft 静的検査は別物。`generation-audit` の Related に
 `/claude-api prompt-audit` を 1 行ポインタとして置く方が正本を割らない。
 
+> **注記（2026-09-25, ADR-0078）**: 却下を覆した。2 つの検査は別物のままだが、世代交代の入口が 2 つあると
+> 実際には prompt-audit しか回らなかった（Fable 5.1 と Opus 5.5 の 2 回）。generation-audit を単一入口にし、
+> dated pattern 走査は Phase 3 で prompt-audit に委ねる（pattern 表は写さない）。
+
 ### 何もしない（監査結果だけ適用する）
 
 却下: 同型は ADR-0018 後の 5 週間で 55 件蓄積した。次回まで放置すれば同量が再生産される。
@@ -110,6 +115,7 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
 - skill 本文が「現行規則 + 理由 + ADR 番号」の形に収束し、Fable が幻の代替を reconcile する
   思考消費が減る
 - 再監査の手順が確定した（model release 時に `/claude-api prompt-audit` を再実行する）
+  > **注記（2026-09-25, ADR-0078）**: 再監査の手順は generation-audit の Phase 3 に移った。
 
 ### Negative
 
@@ -126,6 +132,7 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
   > 選ばなくなったのでこの follow-up は閉じる
   > （[ADR-0073](./0073-signal-first-as-output-style-and-one-question-gate.md)）。
 - `generation-audit` Related への `/claude-api prompt-audit` ポインタ追加は任意
+  > **注記（2026-09-25, ADR-0078）**: ポインタではなく Phase 3 のエンジンとして組み込んだ。
 - 監査 report と diff は scratchpad 保存で repo には残さない（commit message に件数を残す）
 - [ADR-0018](./0018-rules-rightsize-for-claude5.md)・
   [ADR-0035](./0035-commit-review-hook-and-rules-rightsize.md) の rightsize 系列の第 3 波

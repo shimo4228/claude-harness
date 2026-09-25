@@ -42,7 +42,7 @@ gh api repos/<owner>/<repo>/hooks --jq '.[] | select(.config.url | contains("zen
 
 ### Zenodo opt-in (新規 DOI repo の最初の release で必須)
 
-Zenodo は GitHub repo ごとに **opt-in 連携** が必要。toggle ON 前に作成された GitHub Release は Zenodo に届かず、後から ON にしても遡及的には拾われない (公式仕様)。新規 repo で初回 release を切る場合、必ず Phase 0 で opt-in を確認する。
+Zenodo は GitHub repo ごとに **opt-in 連携** が必要。toggle ON 前に作成された GitHub Release は Zenodo に届かず、後から ON にしても遡及的には拾われない (公式仕様)。新規 repo で初回 release を切る場合、必ず Pre-flight で opt-in を確認する。
 
 ユーザー対応手順 (user が browser でやる):
 
@@ -96,7 +96,7 @@ git tag --sort=-creatordate | head -5
 | `CLAUDE.md` | sunset 機能の言及を削除。新規 doc 場所/conventions を追加 |
 | `docs/adr/` cross-ref | supersede / sunset / withdraw 関係の双方向リンク確認 (新→旧、旧→新) |
 
-**多言語 README 同期範囲は default で「中間」**: version + 統計 + sunset sentence の削除。全文再翻訳は別 PR (cost が大きい)。最小 (badge のみ) は drift を残すので避ける。
+**多言語 README 同期範囲は default で「中間」**: version + 統計 + sunset sentence の削除。全文再翻訳は別の commit で行う (cost が大きい)。最小 (badge のみ) は drift を残すので避ける。
 
 **single-source-of-truth 原則**:
 - 同じ統計値を 2 箇所以上に書かない。書くなら一箇所を canonical にして他は参照に
@@ -272,7 +272,7 @@ identifiers:
 
 **community-authority-record への self-registration はしない**（Wikidata 等。authorship-strategy ADR-0021: アカウント無期限ブロック + 全 item 削除の実測。別アカウント・代理依頼も同じ）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
 
-**AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (現行 DeepWiki は "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく (authorship-strategy framework の Layer 4 tactic: derivation 型 diffusion 面 + regurgitation-test 診断面)。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
+**AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (DeepWiki は as-of 2026-06-28 で "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく (authorship-strategy framework の Layer 4 tactic: derivation 型 diffusion 面 + regurgitation-test 診断面)。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
 
 **Concept DOI vs Version DOI — 役割分離 policy**:
 

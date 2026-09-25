@@ -5,7 +5,7 @@ unstructured application logs into typed, queryable events. It exists because
 grep-and-regret does not scale past a few services.
 
 ```mermaid
-flowchart LR
+flowchart TD
     raw[Raw log line] --> parse[Acme Parser]
     parse --> event[Typed event]
     event --> query[(Queryable store)]

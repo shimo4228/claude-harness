@@ -26,12 +26,11 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 
 **harness 自体の変更**: 対象が `~/.claude` の rules / skills / hooks / agents / settings なら、種別に関わらず Plan で skill: `harness-boundary` を 1 回通す（どの層に置くか・モデルに任せられないか・runtime 交換後も残すか。1 行の判断で足りる）。
 
-**README の種別判定**: README 自体の改善・書き直しが目的なら `writing`（Writing Chain → readme-writer）。コード変更に付随する README 追従更新ならコードチェーンの Doc Sync 内で扱う。
+**README の種別判定**: README 自体の改善・書き直しが目的なら `writing`（Writing Chain → readme-writer）。コード変更に付随する README 追従更新はコードチェーンの Doc Sync で、readme-writer の Incremental モードを使う。
 
-**大きい feat の Plan の補助**: ① Explore agent を
-2〜3 並列・別角度（類似機能 / 構造 / 拡張点）で走らせ、各 agent に「主ループが読むべきファイル 5〜10」を
-返させて読む ② 設計代替は Plan agent を観点違い（最小変更 / クリーン / 実用）で並列し、主ループが
-比較して推奨・ユーザー選択（収束の所在は Matrix の Plan 行）。
+**大きい feat の Plan の補助**: 探索が互いに独立した複数の領域にまたがるときは Explore agent を並列で使い、
+各 agent に「主ループが読むべきファイル 5〜10」を返させて読む。設計代替は主ループが並べて比較し、推奨を
+添えてユーザーに選ばせる（収束の所在は Matrix の Plan 行）。
 
 **実行者の決定**（Plan の最後、必須）: plan が固まったら
 「このセッションが実装するか」を 1 行で決める。判断が要るのは judge-tier のセッション（Fable）で
@@ -118,9 +117,8 @@ adversarial review 1 段」。多段構成はレビュー起点のオーバー�
 
 **opt-in 名簿**（自発発火しない。著者が明示的に求めたときだけ）:
 
-- batch simplify = built-in `/simplify` — 肥大を感じたとき数 commit 分まとめて
-  （実績: CA commit `e739912` の 22 commit 一括、CA commit `edca8cf` の Review 後実行 +
-  再 Verify）。commit ごとには回さない（quality 軸は `/code-review` が内蔵）
+- batch simplify = built-in `/simplify` — 肥大を感じたとき数 commit 分まとめて回し、適用後に再 Verify する。
+  commit ごとには回さない（quality 軸は `/code-review` が内蔵）
 - security 深掘り = plugin `claude-security`（全 repo スキャン）
 - cross-model = skill: `codex-review`（diff review・plan 段の前提反証とも）
 
@@ -142,8 +140,7 @@ judge-tier トークンを消費する。代わりに `Agent(subagent_type: "gen
 `/simplify` の working-tree への fix 適用はサブエージェントでも同じに機能する）。自作 reviewer
 agent は frontmatter の `model:` が正本。build-tier のセッションでは直接呼んでよい。
 
-Refactor Clean では built-in simplify の後に `refactor-cleaner` agent を起動する
-（refactor 種別専用のステップで、per-commit Simplify の廃止とは独立）。
+Refactor Clean では built-in `/simplify` の後に `refactor-cleaner` agent を起動する（refactor 種別専用のステップ）。
 TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（順序として逐次必須なのは Verify のみ）。
 
 ## Writing Chain（`writing` 種別のルーティング）
@@ -167,13 +164,11 @@ channel contract が正本 — 本節はルーティングと、global 常駐 do
 
 | agent 出力 | chain 上の扱い |
 |---|---|
-| MAJOR ISSUES（readme-reviewer） | CRITICAL → 停止 |
-| NEEDS REVISION（readme-reviewer） | HIGH → 継続 + 修正 |
+| readme-judge Fix | HIGH → 継続 + span 修正 |
 | readme-judge Rewrite / geo_check FAIL | Verify FAIL → 停止 |
 
 **Cross-Model Review（条件付き）**: 公開前の高 stakes 文書のみ実行する。
-prose は prompt-driven、private ドラフト・下書き段階は `-`（writing chain は ADR-0055 の
-再編対象外 — 各 orchestrator skill の配線が正本のまま）。
+prose は prompt-driven、private ドラフト・下書き段階は `-`（配線の正本は各 orchestrator skill）。
 
 **Verify 相当（writing 版）**: build / types / tests は非該当。代わりに (1) 決定論 lint または証拠（README は readme_evidence.py の JSON + readme-judge の binding 判定、llms.txt は geo_check.py） (2) `git status` 確認。
 
@@ -188,4 +183,4 @@ prose は prompt-driven、private ドラフト・下書き段階は `-`（writin
 - Verify ステップで build / types / tests のいずれかが失敗
 - `fix` で根本原因の仮説が証拠で支持されない
 - Phase 0 (`/search-first`) の報告に、実装方針を変える既存解が含まれる → 再 plan を要請
-- `writing` で Verdict マッピング表の CRITICAL 相当（MAJOR ISSUES）を検出（記事 / paper の停止条件は各 repo の orchestrator が持つ）
+- `writing` で Verdict マッピング表の「停止」行（readme-judge Rewrite / geo_check FAIL）に当たった（記事 / paper の停止条件は各 repo の orchestrator が持つ）

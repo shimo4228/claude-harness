@@ -63,7 +63,7 @@ uv run --directory ~/MyAI_Lab/zenn-content/.claude/skills/session-theme-mining \
 
 抽出した判断を既存資産と突合し、**「既に正本があるもの」と「未昇格の空白」を分離する**。重複再掲はスキル生態系を壊す（drift の温床）ので、この工程を飛ばして書き始めない。
 
-照合先: 既存 skills（project + global）/ rules / ADR / **memory（特に feedback 系 — 過去に抽出済みの判断がここにある）** / CLAUDE.md。並列 Explore agent に「どこに何の正本があるかマップを作らせる」のが速い。
+照合先: 既存 skills（project + global）/ rules / ADR / **memory（特に feedback 系 — 過去に抽出済みの判断がここにある）** / CLAUDE.md。
 
 出力は 3 区分:
 1. **既に正本あり** → 新スキルには書かない。ポインタ（defer 宣言）のみ

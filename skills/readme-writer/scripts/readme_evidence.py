@@ -5,11 +5,35 @@ an LLM judge is bad at counting (how many ADR references, how many coined-term
 candidates, how many lines before the first section, which <details> blocks hide
 what) and hands them to `readme-judge` as JSON. It never decides whether a README
 is good: no severity, no threshold, no failing exit code. The same design as
-zenn-content's `mechanical_checks.py` — the judge reads the JSON as one input
+zenn-content's `scripts/zenn_evidence.py` — the judge reads the JSON as one input
 among several and owns the named verdict.
 
 Exit codes: 0 = evidence emitted (always, regardless of content), 2 = file not
 found / too large. There is no exit 1.
+
+JSON contract (top-level keys, in output order): path, lang_guess, line_count,
+own_repo, structure, identity_lead, first_screen, insider_refs, term_candidates,
+details_blocks, figures, badges, prose_signals, register_ja, history_signals,
+numeric_claims, doi_citation, note, notes.
+
+- own_repo: "owner/repo" of the GitHub `origin` remote of the README's directory
+  (`git -C <dir> remote get-url origin`, short timeout), or null on any failure or a
+  non-GitHub host. `--own-repo` overrides detection ("" = none). Links and badges
+  to it are excluded from first_screen.github_repos and insider_refs.github_repos /
+  github_repo_count, so those count sibling repos only.
+- structure.broken_anchors: [{href, line}] for `[text](#fragment)` links whose
+  fragment matches neither a GitHub heading slug of this file nor an explicit
+  <a id/name> anchor (`#` and `#top` always resolve).
+- figures[].prose_adjacent: a prose line sits within 2 lines before or after the
+  figure (HTML wrapper lines such as <p align="center"> belong to the figure);
+  headings, blank lines, badges and other figures never qualify.
+- insider_refs.doc_paths: `(docs/...)` and `(./docs/...)` link targets share the
+  `docs/...` key.
+- register_ja: for a Japanese README, sentence endings (text before 。！？) in body
+  prose paragraphs, as {desu_masu, plain, plain_lines: [{line, text}]} (first 20,
+  text is the sentence tail, at most 60 chars); null for English.
+- notes: one string per counter stating what it cannot see; the judge covers
+  those blind spots itself (e.g. coined terms written in plain prose).
 
 Markdown coverage: ATX and setext headings; fenced code blocks (``` / ~~~),
 front matter and HTML comments are excluded from prose-level counts but headings
@@ -21,16 +45,19 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
+import unicodedata
 from collections import Counter, OrderedDict
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote
 
-# --- structural parsing (carried over from the retired readme_lint.py) -------- #
+# --- structural parsing ------------------------------------------------------ #
 _FENCE_RE = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})(?P<rest>.*)$")
 # Title anchored to a non-space char to avoid O(n^2) backtracking on a long
-# all-space suffix (ReDoS guard, kept from the old implementation).
+# all-space suffix (ReDoS guard).
 _HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+(\S(?:.*\S)?)\s*$")
 _TRAILING_HASHES_RE = re.compile(r"\s+#+\s*$")
 _SETEXT_H1_RE = re.compile(r"^ {0,3}=+\s*$")
@@ -67,7 +94,18 @@ _LETTER_RE = re.compile(r"[^\W\d_]", re.UNICODE)
 # --- evidence patterns ------------------------------------------------------- #
 _ADR_ID_RE = re.compile(r"\bADR-(\d{4})\b")
 _GITHUB_REPO_RE = re.compile(r"https?://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)")
-_DOC_PATH_RE = re.compile(r"\(\s*(docs/[^)\s#]+)")
+# owner/repo from a git remote: https://[user@]github.com/o/r[.git][/],
+# git@github.com:o/r[.git], ssh://git@[ssh.]github.com[:port]/o/r[.git]
+_GITHUB_REMOTE_RE = re.compile(
+    r"(?:^|[/@.])github\.com[:/](?:\d+/)?([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+?)(?:\.git)?/?$"
+)
+_GIT_TIMEOUT_S = 2
+_DOC_PATH_RE = re.compile(r"\(\s*(?:\./)?(docs/[^)\s#]+)")
+_HTML_A_TAG_RE = re.compile(r"<a\b[^<>]*>", re.IGNORECASE)  # [^<>]: a "<" run stays linear
+_ATTR_ID_NAME_RE = re.compile(r"(?<![\w-])(?:id|name)\s*=\s*(\"[^\"]*\"|'[^']*')", re.IGNORECASE)
+# A line made of HTML tags only (<p align="center">, </p>, <picture>, <source …>):
+# it wraps the figure next to it rather than separating it from its caption.
+_TAG_ONLY_RE = re.compile(r"^(?:</?[A-Za-z][^>]*>\s*)+$")
 _BACKTICK_RE = re.compile(r"`([^`\n]{2,60})`")
 _BOLD_RE = re.compile(r"\*\*([^*\n]{2,60})\*\*")
 _CAMEL_RE = re.compile(r"^[A-Z][a-z]+(?:[A-Z][a-z]+)+$")
@@ -88,7 +126,7 @@ _DEGREE_ADVERB_JA_RE = re.compile(
     r"とても|非常に|かなり|しっかり|すごく|本当に|極めて|めちゃくちゃ"
 )
 # Small slop vocabulary. The canonical banned list lives in writing-ecosystem
-# (resident in ~/MyAI_Lab/zenn-content/.claude/skills/ since 2026-08-29);
+# (resident in ~/MyAI_Lab/zenn-content/.claude/skills/);
 # this copy is deliberately short (same choice zenn-content made) and only
 # produces evidence lines — the judge decides whether a hit matters.
 _SLOP_EN = (
@@ -134,6 +172,45 @@ _SLOP_JA = (
 )
 _SLOP_RE = re.compile("|".join(re.escape(w) for w in _SLOP_EN + _SLOP_JA), re.IGNORECASE)
 _JA_SENTENCE_END_RE = re.compile(r"[。！？]")
+# ですます: the polite stem, an optional sentence-final particle (ですか / ますね),
+# then any closing brackets, quotes or Markdown emphasis before 。！？.
+_POLITE_END_RE = re.compile(
+    r"(?:です|ます|でした|ました|ません|ましょう|でしょう|ください)(?:か|ね|よ|よね)?"
+    r"[」』）)］\]】〕〉》\"'”’*_`]*$"
+)
+_ASIDE_OPEN, _ASIDE_CLOSE = "（(", "）)"
+_REGISTER_LINES_CAP = 20
+_REGISTER_TEXT_CAP = 60
+
+# Blind spots of each counter, emitted verbatim as `notes`. The judge reads these
+# to know what the numbers cannot show; one entry per counter, the term one first.
+NOTES = (
+    "term_candidates / first_screen.new_terms see only backtick and bold spans; coined "
+    "terms written in plain prose are not counted, so the judge identifies those.",
+    "identity_lead only locates the first prose line between the H1 and the next heading; "
+    "whether it says what the project is and who it is for is the judge's call.",
+    "insider_refs counts ADRs only as ADR-NNNN, repositories only as github.com URLs, and "
+    "doc_paths only as (docs/...) or (./docs/...) link targets; sibling projects named in "
+    "plain prose are not counted.",
+    "own_repo comes from the git origin of the README's directory (GitHub remotes only); "
+    "when it is null, links to the README's own repository count as sibling repos, and a "
+    "README copied into another repository reports that repository.",
+    "structure.broken_local_refs resolves relative links on disk from the README's "
+    "directory; a README read outside its repository reports every relative link as "
+    "broken. Absolute paths, external URLs and #fragments inside other files are not checked.",
+    "structure.broken_anchors checks only [text](#fragment) links against GitHub's heading "
+    "slugs and <a id/name> anchors of this file; HTML <a href> links are not checked and "
+    "other renderers slug headings differently.",
+    "figures[].prose_adjacent only says a prose line sits within 2 lines of the figure; "
+    "whether that line states what the figure shows is the judge's call.",
+    "prose_signals, history_signals and numeric_claims match fixed pattern lists; a hit is "
+    "a line to read, and wording outside the patterns is not seen.",
+    "register_ja classifies only sentences ending in 。！？ inside body paragraphs, by their "
+    "last words; list items, tables, headings, quotes and sentences without a terminal mark "
+    "are not counted.",
+    "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that "
+    "quotes Japanese can read as ja.",
+)
 
 _MAX_BYTES = 10 * 1024 * 1024
 _MAX_LINE = 100_000
@@ -318,9 +395,65 @@ def _details_depth_map(content: list[tuple[int, str]]) -> dict[int, bool]:
     return inside
 
 
+def _slug_char_kept(ch: str) -> bool:
+    # github-slugger (the slugger GitHub's renderer mirrors), regex generator read
+    # 2026-09-25: it strips No, all punctuation except Pc and "-", symbols, controls and
+    # separators except " ". What survives: letters, marks, Nd / Nl, Pc ("_"), " ", "-".
+    if ch in " -":
+        return True
+    cat = unicodedata.category(ch)
+    return cat[0] in "LM" or cat in ("Nd", "Nl", "Pc")
+
+
+def github_slug(text: str) -> str:
+    """The anchor GitHub gives a heading: rendered text (images dropped, links reduced
+    to their text, tags removed), lowercased, filtered by `_slug_char_kept`, each space
+    turned into "-" (runs of spaces are not collapsed)."""
+    text = _MD_IMAGE_RE.sub("", text)
+    text = _MD_LINK_RE.sub(lambda m: m.group(1), text)
+    text = re.sub(r"<[^<>]+>", "", text)  # [^<>]: a "<" run stays linear
+    return "".join(ch for ch in text.lower() if _slug_char_kept(ch)).replace(" ", "-")
+
+
+def anchor_targets(headings: list[Heading], content: list[tuple[int, str]]) -> set[str]:
+    """Fragments that resolve in this file: heading slugs (a repeated slug gets -1, -2,
+    … in document order, the github-slugger loop) and explicit <a id/name> values."""
+    targets: set[str] = set()
+    occurrences: dict[str, int] = {}
+    for h in headings:
+        base = slug = github_slug(h.text)
+        while slug in occurrences:
+            occurrences[base] += 1
+            slug = f"{base}-{occurrences[base]}"
+        occurrences[slug] = 0
+        targets.add(slug)
+    for _n, line in content:
+        for tag in _HTML_A_TAG_RE.finditer(line):
+            targets.update(_attr_value(m.group(1)) for m in _ATTR_ID_NAME_RE.finditer(tag.group(0)))
+    return targets
+
+
+def broken_anchors(links: list[Link], targets: set[str]) -> list[dict]:
+    out = []
+    for ln in links:
+        href = ln.href.strip()
+        if not href.startswith("#"):
+            continue
+        fragment = unquote(href[1:])
+        # "#" and "#top" scroll to the top in every browser (HTML spec), heading or not
+        if fragment in targets or fragment == "" or fragment.lower() == "top":
+            continue
+        out.append({"href": ln.href, "line": ln.line})
+    return out
+
+
 # --- evidence sections ------------------------------------------------------- #
 def structure(
-    headings: list[Heading], images: list[Image], links: list[Link], base_dir: Path
+    headings: list[Heading],
+    images: list[Image],
+    links: list[Link],
+    base_dir: Path,
+    anchors: set[str],
 ) -> dict:
     jumps = []
     prev: int | None = None
@@ -342,6 +475,7 @@ def structure(
         "headings": [{"level": h.level, "text": h.text, "line": h.line} for h in headings],
         "heading_level_jumps": jumps,
         "broken_local_refs": broken,
+        "broken_anchors": broken_anchors(links, anchors),
         "images_without_alt": [{"src": i.src, "line": i.line} for i in images if not i.alt.strip()],
     }
 
@@ -364,8 +498,46 @@ def identity_lead(
     return {"present": False, "line": None}
 
 
+def parse_github_repo(url: str) -> str | None:
+    """owner/repo from a GitHub remote URL (https or ssh form); None for anything else."""
+    m = _GITHUB_REMOTE_RE.search(url.strip())
+    return f"{m.group(1)}/{m.group(2)}" if m else None
+
+
+def detect_own_repo(directory: Path) -> str | None:
+    """owner/repo of the `origin` remote of the git repo holding `directory`.
+    Any failure (no git, not a repo, no origin, timeout, non-GitHub host) is None,
+    which means no own-repo exclusion rather than an error."""
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(directory), "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            timeout=_GIT_TIMEOUT_S,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if done.returncode != 0:
+        return None
+    return parse_github_repo(done.stdout)
+
+
+def _repo_key(repo: str) -> str:
+    """Comparison key for owner/repo: GitHub names are case-insensitive, and a URL
+    capture may carry `.git` or a sentence-final dot."""
+    return repo.lower().rstrip("./").removesuffix(".git")
+
+
+def _is_own(repo: str, own_repo: str | None) -> bool:
+    return own_repo is not None and _repo_key(repo) == _repo_key(own_repo)
+
+
 def first_screen(
-    content: list[tuple[int, str]], headings: list[Heading], inside: dict[int, bool]
+    content: list[tuple[int, str]],
+    headings: list[Heading],
+    inside: dict[int, bool],
+    own_repo: str | None,
 ) -> dict:
     """Everything before the first H2 (or the whole file if none)."""
     h2 = next((h for h in headings if h.level == 2), None)
@@ -374,8 +546,9 @@ def first_screen(
     prose = [t for n, t in lines if _is_prose_line(t.strip()) and not inside.get(n)]
     terms: OrderedDict[str, int] = OrderedDict()
     for n, t in lines:
-        for _kind, term in _term_spans(t):
+        for _kind, term in formatted_term_spans(t):
             terms.setdefault(term, n)
+    repos = {m.group(1) for _, t in lines for m in _GITHUB_REPO_RE.finditer(t)}
     return {
         "end_line": h2.line if h2 else None,
         "lines": end - 1,  # raw lines before the first H2 (fenced blocks included)
@@ -383,11 +556,11 @@ def first_screen(
         "links": sum(len(_MD_LINK_RE.findall(t)) for _, t in lines),
         "new_terms": [{"term": k, "line": v} for k, v in terms.items()],
         "adr_refs": sum(len(_ADR_ID_RE.findall(t)) for _, t in lines),
-        "github_repos": sorted({m.group(1) for _, t in lines for m in _GITHUB_REPO_RE.finditer(t)}),
+        "github_repos": sorted(r for r in repos if not _is_own(r, own_repo)),
     }
 
 
-def insider_refs(content: list[tuple[int, str]]) -> dict:
+def insider_refs(content: list[tuple[int, str]], own_repo: str | None) -> dict:
     adr: dict[str, list[int]] = {}
     repos: dict[str, list[int]] = {}
     doc_paths: Counter = Counter()
@@ -396,7 +569,8 @@ def insider_refs(content: list[tuple[int, str]]) -> dict:
         for m in _ADR_ID_RE.finditer(t):
             adr.setdefault(f"ADR-{m.group(1)}", []).append(n)
         for m in _GITHUB_REPO_RE.finditer(t):
-            repos.setdefault(m.group(1), []).append(n)
+            if not _is_own(m.group(1), own_repo):
+                repos.setdefault(m.group(1), []).append(n)
         for m in _DOC_PATH_RE.finditer(t):
             top = "/".join(m.group(1).split("/")[:2])
             doc_paths[top] += 1
@@ -413,9 +587,11 @@ def insider_refs(content: list[tuple[int, str]]) -> dict:
     }
 
 
-def _term_spans(text: str):
+def formatted_term_spans(text: str) -> Iterator[tuple[str, str]]:
     """Yield (kind, term) for backtick / bold spans that look like names rather than
-    paths, flags, labels, links or JA clauses. Shared by first_screen and term_candidates."""
+    paths, flags, labels, links or JA clauses. Shared by first_screen and term_candidates.
+    Only formatted spans are candidates: a coined term in plain prose never reaches here
+    (NOTES says so to the judge, who finds those)."""
     for kind, rx in (("code", _BACKTICK_RE), ("bold", _BOLD_RE)):
         for m in rx.finditer(text):
             term = m.group(1).strip()
@@ -440,7 +616,7 @@ def term_candidates(content: list[tuple[int, str]]) -> list[dict]:
     Whether a span is a coined term is the judge's call; this only lists them."""
     seen: dict[str, dict] = {}
     for n, t in content:
-        for kind, term in _term_spans(t):
+        for kind, term in formatted_term_spans(t):
             entry = seen.setdefault(term, {"term": term, "kind": kind, "count": 0, "first_line": n})
             entry["count"] += 1
     return sorted(seen.values(), key=lambda e: (-e["count"], e["first_line"]))
@@ -493,35 +669,50 @@ def details_blocks(markdown: str) -> list[dict]:
     return sorted(blocks, key=lambda b: b["open_line"])
 
 
-def figures(markdown: str, images: list[Image], badges: list[Image]) -> list[dict]:
+def figures(
+    markdown: str, images: list[Image], badges: list[Image], headings: list[Heading]
+) -> list[dict]:
     all_lines = markdown.splitlines()
-    content_map = dict(_content_lines(markdown))
+    content_map = dict(_content_lines(markdown))  # fenced lines are absent: never prose
+    badge_lines = {b.line for b in badges}
+    figure_images = [i for i in images if i not in badges]
+    # lines that never count as the text equivalent, even when _is_prose_line says yes
+    # (a setext heading's text line, a badge row with words, a captioned sibling figure)
+    never_prose = {h.line for h in headings} | badge_lines | {i.line for i in figure_images}
 
-    def prose_near(line: int) -> bool:
-        window = range(line + 1, min(line + 6, len(all_lines) + 1))
-        return any(_is_prose_line(content_map.get(i, "").strip()) for i in window)
+    def is_wrapper(n: int) -> bool:
+        t = content_map.get(n, "").strip()
+        return bool(t) and bool(_TAG_ONLY_RE.match(t)) and not _HTML_IMG_RE.search(t)
+
+    def prose_adjacent(first: int, last: int) -> bool:
+        while is_wrapper(first - 1):
+            first -= 1
+        while is_wrapper(last + 1):
+            last += 1
+        window = (*range(first - 2, first), *range(last + 1, last + 3))
+        return any(
+            n not in never_prose and _is_prose_line(content_map.get(n, "").strip()) for n in window
+        )
 
     out: list[dict] = []
     for line, info in _fence_lines(markdown):
         if info.lower().startswith("mermaid"):
-            # find the closing fence to look for prose after it
-            close = line
+            close = line  # the figure spans the opening through the closing fence
             for i in range(line + 1, len(all_lines) + 1):
                 if _FENCE_RE.match(all_lines[i - 1]):
                     close = i
                     break
-            out.append({"kind": "mermaid", "line": line, "prose_after": prose_near(close)})
-    badge_lines = {b.line for b in badges}
-    for img in images:
-        if img in badges:
-            continue
+            out.append(
+                {"kind": "mermaid", "line": line, "prose_adjacent": prose_adjacent(line, close)}
+            )
+    for img in figure_images:
         out.append(
             {
                 "kind": "image",
                 "line": img.line,
                 "src": img.src,
                 "alt": img.alt,
-                "prose_after": prose_near(img.line),
+                "prose_adjacent": prose_adjacent(img.line, img.line),
                 "badge_row": img.line in badge_lines,
             }
         )
@@ -549,6 +740,87 @@ def prose_signals(content: list[tuple[int, str]]) -> dict:
         "triad_preannounce_lines": triad,
         "degree_adverbs_ja": degree,
         "stadium_lines": stadium,
+    }
+
+
+def _is_body_prose(line_no: int, line: str, heading_lines: set[int]) -> bool:
+    """A paragraph line: not a heading, list item, table row, block quote, HTML or
+    image line (fenced code never reaches here)."""
+    stripped = line.strip()
+    if line_no in heading_lines or stripped.startswith("<"):
+        return False
+    if _MD_IMAGE_RE.search(stripped) or _HTML_IMG_RE.search(stripped):
+        return False
+    return _is_prose_line(stripped)
+
+
+def _peel_trailing_asides(body: str) -> str:
+    """Drop closed （…） / (…) asides from the end of `body` — in …見せます（docs、
+    2026-09-21 確認） the register lives in the words before the aside. Stops at a
+    nested aside and never peels the whole sentence (（詳しくは後述します） stays).
+    One backward pass: every char is visited once, so long paren or space runs stay
+    linear (a `$`-anchored regex sub in a loop was quadratic)."""
+    end = len(body)
+    while end and body[end - 1] in _ASIDE_CLOSE:
+        start = end - 1
+        while start and body[start - 1] not in _ASIDE_OPEN + _ASIDE_CLOSE:
+            start -= 1
+        if not start or body[start - 1] not in _ASIDE_OPEN:
+            break  # no opener, or a nested aside: classify what is there
+        cut = start - 1
+        while cut and body[cut - 1].isspace():
+            cut -= 1
+        if not cut:
+            break  # the aside is the whole sentence
+        end = cut
+    return body[:end]
+
+
+def _is_polite(body: str) -> bool:
+    """`body` is a sentence without its 。！？."""
+    return bool(_POLITE_END_RE.search(_peel_trailing_asides(body)))
+
+
+def _tail(text: str, cap: int = _REGISTER_TEXT_CAP) -> str:
+    """Keep the end: the ending is what the register evidence is about."""
+    return text if len(text) <= cap else "…" + text[-(cap - 1) :]
+
+
+def register_ja(content: list[tuple[int, str]], headings: list[Heading]) -> dict:
+    """ですます vs plain sentence endings in body prose paragraphs. A sentence may wrap
+    across lines of one paragraph; it is reported on the line holding its 。！？."""
+    heading_lines = {h.line for h in headings}
+    polite = 0
+    plain: list[dict] = []
+    # Text of the sentence still open, as fragments: joined once when its 。！？ arrives,
+    # never re-scanned, so a long paragraph without terminators stays linear.
+    pending: list[str] = []
+    prev = -1
+    for n, line in content:
+        if not _is_body_prose(n, line, heading_lines):
+            continue
+        if n != prev + 1:  # a blank or non-paragraph line ended the previous paragraph
+            pending = []
+        prev = n
+        text = _prose_only(line.strip())
+        start = 0
+        for m in _JA_SENTENCE_END_RE.finditer(text):
+            pending.append(text[start : m.end()])
+            start = m.end()
+            sentence = "".join(pending).strip()
+            pending = []
+            body = sentence[:-1].rstrip()
+            if not body:
+                continue
+            if _is_polite(body):
+                polite += 1
+            else:
+                plain.append({"line": n, "text": _tail(sentence)})
+        pending.append(text[start:])
+    return {
+        "desu_masu": polite,
+        "plain": len(plain),
+        "plain_lines": plain[:_REGISTER_LINES_CAP],
     }
 
 
@@ -588,7 +860,8 @@ def doi_citation(markdown: str, content: list[tuple[int, str]]) -> dict:
     }
 
 
-def collect(path: str, markdown: str, base_dir: Path) -> dict:
+def collect(path: str, markdown: str, base_dir: Path, own_repo: str | None = None) -> dict:
+    """Pure: never touches git. `own_repo` is injected (main detects it)."""
     stripped = _HTML_COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), markdown)
     content = _content_lines(stripped)
     headings = parse_headings(stripped)
@@ -597,34 +870,40 @@ def collect(path: str, markdown: str, base_dir: Path) -> dict:
     badges = [i for i in images if _BADGE_SRC_RE.search(i.src)]
     inside = _details_depth_map(content)
     ja = sum(len(_JA_SENTENCE_END_RE.findall(t)) for _, t in content) >= 3
+    anchors = anchor_targets(headings, content)
     return {
         "path": path,
         "lang_guess": "ja" if ja else "en",
         "line_count": len(markdown.splitlines()),
-        "structure": structure(headings, images, links, base_dir),
+        "own_repo": own_repo,
+        "structure": structure(headings, images, links, base_dir, anchors),
         "identity_lead": identity_lead(content, headings, inside),
-        "first_screen": first_screen(content, headings, inside),
-        "insider_refs": insider_refs(content),
+        "first_screen": first_screen(content, headings, inside, own_repo),
+        "insider_refs": insider_refs(content, own_repo),
         "term_candidates": term_candidates(content),
         "details_blocks": details_blocks(stripped),
-        "figures": figures(stripped, images, badges),
+        "figures": figures(stripped, images, badges, headings),
         "badges": {
             "count": len(badges),
             "items": [{"alt": b.alt, "src": b.src, "line": b.line} for b in badges],
         },
         "prose_signals": prose_signals(content),
+        "register_ja": register_ja(content, headings) if ja else None,
         "history_signals": history_signals(content),
         "numeric_claims": numeric_claims(content),
         "doi_citation": doi_citation(stripped, content),
         "note": "evidence only — no verdict, no threshold; the judge decides what matters",
+        "notes": list(NOTES),
     }
 
 
 def render_text(ev: dict) -> str:
     ir, fs, st, ps = ev["insider_refs"], ev["first_screen"], ev["structure"], ev["prose_signals"]
     top = ", ".join(f"{t['term']}×{t['count']}" for t in ev["term_candidates"][:8])
+    reg = ev["register_ja"]
     lines = [
         f"readme-evidence: {ev['path']} ({ev['lang_guess']}, {ev['line_count']} lines)",
+        f"  own repo (excluded from repo counts): {ev['own_repo'] or 'none detected'}",
         (
             f"  first screen: {fs['lines']} lines before first H2, {fs['prose_lines']} prose lines, "
             f"{len(fs['new_terms'])} new terms, {fs['adr_refs']} ADR refs, "
@@ -636,7 +915,8 @@ def render_text(ev: dict) -> str:
         ),
         f"  term candidates: {len(ev['term_candidates'])} (top: {top})",
         (
-            f"  details blocks: {len(ev['details_blocks'])}; figures: {len(ev['figures'])}; "
+            f"  details blocks: {len(ev['details_blocks'])}; figures: {len(ev['figures'])} "
+            f"({sum(1 for f in ev['figures'] if not f['prose_adjacent'])} without adjacent prose); "
             f"badges: {ev['badges']['count']}"
         ),
         (
@@ -646,6 +926,7 @@ def render_text(ev: dict) -> str:
         (
             f"  structure: h1={st['h1_count']}, level jumps={len(st['heading_level_jumps'])}, "
             f"broken local refs={len(st['broken_local_refs'])}, "
+            f"broken anchors={len(st['broken_anchors'])}, "
             f"no-alt images={len(st['images_without_alt'])}"
         ),
         (
@@ -653,14 +934,21 @@ def render_text(ev: dict) -> str:
             f"DOI {ev['doi_citation']['doi_present']} / "
             f"how-to-cite {ev['doi_citation']['how_to_cite_present']}"
         ),
-        "",
-        ev["note"],
     ]
+    if reg is not None:
+        lines.append(f"  register (ja): desu_masu {reg['desu_masu']}, plain {reg['plain']}")
+    lines += ["", ev["note"]]
     return "\n".join(lines)
 
 
-def collect_file(path: Path) -> dict:
-    return collect(str(path), path.read_text(encoding="utf-8"), path.parent)
+def collect_file(path: Path, own_repo: str | None = None) -> dict:
+    return collect(str(path), path.read_text(encoding="utf-8"), path.parent, own_repo)
+
+
+def _own_repo_arg(value: str) -> str | None:
+    """--own-repo accepts owner/repo or a GitHub remote URL; "" means none."""
+    value = value.strip()
+    return (parse_github_repo(value) or value) if value else None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -671,6 +959,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--text", action="store_true", help="human-readable summary instead of JSON"
     )
+    parser.add_argument(
+        "--own-repo",
+        metavar="OWNER/REPO",
+        default=None,
+        help="the README's own GitHub repo (owner/repo or remote URL) instead of reading "
+        "`git remote get-url origin`; an empty string means none",
+    )
     args = parser.parse_args(argv)
     if not args.path.exists():
         print(f"error: file not found: {args.path}", file=sys.stderr)
@@ -678,7 +973,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.path.stat().st_size > _MAX_BYTES:
         print(f"error: file too large (> {_MAX_BYTES} bytes): {args.path}", file=sys.stderr)
         return 2
-    ev = collect_file(args.path)
+    own_repo = (
+        detect_own_repo(args.path.parent) if args.own_repo is None else _own_repo_arg(args.own_repo)
+    )
+    ev = collect_file(args.path, own_repo)
     print(render_text(ev) if args.text else json.dumps(ev, ensure_ascii=False, indent=2))
     return 0
 

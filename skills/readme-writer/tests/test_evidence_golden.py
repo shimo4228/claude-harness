@@ -7,7 +7,9 @@
 
 更新規約: ~/.claude/tests/golden/README.md（タスクが出力変更を宣言しているときだけ更新）。
 再生成: uv run --project . python scripts/readme_evidence.py fixtures/<name>.md \
-        > tests/golden/<name>.json
+        --own-repo '' > tests/golden/<name>.json
+（--own-repo '' で git origin の検出を止める。検出すると golden が checkout 先の remote
+ — harness 本体か公開 copy か — で変わる）
 """
 
 from __future__ import annotations
@@ -29,7 +31,7 @@ def test_stdout_json_matches_golden(
 ) -> None:
     # path は引数がそのまま echo される — 相対パスで呼んで出力を環境非依存にする
     monkeypatch.chdir(SKILL_ROOT)
-    rc = main([f"fixtures/{name}.md"])
+    rc = main([f"fixtures/{name}.md", "--own-repo", ""])
     assert rc == 0
     out = capsys.readouterr().out
     assert out == (GOLDEN / f"{name}.json").read_text(encoding="utf-8")

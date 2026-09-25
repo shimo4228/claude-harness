@@ -1,0 +1,75 @@
+<!-- illustrative: jev-research-pipeline の概要図（ループ型）。文言を差し替えて使う -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 562" role="img" aria-labelledby="title desc">
+  <title id="title">How jev-research-pipeline works</title>
+  <desc id="desc">A loop that runs every morning around your open questions. It gathers new papers and repositories. Jev, a judgment model, checks each one against your questions and keeps it, sends it to review, or drops it. Qwen, a language model, writes a short section per question. The day's note lands in your Obsidian vault, you tick what was worth reading, and those ticks steer the next morning's run.</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24292F; }
+    .emo { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+    .lbl { font-size: 29px; font-weight: 700; }
+    .sub { font-size: 20px; fill: #57606A; }
+    .chip { font-size: 17px; font-weight: 700; }
+    .loop { font-size: 19px; font-weight: 600; fill: #9A6700; }
+    .hub { font-size: 25px; font-weight: 700; }
+    .hubsub { font-size: 17px; fill: #57606A; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8C959F"/>
+    </marker>
+    <marker id="arrow-loop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#D9A33C"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="562" rx="28" fill="#FFFBF2" stroke="#EADFC8" stroke-width="2"/>
+
+  <!-- 1. gather (top left) -->
+  <rect x="40" y="36" width="380" height="190" rx="22" fill="#E7F0FA" stroke="#6A9BC3" stroke-width="2.5"/>
+  <text class="emo" x="104" y="152" font-size="64" text-anchor="middle">📚</text>
+  <text class="lbl" x="160" y="104">Gather</text>
+  <text class="sub" x="160" y="138">new papers &amp; repos</text>
+  <text class="sub" x="160" y="164">every morning</text>
+
+  <line x1="428" y1="131" x2="530" y2="131" stroke="#8C959F" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- 2. Jev judges (top right) -->
+  <rect x="540" y="36" width="380" height="190" rx="22" fill="#EBE4FA" stroke="#8B72D6" stroke-width="2.5"/>
+  <text class="emo" x="604" y="140" font-size="64" text-anchor="middle">⚖️</text>
+  <text class="lbl" x="660" y="90">Jev judges</text>
+  <text class="sub" x="660" y="122">does it help answer</text>
+  <text class="sub" x="660" y="148">one of your questions?</text>
+  <rect x="660" y="168" width="70" height="32" rx="16" fill="#DAF0E2" stroke="#57A874" stroke-width="1.5"/>
+  <text class="chip" x="695" y="190" text-anchor="middle" fill="#1A7F37">keep</text>
+  <rect x="738" y="168" width="84" height="32" rx="16" fill="#FFF3D6" stroke="#D9A33C" stroke-width="1.5"/>
+  <text class="chip" x="780" y="190" text-anchor="middle" fill="#9A6700">review</text>
+  <rect x="830" y="168" width="70" height="32" rx="16" fill="#F3F4F6" stroke="#8C959F" stroke-width="1.5"/>
+  <text class="chip" x="865" y="190" text-anchor="middle" fill="#57606A">drop</text>
+
+  <line x1="730" y1="234" x2="730" y2="326" stroke="#8C959F" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- 3. Qwen writes (bottom right) -->
+  <rect x="540" y="336" width="380" height="190" rx="22" fill="#E2F5E9" stroke="#57A874" stroke-width="2.5"/>
+  <text class="emo" x="604" y="452" font-size="64" text-anchor="middle">✍️</text>
+  <text class="lbl" x="660" y="404">Qwen writes</text>
+  <text class="sub" x="660" y="438">a short section</text>
+  <text class="sub" x="660" y="464">per question</text>
+
+  <line x1="532" y1="431" x2="430" y2="431" stroke="#8C959F" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- 4. you read and tick (bottom left) -->
+  <rect x="40" y="336" width="380" height="190" rx="22" fill="#FFF3D6" stroke="#D9A33C" stroke-width="2.5"/>
+  <text class="emo" x="104" y="452" font-size="64" text-anchor="middle">📓</text>
+  <text class="lbl" x="160" y="404">You read &amp; tick</text>
+  <text class="sub" x="160" y="438">the day's note in</text>
+  <text class="sub" x="160" y="464">your Obsidian vault</text>
+
+  <!-- the loop back -->
+  <line x1="230" y1="328" x2="230" y2="236" stroke="#D9A33C" stroke-width="4" stroke-dasharray="9 7" marker-end="url(#arrow-loop)"/>
+  <text class="loop" x="214" y="274" text-anchor="end">☑️ your ticks</text>
+  <text class="loop" x="214" y="300" text-anchor="end">steer tomorrow</text>
+
+  <!-- the center: your questions -->
+  <rect x="330" y="241" width="300" height="80" rx="40" fill="#FFFFFF" stroke="#24292F" stroke-width="2"/>
+  <text class="hub" x="480" y="276" text-anchor="middle">❓ Your questions</text>
+  <text class="hubsub" x="480" y="303" text-anchor="middle">every step works for these</text>
+</svg>

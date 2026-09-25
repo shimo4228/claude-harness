@@ -67,6 +67,9 @@ project-local は 2 つ（`grep -rl outputStyle ~/.claude/.claude/ ~/MyAI_Lab/*/
    聞く前に進める / 問いには推奨とその帰結を添える / 明示起動された interview（`/grill-me`、
    `/mondo`）の間は問いが成果物で、総数は絞らず 1 問ずつ出す。`keep-coding-instructions: true` を付ける。
 
+   > **注記（2026-09-25, ADR-0079）**: 2026-09-25 時点で `settings.json` に `outputStyle` は無く、Desktop の session は
+   > `default` だった。著者は `default` のままを選んだ — style の本文は残すが、有効にするまで効かない。
+
    > **注記（2026-09-25、著者の不評）**: `/mondo` を interview の列から外した。著者の症状は「変な問が多くて
    > 疲れる。十分に説明しないままこちらに質問をしてくるのがいやだ」。style のこの項は mondo 本文の「1 メッセージ
    > 1–2 問まで・問いゼロも正常」を上書きし、4 モードすべてが「〜を聞く」で終わる本文と合わせて毎ターンの問いを
@@ -79,6 +82,10 @@ project-local は 2 つ（`grep -rl outputStyle ~/.claude/.claude/ ~/MyAI_Lab/*/
    allow 行が分母で、最初の 1 行が hook の発火確認を兼ねる。path と schema の正本は hook 冒頭コメント。
    回帰は `tests/ask-one-question.bats`。hook は user 設定に配線するので、Decision 1 の style が
    届かない repo でも block する。
+
+   > **注記（2026-09-25, ADR-0079）**: 退役した。著者の不満は問いの数ではなく 1 問への観点の混合だった。hook・配線・bats を
+   > 外し、Decision 1 の style の項「判断は 1 メッセージに 1 つ / `questions` 1 件」を「1 問 1 観点、複数の問いは並べてよい」に
+   > 置き換えた。下の Review-when のうち hook の計測に依存する 2 項は測る対象が無くなった。
 3. 散文の中の複数質問は機械ゲートにしない。意味の判定は regex に載らないので、Decision 1 の style
    本文が担う。
 4. 旧節の intake 側（調査の前に signal を定義する）は戻さない。原則の正本は ADR-0026 のとおり
@@ -92,6 +99,7 @@ project-local は 2 つ（`grep -rl outputStyle ~/.claude/.claude/ ~/MyAI_Lab/*/
   （allow でも block でも）が載るまで、ログの 0 件を証拠に使わない（ログ不在は「未計測」）。
   AskUserQuestion が呼ばれたのにログが空のまま 2026-10-19 を過ぎたら matcher が効いていないと見て、
   hook を外し style 本文だけにする。判定者は判断役（2026-10-19 以降で最初の rules-stocktake の回）。
+  > **注記（2026-09-25, ADR-0079）**: hook を退役したので、この項と次の項は測る対象が無い。発火は確認済みだった（111 行）。
 - 発火確認の後、allow 行が 10 行以上ある連続 30 日で block 行が 0 件なら hook を溶かす（allow 行が
   10 行に満たない窓は「未使用」で、遵守の証拠に数えない）。固定するもの: 本 ADR 時点の
   `hooks/ask-one-question.sh` の判定（`questions` 配列長 ≥ 2）と matcher、user 設定の `outputStyle` が
@@ -103,6 +111,7 @@ project-local は 2 つ（`grep -rl outputStyle ~/.claude/.claude/ ~/MyAI_Lab/*/
 - 著者が「複数のことを一度に聞かれた」を散文の問いについて 2 回観測したら（記録先: 本 ADR への
   注記、1 回ごとに 1 行）、style 本文の「判断は 1 メッセージに 1 つ」の項を書き直す。機械ゲートへは
   広げない。書き直したら上の 30 日の窓を数え直す。
+  > **注記（2026-09-25, ADR-0079）**: 症状は数ではなく 1 問への観点の混合だった。後継の条件は ADR-0079 の Review-when。
 - Claude Code が output style の仕様を変えた、または AskUserQuestion の `questions` 上限を 1 にしたら、
   該当する Decision を溶かす（Scaffold Dissolution downward）。
 
@@ -146,6 +155,7 @@ ADR-0061 が flag した `Concise` の矛盾も残る。
 
 - 著者が一番やめてほしいと言った挙動のうち grep 可能な 1 点（AskUserQuestion の件数）が機械で止まる。
   model への文言は違反時だけ出るので、常駐の文面コストは無い（hook 自体は呼び出しごとに走り 1 行記録する）。
+  > **注記（2026-09-25, ADR-0079）**: hook は退役した。止めていたのは著者が許す形（複数の問い）だった。
 - 人間向けの register（style）が product の正規の枠に入り、subagent と style を pin する utility
   呼び出し（`skills/skill-comply/scripts/child_settings.py`）には届かない。hook は別で、user 設定に
   配線されるため AskUserQuestion を呼ぶ全経路に届き、block 文言（人間向け register の 1 行）も
@@ -154,6 +164,8 @@ ADR-0061 が flag した `Concise` の矛盾も残る。
   recap 指示との整合は著者が本文を直せる対象になる — この意味で follow-up は閉じる。自作本文は
   着手前の 1 行と結びの recap を止めていない（結論を先頭に置く、経緯は求められたときに出す、の
   2 点だけ）。update-suppressor 型を再生産していないかの判定は次回の prompt-audit に渡す。
+  > **注記（2026-09-25, ADR-0078）**: Opus 5.5 の prompt-audit が「経緯・探索過程・却下案は求められたときに出す」を
+  > update suppressor と判定し、最終応答に限ったうえで作業中は要所で 1 文ずつ出す形に直した（著者承認）。
 
 ### Negative
 

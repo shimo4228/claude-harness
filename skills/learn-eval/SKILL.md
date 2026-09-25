@@ -40,9 +40,7 @@ Look for:
 
    If neither fits, the verdict is **Drop**, not "park it somewhere for now". A note that
    nothing points at is reachable only by grep, and grep requires already knowing the
-   content exists — measured over 74 days, the retired `learned/` directory was read
-   during real work 12 times across 8 notes, while the audits that judged whether to keep
-   it accounted for 161 of its 184 reads.
+   content exists (measurement: ADR-0047).
 
    Global vs project placement (once a destination type is chosen): 正本は
    [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md)。

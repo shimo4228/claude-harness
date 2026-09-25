@@ -137,9 +137,9 @@ _MCP_CONFIG_CANDIDATES = (
 #                          question disagree.
 #
 # Cut on the same measurement, after an architect review flagged the catalog's
-# precision: `only-report` (fact-checker.md L164, readme-reviewer.md L13 — both
+# precision: `only-report` (fact-checker.md L164 and a retired README reviewer — both
 # describing an agent's own output contract, never a suppressed finding) and the
-# 「に限定」 alternative of report-exclusion-ja (readme-judge.md L79, scoping the
+# 「に限定」 alternative of report-exclusion-ja (readme-judge-checklist.md §D, scoping the
 # agent's evaluation). Yield went from 1 real finding in 8 candidates to 1 in 5.
 # A pattern that has produced only false positives is a pattern that trains the
 # reader to skim the list.

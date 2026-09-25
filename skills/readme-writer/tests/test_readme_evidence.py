@@ -8,15 +8,21 @@ test. Exit code is 0 whenever evidence was produced, 2 when the file is missing.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
 
+from scripts import readme_evidence
 from scripts.readme_evidence import (
     collect,
     collect_file,
     details_blocks,
+    detect_own_repo,
+    formatted_term_spans,
+    github_slug,
     main,
+    parse_github_repo,
     parse_headings,
     parse_images,
     parse_links,
@@ -141,13 +147,13 @@ class TestDetailsFiguresBadges:
         )
         assert blocks[1]["contains"]["doi"] is True and blocks[1]["contains"]["image"] is True
 
-    def test_figures_mermaid_prose_after_and_badges_separated(self) -> None:
+    def test_figures_mermaid_prose_adjacent_and_badges_separated(self) -> None:
         md = (
             "# P\n\n[![b](https://img.shields.io/x.svg)](u)\n\nlead.\n\n```mermaid\ngraph TD\nA-->B\n```\n\n"
-            "In short: A feeds B.\n\n![arch](docs/arch.png)\n\n## S\n"
+            "In short: A feeds B.\n\n## Arch\n\n![arch](docs/arch.png)\n\n## S\n\nbody.\n"
         )
         ev = _ev(md)
-        kinds = [(f["kind"], f["prose_after"]) for f in ev["figures"]]
+        kinds = [(f["kind"], f["prose_adjacent"]) for f in ev["figures"]]
         assert ("mermaid", True) in kinds
         assert ("image", False) in kinds
         assert ev["badges"]["count"] == 1
@@ -275,10 +281,319 @@ class TestReviewRegressions:
         md = '# P\n\n<p align="center"><b>P</b> is a CLI for people.</p>\n\n## S\n'
         assert _ev(md)["identity_lead"] == {"present": True, "line": 3}
 
-    def test_badge_row_is_reported_separately_from_prose_after(self) -> None:
+    def test_badge_row_is_reported_separately_from_prose_adjacent(self) -> None:
         md = "# P\n\n[![CI](https://img.shields.io/b.svg)](u) ![fig](docs/a.png)\n\n## S\n"
         fig = next(f for f in _ev(md)["figures"] if f["kind"] == "image")
-        assert fig["badge_row"] is True and fig["prose_after"] is False
+        assert fig["badge_row"] is True and fig["prose_adjacent"] is False
 
     def test_history_signal_ignores_used_to_and_bare_kyu(self) -> None:
         assert _ev("# P\n\ncan be used to parse; 復旧手順.\n")["history_signals"] == []
+
+
+@pytest.mark.unit
+class TestNotesAndFormattedTermSpans:
+    """Term candidates come from formatted spans only; `notes` states each counter's blind spot."""
+
+    def test_formatted_term_spans_yields_backtick_and_bold_only(self) -> None:
+        spans = list(
+            formatted_term_spans("a `value layer` and **Grounded distill** and plain Coined Term")
+        )
+        assert spans == [("code", "value layer"), ("bold", "Grounded distill")]
+
+    def test_notes_lead_with_the_term_candidate_blind_spot(self) -> None:
+        notes = _ev("# P\n\nlead.\n")["notes"]
+        assert isinstance(notes, list) and notes and all(isinstance(n, str) and n for n in notes)
+        first = notes[0].lower()
+        assert "backtick" in first and "bold" in first and "plain prose" in first
+        assert "judge" in first
+
+    def test_notes_cover_every_new_counter(self) -> None:
+        joined = "\n".join(_ev("# P\n\nlead.\n")["notes"])
+        for key in (
+            "broken_local_refs",
+            "broken_anchors",
+            "prose_adjacent",
+            "own_repo",
+            "register_ja",
+        ):
+            assert key in joined
+
+
+@pytest.mark.unit
+class TestFigureProseAdjacent:
+    """`prose_adjacent`: a prose line within 2 lines before/after the figure (headings,
+    blanks, badges and other figures never qualify). `prose_after` is gone."""
+
+    def _fig(self, md: str, kind: str = "image") -> dict:
+        return next(f for f in _ev(md)["figures"] if f["kind"] == kind)
+
+    def test_next_section_body_does_not_count(self) -> None:
+        md = "# P\n\n![arch](docs/a.png)\n\n## Next\n\nbody prose here.\n"
+        fig = self._fig(md)
+        assert fig["prose_adjacent"] is False
+        assert "prose_after" not in fig
+
+    def test_prose_two_lines_before_counts(self) -> None:
+        md = "# P\n\nThe pipeline, from log line to event:\n\n![arch](docs/a.png)\n\n## Next\n"
+        assert self._fig(md)["prose_adjacent"] is True
+
+    def test_prose_after_mermaid_closing_fence_counts_within_two_lines(self) -> None:
+        near = "# P\n\n## S\n\n```mermaid\ngraph TD\nA-->B\n```\n\nA feeds B.\n"
+        far = "# P\n\n## S\n\n```mermaid\ngraph TD\nA-->B\n```\n\n\nA feeds B.\n"
+        assert self._fig(near, "mermaid")["prose_adjacent"] is True
+        assert self._fig(far, "mermaid")["prose_adjacent"] is False
+
+    def test_badges_other_figures_and_setext_headings_do_not_qualify(self) -> None:
+        md = (
+            "# P\n\nArchitecture\n------------\n![a](docs/a.png)\n![b](docs/b.png)\n"
+            "[![CI](https://img.shields.io/b.svg)](u)\n\n## S\n"
+        )
+        figs = [f for f in _ev(md)["figures"] if f["kind"] == "image"]
+        assert [f["prose_adjacent"] for f in figs] == [False, False]
+
+    def test_html_wrapper_lines_belong_to_the_figure(self) -> None:
+        md = (
+            '# P\n\n## S\n\n<p align="center">\n  <img src="docs/a.svg" alt="arch">\n</p>\n\n'
+            "Each box is one stage.\n"
+        )
+        assert self._fig(md)["prose_adjacent"] is True
+
+
+@pytest.mark.unit
+class TestOwnRepo:
+    """The README's own repository is not a sibling repo."""
+
+    @pytest.mark.parametrize(
+        ("url", "expected"),
+        [
+            ("https://github.com/shimo4228/claude-config.git", "shimo4228/claude-config"),
+            ("https://github.com/o/r", "o/r"),
+            ("https://github.com/o/r/", "o/r"),
+            ("https://user@github.com/o/r.git", "o/r"),
+            ("git@github.com:o/my.repo.git", "o/my.repo"),
+            ("ssh://git@github.com/o/r.git", "o/r"),
+            ("ssh://git@ssh.github.com:443/o/r.git", "o/r"),
+            ("https://gitlab.com/o/r.git", None),
+            ("not a url", None),
+            ("", None),
+        ],
+    )
+    def test_parse_github_repo_forms(self, url: str, expected: str | None) -> None:
+        assert parse_github_repo(url) == expected
+
+    def test_collect_excludes_own_repo_case_insensitively(self) -> None:
+        md = (
+            "# P\n\n[![CI](https://github.com/Me/Proj/actions/workflows/ci.yml/badge.svg)]"
+            "(https://github.com/Me/Proj/actions) see https://github.com/me/proj.git and "
+            "https://github.com/other/sib today.\n\n## S\n\nhttps://github.com/Me/Proj/blob/main/x.md\n"
+        )
+        ev = collect("inline.md", md, Path("/nonexistent"), own_repo="me/proj")
+        assert ev["own_repo"] == "me/proj"
+        assert ev["first_screen"]["github_repos"] == ["other/sib"]
+        assert list(ev["insider_refs"]["github_repos"]) == ["other/sib"]
+        assert ev["insider_refs"]["github_repo_count"] == 1
+
+    def test_no_own_repo_means_no_exclusion(self) -> None:
+        ev = _ev("# P\n\nhttps://github.com/me/proj\n")
+        assert ev["own_repo"] is None
+        assert ev["insider_refs"]["github_repo_count"] == 1
+
+    def test_detect_own_repo_reads_git_origin(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: list[list[str]] = []
+
+        class Done:
+            returncode = 0
+            stdout = "git@github.com:me/proj.git\n"
+
+        def fake_run(cmd: list[str], **kw: object) -> Done:
+            calls.append(cmd)
+            assert kw.get("timeout")
+            return Done()
+
+        monkeypatch.setattr(readme_evidence.subprocess, "run", fake_run)
+        assert detect_own_repo(Path("/some/dir")) == "me/proj"
+        assert calls == [["git", "-C", "/some/dir", "remote", "get-url", "origin"]]
+
+    @pytest.mark.parametrize(
+        "exc",
+        [FileNotFoundError("git"), readme_evidence.subprocess.TimeoutExpired("git", 2)],
+    )
+    def test_detect_own_repo_failures_mean_no_exclusion(
+        self, monkeypatch: pytest.MonkeyPatch, exc: Exception
+    ) -> None:
+        def boom(*a: object, **kw: object) -> None:
+            raise exc
+
+        monkeypatch.setattr(readme_evidence.subprocess, "run", boom)
+        assert detect_own_repo(Path("/some/dir")) is None
+
+    def test_detect_own_repo_nonzero_exit_means_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class Failed:
+            returncode = 2
+            stdout = ""
+
+        monkeypatch.setattr(readme_evidence.subprocess, "run", lambda *a, **kw: Failed())
+        assert detect_own_repo(Path("/some/dir")) is None
+
+    def test_cli_own_repo_flag_overrides_detection(
+        self, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(readme_evidence, "detect_own_repo", lambda d: "det/ected")
+        assert main([str(FIXTURES / "sample_clean.md")]) == 0
+        assert json.loads(capsys.readouterr().out)["own_repo"] == "det/ected"
+        assert main([str(FIXTURES / "sample_clean.md"), "--own-repo", "o/r"]) == 0
+        assert json.loads(capsys.readouterr().out)["own_repo"] == "o/r"
+        assert (
+            main([str(FIXTURES / "sample_clean.md"), "--own-repo", "https://github.com/o/r.git"])
+            == 0
+        )
+        assert json.loads(capsys.readouterr().out)["own_repo"] == "o/r"
+        assert main([str(FIXTURES / "sample_clean.md"), "--own-repo", ""]) == 0
+        assert json.loads(capsys.readouterr().out)["own_repo"] is None
+
+
+@pytest.mark.unit
+class TestDocPaths:
+    def test_dot_slash_docs_links_count_under_the_same_key(self) -> None:
+        md = "# P\n\n[a](./docs/adr/0001.md) [b](docs/adr/0002.md) [c](./docs/guide.md)\n"
+        assert _ev(md)["insider_refs"]["doc_paths"] == {"docs/adr": 2, "docs/guide.md": 1}
+
+
+@pytest.mark.unit
+class TestBrokenAnchors:
+    """In-page `#fragment` links are checked against GitHub heading slugs and <a id/name>."""
+
+    @pytest.mark.parametrize(
+        ("heading", "slug"),
+        [
+            ("現状（2026-09-25 時点）", "現状2026-09-25-時点"),
+            ("著者のほかの仕事", "著者のほかの仕事"),
+            ("Hello, World!", "hello-world"),
+            ("snake_case and kebab-case", "snake_case-and-kebab-case"),
+            ("Install `foo` via [pip](https://pypi.org/p/foo)", "install-foo-via-pip"),
+            ("What's new?  v2.0", "whats-new--v20"),
+        ],
+    )
+    def test_github_slug(self, heading: str, slug: str) -> None:
+        assert github_slug(heading) == slug
+
+    def test_japanese_headings_resolve_and_misses_are_reported(self) -> None:
+        md = (
+            "# P\n\n## 現状（2026-09-25 時点）\n\n## 著者のほかの仕事\n\n"
+            "[now](#現状2026-09-25-時点) [others](#著者のほかの仕事) [gone](#存在しない節)\n"
+        )
+        assert _ev(md)["structure"]["broken_anchors"] == [{"href": "#存在しない節", "line": 7}]
+
+    def test_percent_encoded_fragment_resolves(self) -> None:
+        md = "# P\n\n## 著者のほかの仕事\n\n[x](#%E8%91%97%E8%80%85%E3%81%AE%E3%81%BB%E3%81%8B%E3%81%AE%E4%BB%95%E4%BA%8B)\n"
+        assert _ev(md)["structure"]["broken_anchors"] == []
+
+    def test_repeated_headings_get_numbered_slugs(self) -> None:
+        md = "# P\n\n## Usage\n\n## Usage\n\n[a](#usage) [b](#usage-1) [c](#usage-2)\n"
+        assert _ev(md)["structure"]["broken_anchors"] == [{"href": "#usage-2", "line": 7}]
+
+    def test_explicit_html_anchors_top_and_bare_hash_are_targets(self) -> None:
+        md = (
+            "# P\n\n<a id=\"custom\"></a>\n<a name='legacy'></a>\n\n"
+            "[a](#custom) [b](#legacy) [c](#top) [d](#) [e](#nowhere)\n"
+        )
+        assert _ev(md)["structure"]["broken_anchors"] == [{"href": "#nowhere", "line": 6}]
+
+    def test_fragment_links_are_not_local_file_refs(self) -> None:
+        st = _ev("# P\n\n[x](#nowhere)\n")["structure"]
+        assert st["broken_local_refs"] == []
+        assert st["broken_anchors"] == [{"href": "#nowhere", "line": 3}]
+
+
+@pytest.mark.unit
+class TestRegisterJa:
+    """Japanese register evidence over body prose paragraphs only."""
+
+    def test_english_readme_has_null_register(self) -> None:
+        assert _ev("# P\n\nPlain English lead.\n")["register_ja"] is None
+
+    def test_counts_body_sentences_and_skips_non_paragraph_lines(self) -> None:
+        md = (
+            "# 見出しは数えない。\n\n"
+            "これはツールです。設定は不要だ。「使えます」。\n"
+            "試してください！本当か？\n\n"
+            "- リストは数えない。\n"
+            "| 表も | 数えない。 |\n"
+            "> 引用も数えない。\n"
+            '<p align="center">HTML も数えない。</p>\n'
+            "![図](a.png) 画像行も数えない。\n\n"
+            "```\nコードも数えない。\n```\n\n"
+            "最後の文である。\n"
+        )
+        reg = _ev(md)["register_ja"]
+        assert reg["desu_masu"] == 3
+        assert reg["plain"] == 3
+        assert reg["plain_lines"] == [
+            {"line": 3, "text": "設定は不要だ。"},
+            {"line": 4, "text": "本当か？"},
+            {"line": 16, "text": "最後の文である。"},
+        ]
+
+    def test_polite_endings_with_closers_and_particles(self) -> None:
+        md = (
+            "# P\n\n"
+            "動きます）。**重要です**。できますか？そうでしょう。始めましょう。ありません。"
+            "でした。ました。\n"
+        )
+        reg = _ev(md)["register_ja"]
+        assert reg == {"desu_masu": 8, "plain": 0, "plain_lines": []}
+
+    def test_trailing_parenthetical_aside_does_not_hide_a_polite_ending(self) -> None:
+        md = (
+            "# P\n\n"
+            "モデルに見せます（[docs](https://e.com/d)、2026-09-21 確認）。"
+            "（詳しくは後述します）。設定は不要だ（注）。\n"
+        )
+        reg = _ev(md)["register_ja"]
+        assert reg["desu_masu"] == 2
+        assert reg["plain_lines"] == [{"line": 3, "text": "設定は不要だ（注）。"}]
+
+    def test_sentence_spanning_lines_is_one_sentence_on_its_closing_line(self) -> None:
+        md = "# P\n\n一文目です。二文目は\n折り返しで終わる。三文目です。\n"
+        reg = _ev(md)["register_ja"]
+        assert reg["desu_masu"] == 2 and reg["plain"] == 1
+        assert reg["plain_lines"] == [{"line": 4, "text": "二文目は折り返しで終わる。"}]
+
+    def test_pathological_inputs_stay_linear(self) -> None:
+        # DoS backstop: each of these took > 120 s with a regex re-scan of the paragraph
+        # buffer and a `\s*`-prefixed, `$`-anchored aside sub (2026-09-25 measurement).
+        long_paragraph = "\n".join(["あいうえおかきくけこ" * 2] * 3000)
+        md = (
+            "# P\n\nです。です。です。\n\n" + long_paragraph + "\n\n"
+            "あ" + " " * 30_000 + "ます（注）。\n\n"
+            "ます" + "（注）" * 20_000 + "。\n"
+        )
+        assert _ev(md)["register_ja"]["desu_masu"] == 5
+
+    def test_plain_lines_capped_at_20_and_text_at_60_chars(self) -> None:
+        long = "あ" * 80 + "だ。"
+        md = "# P\n\n" + "".join(f"文{i}だ。" for i in range(25)) + "\n\n" + long + "\n"
+        reg = _ev(md)["register_ja"]
+        assert reg["plain"] == 26
+        assert len(reg["plain_lines"]) == 20
+        md2 = "# P\n\nです。です。です。\n\n" + long + "\n"
+        text = _ev(md2)["register_ja"]["plain_lines"][0]["text"]
+        assert len(text) == 60 and text.endswith("あだ。")
+
+
+@pytest.mark.integration
+class TestFixtureContracts:
+    def test_negative_control_uses_vertical_mermaid(self) -> None:
+        text = (FIXTURES / "sample_clean.md").read_text(encoding="utf-8")
+        assert "flowchart TD" in text and "flowchart LR" not in text
+
+    def test_sample_issues_names_only_keys_the_script_reports(self) -> None:
+        text = (FIXTURES / "sample_issues.md").read_text(encoding="utf-8")
+        ev = collect_file(FIXTURES / "sample_issues.md")
+        named = re.findall(r"(?<!\])\(([a-z0-9_]+(?:\.[a-z0-9_]+)*)\)", text)
+        assert named, "the fixture should name the evidence keys it exercises"
+        for dotted in named:
+            node: object = ev
+            for part in dotted.split("."):
+                assert isinstance(node, dict) and part in node, dotted
+                node = node[part]

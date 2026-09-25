@@ -24,6 +24,10 @@ accepted
 2 スキルを新設する。
 
 1. **`generation-audit`**（オーケストレータ、user-invocable）— runtime 層採取（テーマ別逐語引用、自己申告の限界と別セッション再現確認を明記）+ 競合 / 冗長 / ドリフトの 3 分類 + 4 観点判定枠のみを保持し、**verdict を持たない**。verdict 確定と処分実行は資産クラスごとの stocktake に証拠台帳を渡して委譲する（rules → rules-stocktake / skills → skill-stocktake / agents → agent-stocktake / CLAUDE.md のみ inline confirm-each）。渡し方は rules-stocktake Stage 2 の既存の外部証拠の口（skill-comply results と同じ read-never-require 契約）を再利用する。
+
+   > **注記（2026-09-25, ADR-0078）**: 3 点を変えた — ドリフト分類は `/claude-api prompt-audit` に委ねた（Phase 3）、
+   > その High / Medium の行修正は generation-audit が適用まで持つ、inline で直す常駐層に output style を加えた。
+   > 資産単位の verdict と処分（Retire / Merge 等）は引き続き各 stocktake。
 2. **`agent-stocktake`**（第 3 の兄弟）— `~/.claude/agents/*.md` を監査する。cost model はハイブリッドとする: description 層は「Available agent types」一覧として毎セッション常駐（residency）、body 層は起動時ロード（invocation）。抑制指示の検出と Improve-by-inversion（方向転換した指示は削除でなく逆向きに書き直す — 削除では抑制フレームが残る）を Stage 1 に組み込む。
 
 付随決定として以下も定める。
@@ -60,6 +64,7 @@ skill-stocktake の cost model（trigger pollution）が agent の常駐 descrip
 ### Negative
 
 - generation-audit の初回フル実行は次の世代交代まで検証不能である（dry-run は Phase 1 の 1 テーマ — 可逆性・確認ゲート — のみ実施済み）。
+  > **注記（2026-09-25, ADR-0078）**: 初回フル実行は 2026-07-26 の Fable 5 世代交代で行われた（`.notes/archive/generation-audit-2026-07-26.md`）。
 - stocktake が 3 本になり、Curate 面の運用（ledger 3 つ、実行タイミングの判断）が増える。
 
 ### Neutral / Follow-ups

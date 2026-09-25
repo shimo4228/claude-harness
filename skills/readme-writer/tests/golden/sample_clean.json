@@ -2,6 +2,7 @@
   "path": "fixtures/sample_clean.md",
   "lang_guess": "en",
   "line_count": 27,
+  "own_repo": null,
   "structure": {
     "h1_count": 1,
     "headings": [
@@ -28,6 +29,7 @@
     ],
     "heading_level_jumps": [],
     "broken_local_refs": [],
+    "broken_anchors": [],
     "images_without_alt": []
   },
   "identity_lead": {
@@ -70,7 +72,7 @@
     {
       "kind": "mermaid",
       "line": 7,
-      "prose_after": true
+      "prose_adjacent": true
     }
   ],
   "badges": {
@@ -89,6 +91,7 @@
     "degree_adverbs_ja": [],
     "stadium_lines": []
   },
+  "register_ja": null,
   "history_signals": [],
   "numeric_claims": [],
   "doi_citation": {
@@ -96,5 +99,17 @@
     "doi_first_line": null,
     "how_to_cite_present": false
   },
-  "note": "evidence only — no verdict, no threshold; the judge decides what matters"
+  "note": "evidence only — no verdict, no threshold; the judge decides what matters",
+  "notes": [
+    "term_candidates / first_screen.new_terms see only backtick and bold spans; coined terms written in plain prose are not counted, so the judge identifies those.",
+    "identity_lead only locates the first prose line between the H1 and the next heading; whether it says what the project is and who it is for is the judge's call.",
+    "insider_refs counts ADRs only as ADR-NNNN, repositories only as github.com URLs, and doc_paths only as (docs/...) or (./docs/...) link targets; sibling projects named in plain prose are not counted.",
+    "own_repo comes from the git origin of the README's directory (GitHub remotes only); when it is null, links to the README's own repository count as sibling repos, and a README copied into another repository reports that repository.",
+    "structure.broken_local_refs resolves relative links on disk from the README's directory; a README read outside its repository reports every relative link as broken. Absolute paths, external URLs and #fragments inside other files are not checked.",
+    "structure.broken_anchors checks only [text](#fragment) links against GitHub's heading slugs and <a id/name> anchors of this file; HTML <a href> links are not checked and other renderers slug headings differently.",
+    "figures[].prose_adjacent only says a prose line sits within 2 lines of the figure; whether that line states what the figure shows is the judge's call.",
+    "prose_signals, history_signals and numeric_claims match fixed pattern lists; a hit is a line to read, and wording outside the patterns is not seen.",
+    "register_ja classifies only sentences ending in 。！？ inside body paragraphs, by their last words; list items, tables, headings, quotes and sentences without a terminal mark are not counted.",
+    "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that quotes Japanese can read as ja."
+  ]
 }

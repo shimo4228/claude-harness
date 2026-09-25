@@ -1,11 +1,12 @@
 <!-- origin: shimo4228 -->
 # About（description / topics）細則（readme-writer の参照資料）
 
-規約の骨格は `../SKILL.md` の Workflow Step 10。ここは UI 実測の記録・topics の実勢測定・`gh` コマンド表。
+規約の骨格は `../SKILL.md` の Workflow Step 6。ここは UI 実測の記録・topics の実勢測定・`gh` コマンド表。
 
-homepage は `release-doi` の所有で、DOI repo では concept DOI に固定したまま変えない。DOI の無い
-repo でだけ docs サイト / その repo を解説した記事 / hub を入れ、該当が無ければ空のままにする
-（無関係な URL を埋めない）。
+homepage は、DOI repo では `release-doi` が持ち、concept DOI に固定したまま変えない。DOI の無い
+repo では本 skill が持ち、docs サイト / その repo を解説した記事 / hub を入れる。該当が無ければ空の
+ままにする（無関係な URL を埋めない）。social preview 画像はどの skill も作らない（著者が GitHub の
+設定で置く）。
 
 repo トップは README 本文と **About サイドバー**で 1 つの第一画面を作る。README がどれだけ良くても
 **About が空なら「到達した人」にしか効かない** — topics は*まだ来ていない人*を索引から連れてくる
@@ -66,7 +67,7 @@ gh api "search/repositories?q=topic:<topic>&per_page=1" --jq '.total_count'  # �
 ```
 
 **このステップの成果物は「変更案」であって適用ではない。** `gh repo edit` は GitHub への durable な
-書き込みなので、著者通読 GO（SKILL.md Workflow Step 10）の承認を得るまで実行しない（可逆であっても「消す / 変える」の判断
+書き込みなので、著者通読 GO（SKILL.md Workflow Step 6）の承認を得るまで実行しない（可逆であっても「消す / 変える」の判断
 自体はユーザーのもの）。
 
 変更案は description / topics それぞれについて **現状 → 提案** の形で書き出す。

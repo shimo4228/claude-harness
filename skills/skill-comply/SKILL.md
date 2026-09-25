@@ -155,7 +155,7 @@ Glob / Grep を持つ子に有効な命令を書ける。Tier 1 と Tier 2 の�
   無害だが、並列では片方の sandbox 作成（作る前に消す）が走行中のもう片方を消してしまう。
   この一意化は**プロセス内でしか効かない**ので、根を実行単位で分ける —
   `/tmp/skill-comply-sandbox/run-<pid>/<id>`。同じ id を生成した別の run が
-  互いの走行中 sandbox を消さない（2026-08-17、`scripts/runner.py: sandbox_run_root`）。
+  互いの走行中 sandbox を消さない（`scripts/runner.py: sandbox_run_root`）。
   `SANDBOX_BASE` 自体が symlink（共有ホスト・CI の scratch 領域）のときは根の計算で
   1 回だけ解決して追従する — 封じ込め判定を毎回 link 越しにやり直さない
 - **`<sandbox>/.claude/` と `<sandbox>/.git/` はツール専有。監査対象由来の指定は受け付けない。**

@@ -12,11 +12,11 @@
 
 This file deliberately contains evidence for `readme_evidence` to count. There is no
 plain identity sentence between the H1 and this first section (identity_lead),
-a badge wall above (badge_budget), a duplicate H1 below (single_h1), a skipped
-heading level (heading_levels), an image with no alt text (alt_text), a broken
-local link (local_link), a raster diagram that should be Mermaid
-(raster_diagram_hint), and a DOI buried in a collapsible with no how-to-reference
-affordance (details_floor_leak + doi_citation_pairing).
+a badge wall above (badges.count), a duplicate H1 below (structure.h1_count), a
+skipped heading level (structure.heading_level_jumps), an image with no alt text
+(structure.images_without_alt), broken local links (structure.broken_local_refs),
+a raster diagram (figures), and a DOI inside a collapsible (details_blocks) with no
+how-to-cite affordance (doi_citation.how_to_cite_present).
 
 #### Buried subsection
 

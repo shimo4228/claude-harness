@@ -83,8 +83,7 @@ verify.md に 1 行記録するだけでよい。閾値は global に定めな�
 （skill `review-to-lint` の免除境界の原則。ゲートを初日に赤くする閾値は設計ミス）。
 
 **lint / type check の選定方針は LLM-first**（読者・編集者とも LLM で、人間はコードを
-読まない前提。2026-08-31 の harness 棚卸しで確立 — 実例と根拠は
-`~/.claude/.claude/verify.md` の同日付節）。言語を問わず同じ 4 軸で select を組む:
+読まない前提。実例と根拠は `~/.claude/.claude/verify.md` の「lint の LLM-first 棚卸しと ANN 導入」節）。言語を問わず同じ 4 軸で select を組む:
 
 1. **バグクラス検出**（未定義名・未使用・既知の危険パターン・型矛盾）— 無相関の
    検証者の中核。最優先

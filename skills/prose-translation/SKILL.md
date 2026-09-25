@@ -124,9 +124,8 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 
 ## エスケープハッチ — 超長文の隔離モード（オプション・両方向）
 
-超長文で、原文＋出力がメイン context を圧迫する場合のみ、Pass 1（意味 + voice 訳）の
-**ドラフト生成**を継承モデルのサブエージェントに隔離してよい（デフォルトにしない・
-常駐 agent 化しない）。lossy handoff を補償するため、起動時に以下を**明示的に手渡す**:
+超長文で、原文＋出力がメイン context を圧迫する場合に限り、Pass 1（意味 + voice 訳）の
+**ドラフト生成**をその都度、継承モデルのサブエージェントに隔離してよい。lossy handoff を補償するため、起動時に以下を**明示的に手渡す**:
 
 - voice sample（著者の既存 prose の抜粋）
 - 確定済み term-lock 表
@@ -140,13 +139,13 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 
 ## Review（翻訳後）
 
-訳文を既存の review agent にかける（**新規 reviewer agent は作らない**）。
+訳文は出力先チャンネルの既存 review agent にかける。
 **出力言語で分岐する**:
 
 - **JA→EN（EN 出力）** — 出力先チャンネルの review agent に defer する（記事の type では
   分岐しない）。どのチャンネルがどの agent かは、その project の rules のチャンネル表が正本
 - **EN→JA（JA 出力）** — 同じチャンネル表を JA 側の行で引く。README を訳したなら
-  `readme-reviewer` + `readme-clarity-reviewer`（後者は日本語版も対象）、記事なら
+  `readme-judge`（両言語版を 1 回で判定する）、記事なら
   `editor` / `essay-reviewer`。チャンネル表に JA 行が無い出力先なら、脱翻訳調 pass の
   自己添削を 1 周増やして著者通読で閉じる
 

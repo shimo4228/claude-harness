@@ -167,6 +167,12 @@ commit message に 1 行（producer 付き）残して捨てる。起票する�
 タスクの出力なので、足切りに掛けない。ただし起票の権限は build 側に無い — 判断役が digest に
 出し、所有者が決める。
 
+**build 提案の例外**: build が packet の Report の `Proposed tasks` に、再現手順（コマンド → 期待と
+実際）・決定可能な受入条件・producer `file:line` を付けて出した提案（1 build 最大 2 件）は、判断役が
+再現を自分で走らせて確かめたものに限り、digest に起票の提案として出せる。起票を決めるのは所有者で、
+RFC の書き方と由来の印は skill `rfc-writer` §2。再現しない提案と再現手順の無い指摘は、足切りどおり
+commit message に 1 行（根拠と失効条件は ADR-0076）。
+
 捨てた指摘を後から拾い直す回収機構（commit body の定期 sweep 等）は**作らない** — durable な
 記録は commit body が既に担っており、イベント駆動の起票はレビュー → 修理 → 再レビューの
 補充エンジンになって台帳が収束しないため。この足切りの根拠は実測: 規約「HIGH + producer」を

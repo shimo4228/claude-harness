@@ -96,6 +96,11 @@ security review を残す判断材料とした。
    > 2026-09-16、RFC-0005）を要求され、「作らない」の再訪条件が成立した。ADR-0071 は抽出 script を
    > 作らず scratchpad で書いて捨てる判断を維持し、3 回目で supersede 込みの提案に進む（著者判断）。
 
+   > **注記（2026-09-25, ADR-0076）**: 3 つ目の入口を足した。build が packet の Report の `Proposed tasks` に
+   > 再現手順・決定可能な受入条件・producer `file:line` を付けて出した提案（1 build 最大 2 件）は、判断役が
+   > 再現を確かめたものだけ digest に起票の提案として上がる。起票を決めるのは著者のまま。再現手順の無い
+   > 指摘は本項どおり commit body に 1 行、回収機構を作らない判断も維持する。
+
 6. `hooks/simplify-order-notice.sh` と `tests/simplify-order-notice.bats` を退役する
    （Simplify 前置き順序の強制対象が消滅）。`settings.json` の当該エントリと
    `hooks/README.md` の行も削除する。`review-model-notice.sh`（judge-tier の直呼び
@@ -162,6 +167,8 @@ security-reviewer も畳み、脅威面検査を `/code-review` の prompt 1 行
 > correctness-only）が担い、往復は制限しない。消費の見積りは「1〜2 系統 × 自然な往復」に
 > 読み替える。
 - diff 外起票の補充エンジンが止まり、台帳が収束方向になる
+  > **注記（2026-09-25, ADR-0076）**: build の再現手順つき提案が digest への入口として加わり、補充の経路が 1 本
+  > 開いた。上限 1 build 2 件と ADR-0076 の Review-when（ADR-0043 の突合）で絞る。
 - 公式推奨と同型になり、外部の読者・ツールが chain を既知パターンとして読める
 
 ### Negative
@@ -185,6 +192,9 @@ security-reviewer も畳み、脅威面検査を `/code-review` の prompt 1 行
   （effort pin 降格）/ [ADR-0048](./0048-sdlc-playbook-translation-and-rfc-conformance.md)
   （付表 1 REVIEW.md 行）
 - writing chain（paper / README / 記事系 reviewer 群）は対象外・不変更
+
+  > **注記（2026-09-25, [ADR-0077](./0077-readme-review-single-judge-with-claims-check.md)）**: README chain は reviewer を `readme-judge` 1 本にまとめ、
+  > codex-review は著者が求めたときだけ回す（本 ADR の opt-in を README にも当てた）。paper / 記事系は不変更のまま。
 - swift-reviewer の去就は [ADR-0042](./0042-retire-code-reviewer-and-scope-security-review-to-threat-surface.md)
   に続き保留（Swift diff では引き続き併用）
 - Refactor Clean（refactor 種別専用ステップ）は per-commit Simplify 廃止と独立に存続

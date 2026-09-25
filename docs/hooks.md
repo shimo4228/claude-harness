@@ -15,7 +15,7 @@ will see when a gate goes quiet, and they date their own bug fixes.
 
 | Script | Fires on | Blocks when | Bypass |
 |---|---|---|---|
-| [`secret-scan-precommit.sh`](../hooks/secret-scan-precommit.sh) | Bash command containing `git … commit` | A line the command **will commit** looks like a credential. Prefers `detect-secrets`, falls back to regex | `SECRET_SCAN_BYPASS=1` |
+| [`secret-scan-precommit.sh`](../hooks/secret-scan-precommit.sh) | Bash command containing `git … commit` | A line the command **will commit** looks like a credential. Prefers `detect-secrets`, falls back to regex. Machine-written digest-only files (`evals/baselines/*.ack.json`) are excluded from the scan | `SECRET_SCAN_BYPASS=1` |
 | [`verify-precommit.sh`](../hooks/verify-precommit.sh) | same | The repo's own `.claude/verify.sh --staged` exits non-zero (other than the codes below) | `VERIFY_BYPASS=1` |
 | [`bandit-precommit.sh`](../hooks/bandit-precommit.sh) | same | Staged `.py` trips bandit at `-ll -ii` (MEDIUM severity + MEDIUM confidence) | `BANDIT_SCAN_BYPASS=1` |
 | [`ruff-format-precommit.sh`](../hooks/ruff-format-precommit.sh) | same | Staged `.py` fails `ruff format --check`. Checks only, never rewrites | `RUFF_FORMAT_BYPASS=1` |

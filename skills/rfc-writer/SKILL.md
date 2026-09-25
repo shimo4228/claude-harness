@@ -80,6 +80,7 @@ rfcs/ は**提案と作業項目の公開台帳**（判断は ADR-0049/0050）�
 |---|---|
 | playbook intent.md | problem → Motivation / proposed outcome → Summary / affected users and systems → Guide-level（users）・Reference-level explanation（systems）/ constraints → Reference-level explanation / open questions → Unresolved questions |
 | search-first / Phase 0 の結果 | → Prior art（AKC Research phase の受け皿） |
+| build の `Proposed tasks`（task-triage §4 で判断役が再現を確かめ、著者が起票を決めたもの） | 何が壊れているか・再現手順 → Motivation / 受入条件 → Summary / producer → Reference-level explanation。Motivation の 1 行目に `由来: build 提案 (S<n>)` — ADR-0076 の失効条件が数える印 |
 
 ## 3. repo に rfcs/ が無いとき（初設）
 

@@ -28,7 +28,8 @@ task (task-triage §3).
 <cloud: この session は GitHub の `<owner/repo>` main を clone した cloud session で、branch は
 session が作った `claude/…`。成果はその branch への commit と push で返し、判断役が CI の結果と
 commit 本文を読んで検収し、main へ ff-only 取り込みます。あなたが merge する経路はありません。
-この packet に書いていないことは**やらない**（外側に規約は無い）。>
+この packet が契約の全部です（外側に規約は無い）。Goal に要る作業は書いていなくても行い、Goal の外へ広がる
+変更は Report の Proposed tasks に回す。>
 <local: cwd は `<repo>` の git worktree（branch `task/<name>`）。成果は branch 上の commit で返し、
 判断役が検収して main へ ff-only 取り込みます。境界（人間に渡す操作 / とってよいリスク / 止まる
 条件）は rule `boundary.md` — build は task branch まで。packet に無いことは harness の規約が既定。>
@@ -36,6 +37,24 @@ commit 本文を読んで検収し、main へ ff-only 取り込みます。あ�
 
 最初に読む: <task file(s)>、<repo の CLAUDE.md の該当節 / rule — e.g. security.md threat surface for gate work>、
 <prior commit / memo the task depends on>.
+
+## 進め方
+- 入力が要らない step は止まらずに続ける。状況メモは次の行動と同じメッセージに書く。止まるのは Phase 0 の
+  反証（記録して正しく直せる範囲を除く）、Review の CRITICAL、time cap、この packet の外の操作が要るときだけ
+- 確かめられなかったことには「未確認」と印を付け、どこを見たかを書く
+- 方針を選んだ箇所は、その理由を 3 文で Report の Fix に書く
+<if 単位が 3 つ以上に割れる監査・移行: 単位ごとに subagent に分ける。subagent の報告は証拠（file:line・
+コマンド出力）を確かめてから受け入れ、最後に「単位 / 影響 / 証拠」の表を Report に付ける>
+<if 手順が 10 を超える・time cap が 1 時間を超える: チェックリストを commit しないファイル（`/tmp/tasks.md`）に
+置き、終えた項目に印を付け、見つけた項目を足す>
+<if UI・見た目に触れる: 使わないスタイル: <具体名 — 例: cream 系の背景、見出しの斜体の強調語、番号付きの節ラベル、
+monospace のラベル、pill 形のボタン>。1 枚目の結果が使った既定のスタイルは Report に名前で書く（判断役が次の
+列挙に足す）。Report に before / after の画像の path を付ける>
+<if 性能・最適化: 改善を測れる指標に言い換えてから始める。指標は決定的なもの（命令数・render 回数・テストが数える
+回数）を使い、wall-clock と同じ向きに動くことを 1 回確かめる。改善はテストの上限値で固定する（CI がそのテストを
+走らせる）>
+<if 著者が「押し続ける」を選んだ: Goal の数値を満たしたら、同じ指標を time cap まで改善し続ける。対象は Goal の範囲の
+まま>
 
 ## Goal（決定可能な受入条件）
 1. <machine-checkable outcome — a command and its exit code, a test name, a diff property>
@@ -56,9 +75,9 @@ commit 本文を読んで検収し、main へ ff-only 取り込みます。あ�
 ## Review
 <cloud:
 - 実装後・commit 前に built-in `/code-review` を **effort `medium`** で 1 回、この diff の範囲で起動する。
-  reviewer への指示（そのまま渡す）:「correctness / stated requirements に効く gap のみ報告。それ以外
-  （防御的コード・追加の抽象層・起こり得ないケースのテスト等）は optional として報告し、適用しない。
-  diff 外の指摘は 1 行のみ、修理はしない」。CRITICAL が出たら直さず止めて報告する。
+  reviewer への指示（そのまま渡す）:「correctness / stated requirements に効く gap のみ報告し、各指摘に
+  file:line・なぜ誤りか・失敗を示す手順を付ける。それ以外（防御的コード・追加の抽象層・起こり得ないケースの
+  テスト等）は optional として報告し、適用しない。diff 外の指摘は 1 行のみ、修理はしない」。CRITICAL が出たら直さず止めて報告する。
 - これ以外の reviewer は起動しない（security 等の判断は判断役が持つ）。
 - 省略・読み替えは可だが、報告に「逸脱: 何を・なぜ」と**必ず名指し**する。無言の逸脱は結果が正しくても
   bounce される>
@@ -70,9 +89,9 @@ commit 本文を読んで検収し、main へ ff-only 取り込みます。あ�
 - **packet に書いていないことは harness の規約が既定**（implementation-chain / task-tracking / security /
   git-workflow）。省略・読み替えは可だが、報告に「逸脱: 何を・なぜ」と**必ず名指し**する。無言の逸脱は
   結果が正しくても bounce される>
-- diff 外の指摘は**起票せず**、全部を最終メッセージと commit body の `Out-of-diff findings` に列挙する
-  （HIGH は producer `file:line` 付き）。捨てるか起票するかは判断役とオーナーが決める — 「無視された」
-  にならないよう、判断役はこの節を必ず harvest する
+- diff 外の気づきは `rfcs/` にも台帳にも書かない。再現手順を書けるものは Report の `Proposed tasks`
+  （最大 2 件）に、書けないものは `Out-of-diff findings` に 1 行ずつ（HIGH は producer `file:line` 付き）
+  置く。起票するかは判断役が再現を確かめたうえでオーナーが決める — 判断役はこの 2 節を必ず harvest する
 
 ## Must-not（境界 = Goodhart 対策）
 - <files / dirs that may not change> ; テストを弱めない・消さない・設定で黙らせない
@@ -81,15 +100,15 @@ commit 本文を読んで検収し、main へ ff-only 取り込みます。あ�
 - `git add -A` を使わない ; 台帳（`rfcs/` の state）の状態は判断役が書く
 - <cloud: PR は自動で開く。PR の本文・設定は触らない ; main や他の branch に push しない ; force push しない>
 - <time cap> を超えたら打ち切って、そこまでの diff とテスト状況で報告
-- shell ループで複数 path / repo を回すときは **zsh の word-split 罠**を踏まない: 未クオートの `$files` は
-  1 語のまま渡る（`git add -- $files` が 1 つの長い pathspec になる）。`while read` でファイルから回すか
-  `${=files}` で明示 split する（3 packet が踏んだ: 2026-06-28 badge push、2026-08-19 B1 commit loop、
-  2026-08-19 judge push loop — 最後は retry 前に 0/40 push）
+- shell ループで複数 path / repo を回すときは、path をファイルに書いて `while read` で 1 行ずつ回す（zsh は
+  未クオートの `$files` を分割せず、`git add -- $files` が 1 つの長い pathspec になる）
 
 ## Report（最終 commit の message 本文 = session が閉じても残る唯一の証拠）
 <type>(<scope>): <summary> (<T-IDs>)
 
 Packet: S<n>
+Needs from judge: <判断役かオーナーの決定・承認が要るもの / none>
+Model: <この session のモデル名。途中でモデルが切り替わった通知が出たらその旨>
 Premise: <file:line 再照合の結果、反証があればそれ>
 Fix: <what and why, in the shape the reviewer needs>
 Regression: <test names, RED→GREEN の確認方法>
@@ -97,10 +116,14 @@ Verify: <command exit / test counts / 日時。cloud: CI の判定は判断役�
 Review: <cloud: /code-review medium の結果（findings 件数と対応）> <local: chain どおりに回した reviewer と結果> / Deviations: <逸脱の名指しと理由、無ければ none>
 Approval ledger: <if a pinned gate script changed: 未実施、人間が approve>
 Risk: <とったリスク / 戻し方（1 分で戻せるか）>
+Proposed tasks (for the judge, 最大 2 件): <各件: 何が壊れているか / 再現手順（コマンド → 期待と実際）/
+  決定可能な受入条件 / producer file:line — 無ければ none。再現手順は branch の tip で走る 1 コマンド（repo の
+  テスト実行器で名前を指したテスト、または読み取りのみ）にし、commit しない — 失敗するテストを commit すると
+  CI が落ちる>
 Out-of-diff findings (for the judge): <severity + 1 行ずつ、HIGH は producer 付き / none>
 
-最後のメッセージで <cloud: branch 名・push した commit SHA> <local: commit SHA>・verify の結果・
-所要時間を報告して終了してください。前提が崩れて実装しなかったときも同じ形で報告してください。
+最後のメッセージは「判断役に要るもの」から始め、<cloud: branch 名・push した commit SHA> <local: commit SHA>・
+verify の結果・所要時間を報告して終了してください。前提が崩れて実装しなかったときも同じ形で報告してください。
 ```
 
 ---
@@ -116,9 +139,22 @@ Out-of-diff findings (for the judge): <severity + 1 行ずつ、HIGH は produce
   names all task IDs. Three README notes across three repos also fit one session (three
   branches, three commits; cloud: one session per repo).
 - **Escalation is a valid ending**: a build that finds a bigger hole (an out-of-diff HIGH) leaves
-  it out of the diff, documents the PoC in the commit body, and reports; the judge files it
-  with `--producer` after the human agrees. Do not let a build widen its own scope.
+  it out of the diff and puts it in `Proposed tasks` with its reproducer (or in `Out-of-diff
+  findings` when it cannot write one); the judge runs the reproducer and the human decides the
+  filing (task-triage §4). Do not let a build widen its own scope.
 - **The cloud pilot (2026-09-24, systems-thinking-learning)**: a self-contained packet was
   followed in full — implementation, verify, `/code-review`, the commit-body report — and when
   the premise broke (no push target) the session stopped and reported. The self-contained form
   is what made that possible: nothing in it pointed at a harness the session could not see.
+- **Model guidance behind the 進め方 and Report lines** (ADR-0076). Opus 5.5 guide —
+  https://claude.dev/blog/getting-the-most-out-of-opus-5-5/ (2026-09-22, read 2026-09-25): say what
+  "done" is and let it run, state which stops you want, split big audits across subagents and check
+  their evidence, keep the checklist in a file, end with what the run needs from you, mark what could
+  not be confirmed, name the design styles to leave out, and a flagged message continues on an older
+  model (hence `Model:`). It thinks before every reply on its own, so a packet asks for depth through
+  its Goal and the session's effort, and asks for reasons as "3 文で". claude.ai speed-up —
+  https://claude.dev/blog/how-we-made-claude-ai-faster/ (2026-09-23): measure first with a
+  deterministic lab metric checked against wall-clock, lock each win with a ratchet, and treat
+  ticketing-instead-of-doing as over-caution — the build's lane for new work is a reproducible
+  `Proposed tasks` entry, not a filing. Re-check these lines when a guide for the next Opus
+  generation appears or Opus 5.5 leaves the build role.

@@ -46,6 +46,10 @@ code reviewer が探す欠陥とは検査対象が直交する。
    fact-checker / vocabulary-consistency-checker 等）がここに入る。paper-reviewer だけが
    opus なのは、deposit（DOI 採番）で出力が不可逆に外部化され、argument flow の質を
    後段で検査する層が無いため。essay-reviewer / editor は公開前に人間が読む前提
+
+   > **注記（2026-09-25, [ADR-0077](./0077-readme-review-single-judge-with-claims-check.md)）**: README の reviewer 群（readme-reviewer /
+   > readme-clarity-reviewer）は退役し、README の判定は `readme-judge` 1 本になった。判定器の後に別の
+   > agent の検査は無く、著者通読は主張とコードの照合を読まないので、この軸の 1 に当たり opus。
 3. 構造的検査のみ（バイト列の形で答えが決まる）を行う agent は haiku —
    citation-formatter / prompt-writer
 4. **条項が競合したときは 3 が 1 に優先する**。citation-formatter は不可逆な deposit の

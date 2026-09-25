@@ -16,7 +16,7 @@ Self-contained AI-facing reference for claude-harness — the public snapshot of
 - **Origin filter**: `shimo4228` only (excludes `ECC`, `ECC-customized`, `auto-extracted`) — applies to skills, agents, and rules; ADRs sync wholesale and hooks come from a curated allowlist
 - **Hooks directory**: `hooks/` — five PreToolUse hooks at the `git commit` boundary (secret scan, repo-owned gate runner, bandit, `ruff format --check`, review reminder) plus shared parts; wired manually into `settings.json`, install guide at `docs/hooks.md`
 - **Skills directory**: `skills/` — covers research-before-coding, knowledge extraction, skill auditing, AI-facing documentation, JSON-LD knowledge graph design, human-facing writing review, authorship strategy, and DOI release
-- **Agents directory**: `agents/` — prompt generation (prompt-writer), README review (readme-reviewer, readme-clarity-reviewer, readme-judge), and ADR review (adr-reviewer)
+- **Agents directory**: `agents/` — prompt generation (prompt-writer), README review (readme-judge), and ADR review (adr-reviewer)
 - **Rules directory**: `rules/common/` — environment-specific facts, wiring, and traps: planning wiring, the AKC pointer table and Scaffold Dissolution criteria, the human / agent boundary, skill origin vocabulary, task-ledger conventions, the rate-limit policy signal, knowledge staleness, LLM-first code, the author's practitioner identity, and the Contemplative Constitutional AI clauses
 - **Skills with Python implementations**: llms-txt-writer, skill-comply, rules-distill, skill-stocktake, skill-health
 - **Python build**: uv (or pip install -e .), Python 3.10+

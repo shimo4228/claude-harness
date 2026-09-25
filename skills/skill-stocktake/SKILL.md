@@ -388,7 +388,7 @@ every write.
 - `agent-stocktake` — the third sibling, for `~/.claude/agents/` (hybrid cost model:
   description = residency, body = invocation).
 - `generation-audit` — on a model-generation change, collects runtime-layer evidence
-  (conflict / redundancy / drift) and hands the skills slice to Phase 4 synthesis as
+  (conflict / redundancy) and `/claude-api prompt-audit` findings, and hands the skills slice to Phase 4 synthesis as
   external evidence (read, never require).
 - `harness-boundary` — design-time lens (layer / portability / obsolescence) for proposed
   mechanisms; applied to an installed skill, its Delete / Move are Phase 4 evidence only.

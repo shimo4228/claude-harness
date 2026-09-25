@@ -240,7 +240,7 @@ def test_severity_floor_is_enumerated() -> None:
 
 
 def test_an_output_contract_is_not_a_suppression_candidate() -> None:
-    # agents/fact-checker.md L164 and readme-reviewer.md L13 shapes: "only
+    # agents/fact-checker.md L164 and a retired README reviewer's shape: "only
     # report findings" describes what the agent returns, not a class of finding
     # it withholds. The `only-report` pattern that matched them was cut on
     # 2026-08-26 after producing two false positives and no true ones.
@@ -248,7 +248,7 @@ def test_an_output_contract_is_not_a_suppression_candidate() -> None:
 
 
 def test_scoping_an_agents_own_evaluation_is_not_suppression() -> None:
-    # agents/readme-judge.md L79 shape.
+    # readme-writer/references/readme-judge-checklist.md §D shape.
     assert scan_suppression(["評価は欠陥検出に限定し、文体の方向づけには使わない。"]) == []
 
 

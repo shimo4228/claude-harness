@@ -157,7 +157,7 @@ rest the **body layer** (invocation):
   and whose body is a verbatim copy (e.g. a built-in override such as `Explore`), the
   source version named in the body's leading comment matches the installed tool
   (`claude --version`); a mismatch is an Update (diff against the bundle and re-copy).
-  The two body questions below are skipped for such copies — the body is the vendor's,
+  The suppression and over-constraint questions are skipped for such copies — the body is the vendor's,
   not ours (ADR-0070)
 - [ ] *Body free of previous-generation over-constraint?* — exhaustive step-by-step
   procedures for judgment the current model holds natively, repeated emphasis,
@@ -175,7 +175,7 @@ rest the **body layer** (invocation):
   loop itself counts as an absorber. Two auxiliary rationales legitimately override
   the rich-context pull (ADR-0024): a **frozen-input render contract** — the caller
   freezes a self-contained packet before invocation, so conversation context is not
-  needed by design (adr-writer per ADR-0016, prompt-writer) —
+  needed by design (prompt-writer) —
   and **bulk context isolation** — the work reads or produces volume that would
   pollute the main context (refactor-cleaner)
 - [ ] *Technical references current?* — **unconditionally verify** every artifact the
@@ -186,7 +186,7 @@ rest the **body layer** (invocation):
 - [ ] *Unique within the set?* — no other agent (or skill) owns the same job; a
   documented orchestrator→sub-agent split is NOT overlap
 
-Seven questions and no more — further decomposition degrades holistic judgment
+Eight questions and no more — further decomposition degrades holistic judgment
 (see References).
 
 **Stage 2 — verdict pressure-test (non-Keep candidates only).** Generate 1–3
@@ -294,8 +294,8 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
 - `skill-stocktake` / `rules-stocktake` — the two siblings; this skill fuses their cost
   models (description = residency, body = invocation).
 - `generation-audit` — the cross-asset orchestrator; on a model-generation change it
-  collects runtime-layer evidence (conflict / redundancy / drift classification) and
-  hands the agents slice to this skill as Stage 2 evidence.
+  collects runtime-layer evidence (conflict / redundancy) and `/claude-api prompt-audit`
+  findings, and hands the agents slice to this skill as Stage 2 evidence.
 - `skill-creator` — handoff target for the skill-creation half of Demote.
 - `adr-writer` — records the why of a Dissolve.
 - `config-gc` — whole-config GC; this skill judges agent *quality*.
@@ -313,7 +313,7 @@ no score aggregation) is inherited from skill-stocktake / rules-stocktake and fo
 the checklist-decomposition evaluation line: BinEval "Ask, Don't Judge"
 ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)), CheckEval (arXiv:2403.18771),
 TICK (arXiv:2410.03608) — over-decomposition degrades correlation on holistic quality,
-hence seven questions and no score. The suppression-instruction question implements the
+hence eight questions and no score. The suppression-instruction question implements the
 current-generation prompting guidance (report everything, filter in a separate pass);
 the absorption question and Dissolve verdict implement `rules/common/akc-cycle.md`'s
 Scaffold Dissolution (inward / downward vectors + model-generation trigger, ADR-0018).

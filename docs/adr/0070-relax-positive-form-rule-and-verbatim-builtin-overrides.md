@@ -77,6 +77,10 @@ during codebase exploration」が同じ動作クラスへの対処として存�
    frontmatter が勝つ（`_FORCE` は Alternatives 参照）。`agents/readme-reviewer.md` を fable、
    `agents/readme-clarity-reviewer.md` を opus にする（commit `31e7010` で適用済み）。
 
+   > **注記（2026-09-25, [ADR-0077](./0077-readme-review-single-judge-with-claims-check.md)）**: `readme-reviewer` と
+   > `readme-clarity-reviewer` は退役し、問いは `readme-judge`（opus のまま）の checklist に移った。
+   > この項の model 配置のうち、README の 2 本は対象が無くなった。`CLAUDE_CODE_SUBAGENT_MODEL` の既定は変わらない。
+
 ## Review-when
 
 - 3 条件の下で書いた禁止文を根拠に新規アイデアが拒まれる観測が出たら、ADR-0065 Review-when

@@ -11,7 +11,7 @@ Capture a design decision as a numbered ADR with consistent structure. The skill
 
 ## Why the main loop writes
 
-Deterministic concerns — where the ADR goes, what number it gets, which index needs updating — are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift), so they live in scripted steps. The prose is written by the main loop that holds the decision: rendering to the house template is cheap for it, and the decision packet (Step 3) is the discipline that keeps *decide* and *render* apart — the packet is settled first, the file is a faithful expression of it, nothing is inferred while writing. That principle is [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) (writer agents render, they do not decide); the separate render agent that used to embody it was retired by [ADR-0072](../../docs/adr/0072-retire-adr-writer-agent-and-narrow-adr-filing.md) — the main loop re-read the file for fidelity anyway, and the evidence script (Step 4.5) now catches what the agent's calibration pass used to cover.
+Deterministic concerns — where the ADR goes, what number it gets, which index needs updating — are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift), so they live in scripted steps. The prose is written by the main loop that holds the decision: rendering to the house template is cheap for it, and the decision packet (Step 3) is the discipline that keeps *decide* and *render* apart — the packet is settled first, the file is a faithful expression of it, nothing is inferred while writing. That principle is [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) (writer agents render, they do not decide), applied in the main loop per [ADR-0072](../../docs/adr/0072-retire-adr-writer-agent-and-narrow-adr-filing.md); the evidence script (Step 4.5) is the fidelity check.
 
 ## When to Use（起票の条件 — 正本）
 
@@ -20,7 +20,7 @@ Write an ADR when at least one holds:
 - The change moves a **mechanism, gate, threshold, or agent tier that other artifacts cite** (a hook, a lint boundary, a chain step, a rule's default, a model pin) — the ADR is what those artifacts point at
 - The decision **supersedes or partially weakens a prior ADR** (a Status flip or a dated 注記 is needed on the old one)
 
-Entry points are the same as before: the user says "let's ADR this" / "record this decision", `context-sync` Phase 3 surfaced a buried decision, a debate concluded and the outcome must outlive the session. Apply the two conditions to the request; when neither holds, say so and use the commit body.
+Entry points: the user says "let's ADR this" / "record this decision", `context-sync` Phase 3 surfaced a buried decision, a debate concluded and the outcome must outlive the session. Apply the two conditions to the request; when neither holds, say so and use the commit body.
 
 ## When NOT to Use — the commit body carries it
 
@@ -93,7 +93,6 @@ Index rows link the number: `| [NNNN](NNNN-slug.md) | Title | status | YYYY-MM-D
 `adr_lint.py` はこの README の Template fenced block から期待節セットを読むので、
 README を置くことが lint のテンプレ宣言を兼ねる。）
 
-If the user declines, stop and explain that ADRs need a directory.
 
 ### Step 2: Pick the next sequence number
 
@@ -122,7 +121,7 @@ Ask the user (or accept from caller) for:
 2. **Status** — `proposed | accepted | superseded | deprecated`. Default `accepted`.
 3. **Context** — what problem prompted this decision (raw text OK).
 4. **Decision** — what was decided (raw text OK).
-5. **Review-when** — the expiry conditions (失効条件): which observation or premise failure would void or weaken this decision, 1-3 lines. It can only be captured at write time (ADR-0021); an ADR without it reads as permanent. If there genuinely is none, say so explicitly — the agent renders 「無し — 恒久判断ではなく記録」.
+5. **Review-when** — the expiry conditions (失効条件): which observation or premise failure would void or weaken this decision, 1-3 lines. It can only be captured at write time (ADR-0021); an ADR without it reads as permanent. If there genuinely is none, say so explicitly and write 「無し — 恒久判断ではなく記録」.
 6. **Alternatives** — what else was considered and why rejected, or, for an alternative that stays live, 「未決 — 再訪条件: …」 (raw text or list). Keeping a rival open is allowed; a straw man is not.
 7. **Consequences** — what becomes easier / harder (raw text or list).
 
@@ -134,7 +133,7 @@ If 3-7 are missing, request them — do not proceed. ADRs without these sections
 gitignored パス参照、数値の出典と分母、カウント条件の固定対象。これは書き時の予防であって
 意味的レビューの代替ではない — commit 前の adr-reviewer は省略しない。
 
-**Assemble and approve the decision packet before delegating.** The main loop holds the semantic authority for this ADR, so it — not the agent — must settle the actual content: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4. The agent that follows only renders what you hand it; it will not fill a gap you leave. If the decision is still fuzzy, resolve it here in the main loop — do not expect the agent to infer it.
+**Assemble and approve the decision packet before writing.** Settle the actual content here: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4 — Step 4 expresses the packet and adds nothing, so a fuzzy decision is resolved here.
 
 ### Step 4: Write the file (main loop)
 
@@ -188,17 +187,16 @@ Decision に書くか別 commit へ分ける。残りの key（`numbers.unanchor
 ### Step 4.6: Run the semantic review (adr-reviewer)
 
 commit 前に agent: `adr-reviewer` を起動して今書いた ADR を渡す — 省略しない。
-**この skill が adr-reviewer の唯一の配線**（ADR-0055 で implementation-chain の Review 表
-から外れた）。指摘は Step 3 の packet に照らして主ループが採否を決め、採った分だけ直す。
+**この skill が adr-reviewer の唯一の配線**（ADR-0055）。指摘は Step 3 の packet に照らして主ループが採否を決め、採った分だけ直す。
 
 ### Step 5: Update the index
 
-After the agent confirms file written, append a row to `$ADR_DIR/README.md` index table:
+After Step 4 writes the file, append a row to `$ADR_DIR/README.md` index table:
 
 ```bash
 # Read current index
-# Find the table block (lines between "| ID |" header and the next "##" heading)
-# Append: | $NEXT_NUM | <title human-readable> | <status> | <date> |
+# Find the table block (lines between the "| ADR |" header and the next "##" heading)
+# Append: | [$NEXT_NUM]($NEXT_NUM-<slug>.md) | <title human-readable> | <status> | <date> |
 ```
 
 If the index table is malformed or absent, regenerate it from the directory:
@@ -209,7 +207,7 @@ for f in "$ADR_DIR"/[0-9]*-*.md; do
   title=$(head -1 "$f" | sed -E 's|^# ADR-[0-9]+: ||')
   status=$(awk '/^## Status/{getline; getline; print; exit}' "$f")
   date=$(awk '/^## Date/{getline; getline; print; exit}' "$f")
-  echo "| $num | $title | $status | $date |"
+  echo "| [$num]($(basename "$f")) | $title | $status | $date |"
 done
 ```
 
@@ -234,7 +232,7 @@ Index:   updated (+1 row)
 | Not a git repo | Fall back to cwd, warn the user that they should `git init` |
 | ADR number was reserved verbally but not yet written ("I'll write ADR-0010 later") | Skill cannot know; ask the user whether to take the next free number or the reserved one |
 | User wants to supersede an existing ADR | Update the old ADR's Status to `superseded by ADR-NNNN`, then create the new one. Two file writes. |
-| New ADR **partially weakens** an old one (a premise expired, a Review-when trigger fired) but does not supersede it | Do not flip Status. Append under the affected section of the old ADR: `> **注記（YYYY-MM-DD, ADR-NNNN）**: <what changed and what still stands>`. Never delete the original text — the strength history stays readable in place (precedents: ADR-0018 §Consequences, ADR-0028). This is a main-loop step after the agent has written the new file. |
+| New ADR **partially weakens** an old one (a premise expired, a Review-when trigger fired) but does not supersede it | Do not flip Status. Append under the affected section of the old ADR: `> **注記（YYYY-MM-DD, ADR-NNNN）**: <what changed and what still stands>`. Never delete the original text — the strength history stays readable in place (precedents: ADR-0018 §Consequences, ADR-0028). Do this after Step 4 has written the new file. |
 | Title contains spaces or non-ASCII | Skill normalizes to kebab-case ASCII for the filename; preserves original in the `# ADR-NNNN: ...` heading |
 
 ## Boundaries

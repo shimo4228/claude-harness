@@ -51,6 +51,11 @@ accepted
    rules / ADR / hooks / security gate / 公開物に無人で触らない・同時 build ≤ 3、open branch ≤ 3 /
    repo・起票規約を計測中に変えない。goal は突合型（closed ≥ spawned、open が 4 週で増えない）で
    「台帳を空にする」ではない（drop 乱発で達成できてしまう）。
+
+   > **注記（2026-09-25, ADR-0076）**: 起票規約を著者の決定で変えた — build の再現手順つき提案が、判断役の
+   > 再現確認を経て digest に上がる。loop 自身は今も起票しない。突合（closed ≥ spawned、open が 4 週で
+   > 増えない）の比較の窓は 2026-09-25 から数え直す。あわせて、著者だけが答えを持つ項目が欠けた task は
+   > 無人 cycle で dispatch せず digest で OK を待つ（task-triage §3 の逆提案）。
 4. **語彙は増やさない、機構は足さない。** 状態は task-stocktake の 4+4 のまま（"defer" は無い）。
    loop は skill（手順）+ 既存 `claims.py` + git だけで回し、台帳を parse する script を足さない
    （消費側から台帳側へ機能が逆流したのが 5,000 行版の育ち方）。

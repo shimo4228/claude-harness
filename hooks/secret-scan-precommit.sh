@@ -56,6 +56,21 @@ done < <(git_target_dirs "$COMMAND")
 # quotepath=off は非 ASCII パスの 8 進エスケープを止める (ls-files の出力パスでファイルを
 # 読むため、引用されると未追跡スキャンが無音で欠ける)
 GIT_SAFE=(-c core.fsmonitor= -c core.hooksPath= -c core.quotepath=off)
+
+# スキャン対象から外すパス (repo root 相対の glob)。ここに載せてよいのは**機械が書き、中身が
+# 公開ファイルの digest だけ**のファイルに限る: `evals/baselines/*.ack.json` は ADR-0089 の
+# staleness ack サイドカーで、prompt テンプレート群の SHA-256 を記録する。detect-secrets の
+# Hex High Entropy String はこの 64 桁 hex を毎回 secret と誤検出し、2026-09-19 と 2026-09-25 の
+# 2 回、著者確認のうえ SECRET_SCAN_BYPASS で通した。バイパスの常態化はこの gate を空洞化するので
+# (tests/secret-scan-precommit.bats の fixture 注記と同じ理由) パスで除外する。`top` magic で
+# cwd に依らず repo root 相対、`glob` で `*` が 1 階層に留まる (2026-09-25 に root / subdir / -C で確認)。
+SCAN_EXCLUDE_PATHSPECS=(':(exclude,top,glob)evals/baselines/*.ack.json')
+is_excluded_path() {  # $1 = repo-root-relative path。上の glob と同じ判定を未追跡側にも当てる
+  case "$1" in
+    evals/baselines/*.ack.json) return 0 ;;
+  esac
+  return 1
+}
 DIFF_SAFE=(--no-ext-diff --no-textconv)
 
 # --- スキャン対象の決定 ---------------------------------------------------
@@ -85,13 +100,13 @@ for repo_dir in "${repos[@]}"; do
   git_cmd=(git "${GIT_SAFE[@]}")
   [[ -n "$repo_dir" ]] && git_cmd=(git "${GIT_SAFE[@]}" -C "$repo_dir")
 
-  staged=$("${git_cmd[@]}" diff "${DIFF_SAFE[@]}" --cached 2>/dev/null | grep '^+' | grep -v '^+++' || true)
+  staged=$("${git_cmd[@]}" diff "${DIFF_SAFE[@]}" --cached -- . "${SCAN_EXCLUDE_PATHSPECS[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)
   [[ -n "$staged" ]] && added=$(printf '%s\n%s' "$added" "$staged")
 
   [[ $stages_in_call -eq 1 ]] || continue
 
   # 追跡ファイルの未 staged 変更 (`commit -a` / `git add` が取り込む)
-  unstaged=$("${git_cmd[@]}" diff "${DIFF_SAFE[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)
+  unstaged=$("${git_cmd[@]}" diff "${DIFF_SAFE[@]}" -- . "${SCAN_EXCLUDE_PATHSPECS[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)
   [[ -n "$unstaged" ]] && added=$(printf '%s\n%s' "$added" "$unstaged")
 
   untracked_files=()
@@ -108,6 +123,7 @@ for repo_dir in "${repos[@]}"; do
   base_dir="${repo_dir:-.}"
   for f in "${untracked_files[@]:-}"; do
     [[ -n "$f" ]] || continue
+    is_excluded_path "$f" && continue
     target="$f"
     [[ "$target" != /* ]] && target="$base_dir/$target"
     [[ -f "$target" ]] || continue

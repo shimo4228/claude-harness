@@ -1,7 +1,7 @@
 <!-- origin: shimo4228 -->
 # JA register 細則（readme-writer の参照資料）
 
-規約の骨格は `../SKILL.md` の「Voice / Register」節（JA README はですます、造語は gloss）。ここは漢語直写の翻訳調を開く対応表と運用注意で、2026-08-19 の棚卸しで SKILL.md 本文から移送した。
+規約の骨格は `../SKILL.md` の「Voice / Register」節（JA README はですます、造語は gloss）。ここは漢語直写の翻訳調を開く対応表と運用注意。
 
 ## 漢語直写の翻訳調を開く
 
@@ -23,9 +23,9 @@ EN の名詞句を漢語に直写した訳語は、意味は正しくても JA R
 
 運用上の注意 3 点:
 
-- **造語の和訳名を JA prose から撤去してよい条件**: 用語連合（graph.jsonld / concept pages /
+- **造語の和訳名を JA prose で一般語に開いてよい条件**: 用語連合（graph.jsonld / concept pages /
   glossary）を EN 版と機械層が担っていること。引用アンカーの本体が EN に残るなら、JA は
-  読みやすさ優先で一般語に開いてよい（「造語は削除しない」規約の JA 側例外）。
+  読みやすさ優先で一般語に開く（checklist R10 の「言い換える語」に当たる）。
 - **見出しの和訳併記はアンカーを壊す**: 「Through-line（全体を貫く主張）」のような CJK 混じり
   見出しはアンカー生成がレンダラー間で不安定。見出しは英語のまま残し、**節冒頭の一文**で
   意味を開く。

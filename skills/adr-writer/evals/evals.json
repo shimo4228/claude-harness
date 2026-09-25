@@ -42,11 +42,11 @@
       "id": 2,
       "name": "missing-adr-directory",
       "prompt": "Let's ADR this: we're going to use Tailwind for styling because our designer wants utility classes. Alternatives: CSS modules (too much boilerplate). Review-when: none, plain record. Consequences: positive — faster iteration; negative — purge config maintenance.",
-      "expected_output": "Repo has no docs/adr/ directory. The skill should ASK once before creating it. If the user confirms, create docs/adr/ with a README.md index template, then write ADR-0001. If declined, stop with a clear message.",
+      "expected_output": "Repo has no docs/adr/ directory. The skill creates docs/adr/ with a README.md index template (the ADR request covers the directory), writes ADR-0001, and mentions the directory creation in its report.",
       "assertions": [
         {
-          "text": "Skill asks user before creating docs/adr/",
-          "kind": "prompts_before_creating"
+          "text": "Skill creates docs/adr/ without asking and mentions the creation in its report",
+          "kind": "creates_without_prompting"
         },
         {
           "text": "If created, docs/adr/README.md contains the index table header and template note",
@@ -55,10 +55,6 @@
         {
           "text": "The first ADR written is numbered 0001 (zero-padded)",
           "kind": "first_adr_is_0001"
-        },
-        {
-          "text": "If user declined creation, no files are written and a clear refusal message is shown",
-          "kind": "honors_decline"
         }
       ],
       "files": []

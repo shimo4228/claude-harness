@@ -220,3 +220,40 @@ second_repo() {  # a clean sibling repo, returns its path on stdout
   run_hook "git -C $REPO commit -m 'chore: a' && git -C $other commit -m 'chore: b'"
   [ -z "$output" ]
 }
+
+# --- the digest sidecar is out of scope ------------------------------------
+# evals/baselines/*.ack.json (ADR-0089) holds SHA-256 digests of public prompt
+# files. detect-secrets' hex-entropy heuristic reads any 64-hex string as a
+# secret, and bypassing for it twice (2026-09-19, 2026-09-25) is the habit the
+# fixture note above warns about, so the path is excluded instead. The digest
+# is composed at call time; a sibling file outside the excluded
+# path carrying the same string must still block, or the exclusion is a hole.
+
+# Composed at call time (a 64-hex literal in this file would block every
+# commit touching it, as the AKIA fixture note explains): the SHA-256 of a
+# fixed word is high-entropy hex at runtime and plain text in the source.
+digest() { printf 'contemplative' | shasum -a 256 | cut -c1-64; }
+
+@test "a staged digest sidecar under evals/baselines is allowed" {
+  mkdir -p "$REPO/evals/baselines"
+  printf '{"baseline_prompt_templates_sha256":"%s"}\n' "$(digest)" > "$REPO/evals/baselines/x.ack.json"
+  git -C "$REPO" add evals/baselines/x.ack.json
+  run_hook "git -C $REPO commit -m 'chore: ack'"
+  [ -z "$output" ]
+}
+
+@test "an untracked digest sidecar swept in by git add -A is allowed" {
+  mkdir -p "$REPO/evals/baselines"
+  printf '{"sha":"%s"}\n' "$(digest)" > "$REPO/evals/baselines/x.ack.json"
+  run_hook "git -C $REPO add -A && git -C $REPO commit -m 'chore: ack'"
+  [ -z "$output" ]
+}
+
+@test "the same digest outside the excluded path is still blocked" {
+  # Quoted, as in the sidecar: detect-secrets' entropy plugins only read
+  # quoted strings, so a bare hex word is never a positive to begin with.
+  printf 'sha "%s"\n' "$(digest)" > "$REPO/notes.md"
+  git -C "$REPO" add notes.md
+  run_hook "git -C $REPO commit -m 'docs: notes'"
+  blocked
+}

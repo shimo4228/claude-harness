@@ -77,8 +77,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 Specialized agents in `agents/`, each with its own tool allowlist.
 
 - [prompt-writer](agents/prompt-writer.md): generates concise, focused prompts using a lightweight model (Haiku)
-- [readme-reviewer](agents/readme-reviewer.md): strict README / repo top-page review — LLM-read floor recovery, lead clarity, human hook, scannability, length discipline, visual effectiveness
-- [readme-clarity-reviewer](agents/readme-clarity-reviewer.md): first-contact reader clarity review for READMEs — coined-term budget, insider-context dependency, Japanese register; parallel partner of readme-reviewer
+- [readme-judge](agents/readme-judge.md): the single README judge for readme-writer — answers a fixed checklist from the README alone, freezes that verdict, then checks factual claims against the repo (file:line) and returns Publishable / Fix / Rewrite
 
 ## Rules
 
