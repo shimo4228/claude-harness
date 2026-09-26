@@ -1,14 +1,14 @@
 ---
 name: measurement-discipline
-description: 測定に基づく主張・閾値・ガード・実験結果を設計または評価するときの規律。Use when the user says 「この実験結果で判断していい？」「閾値を決めたい」「ガード/検査を足したい」「1 回通ったから大丈夫」, when a design places a numeric threshold or a suspicion flag, or when a claim rests on measured data. NOT for — 計器（read-only 分布・読み値）そのものの設計（CA repo の skill read-only-instruments が正本）、LLM 判定器の設計（llm-as-judge）、ループ構造の妥当性（loop-design-check）。
+description: 測定に基づく主張・閾値・ガード・実験結果・観察期間を設計または評価するときの規律。Use when the user says 「この実験結果で判断していい？」「閾値を決めたい」「ガード/検査を足したい」「1 回通ったから大丈夫」「観察期間はどれくらい」「いつゲートを開く」「shadow のまま何週待つ」「この RFC 塩漬けでは」「本番より良い」「本番と比べて」, when a design places a numeric threshold, a suspicion flag, or a wait-for-N-observations condition, when a candidate is compared against production, or when a claim rests on measured data. NOT for — 計器（read-only 分布・読み値）そのものの設計（CA repo の skill read-only-instruments が正本）、LLM 判定器の設計（llm-as-judge）、ループ構造の妥当性（loop-design-check）。
 user-invocable: true
 origin: shimo4228
-replaces: contemplative-agent の feedback memory 5 本（one-run-not-evidence / gate-on-evidence-not-calendar / saturated-guard-is-worse-than-none / no-numeric-caps / relevance-distribution、2026-08-25 昇格）
+replaces: contemplative-agent の feedback memory 5 本（one-run-not-evidence / gate-on-evidence-not-calendar / saturated-guard-is-worse-than-none / no-numeric-caps / relevance-distribution、2026-08-25 昇格）+ 速度設計 3 本（n の日数換算 / enforce-first / label-once、CA RFC-0047 から 2026-09-26 昇格）+ 本番比較 1 本（lab arm は本番の機構を写す、CA RFC-0046 の交絡から 2026-09-26 昇格）
 ---
 
 # Measurement Discipline
 
-測定の主張には、その測定が成立する条件を先に問う。5 原則、いずれも実地の失敗から
+測定の主張には、その測定が成立する条件を先に問う。8 原則、いずれも実地の失敗から
 （出所は CA repo での実測。原則自体はどの repo でも同じ形で壊れる）。
 
 ## 1. 1 回の成功は証拠でない
@@ -24,6 +24,19 @@ smoke 1 回で「機能した」と言って commit しない。stochastic な�
 見積もり、その観測が溜まったら進む**。暦ゲートは観測ゼロでも発火し、観測量ゲートは
 データが無ければ止まる — 止まるのが正しい。
 （出所: shadow 計器の enforcement 判断を「2 週間後」でなく判定数で切った経緯）
+
+観測数の決め方と開け方:
+
+- **n は事前登録した問いから導く**（率の精度なら二項の 95% CI 半幅 ≈ 1/√n、±6 pt なら
+  300）。「十分溜まったら」は n でない
+- **到達率で日数に換算して台帳に書く**（`再開条件: answered 300 行（60〜105 行/日、切替から
+  3〜5 日）`）。到達率は読みのたびに実測して幅で更新する — 予定日を書けない観測数条件は
+  照合先を欠く
+- **n 到達日にゲートを開く。週次の儀式は clock でない** — 儀式でしか開かないゲートは n の
+  何倍も待たせる（出所: CA relevance shadow、1 日 60〜105 行で n = 300 の問いに「4 土曜 or
+  1,000 行」の clock を置いていた。2026-09-26 読み）
+- **n が短い上限（既定 14 日）で満ちなければ延長でなく決める** — retire か、問いを小さくして
+  n を下げる。待つほど台帳で寝る
 
 ## 3. ガードの発火率 0% と 100% はどちらも設計ミス
 
@@ -44,10 +57,42 @@ smoke 1 回で「機能した」と言って commit しない。stochastic な�
 機能証明にならない（棄却分を見ていない）。分布・較正・閾値の議論は**フィルタ前の
 全量**か、少なくとも棄却側のサンプルを添えてから。
 
+## 6. 戻せる変更は切替えてから観察する
+
+既に許された行動のどれを取るかだけを変え、**誤りの向きが縮小側**（外向き作用が減る。取り逃しは
+後で拾える）で、設定除去で以後の判定を戻せる変更は enforce-first — 切替え、旧経路を n 行のあいだ
+並走させて両方を同じ行に記録し（paired）、n 到達日に keep / kill を決める。kill switch は設定不在。
+観察専用の待機段は、誤りの向きが拡大側・外へ出す形が変わる・I/O 面が広がる・戻せない変更にだけ
+払う。paired が比較できるのは同じ入力上の判定まで — 出た副作用は以後の入力集合を変えるので
+「旧経路だけで運用した履歴」は得られない。比較すべきは誤りの向きであって、可逆性の一括宣言ではない。
+（出所: CA relevance gate、would-be gate 率 0.22〜0.39 対 live 0.58 = 縮小側で enforce-first。2026-09-26 読み）
+
+## 7. 高い判定は 1 回買い、繰り返す測定は決定論で $0 にする
+
+天井モデルや人手のラベルは 1 回で凍結し（worktree でなく main tree — worktree の削除で行データが
+消えた実例）、以後の測定は安いスコアラ（temperature 0・logprobs・golden 比較）で回す。PR ごとに
+回らない指標は ratchet にならない。**再現性は仮定せず測る** — 同じ集合を 2 回回して run 間の差を
+noise floor にし、ratchet の線と閾値の近傍はその外に置く（temperature 0 の logprobs でも run 間で
+argmax 一致 0.913、max |Δp| 0.26 — CA S31、gemma4:e4b、2026-09-26）。**ラベルは判定の入力（prompt・モデル・参照する値層）を manifest に
+pin して凍結し、入力が変わったら失効させる**（再ラベルか ack）— 入力の正当な変化を退行と読まないため。
+（出所: CA `evals/` の pinned assets + `check_staleness.py`、RFC-0045 の行データ消失 2026-09-25）
+
+## 8. 本番と比べる lab arm は本番の機構を写す
+
+候補を本番と比べて「本番より良い」と言う測定は、候補と本番の差を**表で列挙**してから設計する
+（入力に見せる文・問いの形・答えの読み方・温度・審判が使う定義）。測りたい差は 1 つ。差が 2 つ以上
+あるなら 1 条件ずつ変える arm（梯子）を同じ標本で持ち、どの条件が差を担うかを対差で読む。
+審判（天井モデル・外部判定器）の問いと定義も本番の定義に揃える — 揃えないならそれは測定でなく
+定義の選択で、著者の判断として packet と RFC に事前登録する（script の docstring に埋めない —
+埋めた定義が審判の正解になり、修理がその上に建つ）。
+（出所: CA RFC-0045 → RFC-0046。identity のみ / 4 段 / logprobs の候補を identity + axioms / 0〜1 /
+数字生成の本番と比べ、審判も identity のみで採点 — 3 条件と定義が交絡した根拠の上に enforce が
+設計され、オーナーの指摘で梯子に戻した。2026-09-26）
+
 ## 使い方
 
 設計・レビューの場で該当原則を 1 つ名指しして問う（「これは原則 3 — このガードの
-発火率をどのデータで較正した？」）。5 原則を毎回全部なぞらない。
+発火率をどのデータで較正した？」）。8 原則を毎回全部なぞらない。
 
 ## 失効条件
 

@@ -16,14 +16,16 @@ will see when a gate goes quiet, and they date their own bug fixes.
 | Script | Fires on | Blocks when | Bypass |
 |---|---|---|---|
 | [`secret-scan-precommit.sh`](../hooks/secret-scan-precommit.sh) | Bash command containing `git … commit` | A line the command **will commit** looks like a credential. Prefers `detect-secrets`, falls back to regex. Machine-written digest-only files (`evals/baselines/*.ack.json`) are excluded from the scan | `SECRET_SCAN_BYPASS=1` |
-| [`verify-precommit.sh`](../hooks/verify-precommit.sh) | same | The repo's own `.claude/verify.sh --staged` exits non-zero (other than the codes below) | `VERIFY_BYPASS=1` |
+| [`verify-precommit.sh`](../hooks/verify-precommit.sh) | same | The repo's own `.claude/verify.sh --staged` exits non-zero (other than the codes below), or — in a repo whose gate you approved — the gate has gone missing or can no longer be checked | `VERIFY_BYPASS=1` |
 | [`bandit-precommit.sh`](../hooks/bandit-precommit.sh) | same | Staged `.py` trips bandit at `-ll -ii` (MEDIUM severity + MEDIUM confidence) | `BANDIT_SCAN_BYPASS=1` |
 | [`ruff-format-precommit.sh`](../hooks/ruff-format-precommit.sh) | same | Staged `.py` fails `ruff format --check`. Checks only, never rewrites | `RUFF_FORMAT_BYPASS=1` |
 | [`review-chain-notice.sh`](../hooks/review-chain-notice.sh) | `git … commit`/`revert`/`merge` | Never — injects an advisory asking whether review and verify ran | — |
 
-Bypasses must sit at the **head** of the command string, in env-prefix position
-(`SECRET_SCAN_BYPASS=1 git commit -m …`). A substring match anywhere would let a
-mention inside a commit message disable the gate.
+Bypasses must sit at the **head** of the whole command string, in env-prefix
+position (`SECRET_SCAN_BYPASS=1 git commit -m …`). A substring match anywhere
+would let a mention inside a commit message disable the gate, and so would a
+line-anchored match: a multi-line message whose later line starts with the flag
+does not count either.
 
 The scan target is the interesting part of the secret hook. Because PreToolUse
 fires *before* the command runs, reading the staged diff would see nothing at all
@@ -55,7 +57,8 @@ Three shared parts ship alongside:
   approval ledger described below.
 
 `bandit-precommit.sh` and `ruff-format-precommit.sh` **stand down entirely** in a
-repo with an executable `.claude/verify.sh`, on the theory that a repo which owns
+repo that has a `.claude/verify.sh` file (its presence decides, not its exec bit —
+the verify gate never relies on the mode bit either), on the theory that a repo which owns
 its gate should not have tool choices imposed from outside. Note what that means
 together with the approval model below: in a repo whose gate you have **not**
 approved, all three Python-side gates are off at once — verify because it will
@@ -110,9 +113,10 @@ skills inline). If you run a single model tier, it simply never fires.
 ## Install
 
 The hooks resolve their shared parts relative to their own location, and
-`verify-precommit.sh` hardcodes `$HOME/.claude/scripts/hooks/verify_allow.py`.
-**Install under `~/.claude` or the verify gate silently stops running** — it
-cannot find its ledger, so it warns on stderr and allows every commit.
+`verify-precommit.sh` finds `verify_allow.py` the same way, at
+`../scripts/hooks/` from the hook. **Keep `hooks/` and `scripts/hooks/` side by
+side (the layout below, under `~/.claude`) or the verify gate stops running** —
+it cannot find its ledger, so it warns on stderr and allows every commit.
 
 ```bash
 git clone https://github.com/shimo4228/claude-harness.git ~/.claude-harness
@@ -208,6 +212,19 @@ python3 ~/.claude/scripts/hooks/verify_allow.py revoke /path/to/repo
 Editing `verify.sh` invalidates the approval, so you re-read and re-approve.
 The ledger lives at `~/.claude/verify-allow.json`, outside every repo it governs.
 
+Once approved, a gate cannot quietly disappear. If a repo in the ledger loses its
+`.claude/verify.sh` (deleted, a dangling symlink, unreadable, or a symlink out of
+the repo), the commit is blocked with the two ways out: restore the gate, or
+`revoke` the repo if you meant to retire it. A repo that never had a gate is
+still let through — the ledger is what tells the two apart.
+
+A linked `git worktree` of an approved repo is looked up under its main
+checkout's entry, and the bytes checked and run are the worktree's own
+`verify.sh`: identical bytes run, different bytes are treated as unapproved (so
+a branch that edits the gate is approved on the main checkout after the merge,
+not in the worktree). Only worktrees that git itself has registered count — a
+`.git` file that merely names an approved repo does not.
+
 **What this does not protect against.** The ledger is unsigned plaintext, so any
 process running as you can forge an approval. An attacker at that level can
 rewrite `~/.claude/hooks` too. The threat model is untrusted *repository
@@ -219,8 +236,10 @@ content*, not a compromised local account — the same trust level as `~/.zshrc`
 bats ~/.claude/tests/
 ```
 
-All five hooks are covered, plus the shared extractor. The tests hardcode
-`$HOME/.claude/hooks/…`, so they only pass after the install above, and they
+All five hooks are covered, plus the shared extractor. Most tests locate the
+hook relative to the test file (`../hooks/…`); `review-chain-notice.bats` and
+`task-claims.bats` still hardcode `$HOME/.claude/hooks/…` and pass only after
+the install above. All of them
 invoke each hook as `bash <path>` — the way `settings.json` does — rather than
 depending on a mode bit that production never consults.
 
@@ -228,8 +247,8 @@ depending on a mode bit that production never consults.
 |---|---|
 | `git-target-extraction.bats` | Repo extraction: the quoted-span and escaped-quote hijacks, the `git -C … add && git -C … commit` spelling, and that a compound commit yields *both* targets in either order |
 | `secret-scan-precommit.bats` | That the scan target comes from what the command will commit rather than from what is staged when the hook fires; that a hostile `diff.external` or `diff.textconv` neither runs nor blinds the scan; that a secret in either half of a compound commit is caught |
-| `verify-precommit.bats` | That an unapproved gate is **never executed** and never blocks; that editing a gate revokes its approval; that a gate symlinked outside the repo is refused; that any unexpected non-zero exit blocks rather than waving the commit through; and that the gate is handed `--staged`, the repo root as cwd, and `VERIFY_REPO_ROOT` |
-| `bandit-precommit.bats` | That the **index** is scanned rather than the working tree; that MEDIUM+ blocks while LOW does not; that an executable `.claude/verify.sh` triggers the stand-down and a non-executable one does not; fail-soft when no scanner resolves |
+| `verify-precommit.bats` | That an unapproved gate is **never executed** and never blocks; that editing a gate revokes its approval; that a gate symlinked outside the repo is refused; that any unexpected non-zero exit blocks rather than waving the commit through; and that the gate is handed `--staged`, the repo root as cwd, and `VERIFY_REPO_ROOT`; that an approved repo whose gate is lost blocks; that a registered linked worktree runs the approved bytes while a forged `.git` file does not; that a bypass flag inside the message never counts |
+| `bandit-precommit.bats` | That the **index** is scanned rather than the working tree; that MEDIUM+ blocks while LOW does not; that a `.claude/verify.sh` file triggers the stand-down whatever its mode bit, while a directory of that name does not; fail-soft when no scanner resolves |
 | `ruff-format-precommit.bats` | That a blocked commit leaves the working tree and index byte-identical (check only, never rewrite); that the repo's own `ruff.toml` / `pyproject.toml` is honoured; that each repo of a compound commit is judged by its own config |
 | `review-chain-notice.bats` | Which command shapes trigger the advisory |
 | `task-claims.bats` | The ledger CLI end to end (claim/release fold, fail-closed cross-session refusal, lease takeover marks, producer citation gate, `RFC-NNNN` ids) plus all three hook trigger paths — and that a populated single-table ledger is never silently hidden when `rfcs/` exists |

@@ -15,7 +15,9 @@
 #   4. index, not working tree — same reasoning as the bandit hook.
 # Plus the 2026-08-08 remediations: all compound-commit targets, and textconv.
 
-HOOK="$HOME/.claude/hooks/ruff-format-precommit.sh"
+# hook は BATS_TEST_DIRNAME から引く ($HOME 固定だと worktree の版でなく main の版を検査する。
+# 理由は verify-toolchain-trust.bats のヘッダ、先例は b522d0d)
+HOOK="${BATS_TEST_DIRNAME}/../hooks/ruff-format-precommit.sh"
 
 setup() {
   TMP="$(mktemp -d)"
@@ -180,10 +182,21 @@ stage_py() {  # stage_py <repo> <file> <content-fn>
   [ -z "$output" ]
 }
 
-@test "a non-executable .claude/verify.sh does not trigger the stand-down" {
+# The stand-down keys on existence (-f), the definition verify-precommit.sh uses
+# (ADR-0082) — reasoning in bandit-precommit.bats. Until 2026-09-26 the test here
+# was "a non-executable .claude/verify.sh does not trigger the stand-down"; it is
+# replaced by the inverse below, not dropped.
+@test "a non-executable .claude/verify.sh also makes the hook stand down" {
   stage_py "$REPO" bad.py unformatted
   mkdir -p "$REPO/.claude"
   printf '#!/bin/sh\nexit 0\n' > "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'feat: x'"
+  [ -z "$output" ]
+}
+
+@test "a directory named .claude/verify.sh does not trigger the stand-down" {
+  stage_py "$REPO" bad.py unformatted
+  mkdir -p "$REPO/.claude/verify.sh"
   run_hook "git -C $REPO commit -m 'feat: x'"
   blocked
 }

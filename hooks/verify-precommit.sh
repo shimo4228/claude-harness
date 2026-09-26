@@ -29,7 +29,10 @@ INPUT=$(cat)
 COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || COMMAND=""
 
 [[ -z "$COMMAND" ]] && exit 0
-printf '%s' "$COMMAND" | grep -qE '^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*VERIFY_BYPASS=1([[:space:]]|$)' && exit 0
+# bash の =~ で文字列全体の先頭に固定する。grep は行単位で `^` が改行ごとに一致するので、複数行の
+# commit message の行頭に書いた文字列でも外れていた (2026-09-26 security review MEDIUM)
+bypass_re='^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*VERIFY_BYPASS=1([[:space:]]|$)'
+[[ "$COMMAND" =~ $bypass_re ]] && exit 0
 
 # git commit を含むコマンドのみ対象 (secret-scan-precommit.sh と同一のマッチ規則)。
 # パイプ区切り (;|&) は跨がない — "git log | grep commit" 除外
@@ -50,16 +53,78 @@ repo_dir=$(git_target_dir "$COMMAND")
 toplevel=$(git -c core.fsmonitor= -c core.hooksPath= \
   -C "$repo_dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
 GATE="$toplevel/.claude/verify.sh"
-# ゲートを持たない repo は素通し (導入は skill: verify-bootstrap)
-[[ -x "$GATE" ]] || exit 0
 
 # **承認済みのバイト列だけを実行する** (direnv allow 型)。hook は permission プロンプトを
 # 経ずに走るので、「ファイルが存在する」を「実行してよい」と読み替えると、clone しただけの
 # 外部 repo でコードが自動実行される。既存方針 (bandit-precommit.sh: repo 内バイナリを RCE
 # 経路として探さない) との整合も含め、2026-07-31 の security-reviewer が CRITICAL とした経路。
 # 照合と起動を verify_allow.py の同一プロセスに寄せてある — hook 側で照合してから別途実行すると
-# 照合後・実行前の差し替え窓 (TOCTOU) が開く (同日の python-reviewer が HIGH として指摘)
-ALLOW="$HOME/.claude/scripts/hooks/verify_allow.py"
+# 照合後・実行前の差し替え窓 (TOCTOU) が開く (同日の python-reviewer が HIGH として指摘)。
+# 起動器は hook と同じ harness の版を引く (共有部品の source と同じ ${BASH_SOURCE[0]%/*} 相対)
+# linked worktree の toplevel は台帳に無い別 path — 台帳の key は起動器が「その worktree が登録
+# されている main worktree」で引き、照合・実行するのは worktree 自身の verify.sh のバイト列
+# (verify_allow.py の ledger_key。hash が違えば 70 = 未承認)。hook は toplevel を渡すだけ
+ALLOW_DIR="${BASH_SOURCE[0]%/*}/../scripts/hooks"
+ALLOW_DIR=$(cd "$ALLOW_DIR" 2>/dev/null && pwd -P) || ALLOW_DIR="${BASH_SOURCE[0]%/*}/../scripts/hooks"
+ALLOW="$ALLOW_DIR/verify_allow.py"
+
+# 承認済み repo のゲートが「実行できない形で」消えた = exit 71 と同じく既知のゲートが眠った状態
+# (ADR-0059 の理由、ADR-0082)。台帳に載っていれば block を出して exit、載っていなければ戻る。
+# 経路は 2 つ: ゲートが無い (削除・壊れた symlink・ディレクトリ化) と、あるのに照合できない
+# (exit 72 = 読めない・repo 外を指す symlink)。台帳が壊れている (73) ときは承認の有無を判定
+# できないので、通知して未承認と同じに扱う (run 経路の load_or_empty と同じ側)。起動器が無ければ
+# 判定できないので戻る (その先の既存経路と同じ扱い)
+# known は一致した台帳の key を stdout に出す。linked worktree では key が main worktree の path
+# で toplevel と違い、revoke の対象は key の方 (verify_allow.py の ledger_key)
+block_if_known_gate_lost() { # $1 = 何が起きたか (reason に載せる短い説明)
+  [[ -f "$ALLOW" ]] || return 0
+  local known_rc=0 payload key
+  key=$(python3 "$ALLOW" known "$toplevel" 2> /dev/null) || known_rc=$?
+  if [[ $known_rc -eq 73 ]]; then
+    printf '[verify-precommit] 承認台帳が壊れているため、%s のゲート消失が承認済み repo のものか判定できません\n' \
+      "$toplevel" >&2
+  fi
+  [[ $known_rc -eq 0 ]] || return 0
+  [[ -n "$key" ]] || key="$toplevel"
+  # linked worktree (key != toplevel) では revoke が main と全 worktree の承認を外すので、第一の
+  # 出口にしない — branch に戻すか、verify.sh 導入前の commit なら VERIFY_BYPASS。廃止は merge 後
+  payload=$(WHAT="$1" ALLOW="$ALLOW" TOPLEVEL="$toplevel" KEY="$key" python3 -c '
+import json, os
+top, key = os.environ["TOPLEVEL"], os.environ["KEY"]
+head = (
+    "[verify] 承認台帳に載っている repo ({}) の機械ゲート .claude/verify.sh を実行できません"
+    " ({})。ゲートが走らないので commit を止めます。\n"
+).format(top, os.environ["WHAT"])
+if key != top:
+    body = (
+        "この repo は main worktree {} に登録された linked worktree で、承認は main のものです。\n"
+        "次の一手: 誤って消えた・壊れたなら、この branch の verify.sh を main と同じ内容の通常の"
+        "ファイルとして戻してください (再承認は不要)。verify.sh 導入前の commit から作った worktree"
+        " なら、ユーザー確認のうえコマンド先頭に VERIFY_BYPASS=1 を付けてください。"
+        "ゲートを廃止するなら merge 後に main で、人間が\n"
+        "  python3 {} revoke {}\n"
+        "を実行してください (main と全 worktree の承認が外れます。台帳の変更は人間の操作)。"
+    ).format(key, os.environ["ALLOW"], key)
+else:
+    body = (
+        "次の一手: 誤って消えた・壊れたなら verify.sh を通常のファイルとして戻してください"
+        " (内容が承認時と同じなら再承認は不要)。ゲートを廃止するなら、ユーザーに伝えて人間が\n"
+        "  python3 {} revoke {}\n"
+        "を実行してください (台帳の変更は人間の操作)。"
+        "緊急時はユーザー確認のうえコマンド先頭に VERIFY_BYPASS=1 を付けてください。"
+    ).format(os.environ["ALLOW"], key)
+print(json.dumps({"decision": "block", "reason": head + body}, ensure_ascii=False))
+') || payload='{"decision":"block","reason":"[verify] an approved repo cannot run .claude/verify.sh and JSON assembly failed — restore the gate or ask the user to revoke it via verify_allow.py"}'
+  printf '%s\n' "$payload"
+  exit 0
+}
+
+# ゲートの有無は存在 (-f) で見る。mode bit は見ない — 実行するのは承認済みバイト列の 0700 の
+# 一時 copy なので、repo 側の -x は実行可否と無関係。不在のときは台帳で分ける: 載っていれば
+# 上の関数が止め、載っていなければゲート未導入として素通し (導入は skill: verify-bootstrap)
+[[ -f "$GATE" ]] || block_if_known_gate_lost "ファイルが無い: 削除・壊れた symlink 等"
+[[ -f "$GATE" ]] || exit 0 # hooklint: fail-open 台帳に無い repo のゲート不在 = 未導入。承認済み repo の消失は直前の行が止める
+
 if [[ ! -f "$ALLOW" ]]; then
   printf '[verify-precommit] 承認台帳 (%s) が無いためゲートを実行しません\n' "$ALLOW" >&2
   exit 0
@@ -95,7 +160,7 @@ if [[ $rc -eq 0 ]]; then
   # 読めないだけで**ゲート未実行のまま commit が通る** fail-open になる
   # (2026-08-15 の code review / security review が独立に HIGH として実証)。
   # shellcheck source=hooks/_advisory-common.sh
-  source "${BASH_SOURCE[0]%/*}/_advisory-common.sh" || exit 0
+  source "${BASH_SOURCE[0]%/*}/_advisory-common.sh" || exit 0 # hooklint: fail-open ゲートは rc=0 で実行・PASS 済み。失うのは PASS 時の advisory だけ
 
   # 全文の取り方に repo 由来のパスを書かない。hook は tool 出力より信用される経路で、
   # そこに repo 由来の実行可能パスを「実行しろ」の形で置くのは task-claims-reminder.sh
@@ -123,6 +188,15 @@ case $rc in
   70)
     # 台帳に無い repo (clone 直後の外部 repo 含む)。commit は塞がない — 未承認 repo で
     # 作業できなくなる方が害が大きい。通知だけ出す
+    # 例外: main が承認済みの linked worktree で verify.sh が違う (known の key が toplevel と違う)。
+    # worktree の path を approve すると使い捨ての key が台帳に残り、main の key より優先される
+    # (ADR-0083 の却下案) — 承認は merge 後に main で行うよう案内する
+    wt_key=$(python3 "$ALLOW" known "$toplevel" 2> /dev/null) || wt_key=""
+    if [[ -n "$wt_key" && "$wt_key" != "$toplevel" ]]; then
+      printf '[verify-precommit] %s\n  ゲートを実行しませんでした (linked worktree の verify.sh が main の承認済みの版と違う)。\n  この worktree の path は承認せず、merge 後に main で承認してください:\n    python3 %s approve %s\n' \
+        "$out" "$ALLOW" "$wt_key" >&2
+      exit 0
+    fi
     printf '[verify-precommit] %s\n  ゲートを実行しませんでした。内容を読んで問題なければ承認してください:\n    python3 %s approve %s\n' \
       "$out" "$ALLOW" "$toplevel" >&2
     exit 0 ;;
@@ -150,6 +224,8 @@ print(json.dumps({
     printf '%s\n' "$payload"
     exit 0 ;;
   72)
+    # 台帳に載っている repo なら、承認済みゲートが照合できない形に変わった = 眠ったゲート
+    block_if_known_gate_lost "照合できない: 読めない、または repo 外を指す symlink"
     printf '[verify-precommit] %s\n  ゲートの経路が不正です (repo 外を指す symlink 等)。承認ではなく調査してください: %s\n' \
       "$out" "$GATE" >&2
     exit 0 ;;

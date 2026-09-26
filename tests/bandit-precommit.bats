@@ -14,7 +14,9 @@
 #
 # bandit is resolved through uvx here, as it is in normal use on this machine.
 
-HOOK="$HOME/.claude/hooks/bandit-precommit.sh"
+# hook は BATS_TEST_DIRNAME から引く ($HOME 固定だと worktree の版でなく main の版を検査する。
+# 理由は verify-toolchain-trust.bats のヘッダ、先例は b522d0d)
+HOOK="${BATS_TEST_DIRNAME}/../hooks/bandit-precommit.sh"
 
 setup() {
   TMP="$(mktemp -d)"
@@ -135,14 +137,27 @@ stage_py() {  # stage_py <repo> <file> <content-fn>
   [ -z "$output" ]
 }
 
-# The stand-down keys on the executable bit alone and never consults the approval
-# ledger, so this is *not* the same repo state as "the verify hook will run it".
-# Pinned because the combination is what leaves an unapproved repo with all three
-# Python-side gates silent — documented behaviour, not an accident.
-@test "a non-executable .claude/verify.sh does not trigger the stand-down" {
+# The stand-down keys on the gate's existence (-f) — the same definition
+# verify-precommit.sh uses since ADR-0082, which runs a 0700 copy of the approved
+# bytes and so ignores the repo file's mode bit. It never consults the approval
+# ledger, so this is *not* the same repo state as "the verify hook will run it":
+# an unapproved repo has all three Python-side gates silent — documented
+# behaviour, not an accident. Until 2026-09-26 the test here was "a non-executable
+# .claude/verify.sh does not trigger the stand-down", pinning the old -x
+# definition; it is replaced by the inverse below, not dropped.
+@test "a non-executable .claude/verify.sh also makes the hook stand down" {
   stage_py "$REPO" bad.py vulnerable
   mkdir -p "$REPO/.claude"
   printf '#!/bin/sh\nexit 0\n' > "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'feat: x'"
+  [ -z "$output" ]
+}
+
+# -x is true for a directory (search bit); -f is not. A directory is not a gate
+# verify-precommit.sh can run, so the scan must not stand down for it.
+@test "a directory named .claude/verify.sh does not trigger the stand-down" {
+  stage_py "$REPO" bad.py vulnerable
+  mkdir -p "$REPO/.claude/verify.sh"
   run_hook "git -C $REPO commit -m 'feat: x'"
   blocked
 }

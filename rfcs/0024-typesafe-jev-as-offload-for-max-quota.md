@@ -199,3 +199,4 @@ ADR-0074 の観測量で読んで、読めなければ外す。function hooks（
 可能だが（`prompt.attachment` の `skill_listing`）、作り込みは沼になるので**やらない**と著者が決めた。
 公開 repo の README は、同じ実装を考える人の参考になるよう、効きにくい条件と実測をそのまま書く。
 
+**2026-09-25 追記（候補の外から 1 本、本番）**: 候補 1〜5 に無い使い方を 1 本、本番で置いた — RFC と ADR の review-when を jev-research-pipeline の新しいノートと Jev で毎朝照合する launchd job（`skills/review-when-watch/`、[ADR-0080](../docs/adr/0080-review-when-watch-production-first.md)）。Max 枠の判定を移すのではなく、今は誰もしていない照合を安い判定で新しく始める形で、本 RFC の動機とは別の価値（見直し条件の見落としを減らす）に立つ。著者の指示で shadow を経ずに本番とし、全組の生の読み値を RFC-0025 の最小形のログに残す。

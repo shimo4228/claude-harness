@@ -10,8 +10,10 @@ origin: shimo4228
 
 The searcher reports what exists outside and how it differs from our situation. The
 caller — the main loop, a build session, an RFC author — reads the report and decides what
-to adopt, adopt in part, or leave. A partial fit is a result: something found rarely drops in
-unchanged, and a piece that transfers is worth the search (RFC-0022).
+to adopt, adopt in part, or leave. An established candidate that matches the need is adopted
+by default; adopt-in-part means taking the library's code for one piece (its parser, its data
+model) inside our own control flow, and a piece that transfers is worth the search (RFC-0022).
+Building our own is chosen when the report names the gap no candidate fills.
 
 ## 0. State the question in text
 
@@ -19,6 +21,10 @@ Before the first tool call, write 2–3 sentences of plain assistant text: the q
 row(s) of the table below it belongs to, and the constraints (language, existing deps,
 license, budget). Tool arguments may mirror this text; the chat text is what lets the user
 redirect before effort is spent.
+
+When the need is code to write — an adapter, an API client, a parser, a utility — state it as
+a Library / tool choice: which established library already does this. Asking which endpoint
+to call or which algorithm to use yields an answer that can only be hand-coded.
 
 ## 1. Check this repo first
 
@@ -32,7 +38,7 @@ runs; a question that fits two uses both rows.
 
 | Type | Where to look | What counts as evidence | Stop when |
 |---|---|---|---|
-| Library / tool choice | registries (npm / PyPI / crates), official docs, release pages | last release date, license, dependency weight, the specific feature match | 2–3 candidates have primary facts |
+| Library / tool choice | registries (npm / PyPI / crates), official docs, release pages | last release date, adoption (downloads, dependents, maintainers), license, dependency weight, the specific feature match, and whether it can run on our own HTTP client / runtime | 2–3 candidates have primary facts |
 | Prior implementation | GitHub code search, skill / agent / MCP catalogs, this harness (Glob) | the actual file (SKILL.md, source) read, with path or URL | 2 actual files read, or 3 independent sources agree |
 | Claim of a paper / post | the primary text (arXiv, official blog, the repo file itself) | subject, premises (data, scale, environment), kind of evidence, how ours differs | subject and premises are written down |
 | Spec / official behavior | official docs, `--help`, changelog, running it | version and date, the observed result | one version-stamped primary fact |
@@ -63,8 +69,14 @@ terms / sources / as-of date — including what was not located
 ## Found
 per item: what (URL) / subject and premises / kind of evidence (experiment, benchmark,
 adoption, opinion) / how our situation differs / the part that transfers
+## Verdict
+per need: Adopt <candidate> / Adopt-part <candidate: the piece> / Build — the gap no
+candidate fills
 ## Still unknown
 ```
+
+An Adopt or Adopt-part that adds a dependency goes through the dependency intake of skill:
+`implementation-chain` before it lands.
 
 ## 4. Quick vs Full
 

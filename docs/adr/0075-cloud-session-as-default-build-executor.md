@@ -136,6 +136,11 @@ accepted
   local build 10 本の digest 記録より高ければ、packet の形（自己完結）・review（`/code-review` 1 本）・
   effort（high 固定）のどれが効いたかを分けて再訪する。実行者・packet・review が同時に変わったので、
   差を effort 単独に帰さない。
+
+  > **注記（2026-09-26, [ADR-0081](./0081-per-packet-effort-and-bounce-classification.md)）**: cloud の effort は high 固定ではなかった — 2026-09-26 の
+  > probe（CLI 2.1.283）で、作成時の `--effort` は転送されず既定は medium。effort は packet ごとに
+  > judge が選び、`cloud-dispatch.sh --effort` が `/effort` で適用する。bounce 率を effort 別に読む材料は
+  > digest の build 行（effort / bounce 有無 / 分類）にある。
 - anthropics/claude-code#87235（slash 入り branch を revision に取れない）が `claude/` branch の再開
   （新 session に `--ref claude/…`）を壊すなら、差し戻しを既存 session への送信に限定する。
 
@@ -166,6 +171,9 @@ accepted
   （CLI 2.1.281 に flag はある）。転送が確認できたら packet 側でなく script 側に置く。再訪条件は
   Review-when の bounce 率。
 
+  > **注記（2026-09-26, [ADR-0081](./0081-per-packet-effort-and-bounce-classification.md)）**: 実測で転送されない（CLI 2.1.283）と分かり、既定はすでに medium
+  > だった。effort は packet の `Effort:` 行で judge が選び、script が作成後の `/effort` で適用する形に決めた。
+
 ## Consequences
 
 ### Positive
@@ -184,6 +192,9 @@ accepted
   を再訪する。
 - cloud の effort は claude.ai 側の既定（Opus 5.5 / high、2026-09-24 実測）。local build の medium 試行は
   local 限定になる。
+
+  > **注記（2026-09-26, [ADR-0081](./0081-per-packet-effort-and-bounce-classification.md)）**: 2026-09-26 の probe では cloud session の既定は medium
+  > （`CLAUDE_EFFORT=medium`）。effort は packet ごとに選び、cloud にも local にも適用する。
 - cloud build は `~/.claude/metrics/*-usage.jsonl` に行を残さない — skill / agent の usage 読み値は
   local session の lower bound になる（consumer の契約「欠落は unmeasured」は不変）。
 - 公開 repo では検収前の branch・PR が公開される（Decision 5）。ラベル混入は push 後に CI が検知する

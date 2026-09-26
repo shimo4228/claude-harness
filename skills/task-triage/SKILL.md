@@ -69,7 +69,11 @@ For every task not in dead-band, in this order — stop at the first that decide
    — never a dispatch.
 2. **Condition** — for `blocked`, did the 照合先 fire? "Fired" and "the event source was
    deleted" are different (`obsoleted`). A condition that cannot be observed anymore drops the
-   task out of `blocked`.
+   task out of `blocked`. When the 照合先 is an observation count (`blocked` or `in_progress`),
+   also ask measurement-discipline §2: is n larger than the pre-registered question needs, has
+   the expected date passed, or is the condition calendar-shaped ("next Saturday", "in two
+   weeks")? Any yes → re-size n or retire. Such a task is never in dead-band — its expected date
+   moves with the measured arrival rate even when the condition text does not.
 3. **Worth** — 複雑性 × 価値 × 使用頻度. Cheap now that dispatch is cheap: a 20-minute build
    session changes the calculus for small `chore` rows that were parked as "単独では着手しない".
    For contested build-or-not, hand the question to the `architect` agent.
@@ -126,7 +130,7 @@ are the exceptions, and a task that matches none of them goes to the cloud.
 
 | The task needs | Executor |
 |---|---|
-| Only the GitHub clone (tracked files), a Linux toolchain, and the repo's CI job that runs `verify.sh` | **Claude Code cloud session** — `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file>` |
+| Only the GitHub clone (tracked files), a Linux toolchain, and the repo's CI job that runs `verify.sh` | **Claude Code cloud session** — `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file> --effort <level>` |
 | Local data or a local model (`~/.config/moltbook`, `.notes/`, Ollama, an eval that reads them), a macOS-only toolchain (Swift / iOS, launchd, `security`), or a repo with no github.com remote or no CI running `verify.sh` | Local. *Measurement / read-only / docs-only* → `Agent(model: opus, isolation: worktree)`; three or more with one setup → the Workflow tool (`pipeline`, build and judge as separate `agent()` calls, `schema` for the reading). *Implementations that need hooks, skills and permission prompts* → `spawn-session` (Herdr, Remote Control) |
 | A private number in the packet itself (a Jev row — anything `tests/test_jev_results_stay_private.py` guards, or `.notes/` contents) | Local. A cloud packet is the session's first message, and in a public repo the branch, commits and PR are public before acceptance — the packet is written like an `rfcs/` entry (ADR-0049): pointers, not private contents |
 | harness rules / hooks / permissions / a gate script (`.claude/verify.sh`, `.github/`) | Not dispatched — the human's diff (`boundary.md`) |
@@ -144,15 +148,26 @@ Per task or bundle, cloud path:
    `medium`, the reviewer instruction written out), the must-nots, and the commit-body report.
    The packet has no harness default behind it: the build does what the Goal needs and hands
    anything wider back as `Proposed tasks`.
-   **Four items only the author can answer** — the acceptance line when the task file has none,
-   the styles a UI change must leave out, the metric and target for a performance task, and
-   whether a performance task stops at its target or keeps improving to the time cap. When the author's request and the task
+   **Set the packet's `Effort:` line** from the table in `references/packet-template.md`, by how
+   dense the edge cases are in the diff the task asks for (not by task type alone), with the
+   reason in one phrase. Fill it on every packet: without `--effort` a cloud session runs at the
+   server-side default (`medium` on 2026-09-26, `high` two days earlier — ADR-0081).
+   **Five items only the author can answer** — the acceptance line when the task file has none,
+   the styles a UI change must leave out, the metric and target for a performance task,
+   whether a performance task stops at its target or keeps improving to the time cap, and, for a
+   measurement that compares a candidate against production, the definition of the ground truth
+   (what counts as correct — e.g. what "my domain" means) next to the enumerated differences
+   between the candidate arm and production (measurement-discipline §8: one difference per arm,
+   a ladder when there are more). When the author's request and the task
    file leave one open, write a proposed default into the packet and show it before starting, as
    branches in one message (「指示に無かったのでこう置いた: A なら…、B なら…。A で進める」—
    ADR-0076); start after the author's OK. An unattended cycle lists such a task in the digest as
    waiting for that OK and starts nothing, as with a public repo in step 4.
-4. Start: `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file>` prints
-   `session=<id> url=<url>` and appends it to `~/.claude/logs/cloud-dispatch.jsonl`. It works from
+4. Start: `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file> --effort <the packet's
+   Effort>` prints `session=<id> url=<url>` and appends it (with the effort) to
+   `~/.claude/logs/cloud-dispatch.jsonl`. With `--effort` the session is created with
+   `/effort <level>` as its first message and the packet follows as the second, because `--effort`
+   given at creation does not reach the cloud session (ADR-0081). It works from
    the Bash tool (it supplies the pty `--cloud` needs), so an unattended cycle dispatches the
    same way — **for a private repo**. A public repo's branch and PR are public from the build's
    first push, and publication is the human's side (`boundary.md`; ADR-0043 red line 3 with its
@@ -182,13 +197,19 @@ label; packet file outside the tracked tree), using the packet's *local* lines (
 measurement variant), with the review chain delegated to `implementation-chain` (the harness
 is present there). `spawn-session`:
 `bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus` →
-`herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000` — the first prompt
-often returns `timeout` while landing fine; confirm with `herdr agent read`. `agent_status: done`
+`herdr agent prompt "<agent-name>" "/effort <the packet's Effort>" --wait --timeout 60000` — the
+first prompt often returns `timeout` while landing fine; confirm the effort line with `herdr agent
+read` before the next prompt (an unsubmitted `/effort` would swallow the packet) →
+`herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000`. `agent_status: done`
 means the REPL is idle, **not** that the work is done. Hooks, the chain's skills and a direct
 `verify.sh` run behave inside an Agent-tool subagent as they do in the main session (measured
 2026-08-29, RFC-0016). Known cost: the worktree isolation guard hard-refuses shell `for` loops
 and heredocs — fold a loop into one command over several paths, or write the analysis to a file
 and run `python3 <file>`.
+Effort on the local path: the Agent tool (and a Workflow `agent()` call) takes a model but no
+effort, so such a build runs at whatever effort the harness gives it (unmeasured — its Report's
+`Effort:` line is the reading): measurement, read-only and docs-only packets take that; any other
+packet goes to `spawn-session`.
 
 Cloud builds leave no rows in `~/.claude/metrics/skill-usage.jsonl` / `agent-usage.jsonl` (no
 harness hooks run there): `skill-comply`, `skill-stocktake` and `agent-stocktake` readings cover
@@ -221,6 +242,20 @@ The build session's report is a claim. Before merging:
   branch to continue on, or let the human decide at the digest. Local path: the same message to
   the same session — `herdr agent prompt "<agent-name>" "<message>"` for a `spawn-session` pane,
   `SendMessage` to the Agent for an Agent-tool build; the branch stays.
+- **Classify every bounce in one word** — the word decides the effort of the retry:
+  - **見落とし** (a missed edge case, a bug the build's tests missed) → first send
+    `/effort <one level up>` to the same session, then the bounce message (cloud:
+    `claude -p "/effort <level>" --cloud <session-id> --output-format json`; `spawn-session`:
+    `herdr agent prompt "<agent-name>" "/effort <level>"`). One level up stops at `xhigh`; `max`
+    only on the author's word. An `Agent` build cannot be raised: bounce at the same effort and
+    write `not raised (Agent)` in its §5 line.
+  - **読み違い** (a misread requirement, the wrong approach) → keep the effort; the bounce message
+    restates the spec.
+  - **gate・rebase** (a gate file touched, a rebase needed) → recorded in the §5 line, left out of
+    ADR-0081's Review-when count.
+  Why: effort cuts the missing kind and moves the misreading kind far less, or the wrong way —
+  Fable 5.1 low→max, missed a case 59→24 and bug its tests missed 40→14, against made the wrong
+  call 133→107 and picked the wrong reading 25→47 (https://claude.dev/blog/spending-your-effort/, 2026-09-25).
 - **Compliance with the packet and the chain**: did the build run what its packet's Review
   section names — cloud: built-in `/code-review` at effort `medium` and nothing else; local: the
   chain for its type per `implementation-chain` — keep the must-nots, and stop at the acceptance
@@ -242,7 +277,9 @@ The build session's report is a claim. Before merging:
   **HIGH included**, stays in the commit body (producer 付き 1 行) and the digest reports only the
   count ("diff 外 findings: 3 件、commit body 参照") — no list, no question. A `Model:` line that
   differs from the `model=` in the claim label is its own digest line (a flagged message moves a
-  session to an older model). The filing itself (numbering, template, index row) follows skill
+  session to an older model); an `Effort:` that differs from the packet's goes into the build's
+  §5 line as the effort that ran, and on a cloud build with no 見落とし retry it is also its own
+  digest line — the `/effort` first message did not apply (ADR-0081 Review-when 2). The filing itself (numbering, template, index row) follows skill
   `rfc-writer`; a proposal is spawned with `--origin review --producer <its file:line>`, and its
   RFC body carries the origin line from skill `rfc-writer` §2.
   Observations that are not tasks (a rate near a revert threshold, a measurement caveat) are
@@ -271,7 +308,12 @@ The build session's report is a claim. Before merging:
   (`boundary.md`).
 - **Cycle-end digest**: open before → after with the closed / spawned split, what was merged
   and what was left (with the reason), the harvest list (file / drop / observe — the human's
-  call), and the questions still waiting. All of it in the session's reply (§2); Slack gets
+  call), and the questions still waiting. Each build gets one line with `effort / bounce yes-no /
+  classification`, where effort is the packet's `Effort:` → the Report's (e.g. `medium→high` after a
+  見落とし retry) — the reading ADR-0081's Review-when uses. Append the same line to
+  `~/.claude/logs/effort-outcomes.jsonl` as
+  `{"ts":…,"repo":…,"task":…,"session_id":…,"effort":"<packet>","effort_ran":"<Report>","bounce":true|false,"class":"見落とし|読み違い|gate・rebase|none"}`
+  — the reply is not kept, so this file is what ADR-0081's Review-when counts. All of it in the session's reply (§2); Slack gets
   the one-line titles only.
 
 ## Damping and boundaries (what makes this a loop and not a runaway)
@@ -360,8 +402,9 @@ force and the plist discipline are in "Where the loop lives".
 - `llm-as-judge` — how the judge speaks when a semantic verdict is unavoidable
 - `architect` agent — contested build-or-not
 - `scripts/cloud-dispatch.sh` — the default build mechanism: preflight (github.com remote,
-  `main` clean and pushed), `claude --cloud` under a pty with `--ref`, session id to
-  `logs/cloud-dispatch.jsonl` (ADR-0075)
+  `main` clean and pushed), `claude --cloud` under a pty with `--ref`, `--effort` as a
+  `/effort` first message plus the packet sent with `-p`, session id to
+  `logs/cloud-dispatch.jsonl` (ADR-0075, ADR-0081)
 - `spawn-session` — the local session mechanism for the §3 exception rows and for the
   standing triage session (spawned by the tick when none is alive)
 - `scripts/triage-tick.sh` / `scripts/launchd/*.plist` — the timer (launchd) that drives the

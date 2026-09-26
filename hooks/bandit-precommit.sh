@@ -63,14 +63,16 @@ DIFF_SAFE=(--no-ext-diff --no-textconv)
 # 走査対象の絞り込み。repo が自前の機械ゲート (.claude/verify.sh) を持っていれば、そちらに譲る。
 # 閾値 (-ll -ii) と除外は repo が所有すべきで、harness 側の固定値と二重に効かせない
 # (verify-precommit.sh が同じ commit で実行する)。全 Python repo の移行が済んだら本 hook は退役。
-# NOTE: この譲りは **承認台帳を見ない** — 実行権があるだけで譲る。未承認の verify.sh を持つ
+# ゲートの有無は存在 (-f) で見る — verify-precommit.sh と同じ定義 (ADR-0082)。あちらは承認済み
+# バイト列の 0700 の一時 copy を実行するので、repo 側の mode bit は実行可否と無関係
+# NOTE: この譲りは **承認台帳を見ない** — ファイルがあるだけで譲る。未承認の verify.sh を持つ
 # repo では verify / bandit / ruff-format が同時に黙る (公開 doc に明記済み)
 scan_repos=()
 for repo_dir in "${repos[@]}"; do
   git_cmd=(git "${GIT_SAFE[@]}")
   [[ -n "$repo_dir" ]] && git_cmd=(git "${GIT_SAFE[@]}" -C "$repo_dir")
   toplevel=$("${git_cmd[@]}" rev-parse --show-toplevel 2>/dev/null) || toplevel=""
-  [[ -n "$toplevel" && -x "$toplevel/.claude/verify.sh" ]] && continue
+  [[ -n "$toplevel" && -f "$toplevel/.claude/verify.sh" ]] && continue
   # staged .py のみ (追加/コピー/変更/リネーム。削除は対象外)。repo 外なら fail-soft
   staged_py=$("${git_cmd[@]}" diff "${DIFF_SAFE[@]}" --cached --name-only --diff-filter=ACMR -- '*.py' 2>/dev/null || true)
   [[ -z "$staged_py" ]] && continue

@@ -90,6 +90,10 @@ accepted — [ADR-0055](./0055-review-chain-single-pass-regression.md) Decision 
    引けるように）。根拠と失効条件の正本は本 ADR。cloud dispatch の `--model` / `--effort` の固定は決めない
    （Alternatives）。
 
+   > **注記（2026-09-26, [ADR-0081](./0081-per-packet-effort-and-bounce-classification.md)）**: effort は
+   > packet の `Effort:` 行で judge が選び、cloud には `cloud-dispatch.sh --effort` が作成後の `/effort` で
+   > 適用する形に決めた。`--model` は未決のまま。
+
 ## Review-when
 
 - この日から 4 週の突合（ADR-0043 の goal）で、spawned が closed を上回り open が増え、その spawned に
@@ -138,6 +142,10 @@ Review-when の 2 条件で外せる実験にした。
 記事 1 の「深さは prompt の語でなく effort で調整する」に沿う案。未決 — 再訪条件: `--cloud` と同時に渡した
 `--model` / `--effort` が cloud session に効くかを probe で 1 回確かめたとき、または `Model:` 行に claim
 ラベルと違うモデルが出たとき。
+
+> **注記（2026-09-26, [ADR-0081](./0081-per-packet-effort-and-bounce-classification.md)）**: effort の側は probe で確かめ、決めた — 作成時の `--effort` は
+> cloud session に効かず、作成後の `/effort` は効く。固定ではなく packet ごとに judge が選び、
+> `cloud-dispatch.sh --effort` が 2 段起動で適用する。`--model` の側は未決のまま。
 
 ## Consequences
 

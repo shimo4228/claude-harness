@@ -67,6 +67,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [jev-skill-router](skills/jev-skill-router/SKILL.md) | prompt に合う skill を TypeSafe Jev に選ばせる UserPromptSubmit hook。shadow 計測が先、inject は精度が出てから |
 | [jev-judgment-design](skills/jev-judgment-design/SKILL.md) | LLM の閉じた判定（関係あるか・新しいか・証拠の強さ）を TypeSafe Jev に移す設計。比べる相手を state に入れ、採否は Jev の確率からコードが決め、canary で落としすぎを見る |
 | [author-calibrated-eval](skills/author-calibrated-eval/SKILL.md) | LLM が書く読み物を著者の読みを正解にして磨くループ。材料の固定、難所セット、強いモデルの参照稿を混ぜた blind 読み比べ、LLM 判定役は忠実さの足切り専任 |
+| [review-when-watch](skills/review-when-watch/SKILL.md) | 毎朝の launchd job。新しいリサーチノートを ADR と RFC の Review-when 条件に TypeSafe Jev で 1 組ずつ照合し、当たりを Slack に送る。model からは呼ばない |
 <!-- END GENERATED: skills-table -->
 
 > 最初の 6 つ (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) は [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726) の構成要素。独立 repo として個別公開もしているが、この harness でも丸ごと読めるように重複収録している。

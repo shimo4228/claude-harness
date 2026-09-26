@@ -45,3 +45,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["scripts"]
+
+[tool.ty.environment]
+# 直接スクリプト実行 (`python scripts/readme_evidence.py`) を支える兄弟 import は、`scripts/` が
+# sys.path[0] になる前提で書かれている (`if __package__:` の else 枝)。ty にも同じ入口を
+# 教えないと、その枝が丸ごと unresolved-import になる — 経路は実在するので抑制ではなく
+# 解決先の宣言 (先例: skills/context-sync/pyproject.toml)。
+root = [".", "scripts"]

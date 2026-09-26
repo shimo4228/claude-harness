@@ -38,7 +38,7 @@ commit / push / 公開の権限は task request と substrate が持つ。この
 と `/simplify` はセッションのモデルを継いで走り、モデル引数は無い。pin できるのは自作 agent と
 plugin agent の `model:` だけ）。**judge-tier の既定は dispatch**: 実装は build-tier の新規セッション
 へ渡し、本セッションは packet を書いて検証側に残る。dispatch 先の既定は **Claude Code cloud
-session**（`bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file>` — GitHub の origin/main を
+session**（`bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file> --effort <packet の Effort>` — GitHub の origin/main を
 clone し、`claude/` branch に push、verify は repo の CI が走らせる。ADR-0075）。cloud に出せない
 条件と、そのときの代替（Agent tool / skill: `spawn-session`）の正本は skill: `task-triage` §3 の表
 （ここに複製しない）。dispatch 条件の照合も `task-triage` — 前提が `file:line` で検証済み /
@@ -85,6 +85,18 @@ routing を自発的に行うようになったら、この段落を外す。）
   無指定だと `/code-review` は「最後に打ったレベル」を再利用するので、chain がセッション状態に依存する
 - `chore` × Code Review: settings.json / hooks / permissions / CI 変更時のみ Y
 - `chore` × Security Review: secrets 設定 / 認証関連 hook / permissions 変更時のみ Y
+- 全種別 × 依存追加（**dependency intake**）: 第三者 package を lockfile に入れる diff は、
+  commit 前に次を plan に 1 行ずつ記録する。依存の追加は脅威面（第三者コードの導入）を動かすので
+  Security Review も Y
+  - 既知脆弱性: ecosystem の audit を lock に対して実行し、赤なし。uv は
+    `uv export --format requirements-txt --no-hashes --no-emit-project -o <scratch>/req.txt` →
+    `uvx pip-audit -r <scratch>/req.txt --no-deps --disable-pip`（2026-09-26 実測で動作）、
+    npm は `npm audit`、cargo は `cargo audit`
+  - 保守と採用: 最終 release 日・maintainer 数・downloads / dependents（search-first の
+    Library 行の証拠をそのまま使う）
+  - license が repo と両立する / 推移依存の重さ / lockfile で版が固定されている
+  - 取り込み側のコード: Security Review（`security-reviewer`）が見る。reviewer が見るのは
+    diff だけで package 本体は含まない — 本体の既知脆弱性を担うのは上の audit
 - 全種別 × Doc Sync: 変更が以下のいずれかに該当する場合のみ Y。該当 doc を**同じ diff** で更新する（後追い PR にしない）
   - 機構・ゲート・閾値・段構成の変更 → 所有 ADR の追補 + それを走らせる script の冒頭コメント（プロジェクトに鮮度規約があればそれに従う）
   - ADR 新設・廃止 → knowledge graph（graph.jsonld 等）

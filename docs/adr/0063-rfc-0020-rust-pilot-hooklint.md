@@ -57,6 +57,12 @@ rule は飽和する（measurement-discipline 原則 3）。
    block しない）。出力は `hooks/<file>:<line>: <RULE> <message>` + 末尾
    `hooklint: N finding(s), M report-only`、exit 0 / 3（違反）/ 1（エラー）。golden は
    `tests/golden/hooklint/` + `tests/golden-hooklint.bats`。
+
+   > **注記（2026-09-26, ADR-0082）**: FAIL_OPEN は block に昇格した。本項の「report-only — 発火率
+   > 較正前は block しない」は FAIL_OPEN については失効。意図した素通しは同じ行の
+   > `# hooklint: fail-open <理由>` で書く。出力書式（末尾行の `M report-only`）は不変で、現行 rule では
+   > M = 0。GIT_SAFE / HEAD_SIGPIPE の記述と exit code は有効
+
 2. 配線は `.claude/verify.sh`（hooks/*.sh は無改変）。staged mode は binary 実行のみ（build しない）、
    binary が不在 / stale のとき hooks/*.sh か scripts/hooklint/** が staged なら FAIL、そうでなければ
    warn。full mode は `cargo fmt --check` → `clippy -D warnings` → `test` → `build` → 実行、cargo
@@ -103,6 +109,12 @@ rule は飽和する（measurement-discipline 原則 3）。
   使うなら、その時点で 2 件目の pilot 読み値があるかを先に問う
 - FAIL_OPEN の report-only 5 件が 3 cycle（verify.sh full run が走る triage tick 3 回）以上増減
   しないなら、block へ昇格するか rule を落とすかを決める（較正の完了条件）
+
+  > **注記（2026-09-26, ADR-0082）**: 決着した — FAIL_OPEN は block に昇格した（Decision 1 の
+  > report-only は FAIL_OPEN については失効）。発火条件の「3 cycle 不変」は観測されておらず、commit
+  > `b522d0d` が 5 件を分類して 0 件にし、`# hooklint: fail-open <理由>` の waiver を足したことを受けた
+  > 判断。出力書式（末尾行の `M report-only`）と `Finding.blocking` の枠は残っている。
+
 - size 上限 600 行（`src/*.rs` の `#[cfg(test)]` を除く非空行。2026-09-06 時点 564）を再び超えたら、
   引き直しでなく設計縮小を先に問う（2 回目の goalpost 移動はしない）
 
@@ -128,6 +140,9 @@ linter で repo 固有 rule を持ち込む口が無く、crate は外部 crate 
 
 未決 — 再訪条件は Review-when の較正完了条件。較正データ（5/23 の発火）を捨てることになり、本
 pilot の計測 4 の読み値が消えるため今回は採らなかった。
+
+> **注記（2026-09-26, ADR-0082）**: 決着した — rule は落とさず block に昇格した（5 件中 2 件が実際の
+> fail-open だったため）。size 上限 600 行は有効（ADR-0082 時点 597 行）
 
 ### 配線先を hooks/harness-lint-precommit.sh にする
 
@@ -170,3 +185,6 @@ harness_lint.py を staged / full 両 mode で既に呼んでおり、同じ場�
 - [rfcs/0005-review-to-lint-rollout-ledger.md](../../rfcs/0005-review-to-lint-rollout-ledger.md)
   候補 #13 は本 ADR の ratchet で塞がれ、#15 は report-only で較正中（ledger 側の記帳は
   triage セッションの管轄）
+
+  > **注記（2026-09-26, ADR-0082）**: #15 も block の ratchet になった（較正は終了）。ledger 側の
+  > 記帳は引き続き triage セッションの管轄

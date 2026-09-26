@@ -17,7 +17,10 @@ INPUT=$(cat)
 COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || COMMAND=""
 
 [[ -z "$COMMAND" ]] && exit 0
-printf '%s' "$COMMAND" | grep -qE '^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*SECRET_SCAN_BYPASS=1([[:space:]]|$)' && exit 0
+# bash の =~ で文字列全体の先頭に固定する。grep は行単位で `^` が改行ごとに一致するので、複数行の
+# commit message の行頭に書いた文字列でも外れていた (2026-09-26 security review MEDIUM)
+bypass_re='^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*SECRET_SCAN_BYPASS=1([[:space:]]|$)'
+[[ "$COMMAND" =~ $bypass_re ]] && exit 0
 
 # git commit を含むコマンドのみ対象。under-match (env prefix / 先頭空白で skip される)
 # の方が over-match (無関係コマンドで余計に 1 回スキャンが走る) より危険なので、

@@ -11,7 +11,9 @@
 # the scan target is derived from what the command WILL commit, not from what
 # happens to be staged at hook time.
 
-HOOK="$HOME/.claude/hooks/secret-scan-precommit.sh"
+# BATS_TEST_DIRNAME から引く — 理由は verify-toolchain-trust.bats のヘッダ ($HOME 固定だと
+# worktree の版でなく main の版を検査してしまう)。
+HOOK="${BATS_TEST_DIRNAME}/../hooks/secret-scan-precommit.sh"
 # The fixture credential (AWS's own published example key) is composed at call
 # time and held by a neutrally-named helper. Both halves matter: a token-shaped
 # literal would make the hook under test block every commit touching this file,
@@ -138,6 +140,15 @@ plant_untracked_secret() {
   plant_tracked_secret
   run_hook "SECRET_SCAN_BYPASS=1 git -C $REPO commit -am 'chore: fixture'"
   [ -z "$output" ]
+}
+
+@test "the bypass token at the start of a later message line does not disable the scan" {
+  # grep は行単位で `^` が改行ごとに一致していた (2026-09-26 security review MEDIUM)
+  plant_tracked_secret
+  run_hook "git -C $REPO commit -am 'chore: fixture
+
+SECRET_SCAN_BYPASS=1 was discussed'"
+  blocked
 }
 
 # --- hostile .git/config must not run, and must not silence the scan ---------

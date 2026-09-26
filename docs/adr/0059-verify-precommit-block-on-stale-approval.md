@@ -46,6 +46,11 @@ stderr に再承認の案内が出続けたまま誰も行動せず、その間�
 3. 回帰テスト 4 本を `tests/verify-precommit.bats` に追加（71 が block する / 案内文に
    approve が載る / ゲートは実行されない / 再承認で unblock されゲートが走る）
 
+> **注記（2026-09-26, ADR-0083）**: linked worktree は、登録先の main worktree の key で台帳を引く。
+> その worktree の verify.sh が main の承認済み hash と違うときは 71 ではなく 70（未承認・素通し +
+> 通知）を返す — branch 上の編集は merge 後に main で承認する。71 の block は、承認した repo 自身の
+> ゲートが編集で失効した場合のまま。
+
 ## Review-when
 
 - 71 の block が正当な作業を月単位で繰り返し塞ぐ観測が出た時（例: verify.sh を頻繁に

@@ -84,5 +84,5 @@ if [[ "$mode" == "block" ]]; then
 fi
 
 # shellcheck source=hooks/_advisory-common.sh
-source "${BASH_SOURCE[0]%/*}/_advisory-common.sh" || exit 0
+source "${BASH_SOURCE[0]%/*}/_advisory-common.sh" || exit 0 # hooklint: fail-open advisory 経路のみ。block は上で出力済みで、封筒を組めなくても止める判定は残っていない
 emit_advisory PreToolUse "$msg"

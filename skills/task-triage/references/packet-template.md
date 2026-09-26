@@ -19,6 +19,19 @@ PR are public before acceptance. Write it as you would an `rfcs/` entry (ADR-004
 `file:line`, never a private number or `.notes/` content — a task that needs those is a local
 task (task-triage §3).
 
+**Effort** — the judge fills the packet's `Effort:` line on every packet from this table, by how
+dense the edge cases are in the diff, with the reason in one phrase (a blank line leaves a cloud
+session on the server-side default, which moves — ADR-0081). The same value goes to `cloud-dispatch.sh
+--effort` (task-triage §3). Effort cuts missed cases far more than misreadings (ADR-0081), so the
+table ranks by where a missed case would hide.
+
+| 状況 | effort |
+|---|---|
+| docs / 設定 / rulebook 型、仕様が細かい変更 | low |
+| 通常の feat | medium（未記入時の既定 = cloud の実測既定と同じ） |
+| brownfield の fix、parser / sanitizer、並行性、性能、security を動かす diff | high |
+| 無人で長く走り検証が厳しいもの | xhigh（max は著者が明示したときだけ） |
+
 ---
 
 ```markdown
@@ -38,6 +51,8 @@ commit 本文を読んで検収し、main へ ff-only 取り込みます。あ�
 最初に読む: <task file(s)>、<repo の CLAUDE.md の該当節 / rule — e.g. security.md threat surface for gate work>、
 <prior commit / memo the task depends on>.
 
+Effort: <low / medium / high / xhigh> — <理由 1 句（例: parser を動かす diff）>
+
 ## 進め方
 - 入力が要らない step は止まらずに続ける。状況メモは次の行動と同じメッセージに書く。止まるのは Phase 0 の
   反証（記録して正しく直せる範囲を除く）、Review の CRITICAL、time cap、この packet の外の操作が要るときだけ
@@ -55,6 +70,10 @@ monospace のラベル、pill 形のボタン>。1 枚目の結果が使った�
 走らせる）>
 <if 著者が「押し続ける」を選んだ: Goal の数値を満たしたら、同じ指標を time cap まで改善し続ける。対象は Goal の範囲の
 まま>
+<if 本番との比較（候補 arm 対 本番、lab 対 現場）: 本番と候補の差を表で列挙する（入力に見せる文 / 問いの形 / 答えの読み方 / 温度 /
+審判の定義）。差が 2 つ以上なら 1 条件ずつ変える arm を同じ標本で Goal に持つ。審判の定義は著者が確認した前提として書き、
+script の docstring に埋めない — measurement-discipline §8（CA RFC-0045 で 3 条件 + 審判の問いが同時に違い、RFC-0046 が
+交絡した根拠の上に建った）>
 
 ## Goal（決定可能な受入条件）
 1. <machine-checkable outcome — a command and its exit code, a test name, a diff property>
@@ -74,7 +93,7 @@ monospace のラベル、pill 形のボタン>。1 枚目の結果が使った�
 
 ## Review
 <cloud:
-- 実装後・commit 前に built-in `/code-review` を **effort `medium`** で 1 回、この diff の範囲で起動する。
+- 実装後・commit 前に built-in `/code-review` を **effort `medium`**（review の段階。この session の Effort とは別）で 1 回、この diff の範囲で起動する。
   reviewer への指示（そのまま渡す）:「correctness / stated requirements に効く gap のみ報告し、各指摘に
   file:line・なぜ誤りか・失敗を示す手順を付ける。それ以外（防御的コード・追加の抽象層・起こり得ないケースの
   テスト等）は optional として報告し、適用しない。diff 外の指摘は 1 行のみ、修理はしない」。CRITICAL が出たら直さず止めて報告する。
@@ -109,6 +128,7 @@ monospace のラベル、pill 形のボタン>。1 枚目の結果が使った�
 Packet: S<n>
 Needs from judge: <判断役かオーナーの決定・承認が要るもの / none>
 Model: <この session のモデル名。途中でモデルが切り替わった通知が出たらその旨>
+Effort: <この session が実際に走った effort — 環境変数 `CLAUDE_EFFORT` か `/effort` の表示。分からなければ「未確認」>
 Premise: <file:line 再照合の結果、反証があればそれ>
 Fix: <what and why, in the shape the reviewer needs>
 Regression: <test names, RED→GREEN の確認方法>

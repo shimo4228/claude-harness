@@ -92,6 +92,10 @@ git 履歴には残る (force push はしない)。
 **困難になること / 残余リスク:**
 - **利用者は `settings.json` を手で編集する必要がある。** skills / rules の「コピーすれば効く」と違い、hooks は配線が要る。`docs/hooks.md` の JSON 断片で摩擦は下げたが、ゼロにはならない。
 - **`~/.claude` 固定の再配置制約。** `verify-precommit.sh` は `$HOME/.claude/scripts/hooks/verify_allow.py` をハードコードしており、別の場所に置くと台帳が見つからず**警告だけ出して全 commit を素通しする**。fail-open なので、利用者が「ゲートが効いている」と誤認する余地がある。`docs/hooks.md` に明記したが、コードで担保していない。
+  > **注記（2026-09-26, ADR-0082）**: 起動器 `verify_allow.py` は hook 自身の位置
+  > （`${BASH_SOURCE[0]%/*}/../scripts/hooks/`）から引くようになり、hooks/ と scripts/hooks/ を同じ
+  > 相対配置で置けば `~/.claude` 以外でも見つかる。台帳の既定 path（`~/.claude/verify-allow.json`）は
+  > 固定のままなので、再配置制約は部分的に残る。公開側 `docs/hooks.md` の記述は harness-sync 時に追従が要る
 - ~~**5 本中 3 本が無テスト。**~~ **解消済み (同日追記)。** verify / bandit / ruff-format にも bats を追加し、5 本すべてが被覆された (bats 162 → 229)。ADR-0037 が残余リスクとして記録したテスト被覆の非対称は閉じた。各テストは**負のコントロール**で検証している — hook から当該性質を取り除いた変異体に対してテストが実際に落ちることを確認した (15 項目)。これは形式ではない: 最初に書いた負のコントロール 3 件のうち 1 件は control 自身の不備 (このマシンには `timeout` があり、変異が分岐 1 に当たっていなかった) で、残り 2 件は**テストが実際に何も pin していない**ことを暴いた。
 - **`--no-textconv` が load-bearing なのは secret-scan だけ。** bandit / ruff-format は `diff --name-only` と `git show :<path>` しか使わず、どちらも内容変換を伴わないため、フラグを外してもテストは通る (負のコントロールで確認)。両者のフラグとテストは、将来これらが内容 diff を持ったときのための defence in depth として残す。ADR-0037 の訂正注記と本 ADR の Context は「クラスとして残っていた」という記述であり、3 hook すべてが到達可能だったという意味ではない。
 - **`.claude/verify.sh` を持つ未承認 repo では Python 系 3 ゲートが同時に黙る。** verify は未承認なので実行せず、bandit / ruff は実行権の有無だけを見て譲る (承認台帳を参照しない)。それぞれ stderr には出るが、どれも block しない。挙動は変えず `docs/hooks.md` に明記する選択を取った — 台帳参照を足すと commit ごとに python3 起動が増え、この 2 hook は元々退役予定だから。

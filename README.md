@@ -67,6 +67,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [jev-skill-router](skills/jev-skill-router/SKILL.md) | UserPromptSubmit hook that asks TypeSafe Jev which installed skill fits the prompt; shadow-first, injects only after measured accuracy |
 | [jev-judgment-design](skills/jev-judgment-design/SKILL.md) | Moving closed LLM judgments (relevant? new? how strong?) to TypeSafe Jev: put what is judged against into the state, code decides from Jev's probabilities, canaries catch over-filtering |
 | [author-calibrated-eval](skills/author-calibrated-eval/SKILL.md) | Tuning LLM-written prose against the author's own reading: frozen inputs, a hard-case set, blind side-by-side reads with a strong-model reference, and an LLM judge that only gates faithfulness |
+| [review-when-watch](skills/review-when-watch/SKILL.md) | Daily launchd job: checks each new research note against the Review-when conditions in this repo's ADRs and RFCs via TypeSafe Jev, and posts the matches to Slack. Not model-invoked |
 <!-- END GENERATED: skills-table -->
 
 > The first six (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) are components of the [Agent Knowledge Cycle (AKC)](https://doi.org/10.5281/zenodo.19200726). Each is also published as its own standalone repo, but they are bundled here so the harness can be read end-to-end.

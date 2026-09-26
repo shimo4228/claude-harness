@@ -14,8 +14,12 @@
 # did not run AND the commit was not blocked) the earlier ones carry `|| return 1`,
 # because bats only inspects the final command's status (T-BATS-MULTI-ASSERT).
 
-HOOK="$HOME/.claude/hooks/verify-precommit.sh"
-ALLOW="$HOME/.claude/scripts/hooks/verify_allow.py"
+# hook と台帳の起動器は BATS_TEST_DIRNAME から引く — 理由は verify-toolchain-trust.bats の
+# ヘッダ ($HOME 固定だと worktree の版でなく main の版を検査してしまう)。hook も起動器を
+# 自分の兄弟 (${BASH_SOURCE[0]%/*}/../scripts/hooks/) から引くので、両者は常に同じ版になる。
+HOOK="${BATS_TEST_DIRNAME}/../hooks/verify-precommit.sh"
+ALLOW="${BATS_TEST_DIRNAME}/../scripts/hooks/verify_allow.py"
+HOOKS_DIR="${BATS_TEST_DIRNAME}/../hooks"
 
 setup() {
   TMP="$(mktemp -d)"
@@ -96,12 +100,348 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   [ -z "$output" ]
 }
 
-@test "a gate that is not executable is skipped" {
-  mkdir -p "$REPO/.claude"
-  printf '#!/bin/sh\nexit 1\n' > "$REPO/.claude/verify.sh"  # no chmod +x
+# --- a gate is judged by existence, not by its mode bit ------------------------
+# The hook runs a private 0700 copy of the approved bytes (verify_allow.py run), so
+# the repo file's -x bit is irrelevant to running it. Until 2026-09-26 the hook
+# checked `-x` and skipped a non-executable gate as if it were absent — which also
+# let an approved repo's gate go dark by `chmod -x` or deletion, silently. The old
+# test here ("a gate that is not executable is skipped") pinned that skip; it is
+# replaced by the pair below plus the deleted-gate tests, not dropped.
+
+@test "an approved gate that lost its exec bit still runs" {
+  write_gate 0
   approve
+  chmod -x "$REPO/.claude/verify.sh"  # the ledger pins bytes, not the mode
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  gate_ran
+}
+
+@test "an approved gate that lost its exec bit still blocks on FAIL" {
+  write_gate 1
+  approve
+  chmod -x "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  blocked
+}
+
+@test "an unapproved non-executable gate is still never executed" {
+  write_gate 1
+  chmod -x "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [ ! -e "$TMP/gate-ran" ] || return 1
+  [ -z "$output" ]
+}
+
+# --- an approved repo whose gate disappeared blocks; an unledgered one does not --
+# The ledger is what distinguishes "this repo never had a gate" (pass — adopting
+# one is skill: verify-bootstrap) from "a gate a human approved has vanished"
+# (block — the same reasoning as exit 71 in ADR-0059: a known gate gone dark).
+
+@test "an approved repo whose gate was deleted blocks the commit" {
+  write_gate 0
+  approve
+  rm "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  blocked
+}
+
+@test "an approved repo whose gate became a dangling symlink blocks the commit" {
+  write_gate 0
+  approve
+  rm "$REPO/.claude/verify.sh"
+  ln -s "$TMP/nonexistent.sh" "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  blocked
+}
+
+@test "the deleted-gate block names restore and revoke as the ways out" {
+  write_gate 0
+  approve
+  rm "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  local reason
+  reason=$(printf '%s' "$output" | jq -r '.reason')
+  [[ "$reason" == *"revoke"* ]] || return 1
+  [[ "$reason" == *"VERIFY_BYPASS=1"* ]]
+}
+
+# exit 72 (gate unreadable, or a symlink to a file outside the repo) is the same
+# "known gate gone dark" state when the repo is ledgered: -f is true, so only the
+# run path sees it (2026-09-26 security review + code review, both MEDIUM).
+
+@test "an approved repo whose gate became a symlink out of the repo blocks the commit" {
+  printf '#!/bin/sh\nprintf x > "%s/gate-ran"\nexit 0\n' "$TMP" > "$TMP/outside.sh"
+  chmod +x "$TMP/outside.sh"
+  write_gate 0
+  approve
+  rm "$REPO/.claude/verify.sh"
+  ln -s "$TMP/outside.sh" "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [ ! -e "$TMP/gate-ran" ] || return 1
+  blocked
+}
+
+@test "an approved repo whose gate became unreadable blocks the commit" {
+  [ "$(id -u)" -ne 0 ] || skip "root reads mode-000 files"
+  write_gate 0
+  approve
+  chmod 000 "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  blocked
+}
+
+@test "an unledgered repo whose gate is a symlink out of the repo still passes with a notice" {
+  printf '#!/bin/sh\nexit 0\n' > "$TMP/outside.sh"
+  mkdir -p "$REPO/.claude"
+  ln -s "$TMP/outside.sh" "$REPO/.claude/verify.sh"
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [ -z "$output" ] || return 1
+  [[ "$(hook_stderr)" == *"verify-precommit"* ]]
+}
+
+@test "a deleted gate in an approved repo passes with the bypass prefix" {
+  write_gate 0
+  approve
+  rm "$REPO/.claude/verify.sh"
+  run_hook "VERIFY_BYPASS=1 git -C $REPO commit -m 'chore: x'"
+  [ -z "$output" ]
+}
+
+@test "a repo with no gate is still allowed when the ledger lists other repos" {
+  local other="$TMP/other"
+  mkdir -p "$other/.claude"
+  git -C "$other" init -q
+  printf '#!/bin/sh\nexit 0\n' > "$other/.claude/verify.sh"
+  python3 "$ALLOW" approve "$other" > /dev/null
   run_hook "git -C $REPO commit -m 'chore: x'"
   [ -z "$output" ]
+}
+
+# --- a linked worktree is judged by its main checkout's approval ---------------
+# The ledger is keyed by the repo's realpath, and a linked worktree
+# (`git worktree add`, e.g. .claude/worktrees/<name>) has a toplevel of its own.
+# Until 2026-09-26 every commit from a harness worktree fell to exit 70 (not in the
+# ledger) and .claude/verify.sh never ran there. The key is now looked up by the main
+# checkout the worktree is *registered* with, and the bytes compared are the
+# worktree's own gate: the approved hash must match exactly, or the worktree is
+# treated as unapproved (a branch that edits its gate is approved after the merge,
+# on the main checkout, as before). Registration is read from the main repo's
+# admin dirs (`git worktree list`), not from the worktree's `.git` file — that file
+# is repo-side data and could name any approved repo's git dir.
+
+REPO_REAL() { (cd "$REPO" && pwd -P); }
+
+# The gate is committed so that a worktree checks out the same bytes.
+add_worktree() { # add_worktree <path>
+  git -C "$REPO" add .claude/verify.sh
+  git -C "$REPO" commit -qm gate
+  git -C "$REPO" worktree add -q "$1" -b "wt-$BATS_TEST_NUMBER"
+}
+
+@test "a linked worktree whose gate matches the approved bytes runs the gate" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  gate_ran
+}
+
+@test "a linked worktree's gate runs at the worktree root, not the main checkout" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  [ "$(cat "$TMP/gate-cwd")" = "$(cd "$TMP/wt" && pwd -P)" ] || return 1
+  [ "$(cat "$TMP/gate-root")" = "$(cd "$TMP/wt" && pwd -P)" ]
+}
+
+@test "a linked worktree's failing gate blocks the commit" {
+  write_gate 1
+  approve
+  add_worktree "$TMP/wt"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  blocked
+}
+
+@test "a linked worktree whose gate differs from the approved bytes is treated as unapproved" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  printf '# edited on the branch\n' >> "$TMP/wt/.claude/verify.sh"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  ! gate_ran || return 1
+  [ -z "$output" ] || return 1
+  [[ "$(hook_stderr)" == *"verify-precommit"* ]]
+}
+
+@test "a worktree of an unledgered repo is still unapproved" {
+  write_gate 0
+  add_worktree "$TMP/wt"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  ! gate_ran || return 1
+  [ -z "$output" ]
+}
+
+@test "a separate clone with the approved bytes is still unapproved" {
+  # 台帳の key は repo であって内容ではない — 通常 repo の挙動は変えない
+  write_gate 0
+  git -C "$REPO" add .claude/verify.sh
+  git -C "$REPO" commit -qm gate
+  approve
+  git clone -q "$REPO" "$TMP/clone"
+  run_hook "git -C $TMP/clone commit -m 'chore: x'"
+  ! gate_ran || return 1
+  [ -z "$output" ]
+}
+
+@test "a directory whose .git file names an approved repo's git dir does not run its gate" {
+  write_gate 0
+  approve
+  mkdir -p "$TMP/fake/.claude"
+  cp "$REPO/.claude/verify.sh" "$TMP/fake/.claude/verify.sh"
+  printf 'gitdir: %s\n' "$(REPO_REAL)/.git" > "$TMP/fake/.git"
+  run_hook "git -C $TMP/fake commit -m 'chore: x'"
+  ! gate_ran
+}
+
+@test "a directory whose .git file names another worktree's admin dir does not run its gate" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  mkdir -p "$TMP/fake/.claude"
+  cp "$REPO/.claude/verify.sh" "$TMP/fake/.claude/verify.sh"
+  printf 'gitdir: %s\n' "$(cd "$TMP/wt" && git rev-parse --absolute-git-dir)" > "$TMP/fake/.git"
+  run_hook "git -C $TMP/fake commit -m 'chore: x'"
+  ! gate_ran
+}
+
+# git reports a registered path as prunable only while nothing sits at <path>/.git, and a
+# locked registration (Claude Code's agent worktrees are locked) never goes away by itself.
+# A directory re-created at such a stale path with a `.git` file naming the main git dir
+# must not inherit the registration: its git dir has to be that registration's admin dir
+# (2026-09-26 security review LOW, reproduced).
+@test "a stale locked worktree path re-created with a .git file naming the main git dir does not run its gate" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  git -C "$REPO" worktree lock "$TMP/wt"
+  rm -rf "$TMP/wt"
+  mkdir -p "$TMP/wt/.claude"
+  cp "$REPO/.claude/verify.sh" "$TMP/wt/.claude/verify.sh"
+  printf 'gitdir: %s\n' "$(REPO_REAL)/.git" > "$TMP/wt/.git"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  ! gate_ran
+}
+
+# git derives the main worktree as realpath(common dir) minus a trailing /.git. A fake admin
+# area planted in the approved repo's *working tree* (objects/, refs/, worktrees/x/ with
+# commondir ../..) makes the common dir the work tree itself, so "main" is the approved repo
+# and the registration + back-pointer both check out. The main worktree's own git dir must
+# be the common dir (2026-09-26 security re-review MEDIUM, reproduced).
+@test "a fake admin area planted in the approved repo's work tree does not register an outside directory" {
+  write_gate 0
+  approve
+  local m x
+  m=$(REPO_REAL)
+  mkdir -p "$TMP/x/.claude"
+  x=$(cd "$TMP/x" && pwd -P)
+  mkdir -p "$m/objects" "$m/refs/heads" "$m/worktrees/x"
+  printf 'ref: refs/heads/main\n' > "$m/HEAD"
+  printf 'ref: refs/heads/main\n' > "$m/worktrees/x/HEAD"
+  printf '../..\n' > "$m/worktrees/x/commondir"
+  printf '%s/.git\n' "$x" > "$m/worktrees/x/gitdir"
+  printf 'gitdir: %s/worktrees/x\n' "$m" > "$x/.git"
+  cp "$REPO/.claude/verify.sh" "$x/.claude/verify.sh"
+  # the planted layout must really be accepted by git, or the test proves nothing
+  [ "$(git -C "$x" rev-parse --path-format=absolute --git-common-dir)" = "$m" ] || return 1
+  run_hook "git -C $x commit -m 'chore: x'"
+  ! gate_ran
+}
+
+# git records a worktree's realpath. A symlink placed later on an ancestor of a stale locked
+# registration's path (e.g. a tracked `.claude/worktrees` symlink arriving in the approved
+# tree) makes that recorded path resolve to an outside directory whose `.git` file names
+# the real admin dir (2026-09-26 security re-review LOW, reproduced). The recorded
+# back-pointer must not cross a symlink.
+@test "a symlink on an ancestor of a stale registration does not register the outside directory" {
+  write_gate 0
+  approve
+  add_worktree "$REPO/.claude/worktrees/wt2"
+  git -C "$REPO" worktree lock "$REPO/.claude/worktrees/wt2"
+  mkdir -p "$TMP/e"
+  mv "$REPO/.claude/worktrees/wt2" "$TMP/e/wt2"
+  rmdir "$REPO/.claude/worktrees"
+  ln -s "$TMP/e" "$REPO/.claude/worktrees"
+  run_hook "git -C $TMP/e/wt2 commit -m 'chore: x'"
+  ! gate_ran
+}
+
+@test "a worktree registered with relative paths still runs the approved gate" {
+  write_gate 0
+  approve
+  git -C "$REPO" add .claude/verify.sh
+  git -C "$REPO" commit -qm gate
+  git -C "$REPO" worktree add -q --relative-paths "$TMP/wt" -b wt-rel 2> /dev/null \
+    || skip "git without worktree --relative-paths"
+  # the registration really is relative, or the test proves nothing
+  [[ "$(cat "$(git -C "$TMP/wt" rev-parse --absolute-git-dir)/gitdir")" != /* ]] || return 1
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  gate_ran
+}
+
+@test "a worktree whose gate differs is pointed at approving on main after the merge, not at approving the worktree" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  printf '# edited on the branch\n' >> "$TMP/wt/.claude/verify.sh"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  local err
+  err=$(hook_stderr)
+  [[ "$err" != *"approve $(cd "$TMP/wt" && pwd -P)"* ]] || return 1
+  [[ "$err" == *"$(REPO_REAL)"* ]]
+}
+
+@test "the worktree gate-lost block offers restoring the gate before revoking on main" {
+  # revoke は main と全 worktree の承認を外す — worktree だけの消失への第一の出口にしない
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  rm "$TMP/wt/.claude/verify.sh"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  local reason
+  reason=$(printf '%s' "$output" | jq -r '.reason')
+  [[ "$reason" == *"linked worktree"* ]] || return 1
+  [[ "$reason" == *"merge 後"* ]]
+}
+
+@test "a linked worktree's gate symlinked into the main checkout is refused and blocks" {
+  # 経路の厳しさは通常 repo の exit 72 と同じ: 包含判定は worktree の root に対して行う
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  rm "$TMP/wt/.claude/verify.sh"
+  ln -s "$(REPO_REAL)/.claude/verify.sh" "$TMP/wt/.claude/verify.sh"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  ! gate_ran || return 1
+  blocked
+}
+
+@test "a linked worktree of an approved repo whose gate was deleted blocks the commit" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  rm "$TMP/wt/.claude/verify.sh"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  blocked
+}
+
+@test "the worktree gate-lost block names the main checkout as the revoke target" {
+  write_gate 0
+  approve
+  add_worktree "$TMP/wt"
+  rm "$TMP/wt/.claude/verify.sh"
+  run_hook "git -C $TMP/wt commit -m 'chore: x'"
+  [[ "$(printf '%s' "$output" | jq -r '.reason')" == *"revoke $(REPO_REAL)"* ]]
 }
 
 # --- approval is what decides whether the gate runs at all ------------------
@@ -245,7 +585,9 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   local sandbox="$TMP/hooks"
   mkdir -p "$sandbox"
   cp "$HOOK" "$sandbox/"
-  cp "$HOME/.claude/hooks/_git-target-common.sh" "$sandbox/"
+  cp "$HOOKS_DIR/_git-target-common.sh" "$sandbox/"
+  # hook は台帳の起動器を兄弟の ../scripts/hooks/ から引く — sandbox にも同じ配置で置く
+  mkdir -p "$TMP/scripts/hooks" && cp "$ALLOW" "$TMP/scripts/hooks/"
   # _advisory-common.sh は **置かない**
   write_gate 1
   approve
@@ -258,7 +600,8 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   local sandbox="$TMP/hooks"
   mkdir -p "$sandbox"
   cp "$HOOK" "$sandbox/"
-  cp "$HOME/.claude/hooks/_git-target-common.sh" "$sandbox/"
+  cp "$HOOKS_DIR/_git-target-common.sh" "$sandbox/"
+  mkdir -p "$TMP/scripts/hooks" && cp "$ALLOW" "$TMP/scripts/hooks/"
   write_gate 0 'something to say'
   approve
   jq -nc --arg c "git -C $REPO commit -m x" '{tool_input:{command:$c}}' > "$TMP/in.json"
@@ -367,5 +710,15 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   write_gate 1
   approve
   run_hook "git -C $REPO commit -m 'note: VERIFY_BYPASS=1 was discussed'"
+  blocked
+}
+
+@test "the bypass token at the start of a later message line does not disable the gate" {
+  # grep は行単位で `^` が改行ごとに一致していた (2026-09-26 security review MEDIUM)
+  write_gate 1
+  approve
+  run_hook "git -C $REPO commit -m 'subject
+
+VERIFY_BYPASS=1 was discussed'"
   blocked
 }
