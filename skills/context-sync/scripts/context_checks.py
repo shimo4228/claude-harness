@@ -590,7 +590,7 @@ def check_graph_jsonld(cx: Corpus) -> dict:
         return {"status": "absent"}
     delegated = {
         "checks": ["volatile state (version / count fields)", "JSON-LD expansion pitfalls"],
-        "command": f"uv run --with pyld python3 {_GRAPH_LINT_PATH} graph.jsonld",
+        "command": f"uv run --with pyld==3.3.0 python3 {_GRAPH_LINT_PATH} graph.jsonld",
         "why": "graph_lint.py owns these; duplicating its rules here would drift",
     }
     raw, reason = _read_why(cx.root, path)
@@ -711,7 +711,7 @@ def check_url_liveness(cx: Corpus) -> dict:
     return {
         "verdict": "skip",
         "reason": (
-            "URL liveness is 未検証 — this script does not fetch URLs. The shared "
+            "URL liveness is unverified — this script does not fetch URLs. The shared "
             "checker exists (skills/skill-health/scripts/url_liveness.py, RFC-0008) "
             "but the context-sync consumer is deferred by ADR-0052 Decision 5; feed "
             "these URLs to it with --urls-from to check them"

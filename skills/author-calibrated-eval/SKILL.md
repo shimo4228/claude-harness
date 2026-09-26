@@ -1,6 +1,6 @@
 ---
 name: author-calibrated-eval
-description: LLM が書く読み物（本文・要約・解説文）を、著者の読みを正解にして磨くループの組み方と回し方。材料の固定、難所セット、著者の blind 読み比べ、強いモデルの参照稿で天井を測る、LLM 判定役は忠実さの足切り専任。/author-calibrated-eval で呼ぶ。NOT for — 判定役のプロンプト・判定形式の設計（→ llm-as-judge）、測定値・閾値の妥当性（→ measurement-discipline）、README の改稿（→ readme-writer）。
+description: "How to build and run a loop that polishes LLM-written reading material (body text, summaries, explanatory prose) by treating the author's reading as ground truth. Fix the materials, build a hard-case set, run blind side-by-side reads by the author, measure the ceiling with a strong model's reference draft, and keep the LLM judge dedicated to a faithfulness cutoff. Invoke with /author-calibrated-eval. NOT for — designing the judge's prompt or verdict format (→ llm-as-judge), validity of measured values and thresholds (→ measurement-discipline), rewriting a README (→ readme-writer)."
 user-invocable: true
 disable-model-invocation: true
 origin: shimo4228
@@ -8,102 +8,106 @@ origin: shimo4228
 
 # Author-Calibrated Eval
 
-生成された文章の「読む価値」の正解は、その文章を読む人（著者）の目にある。ループはこの前提で
-組む。役割は三つに分ける。
+The ground truth for whether generated prose is "worth reading" lives in the eyes of the person who reads it (the author).
+Build the loop on that premise. Split the roles three ways.
 
-| 何を見るか | 誰が見るか |
+| What is checked | Who checks it |
 |---|---|
-| 読みやすさ・読む価値（好み） | **著者**の blind 読み比べ |
-| 忠実さ（材料に無いこと・比較の相手・限定・対象のすり替え） | **LLM 判定役**。二値チェックの足切り |
-| 形式（引用記号の位置、印の有無、字数） | **コード** |
+| Readability and reading value (taste) | **The author**'s blind side-by-side read |
+| Faithfulness (things not in the materials, comparison target, qualifiers, substituted subject) | **LLM judge**. A cutoff of binary checks |
+| Format (position of citation marks, presence of markers, character count) | **Code** |
 
-LLM 判定役は、読みやすさを総合判断させても著者の代わりにならない。実測（2026-09-23、
-jev-research-pipeline）: 「情報量が多いことは勝つ理由にならない」と明記したルーブリックでも、
-Opus の判定役は両方の順番で情報の多い版を「わかりやすい」と選び、著者は短い版を「すごくわかりやすい」、
-情報の多い版を「読みにくい」とした。一方で判定役は、著者が読んで気づかなかった比較相手のすり替えを
-両方の順番で拾った。
+Asking the LLM judge for a holistic readability verdict does not make it a substitute for the author. Measured
+(2026-09-23, jev-research-pipeline): even with a rubric that stated explicitly "having more information is not a reason to win",
+the Opus judge picked the more information-dense version as "easier to understand" in both orderings, while the author called the short
+version "very easy to understand" and the information-dense version "hard to read". On the other hand, the judge caught, in both orderings,
+a substituted comparison target that the author had not noticed while reading.
 
-## 1. 材料を固定する
+## 1. Fix the materials
 
-- 実際の出力を作ったときの入力（その日の材料一式）を 1 件ずつ固定する。材料に第三者の原文が
-  含まれるなら、公開 repo ではなく非公開の置き場に置く
-- 1 件を dev か holdout に割り当てる。割り当ては件の id だけから決める（後で件数が増えても
-  件が dev と holdout の間を移らない）
-- 書き手に渡すものと、判定役・著者に見せる材料は同じにする。判定役にだけ短く切った抜粋を見せると、
-  書き手が正当に使った事実を「材料に無い」と誤判定する
+- Fix, one case at a time, the input used when the actual output was produced (that day's full set of materials). If the materials
+  include third-party original text, store them in a private location, not in a public repo
+- Assign each case to dev or holdout. Derive the assignment from the case id alone (so that when the number of cases grows later,
+  no case moves between dev and holdout)
+- Give the writer, the judge, and the author the same materials. If only the judge is shown a trimmed excerpt,
+  it will wrongly flag facts the writer legitimately used as "not in the materials"
 
-## 2. 最初に著者の読み比べをする（判定役を回す前）
+## 2. Have the author do a side-by-side read first (before running the judge)
 
-判定役のループを回す前に、著者に 1 回読んでもらう。これを飛ばすと、判定役の基準と著者の基準の
-ずれに気づかないまま、プロンプトを判定役に合わせて磨き続ける。
+Before running the judge loop, have the author read once. Skip this and you keep polishing the prompt to fit the judge
+without noticing the gap between the judge's criteria and the author's.
 
-- 1 件につき 3 本を並べる: 今の出力 / 候補 / **強いモデルの参照稿**（同じ指示・同じ材料）。
-  どれがどれかは伏せ、並び順は件ごとに変え、対応表は別ファイルに置く
-- 著者に聞くのは 2 つだけ: 「一番良いのはどれか」「なぜか（一言）」。「全部ダメ」も答えとして受け取る
-- 参照稿の読まれ方で、原因を切り分ける
-  - 強いモデルでも同じ不満が出る → 原因は書かせ方（指示の枠組み・材料の渡し方）。モデルを
-    替えても直らない
-  - 強いモデルだけ良い → 原因はモデル。プロンプトを磨く前に、使うモデルを決める
-- 著者の一言は、そのまま次の指示とルーブリックの材料になる（例: 「目が滑る」「前提の説明を
-  省略している」「変な断り書きが微妙」）
+- Line up 3 drafts per case: the current output / a candidate / **a strong model's reference draft** (same instructions, same materials).
+  Hide which is which, vary the order per case, and keep the mapping in a separate file
+- Ask the author only 2 things: "Which one is best?" and "Why (in a word)?". Accept "all of them are bad" as an answer
+- Use how the reference draft is read to isolate the cause
+  - The same complaint arises even with the strong model → the cause is how it is being asked to write (instruction framing, how
+    materials are passed). Switching models will not fix it
+  - Only the strong model is good → the cause is the model. Decide which model to use before polishing the prompt
+- The author's one-word comment becomes, as is, material for the next instructions and rubric (e.g. "my eyes glaze over", "it skips
+  explaining the premise", "the odd disclaimer is off-putting")
 
-## 3. 難所セットで回し、節目で広げる
+## 3. Iterate on a hard-case set, widen at milestones
 
-- dev から、**失敗の型ごとに 1 件**を選んで難所セットにする（例: 解釈の言い切り / 別々の結果を
-  因果でつなぐ / 引用番号のずれ）。1 周はこの数件だけで回す
-- 候補ができるたびに難所セットで確かめる: 判定役の足切り → 著者が 1 件 1 本を読む
-  （聞くのは「読めるか」「どこで止まったか」）
-- 難所セットで著者と足切りの両方を通ったら、**holdout から型の違う数件**を書かせ、足切りと著者の
-  読みで確かめる。難所に合わせた磨き込みが、見ていない材料でも通るかを見る段
-- 変種の軸は、指示 × モデル × 材料（厚さ）× 自己点検の 2 段目。磨く作業は、本番とは別の無料枠を
-  持つモデルで回してよい
+- From dev, pick **one case per failure type** to form the hard-case set (e.g. overclaiming an interpretation / linking separate
+  results causally / misaligned citation numbers). Run each iteration on just these few cases
+- Each time a candidate is ready, check it on the hard-case set: the judge's cutoff → the author reads one draft per case
+  (asking only "is it readable?" and "where did you stop?")
+- Once a candidate passes both the author and the cutoff on the hard-case set, have it write **a few cases of different types from
+  holdout**, and check them with the cutoff and the author's reading. This is the stage that checks whether polishing tuned to the
+  hard cases also holds on materials it has not seen
+- The axes of variants are instructions × model × materials (thickness) × a second self-check pass. The polishing work may run on a
+  model with a free tier separate from production
 
-## 4. 足切りの判定役
+## 4. The cutoff judge
 
-判定役の中身は skill: llm-as-judge の型で作る（二値のチェック、根拠 1 行、致命的な No が一つで
-不合格、数値の採点と集計を持たない）。ここでは、この用途で効いた点だけを置く。
+Build the judge following the pattern in skill: llm-as-judge (binary checks, a one-line rationale, a single fatal No
+means fail, no numeric scoring or aggregation). Only the points that worked for this use are listed here.
 
-- **チェックの中身**: 数値の中身（何の数値か）と比較の相手 / 原文の限定（「〜しうる」「多くの場合」）の
-  保持 / 設計の意図を結果として書いていないか / 研究の対象のすり替え / 引用先に無い内容
-- **判定の前にコードで確かめる**: 引用記号の位置、印の有無、字数。判定役にはその結果を事実の行として
-  見せる。コードの検査が誤判定すると判定役の足切りも引きずられるので、検査を直したら既存の草稿にも
-  掛け直してから判定役に渡す
-- **1 本ずつ判定する**: 足切りは合否なので、草稿 1 本ごとに判定すればよい
-- **判定役は軽くする**: Read / Write だけを持つ専用 agent を定義する。汎用の subagent は起動のたびに
-  全ツール定義と常駐ルールを読むため、1 回の判定が約 8.5 万トークン、専用 agent なら約 2.5 万
-  トークンだった（2026-09-23 実測）。書き出し先は、そのセッションが書ける場所（scratchpad など）にする
+- **What to check**: what a number actually means (what it is a number of) and its comparison target / preservation of the original's
+  qualifiers ("can ~", "in many cases") / not writing a design intent as a result / substitution of the research subject / content
+  not found in the cited source
+- **Check with code before judging**: position of citation marks, presence of markers, character count. Show the judge those results
+  as fact lines. If the code check misjudges, the judge's cutoff is dragged along with it, so after fixing a check, re-run it on the
+  existing drafts before passing them to the judge
+- **Judge one draft at a time**: the cutoff is pass/fail, so judging each draft individually is enough
+- **Keep the judge light**: define a dedicated agent that holds only Read / Write. A general-purpose subagent loads every tool
+  definition and all always-loaded rules on each launch, so one judgment cost about 85k tokens, versus about 25k tokens with a
+  dedicated agent (measured 2026-09-23). Write output to a location that session can write to (e.g. the scratchpad)
 
-## 5. 著者の読みから、書き方の原則を取り出す
+## 5. Extract writing principles from the author's reading
 
-著者の一言を、指示の原則に翻訳する。2026-09-23 のループで効いた翻訳の例:
+Translate the author's one-word comments into instruction principles. Examples of translations that worked in the 2026-09-23 loop:
 
-| 著者の一言 | 指示に入れた原則 |
+| Author's comment | Principle added to the instructions |
 |---|---|
-| 目が滑る / 前提の説明を省略している | 論文を読んでいない読者への説明として書く。研究ごとに「取り組んだ問題 → やったこと → わかったこと」。専門用語は初出で言い換える |
-| 情報量は多いが読みにくい | 持ち帰る事実を研究 1 本につき 1〜2 個に絞る（文の長さではなく、事実と固有名の数が効いていた） |
-| 変な断り書きが微妙 | 「直接扱った研究ではない」のような断り書きをやめ、研究の対象を説明の中で示す |
-| 短すぎて中身を拾えているか不安 | 研究ごとの 3 要素を最低 1 文ずつ、全体の字数に下限を置く |
+| My eyes glaze over / it skips explaining the premise | Write as an explanation for a reader who has not read the paper. For each study: "problem tackled → what was done → what was found". Rephrase technical terms at first use |
+| Lots of information but hard to read | Narrow the takeaway facts to 1–2 per study (what mattered was the number of facts and proper nouns, not sentence length) |
+| The odd disclaimer is off-putting | Drop disclaimers like "this is not a study that dealt with it directly"; show the research subject within the explanation |
+| So short I worry it doesn't capture the substance | At least one sentence for each of the 3 elements per study; set a lower bound on total character count |
 
-原則を足したら、足切りで新しい型の崩れが出ていないかを必ず見る。平易に言い換えるほど、限定が落ちて
-断定に寄る（「〜しうる」→「〜する」）。読みやすい文章の中の事実の崩れは、読む人には見えない。
+After adding a principle, always check whether the cutoff surfaces a new type of breakdown. The more plainly you rephrase, the more
+qualifiers drop out and the text drifts toward assertion ("can ~" → "does ~"). A factual breakdown inside readable prose is invisible
+to the reader.
 
-## 6. トリビアルな評価を見分ける
+## 6. Recognize trivial evaluations
 
-次の比較は、改善を測っていない。
+The following comparisons do not measure improvement.
 
-- **弱い基準線に勝つ**: 短い言い換えの羅列と、説明を尽くした版を比べれば後者が勝つ。どんな書き直しでも
-  勝つ相手との比較は、良くなったかを示さない
-- **自分で書いたルールへの遵守**: 足切りの合格率が上がったことは、指示に従えるようになったことを示すが、
-  読む価値が上がったことは示さない
-- **差が出ない比較**: 軸のほとんどが tie なら、その比較から学べることは少ない
-- **判定のばらつきと同じ大きさの差**: 同じ草稿が順番や回で合否を変えるなら、版の差として読まない
+- **Beating a weak baseline**: compare a list of short paraphrases with a fully explained version and the latter wins. A comparison
+  against something any rewrite would beat does not show whether things got better
+- **Compliance with rules you wrote yourself**: a rising pass rate on the cutoff shows the writer can now follow instructions,
+  not that the reading value went up
+- **Comparisons with no difference**: if most axes are ties, little can be learned from that comparison
+- **Differences the same size as judgment variance**: if the same draft flips pass/fail by ordering or run, do not read it as a
+  difference between versions
 
-迷ったら、著者に 1 件読んでもらう方が、判定役を何十回回すより速く正解に近づく。
+When in doubt, having the author read one case gets you closer to the right answer faster than running the judge dozens of times.
 
-## 参照例
+## Reference example
 
-jev-research-pipeline（2026-09-23）: `src/jev_research_pipeline/pipeline/prose_bench.py`
-（`jrp prose export|bench|read|gate` — 材料の固定 / 草稿 / 著者向けの blind 読み比べ / 1 本ずつの
-足切り）、足切りのチェック `docs/prose-rubric.md`、判定役 `.claude/agents/prose-judge.md`、
-プロンプトの変遷 `bench/prose/prompts/`、手順は同 repo の `AGENTS.md`「本文を磨く」節、経緯は
-`docs/design/pipeline-design.md`「Prose bench」節。
+jev-research-pipeline (2026-09-23): `src/jev_research_pipeline/pipeline/prose_bench.py`
+(`jrp prose export|bench|read|gate` — fixing materials / drafts / blind side-by-side reads for the author / per-draft
+cutoff), cutoff checks `docs/prose-rubric.md`, judge `.claude/agents/prose-judge.md`,
+prompt history `bench/prose/prompts/`, procedure in the same repo's `AGENTS.md` section 「本文を磨く」 ("polishing the body
+text"), background in `docs/design/pipeline-design.md` section "Prose bench".

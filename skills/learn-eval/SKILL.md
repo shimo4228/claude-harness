@@ -1,6 +1,6 @@
 ---
 name: learn-eval
-description: "Extract a reusable pattern from the current session, judge it Save / Improve then Save / Absorb / Drop against a grounding checklist, and route every Save to a destination something actually reaches — absorbed into an existing skill / rule / doc section, or promoted to a real skill via skill-creator. Use when the user says 「今回の学びを残して」「learn-eval して」 or /learn-eval. There is no notes parking lot: if nothing would route to it, the verdict is Drop. NOT for mining past sessions (session-judgment-mining), auditing skills (skill-stocktake), or distilling rules (rules-distill)."
+description: "Extract a reusable pattern from the current session, judge it Save / Improve then Save / Absorb / Drop against a grounding checklist, and route every Save to a destination something actually reaches — absorbed into an existing skill / rule / doc section, or promoted to a real skill via skill-creator. Use when the user says \"save what we learned this time\", \"run learn-eval\" or /learn-eval. There is no notes parking lot: if nothing would route to it, the verdict is Drop. NOT for mining past sessions (session-judgment-mining), auditing skills (skill-stocktake), or distilling rules (rules-distill)."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -42,8 +42,8 @@ Look for:
    nothing points at is reachable only by grep, and grep requires already knowing the
    content exists (measurement: ADR-0047).
 
-   Global vs project placement (once a destination type is chosen): 正本は
-   [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md)。
+   Global vs project placement (once a destination type is chosen): the source of truth is
+   [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md).
 
 4. Draft the candidate as a scratch note (the final skill shape belongs to `skill-creator`;
    `overlap_candidates.py` reads name / description / Problem / Solution / When to Use):
@@ -73,7 +73,7 @@ description: "Description in 130 characters or less"
    in this session's scratchpad directory with the Write tool** and pass that path:
 
    ```bash
-   uv run --project ~/.claude/skills/learn-eval \
+   uv run --frozen --project ~/.claude/skills/learn-eval \
           --directory ~/.claude/skills/learn-eval \
           python scripts/overlap_candidates.py \
           --draft /path/to/scratch/learn-eval-draft.md --project "$PWD"

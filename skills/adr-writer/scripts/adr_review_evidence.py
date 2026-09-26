@@ -13,9 +13,9 @@ whether the deviation matters.
 
   refs          ADR-NNNN / RFC-NNNN mentions resolved against the corpus;
                 local Markdown links resolved            (12/24 reports)
-  relations     forward supersede/注記 targets; whether each target points back
-                (Status or dated 注記); inbound mentions; index rows;
-                注記 blockquote format                    (11/24 reports)
+  relations     forward supersede/Note (注記) targets; whether each target points
+                back (Status or dated Note); inbound mentions; index rows;
+                Note blockquote format                    (11/24 reports)
   paths         path-like tokens classified: tracked / untracked / ignored /
                 missing / outside-repo; cited file:line resolved to the
                 line text so the reviewer compares without opening the file
@@ -23,7 +23,7 @@ whether the deviation matters.
   diff_scope    --diff: files changed vs paths the ADR names, both directions
                                                           (8/24 reports)
   numbers       prose numbers with no anchor (date / command / sha / path /
-                URL / 実測) in their paragraph; percentages without a
+                URL / measured) in their paragraph; percentages without a
                 denominator; relative-time / session referents (18/24 reports)
   review_when   items carrying a count or period condition — the reviewer
                 still asks subject / judge / window / venue (17/24 reports)

@@ -163,7 +163,7 @@ _OWNER_PREFIXES: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 
 def _has_template_placeholder(text: str) -> bool:
-    """Angle brackets (`<公開repo>/x.sh`) and the ellipsis (`…/x.sh`) mark a doc
+    """Angle brackets (`<public-repo>/x.sh`) and the ellipsis (`…/x.sh`) mark a doc
     template slot, never a real path. Skip rather than emit a false positive."""
     return "<" in text or ">" in text or "…" in text
 

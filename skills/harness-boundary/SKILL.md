@@ -1,127 +1,127 @@
 ---
 name: harness-boundary
-description: "agent 環境に mechanism（rule / skill / hook / agent / workflow / runtime 拡張 / prompt chain）を追加・変更・レビューするとき、それが 6 層（model capability / skill = 手続き記憶 / values・policy / eval / data・memory / runtime）のどこに属するか、なぜモデル自身に任せられないか、次のモデル世代で不要になるか、runtime を Claude Code → Pi → Codex と交換しても残す価値があるかを問い、Keep / Move / Simplify / Make temporary / Delete / Defer を返す設計レンズ。Use when — 「これはハーネスに入れるべきか」「どの層に置くか」「モデルに任せられないか」「runtime 変えても残るか」「harness が肥大している」「この hook / rule / workflow を足していい？」, when implementation-chain の Plan で harness 自体（~/.claude の rules / skills / hooks / agents / settings）を変更する task と判定されたとき, or /harness-boundary. Delete / Simplify は成功として扱う。NOT for — 未構築物の build-or-not 単体（→ agent architect）、設置済み資産の定期監査と Retire / Dissolve の verdict（→ rules-stocktake / skill-stocktake / agent-stocktake。本 skill は証拠を渡すだけ）、世代交代時の一括照合（→ generation-audit）、loop 構造の妥当性（→ loop-design-check）。"
+description: "A design lens for adding, changing, or reviewing a mechanism (rule / skill / hook / agent / workflow / runtime extension / prompt chain) in an agent environment: it asks which of 6 layers (model capability / skill = procedural memory / values & policy / eval / data & memory / runtime) the mechanism belongs to, why it cannot be left to the model itself, whether the next model generation will make it unnecessary, and whether it is worth keeping when the runtime is swapped (Claude Code → Pi → Codex), and returns Keep / Move / Simplify / Make temporary / Delete / Defer. Use when — \"should this go in the harness?\", \"which layer does this belong in?\", \"can't the model handle this itself?\", \"will this survive a runtime change?\", \"the harness is bloated\", \"can I add this hook / rule / workflow?\", when implementation-chain's Plan judges a task to change the harness itself (rules / skills / hooks / agents / settings in ~/.claude), or /harness-boundary. Delete / Simplify count as success. NOT for — a standalone build-or-not decision on something not yet built (→ agent architect), periodic audits of installed assets and Retire / Dissolve verdicts (→ rules-stocktake / skill-stocktake / agent-stocktake; this skill only passes evidence), bulk cross-checks at a model generation change (→ generation-audit), validity of loop structure (→ loop-design-check)."
 user-invocable: true
 origin: shimo4228
 disable-model-invocation: true
 ---
 
-# harness-boundary — harness を捨てても残るものだけを資産にする設計レンズ
+# harness-boundary — a design lens that treats as assets only what survives discarding the harness
 
-「ハーネスこそ資産」は半分しか正しくない。モデル固有の弱点を補う harness logic は
-モデル世代ごとに陳腐化し、runtime（tool 実行・permission・state・retry・agent loop）は
-標準化と置換が進む。残るのは harness の中に**混在している別の層**だ。この skill は
-mechanism を追加・変更・レビューするときに、その混在を分解するための問いを出す。
+"The harness is the asset" is only half right. Harness logic that compensates for model-specific weaknesses
+goes stale with each model generation, and the runtime (tool execution, permissions, state, retry, agent loop)
+is being standardized and replaced. What remains are **other layers mixed into** the harness. This skill
+raises the questions for separating that mixture when a mechanism is added, changed, or reviewed.
 
-これは architecture の強制ではなく、資産境界・可搬性・陳腐化を判断するレンズである。
+This is not an enforced architecture but a lens for judging asset boundaries, portability, and obsolescence.
 
-## 中心原則
+## Core principles
 
-- Model capability はモデルに置く。harness で再実装しない
-- Procedural knowledge は skill に置く
-- Values と責任境界は明示的で検査可能な形に保つ
-- Quality の定義は eval に置く
-- Domain 知識と履歴は data / memory に置く
-- Runtime は実用上できる限り薄く、交換可能に保つ
+- Put model capability in the model. Do not reimplement it in the harness
+- Put procedural knowledge in skills
+- Keep values and responsibility boundaries explicit and inspectable
+- Put the definition of quality in evals
+- Put domain knowledge and history in data / memory
+- Keep the runtime as thin and swappable as practically possible
 
-そして: **harness を保存するために最適化しない。harness を交換しても残るべきものを
-保存するために最適化する。** 新しいモデルが既存 logic を不要にしたなら、それは設計の
-失敗ではなく削除のタイミングである。Delete / Simplify は成功として扱う。
+And: **do not optimize to preserve the harness. Optimize to preserve what should survive
+swapping the harness.** When a new model makes existing logic unnecessary, that is not a design
+failure but the moment to delete. Delete / Simplify count as success.
 
-## 6 層
+## The 6 layers
 
-| 層 | 中身 | この harness での対応物 | 既存語彙 |
+| Layer | Contents | Counterpart in this harness | Existing vocabulary |
 |---|---|---|---|
-| Model capability | reasoning / planning / coding / tool-use 判断 / self-correction / decomposition / reflection | Claude 本体（system prompt + tool description を含む） | substrate、generation-audit の runtime 層 |
-| Skills（手続き記憶） | この task はこの手順 / このレビューはこの観点 / この障害はこの runbook / この成果物はこの検証 | `skills/*/SKILL.md`、`agents/*.md` の本文 | 「手順は skill」（rules/README.md） |
-| Values / Policies / 責任境界 | 何を優先するか / 何をしないか / 人間承認が要る操作 / 委譲範囲 / 正本 / 失敗時の優先 | `rules/common/`（identity / values 層、ADR-0018 D7）、`settings.json` の permissions、task request の権限 | 「環境固有の事実・配線・罠」（ADR-0035） |
-| Evals | acceptance criteria / tests / rubric / benchmark / regression / quality gate | `.claude/verify.sh`、`tests/`、`skill-comply`、`llm-as-judge`、judge agent（readme-judge 等） | Verify、binding 判定 |
-| Data / Memory | 成果物 / decision history / domain 知識 / preferences / provenance / 履歴状態 | `docs/adr/`、auto-memory、`.notes/`、`metrics/*.jsonl`、wiki | ADR = 日付つき仮説 |
-| Runtime | tool calling / shell・fs / permission 実装 / sandbox / connector / retry / logging / state / routing / agent loop | Claude Code 本体、`hooks/*.sh`、MCP server、Workflow / Agent tool、launchd tick | control plane（ADR-0019）、hook は時刻（ADR-0035） |
+| Model capability | reasoning / planning / coding / tool-use judgment / self-correction / decomposition / reflection | Claude itself (including the system prompt + tool descriptions) | substrate, generation-audit's runtime layer |
+| Skills (procedural memory) | this task follows this procedure / this review uses these angles / this failure has this runbook / this deliverable gets this verification | `skills/*/SKILL.md`, the body of `agents/*.md` | "procedures go in skills" (rules/README.md) |
+| Values / Policies / responsibility boundaries | what to prioritize / what not to do / operations that need human approval / scope of delegation / source of truth / priorities on failure | `rules/common/` (identity / values layer, ADR-0018 D7), permissions in `settings.json`, authority in the task request | "environment-specific facts, wiring, traps" (ADR-0035) |
+| Evals | acceptance criteria / tests / rubric / benchmark / regression / quality gate | `.claude/verify.sh`, `tests/`, `skill-comply`, `llm-as-judge`, judge agents (readme-judge, etc.) | Verify, binding judgment |
+| Data / Memory | deliverables / decision history / domain knowledge / preferences / provenance / historical state | `docs/adr/`, auto-memory, `.notes/`, `metrics/*.jsonl`, wiki | ADR = dated hypothesis |
+| Runtime | tool calling / shell & fs / permission implementation / sandbox / connector / retry / logging / state / routing / agent loop | Claude Code itself, `hooks/*.sh`, MCP servers, the Workflow / Agent tools, launchd tick | control plane (ADR-0019), hooks are timing (ADR-0035) |
 
-hooks は runtime 層に座るが、**policy を黙って encode しやすい**（例: 承認 gate の条件、
-何を block するか）。hook を見るときは「時刻の配線」と「中に埋まった policy」を分けて、
-後者は rule / ADR に見える形で出ているかを問う。
+Hooks sit in the runtime layer, but they **easily encode policy silently** (e.g., the conditions of an approval gate,
+what to block). When looking at a hook, separate "the timing wiring" from "the policy embedded in it," and
+ask whether the latter is visibly stated in a rule / ADR.
 
-## 6 問
+## The 6 questions
 
-対象 1 件につき、規模に応じて必要な問いだけ使う。
+For each target, use only the questions its scale calls for.
 
-- **A. どの層か。** 複数にまたがるなら分離できないか
-- **B. なぜモデル自身に任せられないか。** 明確な理由が言えなければ harness に足さない。
-  「前のモデルが苦手だった」は理由にならない — 今のモデルで試したか
-- **C. 次のモデル世代で不要になりそうか。** 能力不足の workaround なら恒久 architecture に
-  しない。temporary / removable と明示し、失効条件を書く
-- **D. Runtime を交換しても残す価値があるか。** Claude Code → Pi → Codex → 未知の runtime に
-  移しても要るなら、runtime から切り離して保持する候補。要らないなら runtime 固有として薄く
-- **E. 必要なインフラか、差別化資産か。** 両方「重要」だが混同しない。インフラは借りる・
-  置換する前提、差別化資産は可搬な形で持つ
-- **F. もっと単純な層へ移せないか。** 典型の移送:
-  custom agent loop → model / hard-coded workflow → skill / runtime 内の条件分岐 → policy /
-  prompt による品質判定 → eval / 埋め込まれた知識 → data
+- **A. Which layer is it?** If it spans several, can it be separated?
+- **B. Why can't it be left to the model itself?** If you cannot state a clear reason, do not add it to the harness.
+  "The previous model was bad at this" is not a reason — have you tried it with the current model?
+- **C. Is the next model generation likely to make it unnecessary?** If it is a workaround for a capability gap, do not make it
+  permanent architecture. Mark it explicitly as temporary / removable and write its expiry condition
+- **D. Is it worth keeping when the runtime is swapped?** If it is still needed after moving Claude Code → Pi → Codex → an unknown
+  runtime, it is a candidate to hold separately from the runtime. If not, keep it thin as runtime-specific
+- **E. Is it necessary infrastructure or a differentiating asset?** Both are "important," but do not conflate them. Infrastructure is
+  assumed to be borrowed and replaced; differentiating assets are held in portable form
+- **F. Can it move to a simpler layer?** Typical moves:
+  custom agent loop → model / hard-coded workflow → skill / conditional branching inside the runtime → policy /
+  prompt-based quality judgment → eval / embedded knowledge → data
 
-## 強く疑う対象
+## Targets to suspect strongly
 
-自動的に否定はしない。だが以下は B〜D を省略せずに通す:
+Not rejected automatically. But the following go through B–D without skipping:
 
-elaborate agent loop / 必須の reflection / 必須の planning 段 / 固定の multi-agent
-orchestration / 過剰な routing / 長い system prompt / モデル固有の行動 workaround /
-モデル能力の重複実装 / 古いモデルが要したから残っている workflow / domain 知識を含む
-runtime 固有抽象 / policy を黙って encode する hook / 責任境界を隠す不透明な自動化 /
-既存 harness 設計を温存すること自体が目的の機構
+elaborate agent loops / mandatory reflection / mandatory planning stages / fixed multi-agent
+orchestration / excessive routing / long system prompts / model-specific behavioral workarounds /
+duplicate implementations of model capability / workflows that remain because an old model needed them / runtime-specific
+abstractions that contain domain knowledge / hooks that silently encode policy / opaque automation that hides responsibility boundaries /
+mechanisms whose purpose is preserving the existing harness design itself
 
-## 出力
+## Output
 
-大げさにしない。1 行で済むなら 1 行（例: 「これは skill 層。runtime に置く理由なし → Move」）。
-**毎回全項目を出さない。** 判断が分かれる・影響が広い場合だけ次の形:
+Do not overdo it. If one line is enough, use one line (e.g., "This is the skill layer. No reason to put it in the runtime → Move").
+**Do not output every field every time.** Only when the judgment is contested or the impact is broad, use this form:
 
 ```
-Classification        : 層（複数なら分離案）
-Keep outside model because : モデル外に置く理由（無ければ Delete 候補）
-Portability           : runtime / model 交換時に残すか
-Obsolescence risk     : Low / Medium / High（根拠 1 行、可能なら失効条件）
+Classification        : layer (a separation proposal if several)
+Keep outside model because : reason to keep it outside the model (if none, a Delete candidate)
+Portability           : whether to keep it when the runtime / model is swapped
+Obsolescence risk     : Low / Medium / High (1-line rationale, expiry condition if possible)
 Recommendation        : Keep / Move / Simplify / Make temporary / Delete / Defer
 ```
 
-## 既存 verdict との接続
+## Connecting to existing verdicts
 
-本 skill が Recommendation を直接出すのは**提案中・変更中の mechanism** に対してだけ。
-**設置済み資産**に遡及適用した場合は結論を自分で実行せず、該当 stocktake に証拠として渡す
-（generation-audit と同じ「読む、要求しない」契約。verdict 表の正本を割らない — ADR-0022）。
+This skill issues a Recommendation directly only for **mechanisms being proposed or changed**.
+When applied retroactively to **installed assets**, do not execute the conclusion yourself; pass it as evidence to the relevant stocktake
+(the same "read, never require" contract as generation-audit. Do not split the source of truth for the verdict table — ADR-0022).
 
-| 本 skill | 設置済み資産での対応先 |
+| This skill | Counterpart for installed assets |
 |---|---|
-| Delete | rules / skill / agent-stocktake の Retire / Dissolve |
-| Move | 同 Demote / Merge、または rules-distill（skill → rule 方向） |
-| Simplify | 同 Improve、built-in `/simplify` |
-| Make temporary | rule なら `review-when:`、ADR なら `## Review-when`、skill なら `## 失効条件` に期限を書く |
-| Defer | skill: `rfc-writer` で `draft` として起票（単一表だけの小 repo は `.notes/TASKS.md` へ 1 行） |
-| Keep | 理由を 1 行残す（将来の stocktake の根拠になる） |
+| Delete | Retire / Dissolve in rules / skill / agent-stocktake |
+| Move | Demote / Merge in the same, or rules-distill (skill → rule direction) |
+| Simplify | Improve in the same, built-in `/simplify` |
+| Make temporary | write a deadline in `review-when:` for a rule, `## Review-when` for an ADR, `## Expiry conditions` for a skill |
+| Defer | skill: file it as a `draft` with `rfc-writer` (in a small repo with a single table, one line in `.notes/TASKS.md`) |
+| Keep | leave a 1-line reason (it becomes grounds for future stocktakes) |
 
-## 適用外
+## Out of scope
 
-- 未構築物の build-or-not 単体 → agent `architect`（zero-base test）。本 skill は「作るなら
-  どの層に・いつまで」を答える
-- loop 構造の妥当性（servo / 判定可能性 / damping）→ skill: `loop-design-check`
-- 世代交代時の一括照合 → skill: `generation-audit`
-- 人間可搬性（他人が install して使えるか）→ `skill-creator/references/portability.md`
+- A standalone build-or-not decision on something not yet built → agent `architect` (zero-base test). This skill answers "if it is built,
+  in which layer and until when"
+- Validity of loop structure (servo / decidability / damping) → skill: `loop-design-check`
+- Bulk cross-check at a model generation change → skill: `generation-audit`
+- Human portability (whether others can install and use it) → `skill-creator/references/portability.md`
 
-## 失効条件
+## Expiry conditions
 
-- substrate が層分解・可搬性・陳腐化の判断を native に持ち、harness 変更時に自発的に問うように
-  なったら本 skill は退役する（Downward、`rules/common/akc-cycle.md`）
-- 6 層の区分自体が崩れたら（例: eval が model capability に吸収される、skill と data の境界が
-  消える）区分を書き直す。問い A〜F は区分より長く残る想定
-- 本 skill が 150 行を超えたら、本 skill 自身に 6 問を当てる
+- When the substrate natively handles judgments about layer decomposition, portability, and obsolescence, and asks them on its own when
+  the harness changes, this skill retires (Downward, `rules/common/akc-cycle.md`)
+- If the 6-layer division itself breaks down (e.g., eval is absorbed into model capability, the boundary between skill and data
+  disappears), rewrite the division. Questions A–F are expected to outlive the division
+- If this skill exceeds 150 lines, apply the 6 questions to this skill itself
 
 ## Related
 
-- `architect` agent — 事前の双子: build-or-not。本 skill は「作るならどの層に・どこまで」
-- `loop-design-check` — Step 0 の subtract gate と同型（足す前に引く）
-- `generation-audit` — 世代交代時の事後照合。本 skill は設計時の事前判断、証拠の向きは同じ
-- `rules-stocktake` / `skill-stocktake` / `agent-stocktake` — verdict の正本。本 skill の
-  Delete / Move は設置済み資産ではこれらへの証拠になる
-- `rules-distill` — skill → rule の昇格基準（tests 1–3 は問い A・B の rule 版）
-- `rules/common/akc-cycle.md` — Scaffold Dissolution（Inward / Downward）。問い C はその予測版
-- ADR-0012 / 0015 / 0038 — runtime 可搬性の先例（skills → symlink 共有、rules → reference-first、
-  hooks / permissions は共有外だが hooks 配線節は移植可）。問い D の実測根拠
+- `architect` agent — the up-front twin: build-or-not. This skill answers "if it is built, in which layer and how far"
+- `loop-design-check` — isomorphic to its Step 0 subtract gate (subtract before adding)
+- `generation-audit` — after-the-fact cross-check at a generation change. This skill is up-front judgment at design time; the evidence flows in the same direction
+- `rules-stocktake` / `skill-stocktake` / `agent-stocktake` — the source of truth for verdicts. For installed assets, this skill's
+  Delete / Move become evidence for these
+- `rules-distill` — criteria for promoting skill → rule (tests 1–3 are the rule version of questions A and B)
+- `rules/common/akc-cycle.md` — Scaffold Dissolution (Inward / Downward). Question C is its predictive version
+- ADR-0012 / 0015 / 0038 — precedents for runtime portability (skills → shared via symlink, rules → reference-first,
+  hooks / permissions are outside sharing but the hooks wiring section is portable). The measured grounds for question D

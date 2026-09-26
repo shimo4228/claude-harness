@@ -18,9 +18,9 @@ from scripts.child_settings import child_settings
 from scripts.parser import ObservationEvent
 from scripts.scenario_generator import Scenario
 
-# この値の複製が ~/.claude/hooks/log-skill-usage.sh にある（子セッションの skill 使用行に
-# `sandbox: true` を付ける判定）。動かすときは向こうも動かす —
-# tests/log-skill-usage.bats が両方を読んで一致を主張する。
+# A duplicate of this value lives in ~/.claude/hooks/log-skill-usage.sh (it decides whether to
+# tag a child session's skill-usage lines with `sandbox: true`). If you move it, move that one too —
+# tests/log-skill-usage.bats reads both and asserts they match.
 SANDBOX_BASE = Path("/tmp/skill-comply-sandbox")
 ALLOWED_MODELS = frozenset({"haiku", "sonnet", "opus", "fable"})
 DEFAULT_TIMEOUT_SECONDS = 3600

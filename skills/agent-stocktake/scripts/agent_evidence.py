@@ -122,12 +122,14 @@ _MCP_CONFIG_CANDIDATES = (
 # then cut down by that measurement:
 #
 #   confidence-discard-ja  security-reviewer.md L91 — 「残った指摘に確信度を付け、
-#                          低いものは捨てる」. The corpus's one unambiguous
+#                          低いものは捨てる」 ("assign a confidence to the remaining
+#                          findings and discard the low ones"). The corpus's one unambiguous
 #                          suppression instruction, and the reason the catalog is
 #                          bilingual — agent-stocktake's prose checklist named
 #                          only English phrasings and would have found nothing.
 #   be-conservative        refactor-cleaner.md L75 — "**Be conservative**".
-#   report-exclusion-ja    security-reviewer.md L82-84 — 「… は報告しない」, three
+#   report-exclusion-ja    security-reviewer.md L82-84 — 「… は報告しない」 ("do not
+#                          report …"), three
 #                          scope exclusions that carry their own counter-argument
 #                          two lines below. Legitimately surfaced, resolved by
 #                          reading them: exactly the enumerate/decide case.
@@ -139,7 +141,7 @@ _MCP_CONFIG_CANDIDATES = (
 # Cut on the same measurement, after an architect review flagged the catalog's
 # precision: `only-report` (fact-checker.md L164 and a retired README reviewer — both
 # describing an agent's own output contract, never a suppressed finding) and the
-# 「に限定」 alternative of report-exclusion-ja (readme-judge-checklist.md §D, scoping the
+# 「に限定」 ("limited to") alternative of report-exclusion-ja (readme-judge-checklist.md §D, scoping the
 # agent's evaluation). Yield went from 1 real finding in 8 candidates to 1 in 5.
 # A pattern that has produced only false positives is a pattern that trains the
 # reader to skim the list.
@@ -219,7 +221,7 @@ def count_concepts(shared: frozenset[str] | set[str], text: str) -> int:
     incidental katakana word looks like six shared terms — enough to clear a
     floor meant to require two independent concepts and to outrank a real match
     on count. Measured 2026-08-26: a draft's true home in MEMORY.md fell to rank
-    3 behind 「パーミッション」 alone, and adding two more ordinary Japanese words
+    3 behind 「パーミッション」 ("permission", katakana) alone, and adding two more ordinary Japanese words
     pushed it out of the results entirely.
 
     Counted against the candidate's own text rather than by chaining bigrams:

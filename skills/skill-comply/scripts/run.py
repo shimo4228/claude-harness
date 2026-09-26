@@ -136,18 +136,18 @@ def ensure_unique_sandbox_ids(scenarios: list[Scenario]) -> list[Scenario]:
         reason = ""
         if not sanitize_sandbox_id(new_id):
             new_id = f"scenario-L{scenario.level}"
-            reason = "sandbox 名として空になる id"
+            reason = "id becomes empty as a sandbox name"
         if _collision_key(new_id) in seen:
             base = f"{new_id}-L{scenario.level}"
             new_id, suffix = base, 1
             while _collision_key(new_id) in seen:
                 suffix += 1
                 new_id = f"{base}-{suffix}"
-            reason = reason or "sandbox 名が他のシナリオと衝突"
+            reason = reason or "sandbox name collides with another scenario"
         if reason:
             progress(
                 f"  [{reason}] {scenario.id!r} → {new_id!r} "
-                "（sandbox は 1 シナリオ 1 個でなければ並列実行が壊れる）"
+                "(parallel execution breaks unless each scenario has its own sandbox)"
             )
         seen.add(_collision_key(new_id))
         unique.append(scenario if new_id == scenario.id else replace(scenario, id=new_id))
@@ -231,10 +231,10 @@ def _completion_line(outcome: ScenarioOutcome, done: int, total: int) -> str:
     elapsed = f"{_format_elapsed(outcome.elapsed):>7}"
     if outcome.result is None:
         reason = _safe_text(outcome.error or "", 200)
-        return f"       {name} 測定失敗 {elapsed}        ({done}/{total}) — {reason}"
+        return f"       {name} measurement failed {elapsed}        ({done}/{total}) — {reason}"
     rate = f"{outcome.result.compliance_rate:>4.0%}"
-    flag = "  [timeout — 部分出力を採点]" if outcome.timed_out else ""
-    return f"       {name} 完了     {elapsed}  {rate}  ({done}/{total}){flag}"
+    flag = "  [timeout — graded partial output]" if outcome.timed_out else ""
+    return f"       {name} done       {elapsed}  {rate}  ({done}/{total}){flag}"
 
 
 def _execute_one(
@@ -255,7 +255,7 @@ def _execute_one(
     """
     started = time.monotonic()
     try:
-        progress(f"       {_safe_label(scenario.level_name)} 開始")
+        progress(f"       {_safe_label(scenario.level_name)} started")
         run = run_scenario(scenario, model=model, allow_bash=allow_bash, skill_payload=payload)
         result = grade(spec, list(run.observations), classifier_model=classifier_model)
     except Exception as exc:  # one dead scenario must not void the whole run
@@ -363,7 +363,7 @@ def _report_failures(failures: list[ScenarioOutcome]) -> None:
             for line in failure.traceback.rstrip().splitlines():
                 progress(f"         | {line}")
     if not show_traceback and any(f.traceback for f in failures):
-        progress("       (SKILL_COMPLY_DEBUG=1 でトレースバックを表示)")
+        progress("       (set SKILL_COMPLY_DEBUG=1 to show tracebacks)")
 
 
 def _positive_int(raw: str) -> int:
@@ -465,18 +465,18 @@ def _build_parser() -> argparse.ArgumentParser:
 def _announce_target(target: Target, args: argparse.Namespace) -> None:
     if args.load_target_skill and args.allow_bash:
         progress(
-            "[warn] --load-target-skill と --allow-bash の併用: 監査対象の本文が"
-            "無人の子への指示になり、その子にシェルもある。信頼できる .md でのみ。"
+            "[warn] --load-target-skill combined with --allow-bash: the audited body becomes "
+            "instructions to an unattended child, and that child also has a shell. Use only with a trusted .md."
         )
     progress(
         f"[0/4] Target: {target.kind}" + (f" ({target.skill_name})" if target.skill_name else "")
     )
     if target.kind == "project-skill":
         tier = "full body" if args.load_target_skill else "stub (name + description only)"
-        progress(f"       project-scoped — sandbox に {tier} を配置して測定する")
+        progress(f"       project-scoped — placing the {tier} in the sandbox and measuring")
     elif target.kind == "document":
         progress(
-            "       skill ではないので Skill 呼び出しは期待しない（rule / agent 定義 / 素の .md）"
+            "       not a skill, so no Skill call is expected (rule / agent definition / plain .md)"
         )
 
 
@@ -504,11 +504,13 @@ def _warn_unreachable_detectors(spec: ComplianceSpec, args: argparse.Namespace) 
     if unreachable:
         detail = ", ".join(f"{tool} x{n}" for tool, n in sorted(unreachable.items()))
         progress(
-            f"[warn] detector が要求するツールを子が持っていない: {detail}。"
-            "該当 step は「やらなかった」ではなく「観測できなかった」として 0% になる"
+            f"[warn] the child lacks tools that detectors require: {detail}. "
+            'Those steps score 0% as "could not be observed", not as "was not done"'
         )
         if "Bash" in unreachable:
-            progress("       Bash が要るなら --allow-bash を明示する（既定 off は意図的な設計）")
+            progress(
+                "       If Bash is needed, pass --allow-bash explicitly (off by default by design)"
+            )
 
 
 def _print_dry_run(spec: ComplianceSpec, scenarios: list[Scenario]) -> None:
@@ -583,12 +585,12 @@ def _report_conditions(
         conditions["Target skill invoked"] = f"{invoked}/{len(scored)} scenarios"
         if not args.load_target_skill:
             conditions["Tier 1 caveat"] = (
-                "**下の Compliance は手順の遵守を測っており、tier 1 では本文を渡していないので "
-                "skill に帰属しない。tier 1 の測定結果は上の invoked 行**"
+                "**Compliance below measures adherence to the procedure; tier 1 does not pass the body, so it "
+                "is not attributable to the skill. The tier 1 measurement is the invoked row above**"
             )
     if invalidated:
         conditions["Excluded (skill unresolved)"] = (
-            f"**{len(invalidated)} scenario(s) — 読み込めないまま走ったのでスコアから除外**"
+            f"**{len(invalidated)} scenario(s) — ran without loading the skill, so excluded from the score**"
         )
     return conditions
 
@@ -662,7 +664,7 @@ def main() -> None:
         progress(
             f"[invalid] {_safe_label(outcome.scenario.level_name)} "
             f"{outcome.scenario.id!r} reached for {target.skill_name!r} and could not load it "
-            "— このシナリオはスコアに含めない"
+            "— this scenario is not included in the score"
         )
 
     failures = [o for o in outcomes if not o.ok]
@@ -675,8 +677,8 @@ def main() -> None:
     if not graded_results:
         if invalidated:
             progress(
-                "[3/4] 対象 skill を読み込めないまま全シナリオが走った — 測定になっていない。"
-                "target が project skill なら sandbox への配置が効いているか確認する"
+                "[3/4] every scenario ran without loading the target skill — this is not a measurement. "
+                "If the target is a project skill, check that placement into the sandbox is working"
             )
         elif outcomes:
             progress("[3/4] every scenario failed to execute — no measurement to report:")
@@ -712,8 +714,8 @@ def main() -> None:
 
     if invalidated:
         progress(
-            f"\n{len(invalidated)} scenario(s) を除外した（対象 skill を読み込めなかった）。"
-            "レポートは残りのシナリオのみを対象にしている。"
+            f"\n{len(invalidated)} scenario(s) excluded (the target skill could not be loaded). "
+            "The report covers only the remaining scenarios."
         )
         sys.exit(1)
 

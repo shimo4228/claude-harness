@@ -120,7 +120,7 @@ def test_report_order_is_level_order_not_completion_order(
 
     # The test only has teeth if completion order really was reversed; the
     # progress log is the record of what order they finished in.
-    finished = [line.split()[0] for line in capsys.readouterr().err.split("\n") if "完了" in line]
+    finished = [line.split()[0] for line in capsys.readouterr().err.split("\n") if " done " in line]
     assert finished == ["competing", "neutral", "supportive"], finished
 
     assert [o.scenario.level_name for o in outcomes] == ["supportive", "neutral", "competing"]

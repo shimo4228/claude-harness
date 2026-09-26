@@ -34,7 +34,7 @@ Every project document should serve exactly one of these four roles. Overlap cau
 | **Decisions** | Why the code is this way | Trade-offs, rejected alternatives, rationale | docs/adr/ |
 | **External** | What this project is | Purpose, quickstart, API overview | README.md |
 
-**file-level 構造は保存しない**: 「どのファイルに X が住むか / 誰が誰を呼ぶか」はコードから毎回導出する（Claude Code の LSP tool / `grimp` 等の import グラフ）。保存するのは concept 層（graph.jsonld — 「X とは何か / X と Y はどう関係するか」）、設計理由（ADR）、パイプラインの段構成（それを走らせる script の冒頭コメント）だけ。手書きの module map は導出可能な構造の鏡で、ソース commit ごとに同期コストを払いながら読者が観測されなかった（contemplative-agent ADR-0102）。役割境界の詳細は `jsonld-knowledge-graph` skill が正本を持つ。
+**Do not store file-level structure**: "which file X lives in / who calls whom" is derived from the code every time (Claude Code's LSP tool / an import graph from `grimp` etc.). Store only the concept layer (graph.jsonld — "what X is / how X and Y relate"), design rationale (ADRs), and a pipeline's stage layout (the header comment of the script that runs it). A hand-written module map is a mirror of derivable structure; it paid a sync cost on every source commit while no reader was observed (contemplative-agent ADR-0102). The `jsonld-knowledge-graph` skill holds the canonical details of the role boundaries.
 
 ### Common Anti-Patterns
 
@@ -216,7 +216,7 @@ duplicating the rule:
 
 - `graph.jsonld` volatile state (`version` / count fields) and JSON-LD expansion
   pitfalls → `graph_lint.py` (`checks.graph_jsonld.delegated.command`)
-- URL liveness (`EcosystemRepo` URLs, external links) → **未検証**. The script
+- URL liveness (`EcosystemRepo` URLs, external links) → **unverified**. The script
   collects the URLs and returns `verdict: "skip"`. The shared checker is
   `skills/skill-health/scripts/url_liveness.py` (RFC-0008); this script does not
   call it (ADR-0052 Decision 5). Either report the item as unverified, or
@@ -231,7 +231,7 @@ duplicating the rule:
       versioned DOI — the script lists every DOI in `graph_jsonld.dois`; which one is
       the concept record is not decidable from the string
 - [ ] If ADRs carry `## Review-when`: any ADR whose trigger has **fired** carries a
-      dated `> **注記（…）**` under the affected section, or is superseded — not left
+      dated `> **Note (…)**` under the affected section, or is superseded — not left
       reading as current
 - [ ] `llms.txt` does not duplicate README — `llms_txt.readme_h2_overlap.ratio` is the
       measured first-5-H2 overlap; above ~60% it is a README copy and should be
@@ -274,8 +274,8 @@ Status: All documentation roles covered (Context / Architecture / Decisions / Ex
 ## What This Skill Does NOT Do
 
 - Code quality checks (linting, testing, building) — use the Verify gate in
-  `rules/common/planning.md`, or `/code-review` for review（PR を対象に取るときは
-  `/code-review <PR#>`。発火条件の正本は skill: `implementation-chain`）
+  `rules/common/planning.md`, or `/code-review` for review (to target a PR,
+  `/code-review <PR#>`; the canonical trigger conditions live in skill: `implementation-chain`)
 - Agent-specific memory management (e.g., auto-memory systems)
 - `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`
 - Rewriting or judging a README itself — use `readme-writer` (this skill only moves content

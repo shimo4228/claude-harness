@@ -25,7 +25,7 @@ Two deliberate non-capabilities:
     shipped as `skills/skill-health/scripts/url_liveness.py`. This script is not
     wired to it yet (that repo's ADR-0052 Decision 5 defers the context-sync
     consumer), so the URLs are emitted with verdict "skip" and the reviewer reads
-    "未検証" rather than a silent pass.
+    "unverified" rather than a silent pass.
 
 Reuse instead of re-implementation:
 

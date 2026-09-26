@@ -1,6 +1,6 @@
 ---
 name: repo-asset-stocktake
-description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"which configs/workflows/runbooks are dead\", \"repo asset stocktake\", 「非コード資産を棚卸しして」「使われてない設定/workflow/runbook を洗い出して」. NOT for — dead code → refactor-clean; doc-role overlap across CLAUDE.md/graph.jsonld/ADR/README → context-sync; ~/.claude config GC → config-gc; skills or rules → skill-stocktake / rules-stocktake."
+description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"which configs/workflows/runbooks are dead\", \"repo asset stocktake\", \"take stock of my non-code assets\", \"find the unused configs/workflows/runbooks\". NOT for — dead code → refactor-clean; doc-role overlap across CLAUDE.md/graph.jsonld/ADR/README → context-sync; ~/.claude config GC → config-gc; skills or rules → skill-stocktake / rules-stocktake."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:

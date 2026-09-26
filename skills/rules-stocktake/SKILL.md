@@ -1,6 +1,6 @@
 ---
 name: rules-stocktake
-description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken skill pointers, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"which rules should be demoted or dissolved\", 「rules が肥大化してきた」「ルールを棚卸しして」, or when the model generation changed and over-constraints written for the previous one may now be net-negative (「新しいモデルに合わせて rules を見直したい」「rightsize したい」). NOT for — a whole-harness audit on a model-generation change → generation-audit (it hands the rules slice here); skill quality → skill-stocktake; promoting skill patterns INTO rules → rules-distill (this is its inverse); runtime compliance → skill-comply; whole-config GC → config-gc."
+description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken skill pointers, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"which rules should be demoted or dissolved\", \"my rules have bloated\", \"take stock of my rules\", or when the model generation changed and over-constraints written for the previous one may now be net-negative (\"I want to revisit my rules for the new model\", \"I want to rightsize them\"). NOT for — a whole-harness audit on a model-generation change → generation-audit (it hands the rules slice here); skill quality → skill-stocktake; promoting skill patterns INTO rules → rules-distill (this is its inverse); runtime compliance → skill-comply; whole-config GC → config-gc."
 license: MIT
 metadata:
   author: shimo4228
@@ -78,7 +78,7 @@ Read the body of **every** rule and evaluate them one by one while seeing the wh
 **Stage 1 — binary screen (every rule).** Answer each item as an explicit Yes/No per
 rule. Record answers internally; **surface only the No answers**:
 
-- [ ] No content overlap with other rules? (a rule that **declares** another as 正本 and
+- [ ] No content overlap with other rules? (a rule that **declares** another as canonical and
   points at it is NOT overlap — that is the intended layering. Copied prose is.)
 - [ ] No overlap with skills / MEMORY.md / CLAUDE.md? (the division "principle in the rule,
   detail in the skill, a ``skill: `name` `` pointer bridging them" is NOT overlap — a full procedure
@@ -169,7 +169,7 @@ any point; `skip` records the verdict in the ledger unactioned.
   covers the need instead (Dissolve: the named harness feature; Retire: the replacement
   rule/skill), (3) removal impact — **other rules referencing it and the public repo copy**.
   Act only after the user confirms. For Dissolve, offer to record the why via `adr-writer`
-  (akc-cycle.md 「ADR の扱い」).
+  (akc-cycle.md, "Handling ADRs").
 - **Sync README.md**: any file added/renamed/removed → update the table row and its one-line
   description (pairs with the Phase 1 consistency check).
 - **Update the ledger**: Read `results.json` → merge this run's verdicts → Write it back

@@ -310,7 +310,7 @@ def check_diff_scope(
     mentioned: list[dict] = []
     for path in changed:
         if adr_dir_rel and path.startswith(adr_dir_rel + "/"):
-            continue  # the ADR itself, its index, sibling 注記 edits
+            continue  # the ADR itself, its index, sibling Note (注記) edits
         how = _mention_match(text, path)
         (mentioned.append({"file": path, "matched_by": how}) if how else not_mentioned.append(path))
     changed_set = set(changed)

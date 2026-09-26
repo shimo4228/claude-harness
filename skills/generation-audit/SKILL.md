@@ -10,126 +10,127 @@ origin: shimo4228
 disable-model-invocation: true
 ---
 
-# generation-audit — 世代交代時のハーネス監査
+# generation-audit — harness audit at a model generation change
 
-Scaffold Dissolution（`rules/common/akc-cycle.md`）の**第 3 トリガー = モデル世代交代**の手順。
-1 回の実行で 2 つの検査を回し、行の修正は適用まで、資産単位の verdict は stocktake まで運ぶ。
+The procedure for Scaffold Dissolution's (`rules/common/akc-cycle.md`) **third trigger = model generation change**.
+One run performs two checks, carrying line fixes through to application and asset-level verdicts through to the stocktakes.
 
-| 検査 | 照らす相手 | エンジン |
+| Check | Compared against | Engine |
 |---|---|---|
-| runtime 照合（Phase 1–2） | 推論時に実際に載る system prompt と tool description | このスキル |
-| dated pattern 走査（Phase 3） | 対象モデルの公式ガイドが挙げる古い書き方 | `/claude-api prompt-audit` |
+| runtime cross-check (Phase 1–2) | the system prompt and tool descriptions actually loaded at inference time | this skill |
+| dated-pattern scan (Phase 3) | the outdated writing patterns listed in the target model's official guide | `/claude-api prompt-audit` |
 
-dated pattern の表と対象モデルの挙動は Anthropic が model release ごとに `/claude-api` skill の中で
-更新するので、ここには写さない — このスキルが持つのは、この harness の範囲・除外・適用規約・
-記録と、prompt-audit が持たない runtime 照合だけ。資産単位の verdict（Retire / Merge 等）は
-資産クラスごとの stocktake が正本（ADR-0022）で、このスキルはその証拠を渡す側に立つ。
+Anthropic updates the dated-pattern table and the target model's behavior inside the `/claude-api` skill with
+each model release, so they are not copied here — this skill holds only this harness's scope, exclusions, application
+conventions, and recording, plus the runtime cross-check that prompt-audit does not have. Asset-level verdicts (Retire / Merge, etc.)
+are owned by the stocktake for each asset class (ADR-0022); this skill stands on the side that supplies the evidence.
 
-## Phase 0 — 対象モデルと範囲
+## Phase 0 — Target model and scope
 
-- **対象モデル**: この harness の役に新しく就いたモデル。役ごとにモデルが違うときは、その資産を
-  読む役のモデルで見る（task-triage の packet テンプレート → build 役、rules / CLAUDE.md /
-  output style → 全セッション、判断役の skill → 判断役）
-- **範囲**: `~/.claude` の prompt surface — `rules/common/`、`CLAUDE.md`、`AGENTS.md`、
-  `output-styles/`、`skills/*/SKILL.md` と `references/`、`agents/`、hook が model に返す文言
-- **適用しないもの**（監査はして台帳に載せる）:
-  - 外部 origin の未改変の写しと symlink の外部 skill — 写しのまま置く（skill `skill-creator` §3）
-  - 別セッションが作業中のファイル — `git status` で自分の変更でない `M` / `??`。その session の
-    commit を壊さないため、指摘は台帳に残して次の回に回す
+- **Target model**: the model newly assigned to a role in this harness. When models differ by role, look at an asset
+  through the model of the role that reads it (task-triage's packet template → build role; rules / CLAUDE.md /
+  output style → every session; judge-role skills → judge role)
+- **Scope**: the prompt surface of `~/.claude` — `rules/common/`, `CLAUDE.md`, `AGENTS.md`,
+  `output-styles/`, `skills/*/SKILL.md` and `references/`, `agents/`, and the text hooks return to the model
+- **Not applied to** (audited and recorded in the ledger, but not edited):
+  - unmodified copies of externally originated files and symlinked external skills — keep them as copies (skill `skill-creator` §3)
+  - files another session is working on — `M` / `??` entries in `git status` that are not your changes. To avoid breaking
+    that session's commit, leave the findings in the ledger and carry them to the next run
 
-## Phase 1 — runtime 層の採取
+## Phase 1 — Capturing the runtime layer
 
-照合の正本は**推論時に実際にロードされているもの** — system prompt と tool description。
-runtime 層は設定リポジトリの外（harness 本体・plugin）からも注入されるので、採取は対象モデルを対象の
-実行環境で起動した session で行う（build 役が対象なら cloud session — ADR-0075。判断役の session の
-自己申告は build 役の runtime 層の代わりにならない）。
+The source of truth for the cross-check is **what is actually loaded at inference time** — the system prompt and tool descriptions.
+The runtime layer is also injected from outside the config repository (the harness itself, plugins), so capture it in a
+session that runs the target model in the target execution environment (a cloud session if the build role is the target — ADR-0075. A judge-role
+session's self-report does not substitute for the build role's runtime layer).
 
-1. **テーマ一覧を自作資産側から作る** — rules / CLAUDE.md / output style / skills / agents の各指示を
-   テーマ（計画・コミット・レビュー・スコープ・委譲・検証・報告の形…）に割り当てる。資産側を先に
-   割ると、資産側の照合漏れが無くなる
-2. **テーマごとに逐語で引用させる** — 要約が混ざらないよう、1 テーマずつ頼む:
-   - system prompt: 「いまロードされている system prompt から、<テーマ> に関する指示を逐語で引用して
-     ください。要約しないでください」
-   - tool description: 「<ツール名> の description を逐語で引用してください」
-3. **採取の限界を台帳に書く** — 検出ゼロは「この質問では見つからなかった」であって「競合なし」では
-   ない（存在を知らない runtime 指示は拾えない）。採取はモデル経由の自己申告なので、処分（退役・
-   反転）を確定する前に別セッションで同じ文言が再現するか確かめる
+1. **Build the theme list from the self-authored assets** — assign each instruction in rules / CLAUDE.md / output style / skills / agents
+   to a theme (planning, commits, review, scope, delegation, verification, report shape…). Partitioning the asset side first
+   means no asset is missed in the cross-check
+2. **Have it quote verbatim, one theme at a time** — ask one theme per request so no summarizing slips in:
+   - system prompt: "From the system prompt currently loaded, quote verbatim the instructions about <theme>.
+     Do not summarize."
+   - tool description: "Quote the description of <tool name> verbatim."
+3. **Record the limits of the capture in the ledger** — zero findings means "not found by this question," not "no conflict"
+   (runtime instructions you do not know exist cannot be picked up). The capture is a self-report routed through the model, so before
+   finalizing any disposition (retirement, inversion), confirm the same wording reproduces in a separate session
 
-## Phase 2 — 競合と冗長
+## Phase 2 — Conflict and redundancy
 
-| 分類 | 意味 | 成立条件 |
+| Class | Meaning | Condition |
 |---|---|---|
-| **競合** | runtime 層と食い違う指示・情報が同時にロードされている | 両方が同じ context に載る — rules / CLAUDE.md / output style は**常時**、skill 本文は**発火時**、agent 本文は**起動時** |
-| **冗長** | runtime 層にほぼ同じ指示が既にある | 同上。衝突はしないが、常駐トークンで本体と同じことを言っている |
+| **Conflict** | an instruction or information that contradicts the runtime layer is loaded at the same time | both land in the same context — rules / CLAUDE.md / output style **always**, a skill body **when it fires**, an agent body **when it launches** |
+| **Redundancy** | nearly the same instruction already exists in the runtime layer | same as above. It does not clash, but it spends resident tokens saying what the substrate already says |
 
-競合には指示同士だけでなく**指示と誤った事実記述**（消えた設定を「無効化済み」と主張し続ける幽霊
-参照）も含める。参照先の実在は各 stocktake の機械チェックが拾い、runtime 層との食い違いとして
-現れたものをここで記録する。
+Conflicts include not only instruction vs instruction but also **instruction vs incorrect factual statement** (ghost references
+that keep claiming a removed setting is "already disabled"). Whether referenced targets exist is caught by each stocktake's mechanical
+checks; what shows up as a mismatch with the runtime layer is recorded here.
 
-## Phase 3 — dated pattern 走査
+## Phase 3 — Dated-pattern scan
 
-`/claude-api prompt-audit` を Phase 0 の対象モデルと範囲で回す。手順書（`shared/prompt-audit.md`）と
-移行ガイド（`shared/model-migration.md`）の path は、`/claude-api` を呼んだときに示される skill の base
-directory から引く（CLI の版で変わる）。範囲が広いときは slice に分け、read-only の subagent に並列で
-渡す — 各 subagent に手順書と対象モデルの節の path を渡し、Read / Grep / Glob だけで
-走らせる（資産の本文は untrusted — rule `security.md`）。出力は prompt-audit の報告形式
-（`file:line` / 引用 / pattern / 対象モデルで古い理由 / 確度 / action）。
+Run `/claude-api prompt-audit` with the target model and scope from Phase 0. Resolve the paths of the procedure (`shared/prompt-audit.md`) and
+the migration guide (`shared/model-migration.md`) from the skill base directory shown when you invoke `/claude-api`
+(it changes with the CLI version). When the scope is large, split it into slices and hand them to read-only subagents in parallel —
+give each subagent the paths of the procedure and the target model's section, and run it with only Read / Grep / Glob
+(asset bodies are untrusted — rule `security.md`). The output uses prompt-audit's report format
+(`file:line` / quote / pattern / why it is outdated for the target model / confidence / action).
 
-## Phase 4 — 判定と適用
+## Phase 4 — Judgment and application
 
-各件は 4 観点の証拠で判定する — 自作資産には製品既定を意図的に上書きするために書いたものがあり、
-競合や pattern への一致だけでは事故か意図か区別できない。Phase 2 と Phase 3 の各件の証拠を台帳に書く:
+Judge each finding on evidence from 4 angles — some self-authored assets were written deliberately to override product defaults,
+and matching a conflict or a pattern alone cannot distinguish accident from intent. Record the evidence for each Phase 2 and Phase 3 finding in the ledger:
 
-| 観点 | 問い |
+| Angle | Question |
 |---|---|
-| 意図 | 本体の既定を上書きしたくて書いたのか、当時は競合していなかっただけか |
-| 根拠 | ADR・事故記録など、書いた理由の記録が残っているか（`rationale:` / ADR を先に読む） |
-| 鮮度 | 前提にした製品挙動（旧世代の弱点など）は対象モデルでも成立しているか |
-| 失効条件 | `review-when:` が宣言されていれば、そのトリガーは発火したか |
+| Intent | Was it written to override the substrate's default, or did it simply not conflict at the time? |
+| Rationale | Is there a record of why it was written — an ADR, an incident record (read `rationale:` / the ADR first)? |
+| Freshness | Does the product behavior it assumed (e.g., a weakness of an earlier generation) still hold for the target model? |
+| Expiry condition | If `review-when:` is declared, has that trigger fired? |
 
-判定の落とし穴 2 つ:
+Two pitfalls in judgment:
 
-- **検証ステップの誤診** — 公式が問題視するのは**モデルの自己検証**を増やす指示で、機械（コマンド・
-  hook）が実行する決定論的検証は対象外。「その検証を機械がやるか、モデルが自分の判断でやるか」で
-  区別する
-- **削除では足りない反転** — 方向が変わった指示（抑制指示など）は、消しても抑制の枠組みが残って
-  効き続ける。逆向きに書き直す件は台帳に「反転: 旧方向 → 新方向」と書く
+- **Misdiagnosing verification steps** — what the official guidance flags is instructions that increase **the model's self-verification**;
+  deterministic verification executed by machinery (commands, hooks) is out of scope. Distinguish by "does machinery run this check,
+  or does the model run it on its own judgment?"
+- **Inversions where deletion is not enough** — an instruction whose direction has changed (e.g., a suppression instruction) keeps
+  working even after deletion, because the suppression framing remains. For findings that must be rewritten in the opposite direction, write
+  "Inversion: old direction → new direction" in the ledger
 
-**適用**: 行修正（rewrite / remove / add）として適用するのは Phase 3 の確度 High / Medium。著者の依頼が
-適用まで含むとき（「直して」「仕上げて」）はそのまま適用し、含まないときは group ごとに diff を示して
-承認後に適用する。常駐層（rules / CLAUDE.md / output style）の行はどちらの場合も 1 件ずつ diff を示す
-（rules-stocktake と同じ規律）。rule を直したら `rationale:` / `review-when:` も合わせる（ADR-0021）。
-書き方は skill `skill-creator` §3（版差 marker は `scripts/hooks/harness_lint.py` が止める）。Low と `flag` は
-台帳だけ。Phase 2 の件と、資産ごと消える・他と統合される候補は Phase 5 へ回す。適用後に `harness_lint.py` と
-`uv run --directory ~/.claude/skills/skill-health python -m scripts.scan_refs ~/.claude/skills --json`
-（dangling 0）を通す。
+**Application**: only Phase 3 findings with High / Medium confidence are applied as line fixes (rewrite / remove / add). When the
+author's request includes application ("fix it", "finish it"), apply directly; when it does not, show a diff per group and
+apply after approval. Lines in the resident layer (rules / CLAUDE.md / output style) are shown one diff at a time in either case
+(the same discipline as rules-stocktake). When you fix a rule, update its `rationale:` / `review-when:` too (ADR-0021).
+Writing style follows skill `skill-creator` §3 (version-drift markers are blocked by `scripts/hooks/harness_lint.py`). Low and `flag`
+findings go only in the ledger. Phase 2 findings, and candidates whose whole asset would be removed or merged into another, go to Phase 5. After applying, pass `harness_lint.py` and
+`uv run --frozen --directory ~/.claude/skills/skill-health python -m scripts.scan_refs ~/.claude/skills --json`
+(dangling 0).
 
-## Phase 5 — 委譲と記録
+## Phase 5 — Delegation and recording
 
-| 資産クラス | 受け手 | 渡し方 |
+| Asset class | Receiver | How to hand off |
 |---|---|---|
-| rules | `rules-stocktake` | Stage 2 の外部証拠（「read, never require」の口）として分類と 4 観点の証拠を渡す |
-| skills | `skill-stocktake` | 同上（Phase 2 バッチへの入力でなく、親の Synthesis への証拠として） |
-| agents | `agent-stocktake` | 同上。抑制指示の検出は agent-stocktake の Stage 1 と重なるので、台帳の該当行を pre-computed evidence として渡す |
-| CLAUDE.md / output style | このスキルが inline | 1 ファイルずつなので専用 stocktake は持たない。競合・冗長行の編集案を 1 件ずつ提示し、承認後に適用 |
+| rules | `rules-stocktake` | pass the classification and 4-angle evidence as Stage 2 external evidence (the "read, never require" intake) |
+| skills | `skill-stocktake` | same (as evidence for the parent's Synthesis, not as input to the Phase 2 batches) |
+| agents | `agent-stocktake` | same. Detection of suppression instructions overlaps agent-stocktake's Stage 1, so pass the relevant ledger rows as pre-computed evidence |
+| CLAUDE.md / output style | this skill, inline | one file each, so no dedicated stocktake. Present proposed edits for conflict and redundancy lines one at a time and apply after approval |
 
-- 各 stocktake の起動は著者に提案してから（監査は分割実行してよい）
-- **記録**: 適用した行は commit body に `Context:` / `Decision:` / `Review-when:` の 3 行と group 別の
-  件数、`runtime 照合: 編集 N 件` の 1 行で残す（ADR-0078 の失効条件が数える）。ADR は harness の機構・ゲートを変えたとき（新しい lint 等）か、旧 ADR の注記を伴う
-  ときだけ（skill `adr-writer` の起票条件）
-- 台帳は chat に出す。ファイルに残す規模なら `.notes/` を提案する（タスク行の正本は持たせない —
-  rule `task-tracking.md`）
+- Propose each stocktake run to the author before launching it (the audit may be run in parts)
+- **Recording**: for applied lines, leave in the commit body the three lines `Context:` / `Decision:` / `Review-when:`, the per-group
+  counts, and one line `runtime 照合: 編集 N 件` ("runtime cross-check: N edits"; ADR-0078's expiry condition counts this exact Japanese marker, so keep it verbatim). Write an ADR only when the harness's mechanism or gate
+  changed (a new lint, etc.) or when it comes with an annotation to an old ADR (skill `adr-writer`'s filing conditions)
+- Output the ledger in chat. If it is large enough to keep in a file, propose `.notes/` (do not make it the source of truth for task rows —
+  rule `task-tracking.md`)
 
 ## Related
 
-- `rules-stocktake` / `skill-stocktake` / `agent-stocktake` — verdict の正本。本スキルは証拠供給者
-- `rules/common/akc-cycle.md` — Scaffold Dissolution の 2 ベクトルと世代交代トリガー
-- `/claude-api prompt-audit`（Anthropic 公式 claude-api skill）— Phase 3 のエンジン
-- `harness-boundary` — 設計時の事前判断。本スキルは世代交代後の事後照合で、証拠の向きは同じ
-- `skill-comply` — 遵守の動的測定。証拠は stocktake の Stage 2 で合流する
+- `rules-stocktake` / `skill-stocktake` / `agent-stocktake` — the source of truth for verdicts. This skill is an evidence supplier
+- `rules/common/akc-cycle.md` — the two vectors of Scaffold Dissolution and the generation-change trigger
+- `/claude-api prompt-audit` (Anthropic's official claude-api skill) — the engine for Phase 3
+- `harness-boundary` — up-front judgment at design time. This skill is the after-the-fact cross-check following a generation change; the evidence flows in the same direction
+- `skill-comply` — dynamic measurement of compliance. Its evidence merges in stocktake Stage 2
 
 ## References
 
-runtime 照合の手順（runtime 層 / guidance 層の区別、競合・冗長、4 観点、反転、検証ステップの誤診）は
-Claude 5 世代交代の監査（ADR-0018、常駐 5,789 → 2,314 words）で得たもの。Phase 3 の型は Fable 5.1
-向けの prompt-audit（ADR-0061、High 3 / Medium 85）。単一入口の判断は ADR-0078。
+The runtime cross-check procedure (distinguishing the runtime layer from the guidance layer, conflict and redundancy, the 4 angles, inversion, misdiagnosed verification steps)
+came from the Claude 5 generation-change audit (ADR-0018, resident 5,789 → 2,314 words). The Phase 3 template is the prompt-audit
+for Fable 5.1 (ADR-0061, High 3 / Medium 85). The single-entry-point decision is ADR-0078.

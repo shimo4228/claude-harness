@@ -1,6 +1,6 @@
 ---
 name: skill-comply
-description: Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines. Use when a rule's or skill's real adherence is in question or right after adding one — 「この rule 守られてる？」「skill の発火率を測って」「/skill-comply」. NOT for — 静的な品質棚卸し（→ skill-stocktake / rules-stocktake）、参照整合性の検査（→ skill-health）、with/without ablation（→ skill-creator §5）。
+description: "Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines. Use when a rule's or skill's real adherence is in question or right after adding one — \"is this rule actually being followed?\", \"measure how often this skill fires\", \"/skill-comply\". NOT for — static quality stocktakes (→ skill-stocktake / rules-stocktake), reference-integrity checks (→ skill-health), with/without ablation (→ skill-creator §5)."
 compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -33,159 +33,160 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 
 ```bash
 # Full run
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run ~/.claude/rules/common/testing.md
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run ~/.claude/rules/common/testing.md
 
 # Dry run (no cost, spec + scenarios only)
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
 
 # Custom models
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
 
-# 直列に戻す（レートリミットに当たったとき）
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run --concurrency 1 <path>
+# Back to serial (when you hit rate limits)
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --concurrency 1 <path>
 
-# Bash を要する spec のみ (既定は off — 下の「信頼境界」を読んでから)
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run --allow-bash <path>
+# Only for specs that need Bash (off by default — read "Trust boundary" below first)
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --allow-bash <path>
 
-# 保存済み spec を再利用して run 間比較 (LLM 再生成をスキップ)
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run --spec results/<skill-name>.spec.yaml <path>
+# Reuse a saved spec to compare across runs (skips LLM regeneration)
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --spec results/<skill-name>.spec.yaml <path>
 ```
 
-**spec の固定と run 間比較**: spec は「試験問題」。LLM 生成のたびに required steps 数も
-順序制約も変わるため、生成された spec は自動で `results/<skill-name>.spec.yaml` に保存される
-（gitignore 対象外 — version 管理できる）。同じ skill を再測定するときは `--spec` でこれを
-読み込むと問題文が固定され、スコアが比較可能になる。次回の生成 run は同名ファイルを
-上書きするので、比較対象として残したい spec は別名でコピーしておく。
-なお scenario prompt は引き続き毎回 LLM 生成で変動する — run 間比較の固定は spec までで、
-scenario の非決定性は現状スコープ外。
+**Pinning the spec and comparing across runs**: the spec is the "exam paper". Each LLM
+generation changes both the number of required steps and the ordering constraints, so the
+generated spec is automatically saved to `results/<skill-name>.spec.yaml`
+(not gitignored — it can be version-controlled). When re-measuring the same skill, load it
+with `--spec` to pin the questions so scores become comparable. The next generating run
+overwrites the file of the same name, so copy any spec you want to keep as a baseline under another name.
+Note that scenario prompts are still LLM-generated and vary on every run — pinning for run-to-run
+comparison stops at the spec; scenario non-determinism is currently out of scope.
 
-## 実行時間と進捗の見かた
+## Run time and reading progress
 
-3 つのシナリオは互いに独立（別プロンプト・別 sandbox・別プロセス）なので、
-既定で 3 本同時に走る。待ち時間は 3 本の合計ではなく**いちばん遅い 1 本**になる。
-分類（採点）もシナリオごとなので一緒に並ぶ。spec 生成 → シナリオ生成の 2 段は
-前段の出力を次段が使うため直列のまま。
+The three scenarios are independent of each other (separate prompts, separate sandboxes, separate processes),
+so by default all three run at once. Wall time is **the slowest single scenario**, not the sum of the three.
+Classification (grading) is also per scenario, so it runs alongside them. The two stages spec generation → scenario
+generation stay serial because the later stage consumes the earlier stage's output.
 
-並列化してもスコアとレポートは変わらない。完了順は進捗表示にしか使わず、
-レポートは必ず supportive → neutral → competing の順に組み立てる。
-`--concurrency 1` で完全に直列へ戻せる。
+Parallelism does not change scores or reports. Completion order is used only for progress display;
+the report is always assembled in supportive → neutral → competing order.
+`--concurrency 1` returns to fully serial execution.
 
-**進捗は stderr、結果は stdout に出る。** これは事故ではなく分担で、
-2026-08-01 の実測にもとづく（→ [ADR-0029](../../docs/adr/0029-skill-comply-parallel-scenarios-and-stderr-progress.md)）:
+**Progress goes to stderr, results go to stdout.** This is a division of labor, not an accident,
+based on measurements taken 2026-08-01 (→ [ADR-0029](../../docs/adr/0029-skill-comply-parallel-scenarios-and-stderr-progress.md)):
 
 ```bash
-# 進捗が見える。stdout だけが tail に入り、stderr は端末へ直接届く
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run <path> | tail -40
+# Progress is visible. Only stdout goes into tail; stderr reaches the terminal directly
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run <path> | tail -40
 
-# 進捗もログに残したい
-uv run --project ~/.claude/skills/skill-comply python -m scripts.run <path> 2>&1 | tee run.log
+# Also keep progress in the log
+uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run <path> 2>&1 | tee run.log
 ```
 
-**`2>&1 | tail -40` にすると何も見えなくなる。** `tail` は `-f` なしだと
-「最後の N 行」を出す道具で、入力が終わるまで 1 行も出せない。
-これは `tail` の性質なので、`python -u` でも flush でも直らない。
-途中経過を見たいときは `tail` でなく `tee` を使う。
+**With `2>&1 | tail -40` you see nothing at all.** Without `-f`, `tail` is a tool that prints
+"the last N lines", so it cannot emit a single line until its input ends.
+This is a property of `tail`, so neither `python -u` nor flushing fixes it.
+To watch intermediate progress, use `tee` instead of `tail`.
 
-シナリオが 1 本でも失敗したとき（子プロセスの異常終了など）は、
-そのシナリオを 0% として数えず「測定失敗」として stderr に出し、終了コード 1 を返す。
-残りのシナリオのレポートは通常どおり保存される。
+When even one scenario fails (e.g. the child process exits abnormally),
+that scenario is not counted as 0% but reported to stderr as a "measurement failure", and the exit code is 1.
+Reports for the remaining scenarios are saved as usual.
 
-## 測定対象の種別と、測れるもの
+## Target kinds and what can be measured
 
-対象がどこにあるかで、子から見えるかどうかが変わる。**見えないまま測ると、
-skill 遵守ではなく「skill を持たないエージェントの素の挙動」を測ることになる。**
+Where the target lives determines whether the child can see it. **If you measure while it is invisible,
+you are measuring not skill compliance but "the bare behavior of an agent that does not have the skill".**
 
-| 対象 | 子から見えるか | 測定 |
+| Target | Visible to the child? | Measurement |
 |---|---|---|
-| global skill（`~/.claude/skills/`） | 見える | そのまま測れる |
-| project skill（repo の `.claude/skills/`） | **見えない** | sandbox に配置してから測る（下記の 2 層） |
-| rule / agent 定義 / 素の .md | skill ではない | `Skill` 呼び出しは期待しない |
+| global skill (`~/.claude/skills/`) | Visible | Measurable as is |
+| project skill (repo's `.claude/skills/`) | **Not visible** | Placed in the sandbox before measuring (the two tiers below) |
+| rule / agent definition / plain .md | Not a skill | No `Skill` call is expected |
 
-project skill は 2 層で測る。**どちらで測ったかはレポートの Summary に必ず出る** —
-Tier 1 の 75% と Tier 2 の 75% は別物なので、混同できないようにする。
+Project skills are measured in two tiers. **Which tier was used always appears in the report's Summary** —
+75% at Tier 1 and 75% at Tier 2 are different things, so they must not be confusable.
 
-- **Tier 1（既定、flag 不要）** — frontmatter の `name` と `description` だけ本物で、
-  本文は無害な stub を置く。**「skill に手を伸ばしたか」を測る。**
-  発見と起動は `name` / `description` で決まり本文は関与しないので、これで足りる
-- **Tier 2（`--load-target-skill`）** — 本物の本文を置く。**「手順に従うか」を測る。**
-  監査対象の本文が無人の子への**指示**になるので opt-in。`SKILL.md` 1 ファイルのみを
-  写し、ディレクトリは写さない（`references/` を持つ skill は Tier 2 で短く測れる —
-  黙った穴より、見える制限を選ぶ）
+- **Tier 1 (default, no flag)** — only the frontmatter `name` and `description` are real;
+  the body is a harmless stub. **Measures "did the agent reach for the skill".**
+  Discovery and invocation are decided by `name` / `description` and the body plays no part, so this suffices
+- **Tier 2 (`--load-target-skill`)** — places the real body. **Measures "does it follow the procedure".**
+  The audited body becomes **instructions** to an unattended child, so it is opt-in. Only the single `SKILL.md`
+  file is copied, not the directory (a skill with `references/` is measured short at Tier 2 —
+  a visible limitation is preferred over a silent hole)
 
-**Tier 1 は測定の正しさのための層であって、封じ込めの層ではない。** 存在理由は
-「project skill を発見可能にして、素の挙動でなく遵守を測れるようにする」こと。
+**Tier 1 is a layer for measurement correctness, not a containment layer.** Its reason to exist is
+"make project skills discoverable so that compliance, not bare behavior, can be measured".
 
-`description` は発見に必要なので必ず子に届く。上限 500 文字は**分量の上限であって
-能力の上限ではない** — 500 文字は指示文として十分すぎる長さで、Read / Write / Edit /
-Glob / Grep を持つ子に有効な命令を書ける。Tier 1 と Tier 2 の差は
-**「手順が届かない」**であって**「指示が届かない」**ではない。
+`description` is required for discovery, so it always reaches the child. The 500-character cap is **a cap on length,
+not a cap on capability** — 500 characters is more than enough for an instruction, and it can carry effective
+commands to a child that has Read / Write / Edit / Glob / Grep. The difference between Tier 1 and Tier 2
+is **"the procedure does not arrive"**, not **"instructions do not arrive"**.
 
-`--load-target-skill` と `--allow-bash` の併用は、**untrusted な文書に payload と
-インタープリタの両方を渡す**組み合わせなので警告が出る。
+Combining `--load-target-skill` with `--allow-bash` hands **an untrusted document both a payload
+and an interpreter**, so it emits a warning.
 
-## 信頼境界 — 監査対象ファイルは untrusted
+## Trust boundary — the audited file is untrusted
 
-**このツールは、あなたが書いたとは限らない .md を読んで LLM にシナリオを書かせ、
-それを別のエージェントに実行させる。** 監査対象がそのまま生成器への入力になるので、
-対象ファイルの本文は untrusted data として扱う（2026-07-25 security scan F2/F3/F4/F18）。
+**This tool reads a .md you did not necessarily write, has an LLM write scenarios from it,
+and has another agent execute them.** The audited file becomes the generator's input as is, so
+the target file's body is treated as untrusted data (2026-07-25 security scan F2/F3/F4/F18).
 
-- **`setup_commands` は実行されない。** `mkdir` / `touch` の 2 語彙だけを pathlib で
-  解釈し、パスは sandbox 内に解決されることを検証する。それ以外は拒否して stderr に出す
-- **パス検証は `..` を先に潰してから symlink を解決する。** sandbox は直前に消して
-  作り直されるので最初の要素は必ず存在せず、存在しない要素の後ろに置かれた `..`
-  （`a/../../elsewhere/x`）は解決されずに残る。`Path.parents` はそれをただの
-  ディレクトリ名として扱うので、潰す前に判定すると sandbox 外への作成を通す
-- **子のツールは `permissions.deny` で外す。`--allowedTools` では外れない。**
-  `claude --help` の言うとおり `--allowedTools` は「allow するツール名の列」＝自動承認
-  リストであって、載せなかったツールは**消えない**。2026-08-02 に Claude Code 2.1.220 で
-  実測: `--allowedTools "Read,Glob,Grep"` だけの子が Bash を呼び、`uname -sr` が
-  ホスト上で実行された。`--permission-mode`（manual / dontAsk / acceptEdits）でも
-  `--setting-sources project` でも変わらない。
-  `--settings` の `permissions.deny` で `Bash` / `Agent` / `Workflow` /
-  `ToolSearch` / `ScheduleWakeup` を外す（正本: `scripts/child_settings.py`）。
-  Bash 以外も外すのは、`Agent` と `Workflow` が**このコードが制御しないツール集合を持つ
-  サブエージェント**を生み、`ToolSearch` が user 設定から継承した MCP の面
-  （メール・ドライブ・カレンダー・ブラウザ）を必要に応じて読み込むため。
-  `--allow-bash` は deny から Bash を**外す**形で効く
-- `cwd` と `--add-dir` はアクセスを**広げる**もので、閉じ込めない
-- **生成器プロンプトでは対象文書を nonce 区切りで隔離**し、data であって指示ではないと
-  明示している。固定区切り（`---`）は markdown frontmatter が再現できてしまう
-- **sandbox は 1 シナリオ 1 個、かつ 1 実行 1 根**。ディレクトリ名は LLM が生成した
-  scenario id に由来するので、重複していたら実行前に検出して別名にする。直列なら重複は
-  無害だが、並列では片方の sandbox 作成（作る前に消す）が走行中のもう片方を消してしまう。
-  この一意化は**プロセス内でしか効かない**ので、根を実行単位で分ける —
-  `/tmp/skill-comply-sandbox/run-<pid>/<id>`。同じ id を生成した別の run が
-  互いの走行中 sandbox を消さない（`scripts/runner.py: sandbox_run_root`）。
-  `SANDBOX_BASE` 自体が symlink（共有ホスト・CI の scratch 領域）のときは根の計算で
-  1 回だけ解決して追従する — 封じ込め判定を毎回 link 越しにやり直さない
-- **`<sandbox>/.claude/` と `<sandbox>/.git/` はツール専有。監査対象由来の指定は受け付けない。**
-  sandbox は子にとっての**プロジェクトルート**で、そこでは一部のファイル名が
-  「置いてあるだけ」ではなく読み込まれる — 信頼していない workspace でも
-  `<sandbox>/.claude/settings.json` の `hooks.SessionStart` は**無言でホスト上の
-  コマンドを実行し**、`<sandbox>/CLAUDE.md` も読まれて従われる。
-  子自身の Write は substrate が止めるが、**このツールの pathlib 書き込みは止まらない**ので
-  ここで塞ぐ。`CLAUDE.md` / `AGENTS.md` / `.mcp.json` / `settings.json` /
-  `settings.local.json` / `.gitignore` は深さを問わず拒否。
-  **判定は case-fold する** — APFS は case-insensitive なので `.CLAUDE/Settings.json` は
-  書けてしまえば `.claude/settings.json` として読まれる。
-  `.git/` を含めるのは、`_setup_sandbox` が `git init` を先に走らせるので書き込み可能で、
-  `core.fsmonitor` / `core.pager` / `alias.*` が**実行ビット無しで git が実行する設定文字列**
-  だから（実測: `files:` で `.git/config` を置き、`git status` でホスト上のコマンドが走った。
-  Claude Code は workspace で git を実行するので、子の Bash を塞いでいても発火する）。
-  `.gitignore` は実行ではなく**測定の破壊** — Grep は従い Glob は従わないので、文書が
-  自分のフィクスチャを detector の期待するツールから隠せる。
-  **閉じ込められていることと不活性であることは別の性質**で、`_contained` が答えるのは前者だけ
+- **`setup_commands` are not executed.** Only the two verbs `mkdir` / `touch` are interpreted via pathlib,
+  and paths are verified to resolve inside the sandbox. Anything else is rejected and reported to stderr
+- **Path validation collapses `..` before resolving symlinks.** The sandbox is deleted and recreated
+  just beforehand, so the first component never exists, and a `..` placed after a nonexistent component
+  (`a/../../elsewhere/x`) stays unresolved. `Path.parents` treats it as just a
+  directory name, so checking before collapsing lets creation outside the sandbox through
+- **The child's tools are removed with `permissions.deny`. `--allowedTools` does not remove them.**
+  As `claude --help` says, `--allowedTools` is "a list of tool names to allow" = an auto-approve
+  list, and tools not on it **do not disappear**. Measured on 2026-08-02 with Claude Code 2.1.220:
+  a child with only `--allowedTools "Read,Glob,Grep"` called Bash, and `uname -sr` ran
+  on the host. Neither `--permission-mode` (manual / dontAsk / acceptEdits)
+  nor `--setting-sources project` changes this.
+  `permissions.deny` in `--settings` removes `Bash` / `Agent` / `Workflow` /
+  `ToolSearch` / `ScheduleWakeup` (source of truth: `scripts/child_settings.py`).
+  Tools beyond Bash are removed because `Agent` and `Workflow` spawn **subagents whose tool sets
+  this code does not control**, and `ToolSearch` loads on demand the MCP surface inherited from user settings
+  (mail, drive, calendar, browser).
+  `--allow-bash` works by **removing** Bash from the deny list
+- `cwd` and `--add-dir` **widen** access; they do not confine it
+- **Generator prompts isolate the target document with nonce delimiters** and state explicitly that it is
+  data, not instructions. A fixed delimiter (`---`) can be reproduced by markdown frontmatter
+- **One sandbox per scenario, and one root per run.** Directory names derive from the LLM-generated
+  scenario id, so duplicates are detected and renamed before execution. Serially, duplicates are
+  harmless, but in parallel one scenario's sandbox creation (delete before create) wipes the other one mid-run.
+  This deduplication **only works within a process**, so roots are separated per run —
+  `/tmp/skill-comply-sandbox/run-<pid>/<id>`. Separate runs that generated the same id
+  do not delete each other's in-flight sandboxes (`scripts/runner.py: sandbox_run_root`).
+  When `SANDBOX_BASE` itself is a symlink (shared host, CI scratch area), it is resolved and followed
+  once when computing the root — the containment check is not redone across the link every time
+- **`<sandbox>/.claude/` and `<sandbox>/.git/` are reserved for the tool. Specifications originating from the audited file are not accepted.**
+  The sandbox is the child's **project root**, and there some file names are
+  loaded rather than "just sitting there" — even in an untrusted workspace,
+  `hooks.SessionStart` in `<sandbox>/.claude/settings.json` **silently runs commands
+  on the host**, and `<sandbox>/CLAUDE.md` is also read and obeyed.
+  The substrate stops the child's own Writes, but **this tool's pathlib writes are not stopped**, so
+  they are blocked here. `CLAUDE.md` / `AGENTS.md` / `.mcp.json` / `settings.json` /
+  `settings.local.json` / `.gitignore` are rejected at any depth.
+  **The check is case-folded** — APFS is case-insensitive, so `.CLAUDE/Settings.json`, if it
+  could be written, would be read as `.claude/settings.json`.
+  `.git/` is included because `_setup_sandbox` runs `git init` first so it is writable, and
+  `core.fsmonitor` / `core.pager` / `alias.*` are **config strings git executes without an execute bit**
+  (measured: placing `.git/config` via `files:` made `git status` run a command on the host.
+  Claude Code runs git in the workspace, so this fires even with the child's Bash blocked).
+  `.gitignore` is not execution but **sabotage of measurement** — Grep honors it and Glob does not, so a document
+  can hide its own fixtures from the tool the detector expects.
+  **Being contained and being inert are different properties**, and `_contained` answers only the former
 
-信頼できない .md を測るときは `--dry-run` で生成されたシナリオを先に読むこと。
-`--dry-run` は spec の step に加えて、**攻撃者が制御しうる 3 つのフィールドを全文出す** —
-無人の子に渡される `prompt`、ファイルシステムを触る `setup_commands` と `files:`。
+When measuring an untrusted .md, read the generated scenarios first with `--dry-run`.
+In addition to the spec steps, `--dry-run` **prints in full the three fields an attacker may control** —
+`prompt`, which is handed to the unattended child, and `setup_commands` and `files:`, which touch the filesystem.
 
 ## Models
 
 | Stage | Default | Why |
 |-------|---------|-----|
 | `--gen-model` | `haiku` | Spec / scenario generation. Short prompts, fast. |
-| `--model` | `sonnet` | Scenario execution (the agent under test). `haiku` / `sonnet` / `opus` / `fable` を指定可。 |
+| `--model` | `sonnet` | Scenario execution (the agent under test). Accepts `haiku` / `sonnet` / `opus` / `fable`. |
 | `--classifier-model` | `sonnet` | Trace classification. Haiku times out on long traces (50+ events) and abstract specs (e.g. contemplative-axioms). Sonnet handles the load with a 300s timeout. |
 
 ## Key Concept: Prompt Independence

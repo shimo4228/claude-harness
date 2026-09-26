@@ -1,63 +1,65 @@
 ---
 name: jev-judgment-design
 description: >
-  LLM がしていた閉じた判定（この資料は関係あるか・新しいか・どれだけ強い証拠か）を TypeSafe の Jev に
-  移すときの、判定の渡し方と採否の決め方。何に対して判定するかを state に入れる、Score の最下段、
-  Jev が答えコードが決める、判定の単位、通るべき資料（canary）、Pydantic AI からの呼び方。
-  Use when — 「LLM の判定を Jev に置き換えたい」「Jev で関連性の判定を組んで」「Jev の判定が何でも
-  通してしまう」、または Jev を screening / triage / rerank に組み込む設計の前。
-  NOT for — Jev の API・docs・プリミティブ選びの一般指針（→ plugin skill `typesafe:typesafe-ai`。
-  先にそちらを読む）、Claude Code のスキル選択 hook（→ `jev-skill-router`）、LLM を判定器にする
-  設計（→ `llm-as-judge`）。
+  How to hand over judgments and decide accept/reject when moving closed judgments an LLM used to make
+  (is this source relevant, is it new, how strong is the evidence) to TypeSafe's Jev. Putting what the
+  judgment is made against into state, the bottom tier of a Score, Jev answers and code decides, the unit
+  of judgment, sources that must pass (canary), calling from Pydantic AI.
+  Use when — "I want to replace the LLM's judgment with Jev", "build a relevance judgment with Jev",
+  "Jev's judgment lets everything through", or before designing Jev into screening / triage / rerank.
+  NOT for — Jev's API, docs, or general guidance on choosing primitives (→ plugin skill `typesafe:typesafe-ai`;
+  read that first), the Claude Code skill-selection hook (→ `jev-skill-router`), designing an LLM as the
+  judge (→ `llm-as-judge`).
 user-invocable: true
 origin: shimo4228
 ---
 
 # Jev judgment design
 
-Jev は閉じた質問に確率で答え、文章を書かない。LLM パイプラインの判定を Jev に移すと、判定は安く
-並列になるが、Jev は渡された state の中だけで答える。この skill は、その state と、答えから採否を
-決める側の設計を持つ。Jev の一般的な設計指針（state / instructions / criteria、Choice・Noul・Score
-の選び方、no-match、閾値は自分のデータで）は plugin skill `typesafe:typesafe-ai` が正本なので、
-先にそれを読み、ここは上に重ねる判断だけを読む。
+Jev answers closed questions with probabilities and does not write prose. Moving an LLM pipeline's judgments to Jev makes them cheap
+and parallel, but Jev answers only within the state it is handed. This skill owns the design of that state and of the side that
+decides accept/reject from the answers. The general design guidance for Jev (state / instructions / criteria, choosing Choice, Noul,
+or Score, no-match, set thresholds on your own data) is canonical in plugin skill `typesafe:typesafe-ai`, so read that
+first and read only the judgments layered on top here.
 
-出所は jev-research-pipeline（https://github.com/shimo4228/jev-research-pipeline）の実装と、記事
-「LLMに任せていたリサーチの判定を、判定専用モデルJevに移す」
-（https://zenn.dev/shimo4228/articles/jev-research-judgment-offload、2026-09-25 公開予定）。
+Sources: the implementation in jev-research-pipeline (https://github.com/shimo4228/jev-research-pipeline) and the article
+"Moving the research judgments I left to an LLM to Jev, a judgment-only model"
+(https://zenn.dev/shimo4228/articles/jev-research-judgment-offload, scheduled for publication 2026-09-25).
 
-## 1. 移すのは閉じた判定だけ
+## 1. Move only closed judgments
 
-はい・いいえの確率、選択肢から 1 つ、段階評価のどれかで答えが言える判定を Jev に移す。次に
-どこを探すか、どう書くかのように答えの形が開いた仕事は LLM に残す。移した後の計器は「Jev への
-質問数」でなく「実行中の LLM の判断の回数」で見る — Jev の質問数は移した判断の分だけ増えてよい。
+Move to Jev the judgments whose answer can be stated as a yes/no probability, one pick from a set of options, or a point on a graded
+scale. Keep work with an open-ended answer shape, such as where to search next or how to write, with the LLM. After the move, watch the
+instrument "number of LLM judgments during a run", not "number of questions to Jev" — Jev's question count may grow by as many
+judgments as were moved.
 
-## 2. 何に対して判定するかを state に入れる
+## 2. Put what the judgment is made against into state
 
-「関係あるか」は、比べる相手が state に無いと、語を共有するものを何でも通す。Jev は聞かれた
-とおりに答えているので、直すのは質問でなく state の側。比べる相手は、そのテーマで**いま答えを
-探している問い**にし、範囲・除外・採用済みの証拠を一緒に渡す。
+"Is it relevant" lets through anything that shares vocabulary when the comparison target is not in state. Jev is answering exactly
+what it was asked, so the fix belongs in state, not in the question. Make the comparison target **the question that theme is currently
+seeking an answer to**, and pass scope, exclusions, and already-accepted evidence along with it.
 
 ```python
 state = {
     "question": {
-        "title": question.title,        # いま答えを探している問い
-        "brief": question.brief,        # 範囲
-        "evidence": question.evidence,  # 証拠として数えるもの
-        "not": question.negative_topics,  # 語は重なるが対象でない話題
+        "title": question.title,        # the question currently seeking an answer
+        "brief": question.brief,        # scope
+        "evidence": question.evidence,  # what counts as evidence
+        "not": question.negative_topics,  # topics that overlap in vocabulary but are out of scope
     },
     "source": {"title": ..., "url": ..., "excerpt": ...},
-    "evidence_set": accepted_claims,    # この問いで採用済みの証拠（新しさの基準）
+    "evidence_set": accepted_claims,    # evidence already accepted for this question (the baseline for novelty)
 }
 ```
 
-- `not` には、隣の話題でとくに紛れやすいものを書く（例: 意図整合の問いに対する「モデル単体の
-  alignment 訓練」— alignment を題名に含む資料の多くは cross-modal alignment のような語の一致だった）
-- 新しさは「このテーマにとって新しいか」でなく「`evidence_set` に何を足すか」で聞く
+- In `not`, list the neighboring topics that are especially easy to confuse (e.g. "alignment training of a model alone" for a question
+  about intent alignment — most sources with alignment in the title were vocabulary matches such as cross-modal alignment)
+- Ask about novelty as "what does it add to `evidence_set`", not "is it new for this theme"
 
-## 3. Score の最下段に「語を共有するだけ」を置く
+## 3. Put "only shares vocabulary" at the bottom tier of a Score
 
-近さを段階で聞くときは、いちばん下に「語を共有するだけの別の問題」を置く。この段が無いと、
-Jev は近い段に寄せるしかない。
+When asking about closeness on a graded scale, put "a different problem that only shares vocabulary" at the very bottom. Without this
+tier, Jev has no choice but to pull toward a nearby tier.
 
 ```python
 class Overlap(UseEnumMemberDocstrings, IntEnum):
@@ -71,37 +73,37 @@ class Overlap(UseEnumMemberDocstrings, IntEnum):
     """It asks what `question` asks and reports an answer to it."""
 ```
 
-実測（2026-09-23、1 つの問いに「intent」を題名に含む 3 本）: 0.60 で other_problem / 0.53 で
-same_field / 0.77 で same_problem に分かれた。語が同じでも、問いと並べると段が分かれる。
+Measured (2026-09-23, 3 sources with "intent" in the title against one question): they split into other_problem at 0.60 /
+same_field at 0.53 / same_problem at 0.77. Even with the same vocabulary, the tiers separate once placed next to the question.
 
-## 4. Jev が答え、コードが決める
+## 4. Jev answers, code decides
 
-採否は Jev の出力でなく、コードが閾値をかけて決める。
+Accept/reject is decided not by Jev's output but by code applying thresholds.
 
-- **足切り（gate）と並べ方（placement）を分ける。** Noul の確率（関係ありか、方法は使えるか、
-  証拠の種類は合うか）は足切りだけに使い、落とすことしかできない。Score の段階の重み付きは
-  並べ方と採用線に使う。足切りを重み付きに混ぜると、強い段が弱い足切りを補ってしまう
-- 実測（2026-09-23）: 段階 same_problem 0.77 の資料が、関係ありの確率 0.44 で足切り 0.5 に届かず
-  不採用になった。段階と「関係ありか」は別々の答えとして扱う
+- **Separate the cutoff (gate) from the ordering (placement).** Use Noul probabilities (is it relevant, is the method usable, does the
+  evidence type fit) only for the cutoff; they can only drop things. Use the weighted Score tiers for ordering and the acceptance line.
+  Mixing the cutoff into the weighting lets a strong tier compensate for a weak cutoff
+- Measured (2026-09-23): a source at tier same_problem 0.77 had a relevance probability of 0.44, fell short of the 0.5 cutoff, and was
+  rejected. Treat the tier and "is it relevant" as separate answers
 
-## 5. 判定の単位は「資料 1 件 × 問い 1 つ」
+## 5. The unit of judgment is "1 source × 1 question"
 
-- 文を 1 つずつ切り離して聞く設計は、文脈が落ち、質問数が文の数だけ膨らむ（1 テーマ 1 回で
-  2 万問・レポート 283 KB の実例）。単位は資料 1 件にする
-- 段を 2 つに分ける: まず資料 1 件ごとに、全部の問いについて「関係しそうか」を 1 request で
-  安く聞いて候補を絞る。残った「資料 × 問い」の組だけを詳しく聞く。文の単位が要る判定
-  （問いを進める文か、資料が本当にそう言っているか）は、採用した資料の中でだけ行い、文字列で
-  照合できる部分はコードが先に照合する
+- A design that asks about each sentence in isolation loses context and inflates the question count by the number of sentences (a real
+  case: 20,000 questions and a 283 KB report for one run on one theme). Make the unit one source
+- Split into 2 stages: first, per source, ask cheaply in 1 request whether it "seems relevant" to every question, to narrow the
+  candidates. Ask in detail only about the remaining "source × question" pairs. Judgments that need a sentence unit
+  (does this sentence advance the question, does the source really say that) are done only within accepted sources, and whatever can
+  be matched as a string is matched by code first
 
-## 6. 通るべき資料（canary）を置く
+## 6. Place sources that must pass (canary)
 
-絞り込みで量が減っても、読むべき資料まで落としたのかは量では分からない。問いごとに「これは
-通るべき」と分かっている資料を数件置き、毎回の実行で通ったかを記録する。canary が落ちたら、
-閾値より先に state（`brief` / `not`）を疑う。
+Even if narrowing reduces volume, volume alone cannot tell you whether sources that should have been read were dropped too. For each
+question, place a few sources known to be "must pass", and record on every run whether they passed. If a canary drops, suspect state
+(`brief` / `not`) before the thresholds.
 
-## 7. Pydantic AI から呼ぶ
+## 7. Calling from Pydantic AI
 
-Pydantic AI の TypeSafe model（as-of 2026-09-23、https://pydantic.dev/docs/ai/models/typesafe/）:
+Pydantic AI's TypeSafe model (as-of 2026-09-23, https://pydantic.dev/docs/ai/models/typesafe/):
 
 ```python
 from pydantic_ai import Agent
@@ -111,19 +113,19 @@ run = await agent.run(json.dumps(state, ensure_ascii=False, sort_keys=True))
 dist = run.response.provider_details["probabilities"]
 ```
 
-| 出力型の field | Jev のプリミティブ |
+| Output type field | Jev primitive |
 |---|---|
-| `float`（`ge=0, le=1`） | Noul（「はい」の確率） |
-| `Literal[...]` / 文字列 Enum | Choice |
-| docstring 付きの `IntEnum` | Score |
+| `float` (`ge=0, le=1`) | Noul (probability of "yes") |
+| `Literal[...]` / string Enum | Choice |
+| `IntEnum` with docstrings | Score |
 
-- 版は pin する（閾値はその版に対して合わせたもの）。`run.response.model_name` が pin した版と
-  一致するかをコードで確かめる
-- 確率・分布は `provider_details` から読み、`run.output` の丸めた値だけで採否を決めない
+- Pin the version (thresholds were tuned against that version). Check in code that `run.response.model_name` matches the pinned
+  version
+- Read probabilities and distributions from `provider_details`; do not decide accept/reject from the rounded values in `run.output` alone
 
-## 8. 探す・書くは LLM に残し、モデルは文字列で差し替える
+## 8. Keep searching and writing with the LLM, and swap models by string
 
-実行中に使う LLM も同じ `Agent` から呼ぶと、判定の型を変えずに書くモデル・検索語を作るモデル
-だけを文字列 1 つで差し替えられる。問いや検索語のように実行前に 1 回作れば
-よいものは、実行の外で強いモデル（Claude 等）に書かせてファイルに置き、実行中の LLM 呼び出しから
-外す。
+If the LLMs used during a run are also called from the same `Agent`, you can swap only the writing model or the search-query model with a
+single string, without changing the judgment types. Things that only need to be produced once before a run, like questions and search
+queries, can be written outside the run by a strong model (Claude etc.) and stored in files, removing them from the LLM calls during
+the run.

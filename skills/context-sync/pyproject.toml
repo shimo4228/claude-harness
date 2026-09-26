@@ -20,15 +20,15 @@ line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
-# root ruff.toml と同じ明示 select を pin する。無指定だと ruff の既定 (0.16 で 413 rule)
-# が効き、ゲートの判定が上流の版更新で動く — 検査の閾値は harness 側が所有する
-# (根拠は root ruff.toml の冒頭コメント。citation-sync が 2026-08 に同じ pin を先行導入)。
-# C901 の閾値は root と同じ 15。予算は **上げずに刈る** (ADR-0056、正本は .claude/verify.md)。
-# ANN 系は境界の明示型強制 (2026-08-31、根拠と設計制約は ~/.claude/.claude/verify.md)。
+# Pin the same explicit select as the root ruff.toml. Without it, ruff's defaults (413 rules in 0.16)
+# apply and the gate's verdicts shift with upstream version bumps — the harness owns the check
+# thresholds (rationale in the header comment of root ruff.toml; citation-sync introduced the same pin first, 2026-08).
+# The C901 threshold is 15, same as root. The budget is **trimmed, never raised** (ADR-0056; canonical in .claude/verify.md).
+# The ANN rules enforce explicit types at boundaries (2026-08-31; rationale and design constraints in ~/.claude/.claude/verify.md).
 select = ["E4", "E7", "E9", "F", "I", "B", "UP", "C901", "ANN001", "ANN002", "ANN003", "ANN201", "ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
-# テスト関数は消費される境界ではない。型強制は production 側のみ
+# Test functions are not consumed boundaries. Type enforcement applies to production code only
 "tests/**" = ["ANN"]
 
 [tool.ruff.lint.mccabe]
@@ -42,8 +42,8 @@ build-backend = "hatchling.build"
 packages = ["scripts"]
 
 [tool.ty.environment]
-# 直接スクリプト実行 (`python3 scripts/<name>.py`) を支える兄弟 import は、`scripts/` が
-# sys.path[0] になる前提で書かれている (`if __package__:` の else 枝)。ty にも同じ入口を
-# 教えないと、その枝が丸ごと unresolved-import になる — 経路は実在するので抑制ではなく
-# 解決先の宣言。
+# The sibling imports that support direct script execution (`python3 scripts/<name>.py`) are written
+# assuming `scripts/` becomes sys.path[0] (the else branch of `if __package__:`). Unless ty is told
+# about the same entry point, that whole branch becomes unresolved-import — the path really exists, so
+# this is a declaration of where imports resolve, not a suppression.
 root = [".", "scripts"]

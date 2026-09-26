@@ -94,7 +94,7 @@ reference from each SKILL.md (`python -m scripts.X`, `bash …/x.sh`,
 reports those whose target does not exist:
 
 ```bash
-uv run --project ~/.claude/skills/skill-health \
+uv run --frozen --project ~/.claude/skills/skill-health \
   python -m scripts.scan_refs ~/.claude/skills --json
 ```
 
@@ -133,7 +133,7 @@ health view — **labelling each value's source**, never recomputing it:
   (ADR-0052); run the script once per window:
 
   ```bash
-  uv run --project ~/.claude/skills/skill-stocktake python -m scripts.usage_stats --days 90
+  uv run --frozen --project ~/.claude/skills/skill-stocktake python -m scripts.usage_stats --days 90
   ```
 
   Where a skill is rarely or never triggered, judge **[LLM]** whether the cause is

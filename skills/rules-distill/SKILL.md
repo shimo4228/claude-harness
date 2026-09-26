@@ -51,8 +51,8 @@ recurrence count exact and the "not already in rules" test reliable.
 5. **Clear violation risk** — what goes wrong if ignored, in one sentence
 6. **Not already in rules** — check the full rules text, including the same idea in different words
 
-> Tests 1–3 are `rules/README.md`'s admission criterion (「この環境固有の事実・配線・罠。
-> 思考や作業の手順は skill、発火時刻を要する検査は hook、一般的な判断は substrate が持つ」),
+> Tests 1–3 are `rules/README.md`'s admission criterion ("facts, wiring, and traps specific to this environment.
+> Procedures for thinking and work belong to skills, checks that need a firing time belong to hooks, and general judgment belongs to the substrate"),
 > established by
 > [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md) and
 > [ADR-0035](../../docs/adr/0035-commit-review-hook-and-rules-rightsize.md).
@@ -87,26 +87,26 @@ Draft text links back to the detailed How with the pointer form the rules corpus
 Append to security.md: Add LLM security principle
 ```
 
-Good 例（証拠は出現回数でなく、テスト 1–3 の通過理由。参照は**節見出しで引く** —
-行番号は参照先が伸びるたびにずれる）:
+Good example (the evidence is why it passes tests 1–3, not an occurrence count. Cite references **by section heading** —
+line numbers shift every time the referenced file grows):
 
 ```
 # Good
 New Section in rules/common/debugging.md:
-"外部 platform への大量書き込み中に rate limit が連発したら、transient error ではなく
-policy signal と扱って burst を止める。backoff で踏み抜かず人間へ報告する。"
+"If rate limits fire repeatedly during bulk writes to an external platform, treat them as a
+policy signal, not a transient error, and stop the burst. Do not push through with backoff; report to a human."
 
-Test 1 (environment-specific): この著者のアカウントで実際に起きた事象。2026-07-16、
-  backoff で継続した結果アカウント無期限 block + 全作成物削除。一般的な HTTP 429 の
-  作法ではなく、この運用固有の停止条件
-Test 2 (not substrate-native): substrate の既定は 429 を transient として retry する。
-  rule はその既定を上書きするために要る
-Test 3 (not a procedure): 手順でなく「rate limit 連発 = policy signal」という事実の宣言
-Violation risk: 踏み抜くとアカウントごと失う（実証済み、復旧不能）
-Recurrence: 1 skill (evidence であって gate ではない)
+Test 1 (environment-specific): an event that actually happened on this author's account. On 2026-07-16,
+  continuing with backoff resulted in an indefinite account block + deletion of all created content. Not general
+  HTTP 429 etiquette, but a stop condition specific to this operation
+Test 2 (not substrate-native): the substrate's default retries 429 as transient.
+  The rule is needed to override that default
+Test 3 (not a procedure): not a procedure but a declaration of fact: "repeated rate limits = policy signal"
+Violation risk: pushing through loses the whole account (proven, unrecoverable)
+Recurrence: 1 skill (evidence, not a gate)
 ```
 
-**Recurrence が 1 でも通る**ことに注目する。
+Note that it **passes even with a Recurrence of 1**.
 
 ## Phase 3 — User Review & Execution
 

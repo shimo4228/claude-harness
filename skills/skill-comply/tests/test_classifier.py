@@ -20,7 +20,7 @@ FENCED = """```json
 {"classify_task_type": [0], "run_verify_gate": [1]}
 ```"""
 
-# 実障害の再現形: narrative + insight ブロック + fenced JSON(最後)
+# Reproduction of a real failure: narrative + insight block + fenced JSON (last)
 STYLE_CONTAMINATED = """失礼しました、直前のツール呼び出しは誤りです。分類タスクは JSON を直接返します。
 
 `★ Insight ─────────────────────────────────────`
@@ -48,7 +48,7 @@ def test_fenced_json_parses():
 
 
 def test_style_contaminated_output_parses():
-    """narrative + insight ブロック付き出力から末尾の JSON を抽出できる。"""
+    """The trailing JSON can be extracted from output with a narrative + insight block."""
     assert _parse_classification(STYLE_CONTAMINATED) == {
         "classify_task_type": [0, 8],
         "run_review_agents": [5, 13],
@@ -65,12 +65,12 @@ def test_trailing_narrative_after_json():
 
 
 def test_legitimate_empty_object_is_not_an_error():
-    """モデルの「一致なし」= {} は正当な結果で、例外にしない。"""
+    """The model's "no match" = {} is a legitimate result and must not raise."""
     assert _parse_classification("{}") == {}
 
 
 def test_no_json_raises_instead_of_failing_open():
-    """抽出不能は {} でなく例外 — 定数 0% 報告への fail-open を禁止する。"""
+    """Unextractable output raises instead of returning {} — forbids failing open into a constant 0% report."""
     with pytest.raises(ClassificationParseError):
         _parse_classification("申し訳ありませんが、分類できませんでした。")
 
@@ -81,17 +81,17 @@ def test_non_list_values_are_filtered():
 
 
 def test_nested_object_does_not_shadow_outer_mapping():
-    """答えの JSON 内の nested object が本来の mapping を握り潰さない。
+    """A nested object inside the answer JSON does not swallow the real mapping.
 
-    2026-07-28 /code-review 指摘: 末尾走査は nested object の `{` を先に拾い、
-    内側が {str: [int]} 形なら本来の答えを黙って置き換える (silent 0% の残党)。
+    Found by /code-review on 2026-07-28: scanning from the end picks up the nested object's `{` first,
+    and if the inner object has the {str: [int]} shape it silently replaces the real answer (a leftover of silent 0%).
     """
     text = '{"write_test": [0, 1], "extra": {"x": [1]}}'
     assert _parse_classification(text) == {"write_test": [0, 1]}
 
 
 def test_multiple_top_level_objects_last_wins():
-    """複数の top-level object があれば最後の有効なものが答え (既存規約の固定)。"""
+    """With multiple top-level objects, the last valid one is the answer (pins the existing convention)."""
     text = '{"old_attempt": [9]}\nやり直します。\n{"classify_task_type": [0]}'
     assert _parse_classification(text) == {"classify_task_type": [0]}
 
@@ -118,7 +118,7 @@ def test_yaml_edge_fenced():
 
 
 def test_yaml_style_contaminated_output():
-    """実障害の再現形: narrative + insight ブロックに挟まれた fenced YAML を抽出できる。"""
+    """Reproduction of a real failure: fenced YAML sandwiched between narrative + insight blocks can be extracted."""
     contaminated = (
         "内容も仕様に沿っています。\n\n"
         "`★ Insight ─────────────────────────────────────`\n"
@@ -138,6 +138,6 @@ def test_yaml_bare_with_narrative_preamble():
 
 
 def test_yaml_unparsable_returns_edge_stripped_for_retry_loop():
-    """抽出不能時は元テキストを返し、呼び出し側の retry-with-feedback に委ねる。"""
+    """When extraction fails, return the original text and leave it to the caller's retry-with-feedback."""
     text = "YAML を生成できませんでした。"
     assert extract_yaml_payload(text) == text
