@@ -42,13 +42,14 @@ bash <公開repo>/scripts/sync-from-local.sh
 
 script は staging 収集 → runtime artifact 除去 (results.json, __pycache__ 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
-secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ rfcs/ hooks/ scripts/hooks/
-tests/ subtree の置換、まで行う。origin filter が効くのは skills/ agents/ rules/ だけで、
-残り 3 系統は別の規則で決まる (いずれも集約 repo のみ):
+secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ docs/plans/ rfcs/ hooks/
+scripts/hooks/ tests/ subtree の置換、まで行う。origin filter が効くのは skills/ agents/ rules/ だけで、
+残りは別の規則で決まる (いずれも集約 repo のみ):
 
 - `docs/adr/` — ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、origin filter を
   掛けずディレクトリ丸ごとが対象。以後の ADR は公開される前提で書く。
 - `rfcs/` — 台帳エントリも自作の判断記録なので ADR と同じく丸ごと (ADR-0049)。起票は公開可能な書き方が既定 — 機微はリンク先へ (task-stocktake の公開規約)。
+- `docs/plans/` — 承認して commit した plan。ADR / RFC から相対リンクされる原本 (ADR-0085)。集めるのは git が追跡している plan だけで、untracked・未 commit の変更があれば abort する（script 側の対応は ADR-0085 Decision 5 のとおり著者の GO 待ち — それまで同期されない）。公開可能な書き方が既定で、`$HOME` の実値を含む行があると script の home-directory path scan が abort する — `~/` に書き直す。
 - `hooks/` `scripts/hooks/` `tests/` — script 内の `HOOK_ALLOWLIST` に列挙したファイルだけ。
   公開は provenance でなく curation の判断 (ADR-0038)。公開対象の hook を追加・rename したら
   allowlist を更新する — source に無い entry があると sync は abort する。`scripts/claims.py`
@@ -218,7 +219,6 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/search-first` ([repo](https://github.com/shimo4228/search-first)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/search-first` |
 | `~/MyAI_Lab/jsonld-knowledge-graph` ([repo](https://github.com/shimo4228/jsonld-knowledge-graph)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/jsonld-knowledge-graph` |
 | `~/MyAI_Lab/authorship-strategy-skill` ([repo](https://github.com/shimo4228/authorship-strategy-skill)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/authorship-strategy` |
-| `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/codex-review` |
 | `~/MyAI_Lab/repo-asset-stocktake` ([repo](https://github.com/shimo4228/repo-asset-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/repo-asset-stocktake` |
 | `~/MyAI_Lab/llm-as-judge` ([repo](https://github.com/shimo4228/llm-as-judge)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llm-as-judge` |
 | `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/paper-lab/.claude/skills/paper-ecosystem` + 同 `paper-writing`（RFC-0019。同梱 agents の正本は `~/MyAI_Lab/paper-lab/.claude/agents/`、script の対象外で手動 diff） |

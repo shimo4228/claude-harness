@@ -73,6 +73,11 @@ security review を残す判断材料とした。
    codex-review（diff review・plan 段の Premise Challenge とも）はユーザー明示要求のみの
    opt-in へ移す。ADR / Record Review 行は削除する（adr-reviewer の配線は skill:
    `adr-writer` 内が唯一 — 重複配線の解消）。
+
+   > **注記（2026-09-27, [ADR-0084](./0084-retire-codex-review-skill-for-official-codex-plugin.md)）**: codex-review
+   > skill は退役した。diff review は `/codex:review`、焦点付きの反証は `/codex:adversarial-review`、plan 段の
+   > Premise Challenge と prose review は read-only の `/codex:rescue`（plugin `codex@openai-codex`）が担う。明示要求のみの
+   > opt-in はそのまま。
 3. reviewer への指示を必須化する: 「correctness / stated requirements に効く gap のみ
    報告。それ以外は optional として適用しない。diff 外の指摘は報告不要（気づいたら
    1 行、修理はしない）」。**この「気づいたら 1 行」が Decision 5 の loop-breaking 起票の

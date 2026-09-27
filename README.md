@@ -27,7 +27,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [rules-stocktake](skills/rules-stocktake/SKILL.md) | Rules quality audit — residency-cost model (every line is a per-session token tax), staleness / substrate-absorption checks, Keep/Improve/Update/Merge/Demote/Dissolve/Retire verdicts. The inverse of rules-distill |
 | [skill-comply](skills/skill-comply/SKILL.md) | Measures actual compliance of skills / rules / agents. Classifies behavioral sequences across 3 prompt strictness levels |
 | [context-sync](skills/context-sync/SKILL.md) | Audits and fixes project documentation. Detects role overlap, checks freshness, creates missing docs |
-| [codex-review](skills/codex-review/SKILL.md) | Cross-model second opinion from the OpenAI Codex CLI (a different model family), read-only on both the argv and config face — (1) code review of the current diff folded into the review chain, (2) plan-stage premise challenge of a design packet (refute / missing / alternative, never a design) |
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | Writes AI-facing docs (llms.txt / llms-full.txt). Answer.AI standard + GEO/AEO static analysis |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | Designs and ships a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt. Encodes domain entities and relationships as schema.org triples for LLM citation |
 | [collect-context](skills/collect-context/SKILL.md) | Gathers in-session and external context into source material for article writing |

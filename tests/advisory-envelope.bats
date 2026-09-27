@@ -8,7 +8,7 @@
 #
 # Run: bats ~/.claude/tests/advisory-envelope.bats
 
-COMMON="$HOME/.claude/hooks/_advisory-common.sh"
+COMMON="${BATS_TEST_DIRNAME}/../hooks/_advisory-common.sh"
 
 setup() {
   # shellcheck source=hooks/_advisory-common.sh

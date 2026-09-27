@@ -1,5 +1,5 @@
 ---
-state: draft 2026-09-14
+state: done 2026-09-27
 review-when: bats が repo の verify から外れる（hooks の Rust 化等で bats 自体が退役）→ obsoleted
 ---
 ## Summary
@@ -35,6 +35,10 @@ bats は検査対象を `"$BATS_TEST_DIRNAME/../hooks/<name>.sh"` の形で解�
 
 draft 2026-09-14 — S2 build の Out-of-diff finding から、著者判断で起票（review 由来、producer 付き）。採否と修正の形は未決。
 
+**2026-09-27 in_progress** — 著者決定（2026-09-20 digest 決定 2 = a）で accepted。前提の再照合: `grep -l HOME/.claude/hooks tests/*.bats` は 12 / 27 本（09-14 の 19 本から、09-26 の hooks 改修で 7 本が相対参照に置き換わった）。S4 chore build（local worktree `task/rfc-0023-bats-paths`、spawn-session、Opus 5.5、effort medium）を dispatch。
+
+**2026-09-27 done** — S4 commit 760bc3d を判断役が検収（tests/ 13 本のみ +22/−20、判断役の verify full exit 0、対照実験: worktree の hook を壊すと episode-log-guards 14 / 31 が赤 → 復元で 0）、ff-only で main へ。残る `$HOME` 参照は tests/bats-autorun.bats:16 の 1 行（install 先が信頼ルートという hook の定義を検証する意図、コメント付き）。hooks/*.sh の共有部品 source は `${BASH_SOURCE[0]%/*}` 相対で、Motivation の懸念（hook 側の $HOME source）は該当なし。
+
 ## Next action
 
-著者が accepted にしたら chore build（tests/ のみ、hook 本体は触らない）を dispatch。
+なし（終端）。

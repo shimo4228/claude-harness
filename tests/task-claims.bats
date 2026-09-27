@@ -10,7 +10,7 @@
 #   - hook は壊れた入力でも exit 0 で、セッションを止めない
 
 HELPER="$HOME/.claude/scripts/claims.py"
-HOOK="$HOME/.claude/hooks/task-claims-reminder.sh"
+HOOK="${BATS_TEST_DIRNAME}/../hooks/task-claims-reminder.sh"
 
 setup() {
   REPO="$BATS_TEST_TMPDIR/repo"

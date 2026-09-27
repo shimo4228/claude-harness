@@ -13,7 +13,7 @@
 
 load_extractor() {
   # shellcheck source=hooks/_git-target-common.sh
-  source "$HOME/.claude/hooks/_git-target-common.sh"
+  source "${BATS_TEST_DIRNAME}/../hooks/_git-target-common.sh"
 }
 
 @test "bare git -C ... commit resolves to that repo" {

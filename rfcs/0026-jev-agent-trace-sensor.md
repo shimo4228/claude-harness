@@ -1,5 +1,5 @@
 ---
-state: draft 2026-09-20
+state: resolved 2026-09-21
 review-when: Weekly·Fable 枠が回復し、RFC-0024 / RFC-0025 とまとめて採否を検討するとき。または loop-design-check が明示している 2 つの未解決（side-findings の policy / spawned work の admission）が実害として観測されたとき
 ---
 
@@ -95,6 +95,8 @@ silent failure）を解く Claude Code plugin が既にある: `valentynkit/jev-
 `jev-1.13.0` pin、shadow mode と decisions.jsonl を持つ。as-of 2026-09-21、README を確認・コード未読）。
 試すなら shadow mode で、導入前に hook 本体を security-reviewer に 1 回通す。6 択の仕分けと
 side-findings の計測は同 plugin の範囲外で、未解決のまま残る。
+
+**2026-09-27 resolved（判断日 2026-09-21）** — 著者確認（triage digest 2026-09-27）。自作せず既製 `valentynkit/jev-belay` を採用し、shadow を経ず本番で稼働中（`settings.json` pluginConfigs `shadow: false, log: true`、0.2.0、user scope）。判定ログ `~/.claude/belay/decisions.jsonl` は 2026-09-21〜26 で 161 行（allowed 116 / passed 38 / blocked 7）。Summary の 6 択の仕分けと side-findings の計測は plugin の範囲外で未解決のまま — 実害が観測されたら起票し直す（review-when の第 2 条件）。
 
 ## Next action
 

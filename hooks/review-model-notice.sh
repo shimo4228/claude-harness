@@ -30,7 +30,7 @@ set -uo pipefail
 INPUT=$(cat)
 
 # 安い prefilter。review 起動を含まない呼び出しで jq を起こさない（部分一致の superset、
-# 厳密判定は下）。"code-review" は "codex-review" に当たらない（code- / codex- で分岐）。
+# 厳密判定は下）。"code-review" は plugin の "codex:review" 等に当たらない（code- / codex: で分岐）。
 case "$INPUT" in
   *code-review*|*simplify*) ;;
   *) exit 0 ;;

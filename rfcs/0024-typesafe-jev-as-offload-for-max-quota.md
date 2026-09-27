@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-09-21
+state: done 2026-09-25
 review-when: Weekly·Fable 枠が回復し、判定役（architect / readme-reviewer / judge 群）を通常どおり引けるようになったとき。または daily-research の呼1 で候補照合が占める turn 数が測れたとき
 ---
 
@@ -200,3 +200,5 @@ ADR-0074 の観測量で読んで、読めなければ外す。function hooks（
 公開 repo の README は、同じ実装を考える人の参考になるよう、効きにくい条件と実測をそのまま書く。
 
 **2026-09-25 追記（候補の外から 1 本、本番）**: 候補 1〜5 に無い使い方を 1 本、本番で置いた — RFC と ADR の review-when を jev-research-pipeline の新しいノートと Jev で毎朝照合する launchd job（`skills/review-when-watch/`、[ADR-0080](../docs/adr/0080-review-when-watch-production-first.md)）。Max 枠の判定を移すのではなく、今は誰もしていない照合を安い判定で新しく始める形で、本 RFC の動機とは別の価値（見直し条件の見落としを減らす）に立つ。著者の指示で shadow を経ずに本番とし、全組の生の読み値を RFC-0025 の最小形のログに残す。
+**2026-09-27 done（完了日 2026-09-25）** — 著者確認（triage digest 2026-09-27）。成果物: 候補 2 = 公開 plugin `jev-skill-router` 0.1.0（2026-09-21、shadow のまま計器として継続。router log は 2026-09-26 時点で 1,047 行、inject 切替は ADR-0074 Decision 4 の観測量で読む）と、候補外の `review-when-watch` 本番投入（2026-09-25、ADR-0080）。動機「判定を Max 枠の外へ」への答えは上の 09-21 追記（期待値は小さい）が持つ。候補 1・3・4・5 は実装しない（09-21 追記）。残作業「公開 repo jev-skill-router に `.claude/verify.sh` を立てる」は本 RFC の scope 外で、次に同 repo へ Python を commit するときの便乗事項として同 repo 側に注記する（本台帳の行にはしない — task-stocktake の便乗規約）。
+

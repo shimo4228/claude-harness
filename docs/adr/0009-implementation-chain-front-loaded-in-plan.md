@@ -116,3 +116,4 @@ git checkout <commit-hash> -- skills/python-testing/
 - `rules/common/akc-cycle.md` の **Promote** 原則
 - `rules/common/skills.md` の **Knowledge Placement** 原則
 - 旧 plan ファイル: `~/.claude/plans/shimmying-forging-flamingo.md`
+  > **注記（2026-09-27, ADR-0085）**: この plan は legacy の gitignore 置き場にあり、2026-09-27 時点で手元にも存在しない。以後の plan は `docs/plans/` に commit してリンクする

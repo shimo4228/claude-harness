@@ -45,8 +45,8 @@ sub_transcript() { # $1=agent id $2=中身を写す transcript
   [ -z "$output" ]
 }
 
-@test "Skill codex-review on fable -> silent (codex is not code)" {
-  run_hook '{"tool_name":"Skill","tool_input":{"skill":"codex-review"}}' "$FABLE_T"
+@test "Skill codex:rescue on fable -> silent (codex is not code)" {
+  run_hook '{"tool_name":"Skill","tool_input":{"skill":"codex:rescue"}}' "$FABLE_T"
   [ -z "$output" ]
 }
 

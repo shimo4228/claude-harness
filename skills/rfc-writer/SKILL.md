@@ -63,6 +63,8 @@ rfcs/ は**提案と作業項目の公開台帳**（判断は ADR-0049/0050）�
      `claims.py ready` の 90 字要約になる。frontmatter で機械が読むのは `state:` のみ
    - `## Status` = state 語 + 現在地の要約 + 日付（IETF「Status of This Memo」型。
      state 遷移のたびに更新）。`## Next action` = 何があれば動くか（blocked の 3 行の家）
+   - plan mode を通った作業は `## Status` に `**YYYY-MM-DD plan** — [docs/plans/<file>](../docs/plans/<file>)`
+     を 1 行置く（ADR-0085）。本文の最初の行には置かない（`claims.py ready` の要約になるため）
    - 見出しは EN、本文の言語は自由
 4. **公開規約**: 公開が既定 — 本文は公開可能な書き方をし、機微（内部事情・非公開 repo
    のパス等）はリンク先へ逃がす。公開は撤回不能なので、迷ったら書かない側に倒す

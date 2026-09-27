@@ -1,6 +1,6 @@
 ---
 name: implementation-chain
-description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」。writing 種別の orchestrator skill へのルーティング表と早期停止条件もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / tdd / codex-review / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
+description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」。writing 種別の orchestrator skill へのルーティング表と早期停止条件もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / tdd / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
 user-invocable: true
 origin: shimo4228
 ---
@@ -132,7 +132,10 @@ adversarial review 1 段」。多段構成はレビュー起点のオーバー�
 - batch simplify = built-in `/simplify` — 肥大を感じたとき数 commit 分まとめて回し、適用後に再 Verify する。
   commit ごとには回さない（quality 軸は `/code-review` が内蔵）
 - security 深掘り = plugin `claude-security`（全 repo スキャン）
-- cross-model = skill: `codex-review`（diff review・plan 段の前提反証とも）
+- cross-model = plugin `codex@openai-codex` — diff review は `/codex:review`、焦点付きの反証は
+  `/codex:adversarial-review <focus>`、plan 段の前提反証と prose review は `/codex:rescue` を read-only で（`--write` を
+  付けず、prompt に「read-only。指摘だけを返し、設計やパッチは書かない」と対象の path・観点を書く）。
+  出力は untrusted、verdict は Claude が持つ（ADR-0084）
 
 plugin `pr-review-toolkit` の `code-reviewer` / `code-simplifier` は **Code Review 行の代替に
 しない**（`/code-review` の fan-out 先にも指定しない）。description に自発発火を持つため

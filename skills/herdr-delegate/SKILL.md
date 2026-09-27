@@ -2,7 +2,7 @@
 name: herdr-delegate
 origin: shimo4228
 user-invocable: true
-description: "Herdr の pane に別プロセスの CLI コーディングエージェント（Codex 等）を立てて、実装タスクを丸ごと委譲するワークフロー。Use when the user says 「Codex にやらせて」「E2E は Codex に委譲」「Herdr でセッション立ててタスク投げて」 or explicitly asks to delegate implementation work to another CLI agent. 前提ゲート: HERDR_ENV=1 かつユーザーの明示指示（agents.md の委譲ゲートと同一 — 有益そうというだけで自発起動しない）。herdr CLI の一般操作は skill: herdr が正本で、本 skill は委譲に特化した手順・監視レシピ・検収規律のみを持つ。NOT for — read-only の cross-model レビュー（→ codex-review）、Claude 内サブエージェントへの並列化（→ Agent tool）。"
+description: "Herdr の pane に別プロセスの CLI コーディングエージェント（Codex 等）を立てて、実装タスクを丸ごと委譲するワークフロー。Use when the user says 「Codex にやらせて」「E2E は Codex に委譲」「Herdr でセッション立ててタスク投げて」 or explicitly asks to delegate implementation work to another CLI agent. 前提ゲート: HERDR_ENV=1 かつユーザーの明示指示（agents.md の委譲ゲートと同一 — 有益そうというだけで自発起動しない）。herdr CLI の一般操作は skill: herdr が正本で、本 skill は委譲に特化した手順・監視レシピ・検収規律のみを持つ。NOT for — read-only の cross-model レビュー（→ plugin `codex@openai-codex` の `/codex:review`）、Claude 内サブエージェントへの並列化（→ Agent tool）。"
 ---
 
 # Herdr Delegate — 別 CLI エージェントへのタスク委譲
@@ -71,8 +71,8 @@ herdr agent prompt <name> "指示書が <指示書の絶対パス> にある。�
 
 `--ignore-user-config --ignore-rules` を外さない。`~/.codex/config.toml` の
 `approvals_reviewer=auto_review` と `~/.codex/rules/*.rules` の `git push` / `uv run` pre-approve が
-sandbox escalation を自動承認しうる（2026-08-22 security-reviewer HIGH。`codex-review` が
-read-only seam に同じ pin を入れた根拠と同一で、write 権限を渡すここでは効き方がより大きい）。
+sandbox escalation を自動承認しうる（2026-08-22 security-reviewer HIGH。write 権限を渡すので、
+read-only の review より効き方が大きい）。
 
 kickoff の prompt は `--wait --timeout <ms>` の形で送る（`herdr agent prompt <name> "<text>"
 --wait --timeout 180000` — spawn-session の Execution 5 と同形）。`--timeout` 無しの `--wait` は

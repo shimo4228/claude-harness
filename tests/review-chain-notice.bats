@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # 薄い commit-time reminder の発火条件と固定文だけを検査する。ADR-0035。
 
-HOOK="$HOME/.claude/hooks/review-chain-notice.sh"
+HOOK="${BATS_TEST_DIRNAME}/../hooks/review-chain-notice.sh"
 
 fire() {
   printf '{"tool_input":{"command":%s}}' "$(jq -Rn --arg v "$1" '$v')" | bash "$HOOK"

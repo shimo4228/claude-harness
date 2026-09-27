@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-09-21
+state: blocked 2026-09-27
 review-when: Weekly·Fable 枠が回復し、RFC-0024 とまとめて採否を検討するとき。または Jev を使う判定が 1 つでも本番配線され、較正データの不在が実害になったとき
 ---
 
@@ -86,6 +86,14 @@ RFC-0024 候補 2（`skills/jev-skill-router/`）に同梱して実装する。�
 (2) outcome への join key → `session` + `ts`（`metrics/skill-usage.jsonl` と読む側で時系列突合。
 ログには焼かない）、(3) 閾値と反例の置き場 → **未対応**（データが溜まってから決める）。
 Unresolved「質問文を変えたとき」への暫定回答: ID を増やさず、hash が変わった行を別分布として読む。
+
+**2026-09-27 blocked** — 著者確認（triage digest 2026-09-27）。最小形の registry は実装済み（jev-skill-router の `decisions.jsonl`: `~/.claude/plugins/data/jev-skill-router-jev-skill-router/decisions.jsonl`、2026-09-21〜26 で 1,047 行 ≈ 180 行/日、全行 `mode: shadow`。review-when-watch の生の読み値は `metrics/review-when-watch.jsonl`、毎日 06:10 に 1 run）。残るのは「閾値と反例の置き場」だけで、データ量の条件で開く。
+
+再開条件: review-when-watch が 30 run 分（毎日 1 run → 2026-10-25 頃）溜まる。router log は同日までに約 6,000 行で十分
+照合先:   `metrics/review-when-watch.jsonl` の run 数（`kind` 別に数える）と上記 router log の行数
+成立時:   accepted（閾値と反例の置き場を決める measurement を dispatch）
+
+判断役注: n（30 run）と予定日は著者の指定が無かったので判断役が置いた既定（ADR-0076 の「指示に無かったのでこう置いた」）。著者が別の n を指定したら書き換える。
 
 ## Next action
 

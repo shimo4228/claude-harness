@@ -211,11 +211,12 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
   同一主張 2 回は判定器が継ぎ足し痕（K2）として最初に拾う
 - **KPI = 通読指摘数** — 最終判定の後に著者通読が見つけた指摘数が判定器の真のエラー率で、
   `references/readme-judge-checklist.md` を直すときの主な入力（記録先 `evals/read-through-log.md`）
-- 別モデルの意見は、著者が求めたときだけ skill: `codex-review` を prompt-driven で回す。prompt に
-  README の path と言語、次の観点を入れる。CRITICAL / HIGH は span で直し、構造の指摘は著者へ回す:
+- 別モデルの意見は、著者が求めたときだけ `/codex:rescue` を read-only（`--write` なし）で回す。prompt に
+  README の path と言語、次の観点を入れる（`/codex:adversarial-review` は prompt がソフトウェアのリスク観点で
+  固定され文体の指摘を除外するので使わない — ADR-0084）。CRITICAL / HIGH は span で直し、構造の指摘は著者へ回す:
 
 ```
-/codex-review "Review <README paths> (<languages>) as prose, not code: does the first screen say what / for whom / where it runs without insider terms, does every paragraph answer a reader question, are ADR / sibling-repo references pointers rather than the only explanation, is anything load-bearing hidden in images or collapsed sections, and does any claim contradict the code?"
+/codex:rescue Read-only; do not edit files, only report findings with file:line. Review <README paths> (<languages>) as prose, not code: does the first screen say what / for whom / where it runs without insider terms, does every paragraph answer a reader question, are ADR / sibling-repo references pointers rather than the only explanation, is anything load-bearing hidden in images or collapsed sections, and does any claim contradict the code?
 ```
 
 ---
@@ -242,7 +243,7 @@ uv run python -m scripts.readme_evidence fixtures/sample_issues.md --text
 - [`prose-translation`](../prose-translation/SKILL.md) — 他言語版の翻訳（Step 3）
 - [`release-doi`](../release-doi/SKILL.md) — DOI repo の release と、それに伴う version・DOI・homepage の同期
 - [`context-sync`](../context-sync/SKILL.md) — 文書間の役割の重なりと移送（README の外まで直すとき）
-- [`codex-review`](../codex-review/SKILL.md) — 著者が求めたときの cross-model レビュー
+- plugin `codex@openai-codex`（read-only の `/codex:rescue`）— 著者が求めたときの cross-model レビュー
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) / [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — 機械 surface
 - skill: `archify` — 詳しい構成図（HTML）。README には概要図を置き、構成図は docs/ からリンクする
 - `writing-ecosystem`（`~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem`）— AI slop の診断表と Voice 規約の正本

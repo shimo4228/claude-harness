@@ -26,6 +26,11 @@ accepted
 > verdict の Claude 所有）は維持。ただし発火は chain の既定ステップから外れ、
 > ユーザー明示要求のみの opt-in になった。
 
+> **注記（2026-09-27, [ADR-0084](./0084-retire-codex-review-skill-for-official-codex-plugin.md)）**: Decision 1 の
+> `codex-review` skill と wrapper（フラグ allowlist による read-only 保証を含む）は退役し、cross-model の接点は
+> OpenAI 公式 plugin `codex@openai-codex` に移った。Codex 出力を untrusted として扱い verdict を Claude が持つ
+> 点と、opt-in 発火は引き続き有効。Decision 2（スループット系は Claude native）はこの変更の対象外で有効。
+
 1. **cross-model seam を、脱相関が最も効く review に一点だけ開く**。`codex-review` skill を新設し、read-only な `codex review` を薄くラップする。read-only 不変条件は**外部 CLI の仕様に依存させず、フラグ allowlist でコード側に保証**する（未知 / `-c` / `--write` 等は exit 64 で拒否）。Codex 出力は untrusted input として扱い、verdict は Claude が所有する。
 
 2. **スループット系は全て Claude native（Workflow tool）に寄せる**。ECC の orch-\* / team-\* / multi-execute / dmux は採用しない。理由は既存資産との重複（Workflow + planning.md chain）と外部ランタイム依存・solo 不適合。

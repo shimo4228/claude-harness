@@ -58,6 +58,7 @@ Codex 公式ドキュメント（`developers.openai.com/codex/skills`）は user
 ### Neutral / Follow-ups
 
 - ② の削除スナップショットは `~/.claude/plans/codex-skills-symlink-snapshot.txt` から完全復元可能
+  > **注記（2026-09-27, ADR-0085）**: このスナップショットは gitignore の legacy 置き場にあり公開されない（手元にのみ現存）
 - `~/.codex/skills/.system/` の Codex 自前スキルは本 ADR の管理対象外として保持。将来 Codex が公式探索パスを変更した場合は再評価する
 
 ## Related

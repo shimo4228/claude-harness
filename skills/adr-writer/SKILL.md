@@ -151,6 +151,9 @@ Consequences splits into Positive / Negative / Neutral), then write
   each Alternative with its rejection reason or "Open — revisit when: …"
 - Links to sibling ADRs are relative (`./NNNN-slug.md`) and the file name is copied from `ls`,
   not typed from memory — Step 4.5's `refs.links_broken` is the check
+- When the decision went through plan mode, the first line of Context links the approved plan:
+  `Plan: [docs/plans/<file>](../plans/<file>)（承認 YYYY-MM-DD）` (ADR-0085). The plan is the frozen
+  precommitment; the ADR still stands on its own — the link is provenance, not a substitute
 
 If a packet field is missing, stop and ask; do not write a partial ADR.
 

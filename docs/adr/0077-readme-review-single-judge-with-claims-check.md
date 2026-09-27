@@ -60,6 +60,11 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
    かかわらず著者通読へ渡す。新しい質問での再実行はしない。
 4. `codex-review` は著者が求めたときだけ回す。readme-writer の既定の工程から外す（ADR-0055 の opt-in を
    README chain にも当てる）。
+
+   > **注記（2026-09-27, [ADR-0084](./0084-retire-codex-review-skill-for-official-codex-plugin.md)）**: codex-review
+   > skill は退役し、README の cross-model レビューは plugin `codex@openai-codex` の `/codex:rescue` を read-only で
+   > 回す形になった（prompt 駆動は維持）。Review-when の「codex を公開 repo で既定に戻す」の codex もこの経路を
+   > 指す。CA で事実の誤り 5 件を拾った実測は旧 skill のもので、この経路では未測定。
 5. 付随して、readme-writer にモード（Rewrite / Incremental / Review-only / About-only）を置き、
    implementation-chain の Doc Sync は Incremental を使う。tagline は Step 1 で著者が選び、判定器に
    tagline を判定するモードは作らない。

@@ -27,7 +27,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [rules-stocktake](skills/rules-stocktake/SKILL.md) | Rules の品質監査 — residency cost（全行が毎セッションの token 税）モデル、staleness / substrate absorption 検査、Keep/Improve/Update/Merge/Demote/Dissolve/Retire 判定。rules-distill の逆方向 |
 | [skill-comply](skills/skill-comply/SKILL.md) | Skill / rule / agent の実際の遵守率を計測。3 段階 prompt で行動シーケンスを分類 |
 | [context-sync](skills/context-sync/SKILL.md) | プロジェクト documentation を監査・修正。役割重複検出、鮮度チェック、欠損作成 |
-| [codex-review](skills/codex-review/SKILL.md) | OpenAI Codex CLI（別モデルファミリ）の read-only セカンドオピニオン（argv と config の両面で pin）— (1) 現在の diff のコードレビューを review chain に統合、(2) plan 段で設計パケットの前提を反証（反証 / 欠落制約 / 代替のみ、設計はさせない） |
 | [llms-txt-writer](skills/llms-txt-writer/SKILL.md) | llms.txt / llms-full.txt 等の AI 向けドキュメントを書く。Answer.AI 標準 + GEO/AEO 静的解析 |
 | [jsonld-knowledge-graph](skills/jsonld-knowledge-graph/SKILL.md) | `llms.txt` の companion となる JSON-LD ナレッジグラフ (`graph.jsonld`) を設計・出荷。ドメインエンティティと関係を schema.org triple として encode して LLM 引用を最適化 |
 | [collect-context](skills/collect-context/SKILL.md) | セッション内外のコンテキストを集めて記事執筆用の素材を作る |
