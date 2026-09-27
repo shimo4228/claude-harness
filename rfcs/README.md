@@ -38,3 +38,9 @@ README には書かない（複製は drift する）。
 | [0024](0024-typesafe-jev-as-offload-for-max-quota.md) | TypeSafe Jev で判定を Max 枠の外へ逃がす — 探索と実測は済み。候補 2（skill ルーター）のみ 2026-09-21 着手、他候補は Fable 枠の回復待ち |
 | [0025](0025-jev-decision-contract-registry.md) | Jev 判定を版付きで貯める registry — 質問文ごと残し、閾値はデータが溜まってから引く |
 | [0026](0026-jev-agent-trace-sensor.md) | 走り終わりの done / stuck を Noul で分ける sensor — loop-design-check の semantic 側の空白を埋める |
+| [0027](0027-publish-corrections-and-evals-umbrella.md) | 指摘と Eval を照合可能に継続公開する — 2026-09-27 の調査結果と方向（親） |
+| [0028](0028-correction-commit-trailers.md) | 指摘を起きた瞬間に commit へ残す規約（指摘: / Trigger: / Expect:）— 記事で 2 週間試す |
+| [0029](0029-carry-commit-trailers-to-public-mirror.md) | 公開ミラーへ commit 本文の trailer（Review: / Context: / Decision: 等）を運ぶ |
+| [0030](0030-eval-cards-for-ready-instruments.md) | Eval カード — 公開できる計器 5 本を設計・生値・未測定・故障つきで出す |
+| [0031](0031-reader-agent-verifiability-probe.md) | 読者役エージェントによる照合を常設の計器にする — 公開物だけで確認できた環を数える |
+| [0032](0032-defects-found-in-2026-09-27-research.md) | 2026-09-27 の調査で見つけた不具合 3 件（review-when-watch 未稼働・件数の食い違い・注記の順序） |
