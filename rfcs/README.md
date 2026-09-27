@@ -44,3 +44,4 @@ README には書かない（複製は drift する）。
 | [0030](0030-eval-cards-for-ready-instruments.md) | Eval カード — 公開できる計器 5 本を設計・生値・未測定・故障つきで出す |
 | [0031](0031-reader-agent-verifiability-probe.md) | 読者役エージェントによる照合を常設の計器にする — 公開物だけで確認できた環を数える |
 | [0032](0032-defects-found-in-2026-09-27-research.md) | 2026-09-27 の調査で見つけた不具合 3 件（review-when-watch 未稼働・件数の食い違い・注記の順序） |
+| [0033](0033-allocate-legacy-plans-to-repos.md) | 過去の plan（global の legacy 置き場、253 本）を作られた repo の plan 置き場へ振り分ける |
