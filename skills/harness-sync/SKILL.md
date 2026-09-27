@@ -49,7 +49,7 @@ scripts/hooks/ tests/ subtree の置換、まで行う。origin filter が効く
 - `docs/adr/` — ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、origin filter を
   掛けずディレクトリ丸ごとが対象。以後の ADR は公開される前提で書く。
 - `rfcs/` — 台帳エントリも自作の判断記録なので ADR と同じく丸ごと (ADR-0049)。起票は公開可能な書き方が既定 — 機微はリンク先へ (task-stocktake の公開規約)。
-- `docs/plans/` — 承認して commit した plan。ADR / RFC から相対リンクされる原本 (ADR-0085)。集めるのは git が追跡している plan だけで、untracked・未 commit の変更があれば abort する（script 側の対応は ADR-0085 Decision 5 のとおり著者の GO 待ち — それまで同期されない）。公開可能な書き方が既定で、`$HOME` の実値を含む行があると script の home-directory path scan が abort する — `~/` に書き直す。
+- `docs/plans/` — 承認して commit した plan。ADR / RFC から相対リンクされる原本 (ADR-0085)。集めるのは git が追跡している plan だけで、untracked・未 commit の変更があれば abort する。公開可能な書き方が既定で、`$HOME` の実値を含む行があると script の home-directory path scan が abort する — `~/` に書き直す。
 - `hooks/` `scripts/hooks/` `tests/` — script 内の `HOOK_ALLOWLIST` に列挙したファイルだけ。
   公開は provenance でなく curation の判断 (ADR-0038)。公開対象の hook を追加・rename したら
   allowlist を更新する — source に無い entry があると sync は abort する。`scripts/claims.py`

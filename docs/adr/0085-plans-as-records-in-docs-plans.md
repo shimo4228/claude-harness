@@ -32,6 +32,11 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
 1. user-level 設定に `plansDirectory: "docs/plans"` を置く。除外は `.claude/settings.local.json` で上書きする:
    contemplative-agent は `.notes/plans`（第三者の投稿本文が混ざりうる）、zenn-content は `planning/plans`
    （企画・下書きは非公開の方針）、Obsidian vault と `~/MyAI_Lab` 直下（repo でない）は `~/.claude/plans`
+
+   > **注記（2026-09-27, RFC-0033）** contemplative-agent と zenn-content の一律除外を改める。この 2 repo は plan 全体の
+   > 約半分（124 / 255 本）を占め、一律除外では公開照合の範囲がほとんど増えない。両 repo も `docs/plans/` を既定にし、
+   > 第三者の投稿本文・未公開記事の企画を含む plan だけを非公開置き場（`.notes/plans` / `planning/plans`）に置く。
+   > zenn-content の未公開記事の plan は記事の公開後に `docs/plans/` へ移す
 2. `~/.claude/.gitignore` の `plans/` を `/plans/` に固定する（legacy 置き場だけを無視する）
 3. 承認した plan は実装の最初の commit に単独で入れる（件名 `docs(plan): <slug>`）。後続 commit は本文に `Plan: docs/plans/<file>`、
    ADR は Context の先頭、RFC は `## Status` に日付付き 1 行でリンクする（rules/common/planning.md、
@@ -40,7 +45,11 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
 5. `docs/plans/` を claude-harness への同期対象に加える。同期は git が追跡している plan だけを集め、docs/plans に
    untracked・未 commit の変更があれば abort する（未承認の plan を出さないため）。script の変更と公開は著者の GO の後で、
    本 ADR の時点では未実施
+   > **注記（2026-09-27, RFC-0033）** script 側は実装済み（claude-harness `6810192`）。過去 plan の移設で
+   > `~/.claude/docs/plans` に 68 本が入り、次の harness-sync から同期される
 6. commit を促す hook は作らない。既存の 255 本は移さない
+   > **注記（2026-09-27, RFC-0033）** 既存の plan は移す。会話ログから repo を決め、公開先に入るものはエージェントの
+   > 一次点検と著者の確認を通す。repo でない cwd の plan と、点検を通らない plan は非公開置き場に残す
 
 ## Review-when
 

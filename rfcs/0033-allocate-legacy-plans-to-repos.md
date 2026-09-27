@@ -1,5 +1,5 @@
 ---
-state: draft 2026-09-27
+state: in_progress 2026-09-27
 review-when: 振り分けが終わったとき。または ADR-0085 の 2026-10-11 の計測で plan の記録層そのものが見直されたとき
 ---
 ## Summary
@@ -37,6 +37,13 @@ ADR-0085 で新しい plan は repo の `docs/plans/` に残るようになっ�
 
 **2026-09-27 draft** — 著者の起票指示。親は RFC-0027（指摘と Eval の照合可能な公開）。着手時に ADR-0085 Decision 6 へ日付付き注記が要る。
 
+**2026-09-27 対応表** — 255 本すべてが会話ログと一致（未一致 0）。セッション cwd の git toplevel（worktree は common dir の親）で数えると:
+~/.claude 74 / contemplative-agent 76（消えた worktree 6 を含む）/ zenn-content 48 / authorship-strategy 10 / agent-knowledge-cycle 10 / daily-research 8 / aeon-shop 7（worktree 1 を含む）/ shimo4228 4 / attention-not-self 3 / agent-attribution-practice 2 / edge-frontier 2 / claude-harness・zafu-ios・lab-charter 各 1 / repo でない cwd 6（~/MyAI_Lab 3・Obsidian Vault・~/.config/moltbook・~/.claude-ralph）。
+複数 repo のセッションから参照された plan が 24 本あり、最多参照の cwd を採った（要確認）。
+非公開置き場へ行く除外 repo（contemplative-agent・zenn-content）が 124 本で全体の約半分 — 点検が要るのは残り約 125 本。
+
+**2026-09-27 移設** — plan: [tranquil-hugging-bear](../docs/plans/tranquil-hugging-bear.md)。点検 238 本（PUBLIC 170 / FIX 28 / WRONG_REPO 25 / PENDING_ARTICLE 7 / PRIVATE 8）の後、237 本を 17 repo の `docs/plans/` と非公開置き場へ移して repo ごとに commit した。CA と zenn-content も点検で分ける形にした（ADR-0085 注記）。legacy に残したのは 16 本（repo でない cwd・端末設定・deep-research 結果・非公開判定）。legacy の元ファイルは消していない。公開 repo への push と harness-sync は著者の GO 待ち。
+
 ## Next action
 
-会話ログから plan → cwd → repo の対応表を作り、repo ごとの本数を出す。
+公開 repo の push と harness-sync を著者の GO で行う。zenn の `planning/plans` の 11 本は記事公開後に `docs/plans/` へ移す。
