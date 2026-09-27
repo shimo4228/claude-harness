@@ -114,6 +114,8 @@ Environment-specific facts, wiring, and traps auto-loaded every session (under `
 
 `rfcs/` is the harness's public task-and-proposal ledger ([ADR-0049](docs/adr/0049-unify-task-ledger-into-public-rfcs.md)): one entry per proposal or work item, body in Rust-RFC-template form, state in the frontmatter, terminal entries left in place so rejected proposals stay readable with their reasons. ADRs record decisions; `rfcs/` holds what is still open — including the entries that will never be built, which is the point.
 
+`docs/plans/` holds the approved plan-mode plans behind those decisions ([ADR-0085](docs/adr/0085-plans-as-records-in-docs-plans.md)): each is a frozen snapshot of intent and planned verification, committed before implementation and linked from the ADR or RFC it produced. Where later reality diverges from a plan, the divergence is the record.
+
 ## Usage
 
 ### Full install

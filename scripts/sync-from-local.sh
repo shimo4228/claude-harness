@@ -41,7 +41,7 @@ set -euo pipefail
 SOURCE_DIR="${HARNESS_SYNC_SOURCE:-$HOME/.claude}"
 ORIGIN="${HARNESS_SYNC_ORIGIN:-shimo4228}"
 TARGET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBTREES=(skills agents rules docs/adr rfcs hooks scripts/hooks tests)
+SUBTREES=(skills agents rules docs/adr docs/plans rfcs hooks scripts/hooks tests)
 
 # Hooks that are useful in any repo, plus the parts they need to run and be
 # verified: the commit surface (git-commit gates), and — since 2026-08-25 —
@@ -153,6 +153,20 @@ for rfc in "$SOURCE_DIR"/rfcs/*.md; do
   [[ -f "$rfc" ]] || continue
   cp "$rfc" "$STAGING/rfcs/"
 done
+
+# docs/plans/: approved plans (ADR-0085). Only plans git tracks are published —
+# an uncommitted plan is by definition not approved, so any untracked or
+# modified file under docs/plans aborts instead of shipping a draft.
+mkdir -p "$STAGING/docs/plans"
+if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain -- docs/plans)" ]]; then
+  echo "ABORT: untracked or uncommitted files under docs/plans — commit approved plans, remove the rest:" >&2
+  git -C "$SOURCE_DIR" status --porcelain -- docs/plans >&2
+  exit 1
+fi
+while IFS= read -r plan; do
+  [[ -f "$SOURCE_DIR/$plan" ]] || continue
+  cp "$SOURCE_DIR/$plan" "$STAGING/docs/plans/"
+done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/plans/*.md')
 
 # hooks + their shared parts + their bats: explicit allowlist, no origin filter.
 # A missing entry aborts rather than skipping: a renamed or deleted hook must be

@@ -114,6 +114,8 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 
 `rfcs/` はハーネスの公開タスク・提案台帳です（[ADR-0049](docs/adr/0049-unify-task-ledger-into-public-rfcs.md)）。1 エントリ 1 ファイル、本文は Rust RFC テンプレ準拠、状態は frontmatter。終端エントリも残置するので、却下された提案が理由ごと読めます。ADR が「決めたこと」、`rfcs/` が「まだ開いていること」— 建てないと決めたものが残るのが要点です。
 
+`docs/plans/` は、それらの判断の元になった承認済みの plan（plan mode の計画）です（[ADR-0085](docs/adr/0085-plans-as-records-in-docs-plans.md)）。実装前の意図と検証手順を凍結したスナップショットで、実装の前に commit され、生まれた ADR / RFC からリンクされます。後の現実と食い違えば、その食い違いが記録になります。
+
 ## 使い方
 
 ### 全部入り
