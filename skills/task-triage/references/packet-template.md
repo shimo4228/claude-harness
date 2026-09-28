@@ -19,6 +19,11 @@ PR are public before acceptance. Write it as you would an `rfcs/` entry (ADR-004
 `file:line`, never a private number or `.notes/` content — a task that needs those is a local
 task (task-triage §3).
 
+The packet is committed to the repo's `docs/plans/` before dispatch and is the build's plan
+(ADR-0085, RFC-0035): the build reads it on `main`, its commit body names it on the `Plan:` line,
+and the judge compares the diff against that frozen file in §4. Only a packet that must carry
+private contents stays uncommitted in `.notes/packets/`.
+
 **Effort** — the judge fills the packet's `Effort:` line on every packet from this table, by how
 dense the edge cases are in the diff, with the reason in one phrase (a blank line leaves a cloud
 session on the server-side default, which moves — ADR-0081). The same value goes to `cloud-dispatch.sh
@@ -117,6 +122,7 @@ script の docstring に埋めない — measurement-discipline §8（CA RFC-004
 - `.claude/verify.sh`・`.claude/verify.md`・`.github/`・`.claude/settings.json` を変えない
   （検査の正本と CI — 触った diff は検収に入らない）
 - `git add -A` を使わない ; 台帳（`rfcs/` の state）の状態は判断役が書く
+- この packet のファイル（`docs/plans/<task-id>-s<n>-<slug>.md`）を編集しない — dispatch 時点で凍結した契約
 - <cloud: PR は自動で開く。PR の本文・設定は触らない ; main や他の branch に push しない ; force push しない>
 - <time cap> を超えたら打ち切って、そこまでの diff とテスト状況で報告
 - shell ループで複数 path / repo を回すときは、path をファイルに書いて `while read` で 1 行ずつ回す（zsh は
@@ -126,6 +132,7 @@ script の docstring に埋めない — measurement-discipline §8（CA RFC-004
 <type>(<scope>): <summary> (<T-IDs>)
 
 Packet: S<n>
+Plan: docs/plans/<task-id>-s<n>-<slug>.md <この packet の path。非公開の packet（`.notes/packets/`）なら none>
 Needs from judge: <判断役かオーナーの決定・承認が要るもの / none>
 Model: <この session のモデル名。途中でモデルが切り替わった通知が出たらその旨>
 Effort: <この session が実際に走った effort — 環境変数 `CLAUDE_EFFORT` か `/effort` の表示。分からなければ「未確認」>

@@ -46,3 +46,4 @@ README には書かない（複製は drift する）。
 | [0032](0032-defects-found-in-2026-09-27-research.md) | 2026-09-27 の調査で見つけた不具合 3 件（review-when-watch 未稼働・件数の食い違い・注記の順序） |
 | [0033](0033-allocate-legacy-plans-to-repos.md) | 過去の plan（global の legacy 置き場、253 本）を作られた repo の plan 置き場へ振り分ける |
 | [0034](0034-llm-as-judge-definition-search.md) | llm-as-judge の判定定義を仮説として扱う — 問いと verdict 境界の候補を、固定した下流評価で比べる外側ループ |
+| [0035](0035-triage-packets-as-plans.md) | task-triage の kickoff packet を docs/plans/ に plan として commit してから dispatch する |

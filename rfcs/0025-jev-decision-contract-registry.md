@@ -89,11 +89,16 @@ Unresolved「質問文を変えたとき」への暫定回答: ID を増やさ�
 
 **2026-09-27 blocked** — 著者確認（triage digest 2026-09-27）。最小形の registry は実装済み（jev-skill-router の `decisions.jsonl`: `~/.claude/plugins/data/jev-skill-router-jev-skill-router/decisions.jsonl`、2026-09-21〜26 で 1,047 行 ≈ 180 行/日、全行 `mode: shadow`。review-when-watch の生の読み値は `metrics/review-when-watch.jsonl`、毎日 06:10 に 1 run）。残るのは「閾値と反例の置き場」だけで、データ量の条件で開く。
 
-再開条件: review-when-watch が 30 run 分（毎日 1 run → 2026-10-25 頃）溜まる。router log は同日までに約 6,000 行で十分
-照合先:   `metrics/review-when-watch.jsonl` の run 数（`kind` 別に数える）と上記 router log の行数
+再開条件: review-when-watch が 30 run 分（毎日 1 run、初回 2026-09-29 → 2026-10-28 頃）溜まる
+照合先:   `metrics/review-when-watch.jsonl` の run 数（`kind` 別に数える）
 成立時:   accepted（閾値と反例の置き場を決める measurement を dispatch）
 
 判断役注: n（30 run）と予定日は著者の指定が無かったので判断役が置いた既定（ADR-0076 の「指示に無かったのでこう置いた」）。著者が別の n を指定したら書き換える。
+triage 2026-09-28: 照合先が観測できない。`metrics/review-when-watch.jsonl` は存在せず（0 run）、plist は `~/Library/LaunchAgents/` に未登録。このままでは 30 run に届かないので blocked の要件を満たさない — 登録するか再開条件を変えるかは RFC-0032 item 1 の著者判断に従う。router log は 1,238 行（6 日で約 200 行/日）。
+
+triage 2026-09-28（続き）: 著者が plist を登録（`launchctl print` で確認、毎日 06:10、初回 2026-09-29）。ADR-0080 Decision 9 の送信は許容で確定。照合先は観測可能に戻ったので blocked のまま、30 run の予定日を 2026-10-28 頃に置き直す。
+
+triage 2026-09-28（著者判断）: jev-skill-router と jev-belay をローカルで無効化（`enabledPlugins` を false）。router の 7 日の shadow 読み値: 1,242 prompt、提案率 43%、提案が 30 分以内に実際に使われたのは 28 / 539、実際の invoke 122 回のうち直前の提案と一致 23、入力 約 18.5k tokens/回。router log（1,242 行で凍結）は registry の最小形の実例として残し、再開条件から外した。belay は 180 stop・block 7（全件 `checks: []`、うち 1 件は本文に verify.sh exit 0 — この harness の verify を実行として認識しない）。
 
 ## Next action
 

@@ -41,6 +41,9 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
 3. 承認した plan は実装の最初の commit に単独で入れる（件名 `docs(plan): <slug>`）。後続 commit は本文に `Plan: docs/plans/<file>`、
    ADR は Context の先頭、RFC は `## Status` に日付付き 1 行でリンクする（rules/common/planning.md、
    skills adr-writer / rfc-writer に規約を置く）。承認されなかった plan は commit しなくてよい
+   > **注記（2026-09-28, RFC-0035）** task-triage の kickoff packet もこの plan として扱う。dispatch の前に
+   > `docs/plans/<task-id>-s<n>-<slug>.md` へ単独 commit し、build の commit は `Plan:` 行で指す。非公開の中身を
+   > 持つ packet だけは `.notes/packets/` に残す（skill task-triage §3 step 3）
 4. plan は公開可能な書き方を既定にし、機微はリンク先へ、パスは `~/` で書く
 5. `docs/plans/` を claude-harness への同期対象に加える。同期は git が追跡している plan だけを集め、docs/plans に
    untracked・未 commit の変更があれば abort する（未承認の plan を出さないため）。script の変更と公開は著者の GO の後で、

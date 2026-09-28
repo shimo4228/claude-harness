@@ -108,8 +108,9 @@ skill の本文は渡さない（anchoring）。
 delta を読む（1 skill 約 $1 / 5 分、2026-09-13 実測）。`--runs 3` は run 間の分散を露出させる —
 1 run では結論が逆に転ぶ。`arm: with-only` の `tool_used: Skill` grader 1 本が発火検出になる
 （score に入らず、skill が実際に読まれたかだけを示す）。delta が無ければ Drop（skill は行動を
-変えていない）。defer 先の skill / agent が実行環境に無いと、その不在の断り書きで with arm が
-落ちる偽陰性になる（global に無い移設済み資産を名指す skill は要注意）。各 run の tool trace は
+変えていない）。run は plugin だけを load し、user の skills・agents・CLAUDE.md・memory を読まない
+ので、他の skill / agent に defer する skill は、その不在の断り書きで with arm が落ちる偽陰性になる
+（plugin-evals docs「How runs are isolated」、2026-09-28 照合）。各 run の tool trace は
 `--keep-temp` 無しで消える（残るのは grader が見た最終メッセージ）。
 
 **差の中身は著者が読む。** 同じ prompt を **with / without の 2 subagent で同時に**走らせ、

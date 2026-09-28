@@ -115,6 +115,8 @@ Environment-specific facts, wiring, and traps auto-loaded every session (under `
 
 `docs/plans/` holds the approved plan-mode plans behind those decisions ([ADR-0085](docs/adr/0085-plans-as-records-in-docs-plans.md)): each is a frozen snapshot of intent and planned verification, committed before implementation and linked from the ADR or RFC it produced. Where later reality diverges from a plan, the divergence is the record.
 
+`docs/evals/` holds eval cards for the instruments the harness measures itself with ([RFC-0030](rfcs/0030-eval-cards-for-ready-instruments.md)): each card gives the design, the environment, the raw readings, what was not measured, the known failures, and a validity state (`再現済み` / `単発` / `不成立`). A card whose raw output was lost says so. Field names are borrowed from `claude plugin eval`'s result JSON, Every Eval Ever, and Inspect AI so a card can be mapped to those formats. Written in Japanese — start from the [index](docs/evals/README.md).
+
 ## Usage
 
 ### Full install

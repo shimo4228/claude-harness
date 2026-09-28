@@ -89,6 +89,9 @@ accepted
    値が cloud に届く経路は packet 本文だけで、それは Decision 4 の表が閉じる。(c) build 出力側は CI の
    テスト（CA では `tests/test_jev_results_stay_private.py`）が公開木へのラベル混入を**push 後に検知**
    する — 経路を閉じるのではなく、検収前に赤くする。private mirror は採らない（Alternatives）。
+   > **注記（2026-09-28）** Jev の数値は私的な値ではなくなった。TypeSafe MCA の 2026-09-19 改定でベンチマーク公開の
+   > 条項（2.3(f)）が消え、CA は 2026-09-25 に上の label 検査を退役した（CA `2e64f5c`）。私的に残るのは行ログの本文
+   > （他 agent の投稿本文・復号した prompt）と `.notes/` の中身だけ。Decision 4 の表（skill task-triage §3）も同日に直した
 6. **PR は view、merge は ff-only。** cloud の PR 自動作成は on にする。ADR-0043 Decision 2「PR は
    使わない」は「PR は自動で開く view であり、merge 経路にしない」へ狭まる（同 ADR に注記。当時の
    却下理由「ややこしい」は、人間が PR を操作しないので当たらない）。検収と merge は判断役の

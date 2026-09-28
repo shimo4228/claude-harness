@@ -5,7 +5,7 @@
 # Collects components whose origin marker matches ORIGIN (frontmatter
 # `origin: <value>` or HTML comment `<!-- origin: <value> -->`), stages
 # them, runs a secret scan, then replaces the managed subtrees
-# (skills/ agents/ rules/ docs/adr/ rfcs/ hooks/ scripts/hooks/ tests/) wholesale.
+# (skills/ agents/ rules/ docs/adr/ docs/plans/ docs/evals/ rfcs/ hooks/ scripts/hooks/ tests/) wholesale.
 #
 # Three subtree groups are NOT origin-filtered:
 #   docs/adr/  — ADRs record this harness's own design decisions and are
@@ -41,7 +41,7 @@ set -euo pipefail
 SOURCE_DIR="${HARNESS_SYNC_SOURCE:-$HOME/.claude}"
 ORIGIN="${HARNESS_SYNC_ORIGIN:-shimo4228}"
 TARGET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBTREES=(skills agents rules docs/adr docs/plans rfcs hooks scripts/hooks tests)
+SUBTREES=(skills agents rules docs/adr docs/plans docs/evals rfcs hooks scripts/hooks tests)
 
 # Hooks that are useful in any repo, plus the parts they need to run and be
 # verified: the commit surface (git-commit gates), and — since 2026-08-25 —
@@ -167,6 +167,20 @@ while IFS= read -r plan; do
   [[ -f "$SOURCE_DIR/$plan" ]] || continue
   cp "$SOURCE_DIR/$plan" "$STAGING/docs/plans/"
 done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/plans/*.md')
+
+# docs/evals/: eval cards (RFC-0030) — the instruments' design, raw readings,
+# what was not measured, known failures and validity state. Same rule as
+# docs/plans: only tracked cards ship, anything uncommitted aborts.
+mkdir -p "$STAGING/docs/evals"
+if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain -- docs/evals)" ]]; then
+  echo "ABORT: untracked or uncommitted files under docs/evals — commit the cards first:" >&2
+  git -C "$SOURCE_DIR" status --porcelain -- docs/evals >&2
+  exit 1
+fi
+while IFS= read -r card; do
+  [[ -f "$SOURCE_DIR/$card" ]] || continue
+  cp "$SOURCE_DIR/$card" "$STAGING/docs/evals/"
+done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/evals/*.md')
 
 # hooks + their shared parts + their bats: explicit allowlist, no origin filter.
 # A missing entry aborts rather than skipping: a renamed or deleted hook must be

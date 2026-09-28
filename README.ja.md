@@ -115,6 +115,8 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 
 `docs/plans/` は、それらの判断の元になった承認済みの plan（plan mode の計画）です（[ADR-0085](docs/adr/0085-plans-as-records-in-docs-plans.md)）。実装前の意図と検証手順を凍結したスナップショットで、実装の前に commit され、生まれた ADR / RFC からリンクされます。後の現実と食い違えば、その食い違いが記録になります。
 
+`docs/evals/` は、harness が自分を測る計器の Eval カードです（[RFC-0030](rfcs/0030-eval-cards-for-ready-instruments.md)）。1 枚ごとに、設計・環境・生の読み値・測らなかったもの・既知の故障・有効性の状態（`再現済み` / `単発` / `不成立`）を書きます。生の出力を失ったカードは、失ったと書きます。欄の名前は `claude plugin eval` の結果 JSON・Every Eval Ever・Inspect AI から借り、それらの形式に対応づけられるようにしています。入口は [index](docs/evals/README.md) です。
+
 ## 使い方
 
 ### 全部入り

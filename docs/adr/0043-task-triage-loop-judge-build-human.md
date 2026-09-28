@@ -112,6 +112,9 @@ accepted
   セッション 10 本（最大同時 3）、merge 7 回、うち 2 回は harness の security gate（S5 / S7）。
   読み（測定）の dispatch が実装より先に効いた（41 件のうち即 dispatch できる実装は 1〜2 件、
   大半は「照合先を読む」で決着）。
+
+  > **注記（2026-09-28, RFC-0032）** 上の件数は 1 周目の途中（build 10 本・merge 7 回の時点）の値。周回全体の
+  > 値（41 → 22、closed 27、起票 6、session 13 本、merge 13 回）は `skills/task-triage/references/first-cycle-2026-08-17.md`。
 - **判断役の packet は仮説である**: S5 は packet の前提を 2 箇所で反証しつつ正しい修理に到達した。
   Phase 0 を「反証したら止める」でなく「反証を記録して直す」にしていたのが効いた。
 - 台帳の外で見つかったこと: harness の承認台帳が stale で commit ゲートが休眠していた（人間が

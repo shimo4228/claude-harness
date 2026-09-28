@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-09-27
+state: blocked 2026-09-28
 review-when: 振り分けが終わったとき。または ADR-0085 の 2026-10-11 の計測で plan の記録層そのものが見直されたとき
 ---
 ## Summary
@@ -44,6 +44,12 @@ ADR-0085 で新しい plan は repo の `docs/plans/` に残るようになっ�
 
 **2026-09-27 移設** — plan: [tranquil-hugging-bear](../docs/plans/tranquil-hugging-bear.md)。点検 238 本（PUBLIC 170 / FIX 28 / WRONG_REPO 25 / PENDING_ARTICLE 7 / PRIVATE 8）の後、237 本を 17 repo の `docs/plans/` と非公開置き場へ移して repo ごとに commit した。CA と zenn-content も点検で分ける形にした（ADR-0085 注記）。legacy に残したのは 16 本（repo でない cwd・端末設定・deep-research 結果・非公開判定）。legacy の元ファイルは消していない。公開 repo への push と harness-sync は著者の GO 待ち。
 
+**2026-09-28 blocked** — triage で照合: 公開 repo の push と harness-sync は済んでいた（claude-harness `401796e`、他の公開 repo は origin/main と一致）。残りは 2 件。akc-cycle の plan commit（`570e788`）は build ブランチに載ったまま未 push で、repo がプラグイン申請中のため申請が終わるまで触らない（main への cherry-pick を試みて著者の指示で取りやめ、push 前に復元済み）。zenn の `planning/plans` の 11 本は記事公開待ち。
+
+再開条件: akc-cycle のプラグイン申請が終わる（著者が告げる）、または zenn の該当記事が公開される
+照合先:   著者への確認（申請の状態は repo から機械で読めない）と zenn-content の `published: true` の記事
+成立時:   accepted（akc-cycle は `570e788` を main へ cherry-pick して push、zenn は該当 plan を `docs/plans/` へ移す）
+
 ## Next action
 
-公開 repo の push と harness-sync を著者の GO で行う。zenn の `planning/plans` の 11 本は記事公開後に `docs/plans/` へ移す。
+上の再開条件のどちらかが成立したら、成立した側だけを片付ける。両方終わったら done。

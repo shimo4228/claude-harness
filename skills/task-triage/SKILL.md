@@ -132,17 +132,25 @@ are the exceptions, and a task that matches none of them goes to the cloud.
 |---|---|
 | Only the GitHub clone (tracked files), a Linux toolchain, and the repo's CI job that runs `verify.sh` | **Claude Code cloud session** — `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file> --effort <level>` |
 | Local data or a local model (`~/.config/moltbook`, `.notes/`, Ollama, an eval that reads them), a macOS-only toolchain (Swift / iOS, launchd, `security`), or a repo with no github.com remote or no CI running `verify.sh` | Local. *Measurement / read-only / docs-only* → `Agent(model: opus, isolation: worktree)`; three or more with one setup → the Workflow tool (`pipeline`, build and judge as separate `agent()` calls, `schema` for the reading). *Implementations that need hooks, skills and permission prompts* → `spawn-session` (Herdr, Remote Control) |
-| A private number in the packet itself (a Jev row — anything `tests/test_jev_results_stay_private.py` guards, or `.notes/` contents) | Local. A cloud packet is the session's first message, and in a public repo the branch, commits and PR are public before acceptance — the packet is written like an `rfcs/` entry (ADR-0049): pointers, not private contents |
+| Private contents in the packet itself (`.notes/` contents, row logs that carry untrusted post bodies or decoded prompts) | Local. A cloud packet is the session's first message, and in a public repo the branch, commits and PR are public before acceptance — the packet is written like an `rfcs/` entry (ADR-0049): pointers, not private contents. Jev readings and aggregate numbers are publishable (the TypeSafe MCA revision of 2026-09-19 dropped the benchmark-publication clause) — only the row bodies stay private |
 | harness rules / hooks / permissions / a gate script (`.claude/verify.sh`, `.github/`) | Not dispatched — the human's diff (`boundary.md`) |
 
 Per task or bundle, cloud path:
 
 1. `claims.py claim T-XXX --label "S<n>: <what> (cloud session; model=<exact model ID the build should run on>; judge=…, merge=judge after §4)"`
-2. Make `main` what the cloud will clone: `git -C <repo> status -sb`, `git push` if ahead. The
-   cloud clones **origin/main**, never the working tree — a local-only commit is invisible to the
-   build. The dispatch script refuses to start on a dirty or unpushed `main`.
-3. Write the packet from `references/packet-template.md` (cloud variant) to a file outside the
-   tracked tree (`.notes/packets/s<n>.md` or the scratchpad). The cloud reads no `~/.claude`, so
+2. Make `main` what the cloud will clone: `git -C <repo> status -sb` clean and `git pull
+   --ff-only`. The cloud clones **origin/main**, never the working tree — a local-only commit is
+   invisible to the build. The dispatch script refuses to start on a dirty or unpushed `main`;
+   step 3 ends with the push.
+3. Write the packet from `references/packet-template.md` (cloud variant) to
+   `docs/plans/<task-id>-s<n>-<slug>.md` (task ID lower-case, e.g. `rfc-0035-s1-…`), commit it
+   alone on `main` (`docs(plan): <task-id> S<n> packet`) and push — the packet is the plan of the
+   build (ADR-0085, RFC-0035): the build's commit body points at it with `Plan:`, the task's
+   `## Status` links it, and it is frozen once dispatched (bounces go in the message and the
+   claim label, not into the file). A public repo's packet push is a publication like the dispatch
+   itself: commit it, push it only with the human's OK for that task (step 4). A packet that must
+   carry private contents (the third row of the table above) stays in `.notes/packets/s<n>.md`
+   and is never committed. The cloud reads no `~/.claude`, so
    the packet is **self-contained**: goal as decidable acceptance, Phase 0 with "if refuted, stop
    and report", the build order, the one review it runs (built-in `/code-review`, effort
    `medium`, the reviewer instruction written out), the must-nots, and the commit-body report.
@@ -193,7 +201,9 @@ the hand-made worktree below is the `spawn-session` path: `git -C <repo> worktre
 the session runs without the allowlist;
 `.claude/worktrees/` must be ignored in that repo; sibling repos get their worktree under the
 scratchpad. Steps 1 and 3 are as for the cloud path (claim with the worktree branch in the
-label; packet file outside the tracked tree), using the packet's *local* lines (build or
+label; packet committed to `docs/plans/` on `main` and pushed before the worktree is cut —
+`Agent(isolation: worktree)` cuts its branch from `origin/main`, so an unpushed packet commit
+leaves the build to rebase), using the packet's *local* lines (build or
 measurement variant), with the review chain delegated to `implementation-chain` (the harness
 is present there). `spawn-session`:
 `bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus` →
