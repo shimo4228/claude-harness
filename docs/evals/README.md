@@ -67,3 +67,7 @@ harness の計器（ablation・shadow baseline・判定ログ等）を 1 回測�
 | カード | 計器 | 状態 |
 |---|---|---|
 | [s1-headline-craft-native-ablation-2026-09-13](s1-headline-craft-native-ablation-2026-09-13.md) | `claude plugin eval --ablation with-without` | 単発 |
+| [s2-skill-comply-measurement-validity-2026-08-01](s2-skill-comply-measurement-validity-2026-08-01.md) | skill-comply（`scripts/run.py`） | 不成立 |
+| [s3-search-first-shadow-baseline-2026-09-14](s3-search-first-shadow-baseline-2026-09-14.md) | search-first 影の比率 snippet | 単発 |
+| [s4-jev-skill-router-decision-log-2026-09-21](s4-jev-skill-router-decision-log-2026-09-21.md) | jev-skill-router 判定ログ（shadow） | 単発 |
+| [s5-opus-effort-trial-control-broken-2026-08-29](s5-opus-effort-trial-control-broken-2026-08-29.md) | `modelSettings` の effort × triage の bounce | 不成立 |

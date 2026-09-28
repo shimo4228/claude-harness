@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-09-28
+state: done 2026-09-28
 review-when: 対象の計器の設計が変わったとき
 ---
 ## Summary
@@ -25,7 +25,12 @@ Eval の公開の型は MyAI_Lab 側に既にある（contemplative-agent-data �
 **2026-09-28 in_progress** — 著者が採用。Unresolved の決着: 置き場所は `docs/evals/`、公開は claude-harness の同期対象に `docs/evals` を足して harness-sync で出す / 形式は自前 markdown で、欄の名前だけを `claude plugin eval` の `aggregate-result.json`（schemaVersion 1）・Every Eval Ever 0.3.0・Inspect AI EvalLog から借りる（search-first 2026-09-28: どの形式も「有効性の状態」「測らなかったもの」「既知の故障」を正式な欄に持たず、Every Eval Ever は主語が model で arm・delta が無く、Evaluation Cards は集計モニタ、Croissant-RAI は dataset 単位）/ 状態語は台帳と分けて `再現済み` / `単発` / `不成立`。
 **2026-09-28 plan** — [docs/plans/rfc-0030-s1-eval-card-ablation](../docs/plans/rfc-0030-s1-eval-card-ablation.md)（S1: 形式定義と 1 枚目）
 **2026-09-28 S1 merged** — `42665c6`（`docs/evals/README.md` と s1 カード、状態 `単発`）。検収: diff は `docs/evals/` の 2 ファイルのみ、判断役の verify exit 0、数値は読みメモと一致。逸脱 3 件は名指しあり（rebase・対応表の見出し化・`retrieved_timestamp` を ISO 8601 に）。diff 外 findings 1 件（skill-creator §5 の偽陰性条件の書き方）は同日に直した。build: effort low（packet）→ 未確認（Report）/ bounce なし / none。
+**2026-09-28 公開** — 著者の GO で claude-harness の同期対象に `docs/evals` を追加し同期（claude-harness `182fe5c`）。s1 は著者判断で `単発` のまま（再実行しない — 判断は結論 with > without で足り、再現は照合可能性のためだけ）。
+**2026-09-28 plan** — [docs/plans/rfc-0030-s2-eval-cards-remaining-four](../docs/plans/rfc-0030-s2-eval-cards-remaining-four.md)（S2: 残り 4 枚を 1 bundle で）
+**2026-09-28 S2 merged** — `4dfd667`（s2 `不成立` / s3 `単発` / s4 `単発` / s5 `不成立`、index 4 行）。検収: diff は `docs/evals/` のみ、判断役の verify exit 0、絶対パス・session id なし、s4 の読み値 6 つは判断役の再計算と一致（token と遅延は skip 行 212 を含む値と、Jev を呼んだ 1,030 行だけの値 22,364 tokens / 806 ms の両方を載せた）。逸脱 3 件は名指しあり（書く順・index をまとめて追加・reviewer なし）。README の形式に合わなかった欄 5 種（`source_type` / 区間の `evaluation_timestamp` / `num_samples` / `execution_command` / `eval_library.version`）はカード側で吸収 — 形式の改訂は著者判断待ち。diff 外 findings 1 件（commit 本文参照）。build: effort low（packet）→ high（Report、Agent 経路は effort を渡せない）/ bounce なし / none。
+
+**2026-09-28 done** — 5 枚を claude-harness へ同期して公開（著者の GO）。形式は改訂しない（著者判断）: 合わなかった欄 5 種はカード側の書き方（区間表記・「未記録」・「—」）で読めており、5 枚では改訂の根拠が薄い。6 枚目で再び合わなければそのとき直す。
 
 ## Next action
 
-claude-harness の同期対象に `docs/evals` を足す（公開 repo — 著者の GO）。残り 4 枚（ADR-0032 の測定不成立、search-first shadow baseline、ADR-0074 の判定ログ schema、effort 試行の対照崩れ）を同じ形式で。
+なし。6 枚目を起こすときに `docs/evals/README.md` の形式で書き、合わない欄が出たら形式の改訂を判断する。
