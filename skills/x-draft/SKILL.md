@@ -52,7 +52,7 @@ config が読めない環境では auto-memory の vault パスを使う。
 - **日本語・長文 1 ポスト** (プレミアムの長文上限内。目安 500〜2,000 字)
 - **1 行目がすべて**: タイムラインでは 1 行目しか見えない。結論か意外性のある事実で
   始める。前置き (「今朝のリサーチで面白い発見が」等) は書かない。1 行目に迷ったら
-  skill: `headline-craft` の技法カタログを使う
+  skill: `headline-craft` の形と技法のカタログを使う
 - **本文**: 前提知識ゼロの読者が 1 ポストで理解できる自己完結の解説。レポートの
   記述規律 (冒頭結論・背景解説) を X の長さに再圧縮する
 - **as-of 日付**: 主要な事実に「2026-08-07 時点」等を 1 箇所以上明記する。鮮度の
@@ -67,7 +67,7 @@ config が読めない環境では auto-memory の vault パスを使う。
   (見本の場所・特徴・却下された register) がそこにある。無い環境では、ユーザーの
   過去ポストやブログを 1〜2 本読んで register を写し取るか、ユーザーに 1 回聞く。
   記事の文体と SNS の文体は別物として扱う
-- AI slop 禁止リスト・Craft 規約 → skill: `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）。**Voice は defer しない**（意図的分岐。
+- AI slop と文の原則 → 執筆の背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md` と診断表 `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md`。**Voice は defer しない**（意図的分岐。
   正本側の Related に登録済み）
 - 脱 AI-tell → skill: `public-comment` の改稿規律を公開ポストにも適用する
 

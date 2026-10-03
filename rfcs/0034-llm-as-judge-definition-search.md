@@ -1,5 +1,5 @@
 ---
-state: draft 2026-09-27
+state: blocked 2026-09-28
 review-when: RFC-0025 が accepted になり、閾値と反例の置き場が決まったとき。または DSPy が TypeSafe 判定器で生成系 Optimizer を公式に扱えるようになったとき
 ---
 ## Summary
@@ -114,6 +114,12 @@ skill の 3 原則との対応:
 
 **2026-09-28** — jev-skill-router をローカルで無効化（RFC-0025 の Status 参照）。パイロット候補の router ログは無効化時点で 1,242 行。無効化は新しい session から効くので、既に動いていた session の hook は終わるまで追記を続ける（同日 1,267 行まで観測）— 固定集合として使うときは先頭 1,242 行で切る。s4 カード（`docs/evals/s4-…`）がその切り方で数えている。
 
+**2026-09-28 blocked** — 著者判断: 他の適切なツールが出てくるまで止める。第一候補の jev-skill-router を同日ローカルで外したので（ADR-0074 注記）、定義を改善しても戻す先が無い。第二候補の skill-stocktake の verdict は件数が少ない。「適切なツール」は、判定をログに残し、後から「本来取るべき行動」と照合できる judge が harness で稼働していること、と読む（判断役の解釈）。
+
+再開条件: 判定を記録し outcome と照合できる judge が harness で稼働し、パイロットに足るログが溜まる
+照合先:   `grep -rlE 'api\.typesafe\.ai|jev_client' skills/*/scripts hooks scripts` の結果が 2026-09-28 時点の集合（jev-skill-router・review-when-watch の実装）から増えたか、または `metrics/review-when-watch.jsonl` が 30 run に届き当たり（`hit`）を RFC の実際の state 遷移と照合できるか
+成立時:   draft に戻し、その judge をパイロットに選び直す
+
 ## Next action
 
-パイロット候補 2 つのうち、「本来取るべき行動」が決定論で埋まる範囲の広い方を選ぶ。実データでの候補比較は RFC-0025 の再開条件（2026-10-25 頃）を待つ。
+上の再開条件を triage で照合する。成立したらパイロットを選び直す。

@@ -8,7 +8,7 @@
 
 | 中身 | 最適形式 | 理由 |
 |---|---|---|
-| README 冒頭の概要図（仕組みを一目で） | **committed SVG、ELI5 型、言語別**（`overview-diagram.md`） | 役割は人間の注意。情報は直後の identity 段落が持つので、線形でも図にする |
+| README 冒頭の概要図（仕組みを一目で） | **committed SVG、skill: `mono-figure` で描く、言語別**（`overview-diagram.md`） | 役割は人間の注意。情報は直後の identity 段落が持つので、線形でも図にする |
 | 本文中の 3 ステップの線形 / 単純な列挙 | **prose / list / 小さな表** | 全デバイス（特にモバイル）で読める。図にする価値がない |
 | 本当に graph 形状（関係・多分岐・matrix） | **Mermaid（`TD` 縦方向）** | ソースがテキストで LLM も読める。縦スクロールはスマホで自然、横（`LR`）は潰れる |
 | 大きい / 複雑な図 | **committed SVG（拡大・パン可）/ subsystem 分割** | 巨大 Mermaid は desktop でも上限に当たり、モバイルで潰れる |

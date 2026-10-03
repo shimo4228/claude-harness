@@ -1,6 +1,6 @@
 ---
 name: prose-translation
-description: 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・記事・README・ADR 等の人間向け prose を、出力先の publication channel contract が宣言する register と原文の確度を保って自然に訳す。逐語訳でも MT でもなく、term-lock + 2-pass（訳→自己添削）+ back-translation QA で品質を担保する。JA→EN は英語 AI-slop の自己添削、EN→JA は訳す-by-default の term policy と脱翻訳調 passを追加する。AI 向け doc は llms-txt-writer、学術 citation format は citation-formatter、shared craft は writing-ecosystemへ defer。
+description: 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・記事・README・ADR 等の人間向け prose を、出力先の publication channel contract が宣言する register と原文の確度を保って自然に訳す。逐語訳でも MT でもなく、term-lock + 2-pass（訳→自己添削）+ back-translation QA で品質を担保する。JA→EN は英語 AI-slop の自己添削、EN→JA は訳す-by-default の term policy と脱翻訳調 passを追加する。AI 向け doc は llms-txt-writer、学術 citation format は citation-formatter、shared craft は執筆の背骨（zenn-content の writing-principles rule）と writing-ecosystem へ defer。
 user-invocable: true
 origin: shimo4228
 ---
@@ -24,7 +24,7 @@ project agent が担ってよい。その場合も**訳出の方法論は本 ski
 - **対象外**:
   - AI 向け doc（`llms.txt` / `llms-full.txt` / FAQ）→ `llms-txt-writer`
   - 学術 citation / reference list の format 検証 → `citation-formatter`
-- **defer**: AI-slop原則・Title規約・出典編入は`writing-ecosystem`、言語別slop診断は同skillの
+- **defer**: AI-slop原則は執筆の背骨（`~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md` の 2）、Title規約・出典編入は`writing-ecosystem`、言語別slop診断は同skillの
   `references/style-diagnostics.md`を正本とする。
 - **defer**: 出力先channelのvoice / register / 語尾の実値は、そのprojectのpublication channel contractを正本として引く。
 
@@ -64,7 +64,7 @@ project agent が担ってよい。その場合も**訳出の方法論は本 ski
 
 ### 3. Pass 2 — self-edit
 
-writing-ecosystemのAI-slop原則と、兆候がある場合のstyle diagnosticsで自己添削する。target contractの
+執筆の背骨の原則（確度と語）と、兆候がある場合のstyle diagnosticsで自己添削する。target contractの
 direct / discoveryその他のvoiceを保ち、日本語の謙遜・婉曲表現は英語圏の該当channel慣習に合わせる。
 
 ### 4. QA — back-translation spot-check
@@ -107,7 +107,7 @@ direct / discoveryその他のvoiceを保ち、日本語の謙遜・婉曲表現
 - **直訳された idiom / 定型句** — "at the end of the day" 等の字義訳
 - **接続の機械訳** — "Moreover" → 「さらに」の惰性連発
 
-writing-ecosystemのAI-slop原則とtarget contractのvoiceで自己添削し、著者の既存日本語 prose が
+執筆の背骨の原則とtarget contractのvoiceで自己添削し、著者の既存日本語 prose が
 あればそれにキャリブレートする。
 
 ### voice fingerprint の写し方
@@ -158,7 +158,8 @@ back-translation は**意味の drift** を捕まえるが **voice / 自然さ�
 
 ## Related
 
-- `writing-ecosystem` skill — shared AI-slop / Title / 出典編入の正本（本 skill が defer する先。`~/MyAI_Lab/zenn-content` 常駐）
+- `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md` — 執筆の背骨（確度・語などの原則）
+- `writing-ecosystem` skill — Title / 出典編入の正本（本 skill が defer する先。`~/MyAI_Lab/zenn-content` 常駐）
 - `essay-reviewer` / `editor` agent — 翻訳後の EN review（`~/MyAI_Lab/zenn-content/.claude/agents/` 常駐）
 - `citation-formatter` agent — 学術 citation の format 検証（本 skill の対象外。`~/MyAI_Lab/paper-lab` 常駐）
 - `llms-txt-writer` skill — AI 向け doc（本 skill の対象外）

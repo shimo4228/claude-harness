@@ -34,7 +34,7 @@ origin: shimo4228
 
 ## 文体規約
 
-語彙・構造の tell リストの正本は `writing-ecosystem/references/style-diagnostics.md`（原則は同 skill の #ai-slop 節。`~/MyAI_Lab/zenn-content/.claude/skills/` 常駐）— ここに複製しない。コメント genre 固有の追加分のみ:
+語彙・構造の tell リストの正本は `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md`、原則は執筆の背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md` の 2 — ここに複製しない。コメント genre 固有の追加分のみ:
 
 - **スレッドの register に合わせる**: 既存コメントの長さ・フォーマット水準を上限とする。自分の過去コメントがあるスレッドでは、その声との連続性も保つ（急な文体変化自体が不自然さの signal）
 - **concede-first / net-giver の 3 拍**: ①相手の nuance ある論点を具体的に認める → ②根拠ある価値を 1 つ足す（実例・反直感の史実・視覚的類推）→ ③鋭い一文で終える。リンク勧誘・「続きは私の記事で」をしない
@@ -55,7 +55,7 @@ origin: shimo4228
    - bold 見出しリード: スレッド register の範囲内（目安 ≤ 2）
    - 文中コロン（リスト・例示前を除く）: 0 件
 2. **意味チェック**:
-   - writing-ecosystem の「文体・構造 tell」を 1 本ずつ当てる（構文の列挙はあちらが正本。
+   - style-diagnostics の Structural tells を 1 本ずつ当てる（構文の列挙はあちらが正本。
      ここに写すと片方だけ更新されて分岐する）
    - 別スレッドに貼っても通じるコメントになっていないか（接地不足）
    - 全 claim にユーザーの実感・検証が対応しているか（content ownership）
@@ -74,6 +74,6 @@ origin: shimo4228
 
 ## Related
 
-- 語彙・構造 tell の正本: `writing-ecosystem`（AI Slop 禁止リスト + 文体・構造 tell。`~/MyAI_Lab/zenn-content` 常駐）
+- 語彙・構造 tell の正本: `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md`（原則は背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`）
 - 記事・エッセイ: `writing-ecosystem` / AI 向け doc: `llms-txt-writer`
 - EN 起草時の翻訳品質: `prose-translation`（長文の場合のみ。コメントは本 skill の日本語訳併記で足りる）

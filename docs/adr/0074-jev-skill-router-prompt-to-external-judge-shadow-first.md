@@ -125,6 +125,14 @@ ADR-0002 注記の 2 点との差分: (1) 注入するのは `skills/` にある
 > `{ text: null }` を返して一覧を model に読ませず、同じ cookbook の 2 request で Jev に高々 1 件を選ばせ、2 つ目の
 > commit（2026-09-21T03:12Z）で SKILL.md の添付と `skillOverrides` による非表示まで進めている。同 repo に
 > `jev-model-router` もある。README と commit 履歴を原文で確認、未試行。見送りの判断は変えない。
+>
+> **注記（2026-09-28, RFC-0025）** Review-when 1 行目が発火し、inject は採らずにローカルで hook を外した
+> （`enabledPlugins` を false。著者判断）。Decision 4 の観測量は 7 日で届いた（0.2.0 の routed 行 1,012 ≥ 200、同ターンに
+> skill 使用のある行 136 ≥ 40）。読み: 提案 539 件のうち同 session で 30 分以内に実際に使われたのは 28、実際の invoke
+> 122 回のうち直前の提案と一致したのは 23 — 表に出しても選択を良くする材料が無い。費用は Jev を呼んだ行で入力
+> 約 22,000 tokens/行（判定は切り離した子プロセスなので prompt は待たせていない）。ログは無効化時点の 1,242 行を
+> 先頭で切って読む（既存 session の hook は終わるまで追記を続ける）。読み値の正本は Eval カード
+> [s4](../evals/s4-jev-skill-router-decision-log-2026-09-21.md)。公開 plugin の repo と awesome list の掲載はそのまま残す。
 
 ## Review-when
 

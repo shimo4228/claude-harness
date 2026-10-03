@@ -104,6 +104,11 @@ campaign と衝突しうる既存判断（Explore agent の報告、2026-09-08�
    > （authorship-strategy ADR-0022 に日付つき注記 e659139）。Astra review #2（aa93c47）が
    > North Star の Constraints を決定済みに差し替え、Fable cycle 1 を同日投入した。
 
+> **注記（2026-10-03, personal-branding ADR-0005）**: campaign の Goal 10,000 は外れ、window は事前登録した
+> 実験（同時 active 最大 2）で何が人を動かすかを測る instrument になった。数値目標は行為に置き、結果は
+> personal-branding ADR-0003 Decision 4 の判定規則で読む。Astra / Fable の役割分担はそのまま、skill 本文を
+> instrument の枠に書き直した。growth repo の commit は 2026-09-08 の 3 件で止まっている。
+
 ## Review-when
 
 - campaign window 終了（2026-12-07）: 次 campaign が無ければ 2 skill と tick seam を削除する

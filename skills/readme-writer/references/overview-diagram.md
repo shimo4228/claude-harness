@@ -1,8 +1,9 @@
 <!-- origin: shimo4228 -->
-# 概要図（README 冒頭の ELI5 図）
+# 概要図（README 冒頭の図）
 
 README の第一画面に置く 1 枚の図。役割は**人間の注意**（開いて数秒で「何が起きる仕組みか」を
-掴ませる）で、情報は本文が持つ。ELI5 の型 — 大きな絵、少ない言葉 — で描く。本文の図
+掴ませる）で、情報は本文が持つ。見た目と描き方は skill: `mono-figure`（mono-color の紙・インク・
+書体 + artifact-diagramming）が決め、ここには README という置き場の約束だけを置く。本文の図
 （Mermaid・構成図）の規約は `visual.md`、この図はその「図にすべきか絞る」の例外として既定で置く。
 
 ## いつ置くか
@@ -11,8 +12,6 @@ README の第一画面に置く 1 枚の図。役割は**人間の注意**（開
 - 置かない: 動く仕組みを持たない repo（記事集・データ集・リンク集）。代わりに hero（`visual.md`）
 - 詳しい構成図（コンポーネント・データフロー）はこの図にしない。skill: `archify` で作って docs/ に
   置き、README からリンクする
-- plugin の `eli5` skill は HTML artifact の説明図を作る（記事の図など）。README に commit する
-  この図は SVG なので、ELI5 の型だけを借りてこの手順で描く
 
 ## 形 — 2 つの型から選ぶ
 
@@ -21,10 +20,7 @@ README の第一画面に置く 1 枚の図。役割は**人間の注意**（開
 | 線形 | 1 回の入力が出力になる（hook・CLI・変換） | 横に 3 枠 + 矢印、下に「変わらない部分」の帯（例: 最後に選ぶのは Claude） |
 | ループ | 出力が次の入力に戻る（定期実行・学習・印） | 2×2 の 4 枠を時計回り + 戻りの点線矢印、中心に「全部がこれのために動く」ハブ |
 
-雛形: `../templates/overview-linear.svg` / `../templates/overview-loop.svg`（illustrative — 実在の
-README の図。文言を差し替えて使う）。
-
-**1 枠の中身**: 絵文字 1 つ（大きく）+ 見出し（英 2〜3 語 / 和 8 字以内）+ 補足 1〜2 行。
+**1 枠の中身**: 見出し（英 2〜3 語 / 和 8 字以内）+ 補足 1〜2 行。
 選択肢（モード）を 1 枠に並べるときは区切りに `or` / `または` を置く — 無いと順番に起きる
 2 段に読まれる。数値は 1 つまで（例のチップ `adr-writer · 93%`）。
 
@@ -51,15 +47,13 @@ README の図。文言を差し替えて使う）。
   </p>
   ```
 
-- SVG の約束（雛形が満たしている）:
+- SVG の約束（mono-figure の SVG をこの置き場に合わせる）:
   - `viewBox` 幅 960。GitHub のスマホ表示で約 0.4 倍に縮むので、見出し 25px 以上・補足 17px 以上
-  - 背景つきの角丸 rect を最背面に置く（GitHub の light / dark どちらでも読める）
+  - mono-color の紙の色の rect を最背面に置く（GitHub の light / dark どちらでも読める）
   - `role="img"`、言語別の `<title>` / `<desc>`
-  - font-family: 本文 `-apple-system, BlinkMacSystemFont, "Segoe UI", …`、和文版は
-    `"Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo` を足す、絵文字は
-    `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"`
-  - 枠の色: 青 `#E7F0FA`/`#6A9BC3`、紫 `#EBE4FA`/`#8B72D6`、緑 `#E2F5E9`/`#57A874`、
-    黄 `#FFF3D6`/`#D9A33C`、灰 `#F3F4F6`/`#6E7781`、文字 `#24292F`、背景 `#FFFBF2`
+  - font-family は閲覧側の環境で落ちない stack で書く（書体を描き込まない SVG は閲覧者の font で
+    描かれる）。例: sans `-apple-system, BlinkMacSystemFont, "Segoe UI", …`、和文版は
+    `"Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo` を足す。serif・mono の役割も同じ要領で stack にする
   - README からは `<img>` で参照する（README に直接書いた `<svg>` は GitHub が sanitize する）
 
 ## 描画確認
@@ -71,7 +65,7 @@ SVG を PNG に描いて目で見る。和文ラベルのはみ出しは描か�
   --hide-scrollbars --window-size=960,<viewBox の高さ> --screenshot=<out>.png file://<abs>/assets/overview.ja.svg
 ```
 
-見る点: はみ出し・重なり、`or` の区切り、絵文字が出ているか、枠の読み順。
+見る点: はみ出し・重なり、`or` の区切り、枠の読み順。
 
 ## 判定への接続
 

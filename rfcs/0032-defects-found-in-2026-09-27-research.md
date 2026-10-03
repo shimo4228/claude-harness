@@ -1,5 +1,5 @@
 ---
-state: draft 2026-09-27
+state: resolved 2026-09-28
 review-when: 3 件がすべて直るか、直さないと決まったとき
 ---
 ## Summary
@@ -20,6 +20,8 @@ RFC-0027 の調査で見つけた、公開記録と一次記録の食い違い 3
 
 **2026-09-28** — item 2 解消: 食い違いは数えた時点の違い（ADR-0043 は周回途中、first-cycle の記録は周回全体）。ADR-0043 の Consequences に注記を足した。残りは item 3（contemplative-agent の RFC-0040 — 直すなら CA 側の台帳で扱う）。
 
+**2026-09-28 resolved** — item 3 解消: 起票せず、contemplative-agent の RFC-0040 の MCA 注記に、公開 GO（09-21）との順序と §16.7 の扱いを日付つき注記で補った（contemplative-agent `4b336d9`）。3 件とも片付いた。
+
 ## Next action
 
-1 は著者が決める。2・3 は日付つき注記を足す。
+なし。

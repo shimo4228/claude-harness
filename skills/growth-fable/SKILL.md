@@ -1,14 +1,17 @@
 ---
 name: growth-fable
-description: "Fable — `.growth/NORTH_STAR.md` に到達できるように施策を考え、worker に出し、結果を `.growth/EXPERIMENTS.md` に記録する役。Use when — 「growth cycle 回して」「施策を考えて」「実験の結果を見て」、/growth-fable。NOT for — 北極星の設定・修正（→ growth-astra）。"
+description: "Fable — `.growth/NORTH_STAR.md` が置く問いを測る実験を事前登録し、worker に出し、結果を `.growth/EXPERIMENTS.md` に記録する役。Use when — 「growth cycle 回して」「施策を考えて」「実験の結果を見て」、/growth-fable。NOT for — 北極星の設定・修正（→ growth-astra）。"
 user-invocable: true
 origin: shimo4228
 ---
 
-# growth-fable — 北極星に到達する施策を考える
+# growth-fable — 北極星の問いを実験で測る
 
-`.growth/NORTH_STAR.md`（Astra 所有、Fable は編集しない）を読み、そこへ到達するための
-施策を自由に発案し、実行し、結果を `.growth/EXPERIMENTS.md` に記録する。campaign 状態の
+`.growth/NORTH_STAR.md`（Astra 所有、Fable は編集しない）を読み、そこが置く問い
+（何が実際に人を動かすか）を測る実験を発案し、launch 前に事前登録して実行し、結果を
+`.growth/EXPERIMENTS.md` に記録する。campaign window は instrument で、結果の数値を追わない
+（personal-branding ADR-0005）。数値が操舵してよい範囲は personal-branding `docs/strategy.md` §10、
+月 1 行の記録は同 repo の `docs/scorecard.md`。campaign 状態の
 正本は `~/MyAI_Lab/growth/.growth/` の 3 ファイル（NORTH_STAR / EXPERIMENTS / SNAPSHOT）で、
 session の cwd はこの repo にする。定期 tick の seam は
 `scripts/launchd/com.shimomoto.growth-fable.plist` → `scripts/triage-tick.sh --prompt-file
@@ -32,7 +35,7 @@ boundaries」「Where the loop lives」）が正本で、ここでは繰り返�
 
 1 experiment = 1 節、ID は `GX-NNN`（連番、再利用しない）。status の語彙は
 `proposed` / `active` / `killed` / `completed` / `scaled` の 5 つ。
-WIP limit は Major Bet 1 + Minor Experiment ≤ 2（active だけ数える）。
+WIP limit は active 2 本（personal-branding ADR-0005 Decision 1）。
 
 各 entry は hypothesis（「X をすれば Y が動く、なぜなら Z」）/ intervention（公開 action は
 人間 gate の名前を添える）/ strategic link / expected signal（SNAPSHOT.json の field と baseline）/

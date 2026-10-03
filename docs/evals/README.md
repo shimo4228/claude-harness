@@ -71,3 +71,4 @@ harness の計器（ablation・shadow baseline・判定ログ等）を 1 回測�
 | [s3-search-first-shadow-baseline-2026-09-14](s3-search-first-shadow-baseline-2026-09-14.md) | search-first 影の比率 snippet | 単発 |
 | [s4-jev-skill-router-decision-log-2026-09-21](s4-jev-skill-router-decision-log-2026-09-21.md) | jev-skill-router 判定ログ（shadow） | 単発 |
 | [s5-opus-effort-trial-control-broken-2026-08-29](s5-opus-effort-trial-control-broken-2026-08-29.md) | `modelSettings` の effort × triage の bounce | 不成立 |
+| [s6-reader-agent-verifiability-baseline-2026-09-28](s6-reader-agent-verifiability-baseline-2026-09-28.md) | 読者役エージェントによる照合（RFC-0031） | 不成立 |

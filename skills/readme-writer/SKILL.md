@@ -100,7 +100,7 @@ DOI repo の homepage・CITATION ファイル・release metadata は `release-do
 するのではない。
 
 - **第一画面に概要図を 1 枚置く（既定）**: 動く仕組み（流れ・判定・ループ）を持つ repo は、badge の
-  直後に ELI5 型の図（大きな絵・少ない言葉、2〜4 枠）を言語ごとの SVG で置く。役割は人間の注意で、
+  直後に、skill: `mono-figure` で描いた図（少ない言葉、2〜4 枠）を言語ごとの SVG で置く。役割は人間の注意で、
   情報は直後の identity 段落が同じ内容を文で持つ。型（線形 / ループ）・ラベルと本文の語の揃え方・
   SVG の約束・描画確認は `references/overview-diagram.md`
 - **本文の図は、図にすべきかをまず絞る**: 3 ステップの線形・単純な列挙は prose / list / 小さな表。
@@ -153,7 +153,7 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 - **AI-slop の診断表（正本は `writing-ecosystem` の references/style-diagnostics.md —
   `~/MyAI_Lab/zenn-content` 常駐）を README の prose にも当てる。** 特に EN の em-dash 多用 —
   修正は文の再構築で行い、`:` / `;` への機械置換をしない
-- **日本語 README の地の文はですます調**（`writing-ecosystem` の Voice からの意図的な分岐）。表の
+- **日本語 README の地の文はですます調**（記事の channel contract の register からの意図的な分岐）。表の
   セル・体言止め・見出し・alt は適用外。日本語の段落は 1 行で書く（文の途中の改行は GitHub で空白に
   見える）。漢語直写の翻訳調を開く対応表は `references/ja-register.md`
 - **英語 README**: identity 文は三人称の型。本文は、著者個人の repo なら一人称でよい。1 つの README の
@@ -246,7 +246,7 @@ uv run python -m scripts.readme_evidence fixtures/sample_issues.md --text
 - plugin `codex@openai-codex`（read-only の `/codex:rescue`）— 著者が求めたときの cross-model レビュー
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) / [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — 機械 surface
 - skill: `archify` — 詳しい構成図（HTML）。README には概要図を置き、構成図は docs/ からリンクする
-- `writing-ecosystem`（`~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem`）— AI slop の診断表と Voice 規約の正本
+- `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md` — AI slop の診断表の正本。執筆の原則は背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`
 - `references/` — `readme-judge-checklist.md` / `visual.md` / `overview-diagram.md` / `ja-register.md` / `about.md`
 - `templates/` — 概要図の雛形（`overview-linear.svg` / `overview-loop.svg`、illustrative）
 - `evals/read-through-log.md` — 通読指摘数の記録

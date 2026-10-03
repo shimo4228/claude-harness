@@ -222,7 +222,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/repo-asset-stocktake` ([repo](https://github.com/shimo4228/repo-asset-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/repo-asset-stocktake` |
 | `~/MyAI_Lab/llm-as-judge` ([repo](https://github.com/shimo4228/llm-as-judge)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llm-as-judge` |
 | `~/MyAI_Lab/claude-skill-paper-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-paper-ecosystem)) | skill ×2 + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/paper-lab/.claude/skills/paper-ecosystem` + 同 `paper-writing`（RFC-0019。同梱 agents の正本は `~/MyAI_Lab/paper-lab/.claude/agents/`、script の対象外で手動 diff） |
-| `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem`（RFC-0019。同梱 agents の正本は `~/MyAI_Lab/zenn-content/.claude/agents/`、script の対象外で手動 diff） |
+| `~/MyAI_Lab/claude-skill-writing-ecosystem` ([repo](https://github.com/shimo4228/claude-skill-writing-ecosystem)) | skill + agents 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem`（RFC-0019。同梱 agents の正本は `~/MyAI_Lab/zenn-content/.claude/agents/`、同梱 rule `rules/writing-principles.md` の正本は `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`（zenn-content ADR-0014）、いずれも script の対象外で手動 diff） |
 
 共通 env: origin filter `shimo4228` (`HARNESS_SYNC_ORIGIN`)、source (`HARNESS_SYNC_SOURCE`)。source の既定は
 `~/.claude` だが、正本を移設した 3 repo（citation-sync / paper-ecosystem / writing-ecosystem）だけは
@@ -235,6 +235,8 @@ skill 本体の drift は script が拾う。手動 diff の対象は **script �
 - **agents/*.md**（`claude-skill-paper-ecosystem` / `claude-skill-writing-ecosystem` の
   同梱 subagent。正本は writing 系が `~/MyAI_Lab/zenn-content/.claude/agents/`、
   paper 系が `~/MyAI_Lab/paper-lab/.claude/agents/`）
+- **rules/writing-principles.md**（`claude-skill-writing-ecosystem` の同梱 rule。writing-ecosystem の
+  背骨で、同梱しないと公開版 skill は原理を失う。正本 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`）
 - **hook script**（例: skill-stocktake の `hooks/log-skill-usage.sh`。正本 `~/.claude/hooks/`）
 - **repo root の `inspiration.md`**（repo 固有文書。harness に正本なし — diff 対象外だが、
   `skills/<name>/` 配下に置くと置換で消えるため root に置く）

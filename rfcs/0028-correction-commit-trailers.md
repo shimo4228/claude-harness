@@ -1,5 +1,5 @@
 ---
-state: draft 2026-09-27
+state: in_progress 2026-09-28
 review-when: 試行 2 週間が終わったとき
 ---
 ## Summary
@@ -22,6 +22,8 @@ review-when: 試行 2 週間が終わったとき
 
 **2026-09-27 draft** — 予測（外れうる形）: 試行後の記事 commit を読者役（RFC-0031）が照合すると、4 環のうち 3 環以上が「確認」になる。撤退条件: 著者起点の変更のうち原文付きが半分未満、または引用が会話と食い違う。
 
+**2026-09-28 in_progress** — 著者の指示で試行開始（2026-09-28〜10-12）。zenn-content に試行 rule `.claude/rules/correction-trailers.md` を置いた（zenn-content `76bcf5b`）。writing-ecosystem 本体は試行中は変えない（公開 skill repo に同期されるため）。Unresolved への仮の答え（指示に無かったので判断役が置いた — 違えば書き換える）: 引用の一致は試行の終わりに session ログと突き合わせて数える / 誰の指摘かは試行では著者だけを積み、reviewer・機械は既存の処分記録に任せる / 修正前の稿は公開しない（前後 2 行の抜粋を非公開の `drafts/<slug>.corrections.md` に残し、commit には原文・Trigger・Expect だけを写す）。harness 側の「変更 commit に直接書く」は試行の結果を見てから。
+
 ## Next action
 
-次の記事の構成セッションで試す。数えるのは、原文付きで残った割合・引用の一致率・手間。
+2026-10-12 に rule の「試行の読み」の 3 つを数え、続けるか撤退かを決める。
