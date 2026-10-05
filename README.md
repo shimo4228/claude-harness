@@ -82,6 +82,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [prompt-forager](agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance |
 | [readme-judge](agents/readme-judge.md) | Fresh-context README judge: reads evidence JSON + the README once, answers a fixed checklist with quoted evidence, returns a named verdict (Publishable / Fix / Rewrite) |
+| [researcher](agents/researcher.md) | One research angle per run for search-first's parallel Full mode: searches the web, registries and primary sources, writes one dated notes file or the merged report that opens the plan research gate |
 <!-- END GENERATED: agents-table -->
 
 ### Rules

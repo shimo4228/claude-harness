@@ -9,3 +9,5 @@
 | 2026-08-20 | contemplative-agent README.md / README.ja.md | EN / JA とも Publishable | 5（ほかに codex が事実誤り 5） | 事実の言いすぎ・不正確（repo の事実との照合が無かった） |
 | 2026-09-25 | jev-skill-router README.md / README.ja.md（統合前の 3 agent 構成で判定） | fresh の最終判定 2 回とも Fix（毎回新しい文単位の指摘）。直してから通読へ | 未記入（著者の通読待ち） | — |
 | 2026-09-25 | jev-research-pipeline README.md / README.ja.md（同上） | fresh の最終判定 2 回とも Fix（同上）。直してから通読へ | 未記入（著者の通読待ち） | — |
+| 2026-10-01 | jev-skill-router README.md / README.ja.md（Jev で作る人向けに作り直し） | draft Fix → final Fix → recheck で EN / JA とも Publishable | 0（著者は通読して OK） | —（著者の指示で jev-research-pipeline への導線を途中で追加） |
+| 2026-10-03 | harness-scope README.md / README.ja.md（新規、Rewrite） | draft Fix → recheck Publishable → final（JA だけ Fix）→ recheck で EN / JA とも Publishable | 0（著者は通読して GO） | —（通読後、別 session の計測で分かった「9 回中 1 回 Mod が読み込まれない」を Limitations に追記） |

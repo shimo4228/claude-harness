@@ -85,6 +85,13 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
    働く指示は prompt に書く — Agent tool は tool allowlist を渡せないので、scout の frontmatter が
    持っていた宣言的 allowlist（`tools: [Read, Grep, Glob, WebSearch, WebFetch, mcp__context7__*]`）は
    prompt 上の制約に降格する。`agents/scout.md` は削除。
+
+   > **注記（2026-10-04, ADR-0086）**: ADR-0086 は Full の委譲先を `agents/researcher.md` 3〜5 本の
+   > 並列に変える。tools の宣言的な制限（Read / Grep / Glob / WebSearch / WebFetch / Write）と
+   > `permissionMode: acceptEdits` を定義が持つ — plan mode の親の下で notes を書くには定義の permission mode が
+   > 要り、prompt 上の制約では足りないため。下の Alternatives が予告した「薄い agent 定義 1 本での復元」に当たる。
+   > 報告の 3 節は残し、plan mode の report では Verdict を lead が plan に書く
+
 5. 消費者の書き換え 6 ファイル: `skills/implementation-chain/SKILL.md` 早期停止条件「Phase 0 で
    Adopt Verdict → 再 plan」→「Phase 0 の報告に、実装方針を変える既存解が含まれる → 再 plan」/
    `skills/verify-bootstrap/SKILL.md`「Verdict が出たら」→「報告を受けたら」/
@@ -147,6 +154,9 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
 その代償は Decision 4 と Consequences Negative に記録し、allowlist が要ると分かったら薄い agent 定義
 1 本で復元できる。
 
+> **注記（2026-10-04, ADR-0086）**: この復元を ADR-0086 が行う。復元する定義は scout でなく
+> `researcher`（Write と `permissionMode` を持ち、書き込み先は hook が限る）。
+
 ### 新 skill を作り search-first を退役する
 
 却下。名前が変わると rule / skill / memory の参照が切れる。
@@ -163,6 +173,9 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
 - harness で実際に出る問い（先行実装 / 主張の適用可否 / 仕様 / 俯瞰 / 原典照合）が description に
   一致する。
 - agent が 1 本減る。
+
+  > **注記（2026-10-04, ADR-0086）**: ADR-0086 で `researcher` が 1 本増える。
+
 - 網羅の計器が invoke 数（看板の帰結）から影の比率（直接測定）に変わる。
 
 ### Negative
@@ -174,6 +187,10 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
   なので 2026-11 の集合は今日の集合と入れ替わる — 比べるのは比率で、集合の差は基準集合の一覧で追う。
 - Full Mode の tool 制限が宣言的 allowlist から prompt 上の制約に降格する（web 由来コンテンツが
   Bash を持つ general-purpose subagent に入りうる。Quick Mode の主ループは元から同じ条件）。
+
+  > **注記（2026-10-04, ADR-0086）**: ADR-0086 で、Full の tool 制限は `researcher` の定義に戻り、
+  > Bash は持たない。書き込み先は `hooks/research-gate.sh` が限る。
+
 - description を 6 種 + 総称句（約 830 字）に広げた分、誤発火（外部に答えが無い問いで発火）が
   増えうる。影の比率と並べて invoke 数も副次的に見る。
 

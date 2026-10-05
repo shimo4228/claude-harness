@@ -1,5 +1,5 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0035 — 思考手順と reviewer 名簿を skill へ移し、実行入口と機械ゲートの配線だけ常駐。ADR-0085 — plan を repo に残る記録として扱う -->
+<!-- rationale: ADR-0035 — 思考手順と reviewer 名簿を skill へ移し、実行入口と機械ゲートの配線だけ常駐。ADR-0085 — plan を repo に残る記録として扱う。ADR-0086 — plan の前の調査を gate で強制する -->
 <!-- review-when: search-first / implementation-chain / verify hook の入口を変えた時。plan mode か plansDirectory の挙動が変わった時 -->
 # Planning Wiring
 
@@ -13,6 +13,9 @@
 - plan は repo の `docs/plans/` に残る記録（ADR-0085。起点は cwd なので plan mode は repo の root で
   起動する）。公開可能な書き方を既定にし、機微はリンク先へ、パスは `~/` で書く。承認した plan は
   実装の最初の commit に単独で入れ（`docs(plan): <slug>`）、後続 commit（本文に `Plan:` 行）と ADR / RFC からリンクする
+- plan の依頼（plan mode、または「プランして」等の plan を頼むプロンプト）では `hooks/research-gate.sh` が、
+  `researcher` の調査 report（`docs/plans/research/`）ができるまで plan ファイルへの書き込みを止める。調査は外部（skill: `search-first` の Full）か内部
+  （再現手順と原因の `file:line`）で、plan は report にリンクし構造を Mermaid で示す（ADR-0086）
 
 Verify の正本は repo の `.claude/verify.sh`。無ければ skill: `verify-bootstrap` で作る。
 完了前に doc sync と `git status` を確認する。commit 境界では PreToolUse hook が staged diff に

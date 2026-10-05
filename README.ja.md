@@ -82,6 +82,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [prompt-forager](agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
 | [swift-reviewer](agents/swift-reviewer.md) | Swift / SwiftUI レビュー — Swift 6 strict concurrency、値セマンティクス、SwiftUI の状態所有、retain cycle、HIG 準拠 |
 | [readme-judge](agents/readme-judge.md) | README の fresh-context 判定器。証拠 JSON と README を 1 回読み、固定チェックリストに引用付きで答えて named verdict（Publishable / Fix / Rewrite）を返す |
+| [researcher](agents/researcher.md) | search-first の並列 Full で 1 角度を担う調査 worker。web・registry・一次資料を調べ、日付付きの notes 1 本か、plan の research gate を開ける統合 report 1 本を書く |
 <!-- END GENERATED: agents-table -->
 
 ### Rules
