@@ -157,6 +157,9 @@ done
 # docs/plans/: approved plans (ADR-0085). Only plans git tracks are published —
 # an uncommitted plan is by definition not approved, so any untracked or
 # modified file under docs/plans aborts instead of shipping a draft.
+# An html plan (skill html-plan, ADR-0087) ships as its .html source only; the
+# pack outputs (*.packed.html / *.artifact.html) inline the plugin runtime and
+# are gitignored in the source repo, so they never reach the copy.
 mkdir -p "$STAGING/docs/plans"
 if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain -- docs/plans)" ]]; then
   echo "ABORT: untracked or uncommitted files under docs/plans — commit approved plans, remove the rest:" >&2
@@ -165,8 +168,9 @@ if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain -- docs/plans)" ]]; then
 fi
 while IFS= read -r plan; do
   [[ -f "$SOURCE_DIR/$plan" ]] || continue
+  case "$plan" in *.packed.html | *.artifact.html) continue ;; esac
   cp "$SOURCE_DIR/$plan" "$STAGING/docs/plans/"
-done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/plans/*.md')
+done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/plans/*.md' 'docs/plans/*.html')
 
 # docs/evals/: eval cards (RFC-0030) — the instruments' design, raw readings,
 # what was not measured, known failures and validity state. Same rule as
