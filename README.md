@@ -183,6 +183,8 @@ The live harness also runs components from external upstreams. Their content —
 ## Related repos
 
 - [shimo4228](https://github.com/shimo4228/shimo4228) — Hub repo aggregating the five practice lines (AKC / Contemplative Agent / AAP / Authorship Strategy / Attention Not Self) and the supporting ecosystem. This repo's clone/view traffic is published on its [public dashboard](https://shimo4228.github.io/shimo4228/traffic/dashboard/)
+- [akc-cycle](https://github.com/shimo4228/akc-cycle) — Install target for the Agent Knowledge Cycle: a self-contained rules file plus a Claude Code plugin. This repo's `rules/common/akc-cycle.md` is its pointer edition
+- [harness-scope](https://github.com/shimo4228/harness-scope) — Claude Code Mod that turns a global harness like this one on or off per repo with named profiles
 - [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle) — AKC concept and DOI release (Zenodo: 10.5281/zenodo.19200726)
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules) — Rule implementation of Contemplative Constitutional AI
 - `claude-skill-*` standalone repos — Individual versions of each AKC skill (search-first / learn-eval / skill-stocktake / rules-distill / skill-comply / context-sync) plus the adjacent skills (llms-txt-writer / daily-research / jsonld-knowledge-graph / writing-ecosystem / rules-stocktake)
