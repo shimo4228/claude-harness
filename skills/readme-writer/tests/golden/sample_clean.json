@@ -79,6 +79,111 @@
     "count": 0,
     "items": []
   },
+  "layout": {
+    "sections": [
+      {
+        "heading": "Acme Parser — turn messy logs into typed events",
+        "line": 1,
+        "forms": {
+          "paragraphs": 1,
+          "list_items": 0,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 0,
+          "diagrams": 1,
+          "code_blocks": 0,
+          "details": 0
+        }
+      },
+      {
+        "heading": "What problem does it solve?",
+        "line": 14,
+        "forms": {
+          "paragraphs": 1,
+          "list_items": 0,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 0,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 0
+        }
+      },
+      {
+        "heading": "How do I install it?",
+        "line": 19,
+        "forms": {
+          "paragraphs": 1,
+          "list_items": 0,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 0,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 0
+        }
+      },
+      {
+        "heading": "Where do I go next?",
+        "line": 24,
+        "forms": {
+          "paragraphs": 0,
+          "list_items": 2,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 0,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 0
+        }
+      }
+    ],
+    "lists": [
+      {
+        "line": 26,
+        "items": 2,
+        "lead_types": {
+          "link": 2
+        }
+      }
+    ],
+    "tables": [],
+    "alerts": {
+      "count": 0,
+      "items": []
+    },
+    "heading_case": {
+      "title": 0,
+      "sentence": 4,
+      "items": [
+        {
+          "line": 1,
+          "text": "Acme Parser — turn messy logs into typed events",
+          "style": "sentence"
+        },
+        {
+          "line": 14,
+          "text": "What problem does it solve?",
+          "style": "sentence"
+        },
+        {
+          "line": 19,
+          "text": "How do I install it?",
+          "style": "sentence"
+        },
+        {
+          "line": 24,
+          "text": "Where do I go next?",
+          "style": "sentence"
+        }
+      ]
+    },
+    "generic_link_text": []
+  },
   "prose_signals": {
     "slop_words": [],
     "em_dash": {
@@ -110,6 +215,7 @@
     "figures[].prose_adjacent only says a prose line sits within 2 lines of the figure; whether that line states what the figure shows is the judge's call.",
     "prose_signals, history_signals and numeric_claims match fixed pattern lists; a hit is a line to read, and wording outside the patterns is not seen.",
     "register_ja classifies only sentences ending in 。！？ inside body paragraphs, by their last words; list items, tables, headings, quotes and sentences without a terminal mark are not counted.",
+    "layout counts Markdown block starts per H2 section; how GitHub draws them (whether a list reads lighter than the table beside it, where the fold falls) is in the readme_render.py screenshots, and whether a difference in form matches a difference in role is the judge's call. heading_case treats a capitalised proper noun as title case.",
     "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that quotes Japanese can read as ja."
   ]
 }

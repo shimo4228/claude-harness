@@ -13,7 +13,7 @@ found / too large. There is no exit 1.
 
 JSON contract (top-level keys, in output order): path, lang_guess, line_count,
 own_repo, structure, identity_lead, first_screen, insider_refs, term_candidates,
-details_blocks, figures, badges, prose_signals, register_ja, history_signals,
+details_blocks, figures, badges, layout, prose_signals, register_ja, history_signals,
 numeric_claims, doi_citation, note, notes.
 
 - own_repo: "owner/repo" of the GitHub `origin` remote of the README's directory
@@ -32,6 +32,17 @@ numeric_claims, doi_citation, note, notes.
 - register_ja: for a Japanese README, sentence endings (text before 。！？) in body
   prose paragraphs, as {desu_masu, plain, plain_lines: [{line, text}]} (first 20,
   text is the sentence tail, at most 60 chars); null for English.
+- layout: block forms per H2 section and their details, for the judge's visual
+  questions (§V). sections: [{heading, line, forms}] where forms counts block starts
+  (paragraphs, list_items counts items, tables, alerts, blockquotes, images, diagrams =
+  ```mermaid fences, code_blocks, details); the entry with heading null is the text
+  before the first H1/H2 and is omitted when empty. lists: [{line, items, lead_types}]
+  with lead_types counting items that open with bold / a link / plain text. tables:
+  [{line, columns, rows, longest_cell}] (rows excludes header and delimiter). alerts:
+  {count, items: [{type, line}]} for GitHub `> [!NOTE]`-style alerts. heading_case:
+  {title, sentence, items} for headings with English words after the first.
+  generic_link_text: [{text, line}] for links whose whole text names no destination
+  ("here", "click here", "こちら"…).
 - notes: one string per counter stating what it cannot see; the judge covers
   those blind spots itself (e.g. coined terms written in plain prose).
 
@@ -55,10 +66,12 @@ from pathlib import Path
 # detection, the assembly in `collect`, the text rendering and the CLI. Callers and
 # tests address this one module: the names they import are re-exported (__all__).
 if __package__:
+    from . import readme_layout as _layout
     from . import readme_md as _md
     from . import readme_prose as _prose
     from . import readme_sections as _sec
 else:  # Support the documented direct script invocation.
+    import readme_layout as _layout
     import readme_md as _md
     import readme_prose as _prose
     import readme_sections as _sec
@@ -139,6 +152,11 @@ NOTES = (
     "register_ja classifies only sentences ending in 。！？ inside body paragraphs, by their "
     "last words; list items, tables, headings, quotes and sentences without a terminal mark "
     "are not counted.",
+    "layout counts Markdown block starts per H2 section; how GitHub draws them (whether "
+    "a list reads lighter than the table beside it, where the fold falls) is in the "
+    "readme_render.py screenshots, and whether a difference in form matches a difference "
+    "in role is the judge's call. heading_case treats a capitalised proper noun as title "
+    "case.",
     "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that "
     "quotes Japanese can read as ja.",
 )
@@ -198,6 +216,7 @@ def collect(path: str, markdown: str, base_dir: Path, own_repo: str | None = Non
             "count": len(badges),
             "items": [{"alt": b.alt, "src": b.src, "line": b.line} for b in badges],
         },
+        "layout": _layout.layout(content, headings, images, links, _md._fence_lines(stripped)),
         "prose_signals": prose_signals(content),
         "register_ja": register_ja(content, headings) if ja else None,
         "history_signals": history_signals(content),
@@ -212,6 +231,11 @@ def render_text(ev: dict) -> str:
     ir, fs, st, ps = ev["insider_refs"], ev["first_screen"], ev["structure"], ev["prose_signals"]
     top = ", ".join(f"{t['term']}×{t['count']}" for t in ev["term_candidates"][:8])
     reg = ev["register_ja"]
+    lay = ev["layout"]
+    shape = "; ".join(
+        f"{s['heading'] or '(lead)'}: " + ", ".join(f"{k} {v}" for k, v in s["forms"].items() if v)
+        for s in lay["sections"]
+    )
     lines = [
         f"readme-evidence: {ev['path']} ({ev['lang_guess']}, {ev['line_count']} lines)",
         f"  own repo (excluded from repo counts): {ev['own_repo'] or 'none detected'}",
@@ -239,6 +263,12 @@ def render_text(ev: dict) -> str:
             f"broken local refs={len(st['broken_local_refs'])}, "
             f"broken anchors={len(st['broken_anchors'])}, "
             f"no-alt images={len(st['images_without_alt'])}"
+        ),
+        f"  layout: {shape}",
+        (
+            f"  alerts {lay['alerts']['count']}, headings title {lay['heading_case']['title']} / "
+            f"sentence {lay['heading_case']['sentence']}, generic link text "
+            f"{len(lay['generic_link_text'])}"
         ),
         (
             f"  identity lead present: {ev['identity_lead']['present']}; "

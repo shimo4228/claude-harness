@@ -70,12 +70,7 @@ def _content_lines(markdown: str) -> list[tuple[int, str]]:
     fence_char: str | None = None
     fence_len = 0
     raw = markdown.splitlines()
-    skip_until = 0
-    if raw and raw[0].strip() == "---":  # YAML front matter: skip through the closing ---
-        for j in range(1, len(raw)):
-            if raw[j].strip() == "---":
-                skip_until = j + 1
-                break
+    skip_until = _front_matter_end(raw)  # YAML front matter: skip through the closing ---
     for idx, line in enumerate(raw, start=1):
         if idx <= skip_until:
             continue
@@ -97,13 +92,24 @@ def _content_lines(markdown: str) -> list[tuple[int, str]]:
     return out
 
 
+def _front_matter_end(raw: list[str]) -> int:
+    """Line number of the closing --- of a YAML front matter block, or 0 without one."""
+    if raw and raw[0].strip() == "---":
+        for j in range(1, len(raw)):
+            if raw[j].strip() == "---":
+                return j + 1
+    return 0
+
+
 def _fence_lines(markdown: str) -> list[tuple[int, str]]:
     """Opening fence lines with their info string (to find ```mermaid blocks)."""
     out: list[tuple[int, str]] = []
     fence_char: str | None = None
     fence_len = 0
-    for idx, line in enumerate(markdown.splitlines(), start=1):
-        match = _FENCE_RE.match(line)
+    raw = markdown.splitlines()
+    skip_until = _front_matter_end(raw)
+    for idx, line in enumerate(raw, start=1):
+        match = _FENCE_RE.match(line) if idx > skip_until else None
         if not match:
             continue
         run = match.group("fence")

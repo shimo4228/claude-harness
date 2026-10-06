@@ -103,6 +103,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [practitioner-identity](rules/common/practitioner-identity.md) | 著者の自己定義 (verbatim) — AI 時代に何が良い考え・良い手段かを探し続ける。DOI は手段の一つで研究者志向ではない。コードは消えるが考えは消えない |
 | [llm-first-code](rules/common/llm-first-code.md) | コードを実際の読者 = 次セッションの LLM に最適化する — 可読性でなく検証可能性（型・テスト・golden）を保存し、品質は機械ゲートで執行、人間可読性の予算は README と出力の文面にだけ払う |
 | [boundary](rules/common/boundary.md) | 境界の正本 — 人間に渡す操作（公開・課金・外部送信・台帳の起票・permissions / hooks / rules / ADR の無人変更）、確認を待たずにとってよいリスク、止まって報告する条件 |
+| [evals](rules/common/evals.md) | Eval の配線 — eval の問いを持ち主へ振り分ける。eval を作る・eval で改善するは `/claude-api build-eval` → `hillclimb`、なじみのない領域では採点方式を決める前に search-first。harness の skill・agent が対象なら runner は `claude -p` |
 <!-- END GENERATED: rules-table -->
 
 ### Hooks

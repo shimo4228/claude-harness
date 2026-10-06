@@ -92,6 +92,8 @@ Plan: [docs/plans/research-plan-mode.md](../plans/research-plan-mode.md)（承�
    （repo 内で答えが出るバグ・refactor）は再現手順・原因の `file:line`・確認結果。種別は Claude が brief の
    1 行目に書き、著者がそこで止められる
 5. plan は report にリンクし、構造や流れは Mermaid で示す（`rules/common/planning.md` に 1 項目）
+   > **注記（2026-10-06, ADR-0087）** 置き換えた。plan は skill html-plan で `docs/plans/<slug>.html` に書き、構造は claim の木と
+   > その exhibit で示す（[ADR-0087](./0087-html-plan-as-default-plan-path.md) Decision 1）
 6. settings.json への配線は、次の 5 点を使い捨ての設定（`claude -p --settings`）で確かめてから行う:
    plan mode 中の plan ファイルへの Write を PreToolUse の block で止められる / plan mode の親の下で、harness 以外の
    repo から researcher が notes に、harness repo で report に書け、その PostToolUse の `session_id` が親と同じ /
@@ -122,6 +124,12 @@ Plan: [docs/plans/research-plan-mode.md](../plans/research-plan-mode.md)（承�
 
 計測は配線の日（Status の注記）から 30 日の窓で行い、窓の間は差し込む文面・plan を頼む言い方と skip の正規表現・
 plan ファイルの path の集合を変えない。notice のあった session が 10 件に満たなければ判定を次の 30 日に延ばす。
+
+> **注記（2026-10-06, ADR-0087）** 照合（`# Re:` の除外）・plan ファイルの path の集合（`.html`）・差し込む文面（手順 5）を変えたので、
+> 窓を 2026-10-06 から数え直す。html plan の判定は `html_block` / `html_pass` として別に記録するので、上の基準の
+> `block` / `pass` は md の plan だけを数える。`/html-plan` を直接打った session は ask も notice も付かず、notice を
+> 分母にする基準の外にある。html の gate の計器は ADR-0087 の Review-when が持つ。plan の既定が html になると md の
+> `block` は減るので、「block が 0 件」の基準は md の plan の依頼が 10 件以上あるときだけ読む
 
 - Decision 6 のどれかが通らなかった — その部品を Mod に置き換え、本 ADR に注記する
 - notice のあった session のうち、skip で開けた session が半分を超える — gate が重すぎる。種別の判定か gate の
@@ -156,6 +164,8 @@ plan ファイルの path の集合を変えない。notice のあった session
 - **純正 plan mode を使わず、通常モードで plan ファイルを書く独自 workflow**（HumanLayer・superpowers 型）:
   却下。plan mode の承認 UI と、plan 中に本体が書き込まない性質を失う。auto mode 下の plan mode はコマンドを
   止めないので、plan mode を抜ける理由の大半は researcher で消える
+  > **注記（2026-10-06, ADR-0087）** この却下を置き換えた。plan mode では Write が plan ファイル以外を拒否する（著者の実測）。
+  > 承認 UI は html-plan の Respond が代わる（ADR-0087）
 - **Full を general-purpose subagent 1 本のまま、budget だけ増やす**: 却下。token 量の効果（80%）は 1 本でも説明
   できるが、Anthropic が並列化の理由に挙げる別 context での容量追加と、STORM の視点分割は 1 本では得られない。
   反証役も分けられない
@@ -164,8 +174,11 @@ plan ファイルの path の集合を変えない。notice のあった session
 - **auto mode では、依頼の検出なしに plan ファイルの書き込みをすべて gate する**: 却下。task-triage の kickoff
   packet など、plan を頼まれていない `docs/plans/` への書き込みまで止める。取りこぼしが多いと分かったら
   （Review-when）ここへ寄せる
+  > **注記（2026-10-06, ADR-0087）** html plan（`docs/plans/<name>.html`）に限って採った。kickoff packet は md のままなので止めない
+  > （ADR-0087 Decision 3）
 - **plannotator でブラウザ上の plan レビューを足す**: 本 ADR では採らない（依存の追加で、dependency intake と
   著者の判断が要る）。Open — revisit when: Mermaid 入りの plan ファイルでもレビューしにくいと著者が言った
+  > **注記（2026-10-06, ADR-0087）** 閉じる。html-plan の Respond が同じ穴を埋める（ADR-0087）
 
 ## Consequences
 

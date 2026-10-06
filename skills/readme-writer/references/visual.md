@@ -28,13 +28,17 @@
 
 above-the-fold の「任意の hero」枠の実装ガイド。**唯一、純装飾 raster が正当な場所**:
 
+- **第一画面との取り合い**: 横長の hero は desktop の第一画面の半分以上を占めうる。profile README は
+  列の上端が y=228 なので、高さ 340 px の hero と H1・lead で第一画面（572 px）が埋まり、入口の
+  見出しが fold の外へ出た（hub の実測 2026-10-06）。hero を置くなら、描画証拠で入口が fold の内側に
+  残るかを確かめる
 - **配置**: 言語切替行（あれば）と H1 の間。概要図（ラベルを持つ）とは別物で、hero は**画像内にテキスト情報を入れない** — 名前・タグラインは H1 と本文が持つ（画像内文字は LLM に不可視なので、入れると情報が消えるか二重管理になる）
 - **仕様**: 横長 3:1〜4:1。画像自身に背景色を持たせる（GitHub の light / dark 両モードで安定）。生成画像は幅 1600px・数百 KB 目安に圧縮して `assets/` に commit（`sips -s format jpeg -s formatOptions 85 -Z 1600` で PNG 数 MB → ~300KB）
 - **alt 必須・言語別**: README.ja には日本語 alt を書く
 - **モチーフとパレットを README 内の図と揃える**と一枚の設計に見える（AI で生成するときの作法は下の段落）
 
 
-**AI で生成するときの作法**（最初の実例: hub repo `shimo4228/shimo4228`、2026-07-27）:
+**AI で生成するときの作法**（hub repo `shimo4228/shimo4228` の cover で使った、2026-07-27）:
 
 - **Colors: name them, don't hex them.** Image models ignore hex codes; list
   color names ("amber, lavender, soft blue, sage green, slate gray") and
@@ -52,11 +56,25 @@ above-the-fold の「任意の hero」枠の実装ガイド。**唯一、純装�
   banner, it is erasing the differentiator. Pick the style that only this
   program could justify.
 
-### 表セルの視覚改善は不可能（制約）
+### GitHub で使える見た目の手段（制約）
 
-GitHub は markdown / HTML 表の inline style・bgcolor を sanitize するため**セルの色付けはできない**。
-表の視覚改善はセル文の短縮（1 文化）と、関係構造の Mermaid 図併置で行う。絵文字アンカーは
-テキストネイティブな唯一の装飾手段だが、好みが分かれるのでユーザー確認なしに既定案にしない。
+GitHub は `style` / `class` / `bgcolor` を sanitize するので、**色・余白・フォントは指定できない**。
+見た目を変える手段は block の形の選択だけで、github-markdown-css での重さは次のとおり
+（調査 report `shimo4228/shimo4228@a7f0c59:docs/plans/research/2026-10-06-readme-visual-eval.md` §2、as-of 2026-10-06。決定は ADR-0088）:
+
+| 手段 | 見た目 | 制約 |
+|---|---|---|
+| list | 枠も背景も無い。最も軽い | — |
+| table | 罫線・縞・太字 header。最も重い | 狭幅では表ごと横スクロール（mobile の README 列は 300 px 前後 — 値は `readme_render.py` の `SURFACES`）。改行できない長い token があると出る |
+| alert `> [!NOTE]` 等 5 種 | 色付きの左バー + 色付き title | 文書に 1〜2 個（GitHub Docs）。入れ子不可。`POST /markdown` は gfm mode でだけ描く |
+| blockquote | 灰色の左バー + 灰色の文字 | — |
+| h1 / h2 | 下罫線あり（h3 以下は無し） | — |
+| HTML `<table>` | `align` / `valign` / `width` / `colspan` / `border` 可 | `style` / `class` / `cellpadding` 不可。中央寄せは `align="center"` だけ |
+| `<picture>` + `<source media>` | light / dark で画像を切り替える | theme ごとに別ファイル |
+
+隣の節と重さが違うことは、それ自体は欠陥ではない（役割が違えば形も違ってよい）。判定は
+checklist §V3 で、描画は `scripts/readme_render.py` で確かめる。絵文字アンカーは好みが分かれるので、
+著者の確認なしに既定案にしない。
 
 ### raster / その他
 

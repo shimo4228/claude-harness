@@ -59,7 +59,7 @@ routing を自発的に行うようになったら、この段落を外す。）
 
 | ステップ | feat | fix | refactor | chore | prototype |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Plan（メインループ / plan mode。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
+| Plan（メインループ / skill: `html-plan`（著者が入れたときは plan mode）。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
 | TDD（メインループ、skill: `tdd`） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |

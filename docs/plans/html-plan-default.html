@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>html-plan 既定化</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+
+<header>
+  <h1>plan の既定経路を html-plan に替える</h1>
+  <doc-changes new="2" changed="15"></doc-changes>
+  <details class="thread"><summary>Why · 3 件</summary>
+    <doc-quote via="prompt" from="著者">~/MyAI_Lab/.handoff-html-plan-default.md を読んで、その内容でプランして</doc-quote>
+    <doc-quote via="doc" from="引き継ぎ（著者の決定）">plan mode を既定経路から外し、plan は plugin skill `html-plan@claude-community`（インストール済み、user scope）で書く。plan mode 自体は消さない … 散文は日本語。skill の STE 英語規則は rule 側で上書きし、plugin 本体は編集しない … 理由: plan mode では Write が plan ファイル(.md)以外を "Cannot write ... while in plan mode" で拒否する（2026-10-06 実測）</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: internal）" href="research/2026-10-06-html-plan-default.md">PLAN_ASK `:47` は … `/html-plan add send later to the composer` の `html-plan` は … **合わない** … `:169` `git ... ls-files -- 'docs/plans/*.md'` で集めるのは tracked の `.md` だけ</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>plan の依頼は html plan になり、private の Artifact で届く。</p>
+  <doc-mock frame="terminal" title="~/.claude" w="470"><template><span class="dim">></span> プランして <span class="dim">（または /html-plan …）</span>
+<span class="dim">  brief → researcher → report</span>
+<span class="g">✓</span> docs/plans/research/2026-10-06-x.md
+<span class="g">✓</span> docs/plans/<b>x.html</b>            <span class="dim"># source だけ</span>
+<span class="dim">  pack -o $SCRATCH/x.packed.html --artifact</span>
+<span class="g">✓</span> Artifact <span class="dim">(private)</span> claude.ai/code/artifact/…
+  決定 4 件。既定は私が作る案です。
+<span class="dim">></span> <span class="y"># Re: …</span>   <span class="dim">← Respond の貼り戻し 1 回で承認</span></template></doc-mock>
+
+  <doc-claim>
+    <p>PROTOCOL 手順 5 は Mermaid でなく html-plan を指す。</p>
+    <doc-code diff file="hooks/research-gate.sh" start="176">
+<script type="text/plain">
+@@ -176,1 +176,1 @@
+-5. plan は report にリンクし、構造や流れは Mermaid 図で示す
++5. plan は skill: html-plan で <repo>/docs/plans/<slug>.html に書き、report にリンクする（散文は日本語。手順は rules/common/planning.md）
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>常駐 rule が日本語と pack の手順を決める。</p>
+    <doc-code diff file="rules/common/planning.md" start="16" wrap>
+<script type="text/plain">
+@@ -16,3 +16,9 @@
+ - plan の依頼（plan mode、または「プランして」等の plan を頼むプロンプト）では `hooks/research-gate.sh` が、
+   `researcher` の調査 report（`docs/plans/research/`）ができるまで plan ファイルへの書き込みを止める。調査は外部（skill: `search-first` の Full）か内部
+-  （再現手順と原因の `file:line`）で、plan は report にリンクし構造を Mermaid で示す（ADR-0086）
++  （再現手順と原因の `file:line`）（ADR-0086）
++- plan は skill: `html-plan` で `docs/plans/<slug>.html` に書き、report にリンクする（ADR-0087）。plan mode は
++  著者が Shift+Tab で入れたときだけ使う。散文は日本語で `<html lang="ja">`、SKILL.md の `## Words`（STE 英語）は
++  適用しない。claim の長さは約 30 字を目安にする
++- pack は `node <skill dir>/runtime/pack.mjs <plan> --root <repo> --artifact`。隣に出る
++  `<slug>.artifact.html` を Artifact tool で private 公開する（packed / artifact は .gitignore 済み）。claim が「。」で終わる警告（pack.mjs:221）は読み飛ばす
++- 承認は Respond の貼り戻し。plan に `doc-ask`「実行者の決定」を置く（`hooks/plan-executor-notice.sh` の代わり）
+</script>
+    </doc-code>
+    <doc-note tone="warn"><strong>未実測</strong> skill の「Use no other style」（SKILL.md:93）より rule が勝つ保証はない。実装後の最初の html-plan で、散文と lang を見る。負けたら同じ文を PROTOCOL 手順 5 に足す。</doc-note>
+  </doc-claim>
+
+  <doc-claim>
+    <p>pack の出力は source の隣に出て、git には入らない。</p>
+    <doc-code title="html-plan/skills/html-plan/runtime/pack.mjs" lang="js" start="24" wrap caption="出力先は :24 の -o から決まる。抜粋（pack は secret 検出でこのファイルを引用しない）。">
+<script type="text/plain">
+const outPath = resolve(opt('-o', opt('--out', inPath.replace(/(\.src)?\.html?$/, '') + (inPath.includes('.src.') ? '.html' : '.packed.html'))));
+// … :292 if (argv.includes('--artifact')) {
+// … :297
+  const artPath = outPath.replace(/(\.packed)?\.html?$/, '.artifact.html'); writeFileSync(artPath, art);
+</script>
+      <doc-pin line="27" title="artifact は packed の隣に出る">既定では source の隣。</doc-pin>
+    </doc-code>
+    <doc-ask id="out">
+      <p>packed と artifact はどこに出しますか。</p>
+      <label><input type="radio" name="out" value="scratch"> session の scratchpad <small>-o で指定。.gitignore も同期 script も触らない</small></label>
+      <label><input type="radio" name="out" value="ignore" checked> docs/plans の隣 <small>.gitignore に 2 行足す。同期 script の abort は ignore で避ける</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>html plan も、調査 report ができるまで書けない。</p>
+  <doc-machine name="ask" caption="緑の破線は今回足す入口。Respond は新しい依頼にならない。">
+<script type="text/plain">
+machine ask initial idle
+state idle     # plan の依頼はない。plan ファイルの Write は数えるだけ。
+state asked    # 依頼中。plan ファイルの Write は block。
+state ready    # report あり。plan ファイルの Write は通る。
+
+| idle  | asked | ready |
+
+idle  -ask->    asked : プランして
++ idle -slash-> asked : /html-plan
+asked -report-> ready : researcher
+asked -skip->   ready : 調査不要
+ready -next->   idle  : Respond
+ready -again->  asked : 再依頼
+</script>
+    <div data-state="asked"><doc-mock frame="terminal" w="440"><template><span class="r">✗</span> Write docs/plans/x.html
+<span class="dim">  research gate: この session ではまだ調査 report がありません。</span></template></doc-mock></div>
+    <div data-state="ready"><doc-mock frame="terminal" w="440"><template><span class="g">✓</span> Write docs/plans/x.html
+<span class="dim">  events.jsonl: pass</span></template></doc-mock></div>
+  </doc-machine>
+
+  <doc-claim>
+    <p>plan ファイルの判定は .html を含み、pack の副産物を外す。</p>
+    <doc-code diff file="hooks/research-gate.sh" start="130">
+<script type="text/plain">
+@@ -130,4 +130,9 @@
+-# 1 セグメントの <name>.md か（入れ子と .md 以外を外す）
+-single_md() {
+-  [[ "$1" == *.md && "$1" != */* && -n "${1%.md}" ]]
++# 1 セグメントの <name>.md / <name>.html か（入れ子と pack の副産物を外す）
++single_plan() {
++  [[ "$1" != */* ]] || return 1
++  case "$1" in
++    *.packed.html|*.artifact.html) return 1 ;;
++    ?*.md|?*.html) return 0 ;;
++  esac
++  return 1
+ }
+@@ -142,1 +147,1 @@
+-  single_md "$rest"
++  single_plan "$rest"
+</script>
+      <doc-pin line="136" tone="info" title="research/ は入れ子なので外れたまま"></doc-pin>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>html plan の書き込みは、依頼の判定に関係なく gate される。</p>
+    <doc-code diff file="hooks/research-gate.sh" start="255" wrap>
+<script type="text/plain">
+@@ -255,2 +255,3 @@
+-    if [[ "$MODE" != plan && ! -e "$PLANNING" ]]; then
++    # html plan は html-plan だけが書く — 起動の言い方（/html-plan 等）を照合せず、書き込みそのものを依頼とみなす
++    if [[ "$MODE" != plan && ! -e "$PLANNING" && "$NORM_IS_HTML_PLAN" != 1 ]]; then
+</script>
+    </doc-code>
+    <doc-note tone="info">著者の指摘で PLAN_ASK への正規表現追加をやめた。起動は skill の description と <code>/html-plan</code> が担い、gate は書き込みで効く。直接起動では brief の指示文が差し込まれず、block の理由文が案内する。</doc-note>
+  </doc-claim>
+
+  <doc-claim>
+    <p>Respond の貼り戻しは、新しい依頼として扱われない。</p>
+    <doc-code diff file="hooks/research-gate.sh" start="62" wrap>
+<script type="text/plain">
+@@ -62,1 +62,2 @@
+-      (if ((.prompt // "") | test($ask; "i")) then "1" else "0" end),
++      (if ((.prompt // "") | test($ask; "i")) and ((.prompt // "") | test("^# Re: ") | not)
++          then "1" else "0" end),
+</script>
+      <doc-pin line="62" tone="risk" title="コメントの「プランを直して」で READY が消える">手直しの Write が block される。</doc-pin>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>bats が html の gate、除外、起動、Respond を固定する。</p>
+    <doc-code title="tests/research-gate.bats · sketch" lang="bash">
+<script type="text/plain">
+@test "plan mode: an html plan file without a report is blocked"           # :67 の隣
+@test "plan mode: packed and artifact html are not gated"                  # :80 の隣
+@test "default: an html plan write with no request and no report is blocked" # :80 の隣
+@test "auto: a Respond paste-back (# Re:) does not reopen the request"     # :345 の隣
+@test "auto: /html-plan -> report -> html write passes, Respond closes it" # :345 の隣
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>実行者の決定は、Respond の貼り戻しに残る。</p>
+  <doc-mock frame="terminal" title="Respond" w="470"><template><b># Re: plan の既定経路を html-plan に替える</b>
+## Decisions
+1. [3] 実行者の決定
+   → <b>この session（build-tier）で実装</b>  <span class="dim">_(kept as proposed)_</span></template>
+    <doc-pin at="40%,70%" title="plan-executor-notice.sh と同じ定型句">ExitPlanMode が無くても届く。</doc-pin>
+  </doc-mock>
+  <doc-ask id="executor">
+    <p>plan-executor-notice の代わりはどれにしますか。</p>
+    <label><input type="radio" name="executor" value="ask" checked> plan に「実行者の決定」の doc-ask を置く <small>rule の 1 行だけ。hook は増えない</small></label>
+    <label><input type="radio" name="executor" value="hook"> <code># Re:</code> を見て advisory を出す hook <small>新しい UserPromptSubmit hook。payload は未実測</small></label>
+    <label><input type="radio" name="executor" value="rule"> rule の 1 行に縮退 <small>ADR-0057 の 2026-09-25 注記の案</small></label>
+  </doc-ask>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>公開 copy から html plan をたどれる。</p>
+  <doc-code diff file="~/MyAI_Lab/claude-harness/scripts/sync-from-local.sh" start="166">
+<script type="text/plain">
+@@ -166,4 +166,5 @@
+ while IFS= read -r plan; do
+   [[ -f "$SOURCE_DIR/$plan" ]] || continue
++  case "$plan" in *.packed.html|*.artifact.html) continue ;; esac
+   cp "$SOURCE_DIR/$plan" "$STAGING/docs/plans/"
+-done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/plans/*.md')
++done < <(git -C "$SOURCE_DIR" ls-files -- 'docs/plans/*.md' 'docs/plans/*.html')
+</script>
+    <doc-pin line="168" tone="info" title="source は runtime を名前で参照するだけ">runtime の再配布にならない。</doc-pin>
+  </doc-code>
+  <doc-ask id="publish">
+    <p>html plan を公開 repo に載せますか。</p>
+    <label><input type="radio" name="publish" value="glob" checked> 載せる。同期 script の glob を広げる <small>ADR / RFC のリンクが公開 copy で切れない</small></label>
+    <label><input type="radio" name="publish" value="no"> 載せない <small>claim 4 は消える。要旨は ADR / RFC の Context に書く</small></label>
+  </doc-ask>
+  <div data-if="publish=glob"><doc-note tone="info">公開 repo の script の変更です。この Respond を GO とみなし、harness-sync の実行は別に頼みます。</doc-note></div>
+</doc-claim>
+
+<!-- ═════ 5 ═════ -->
+<doc-claim>
+  <p>経緯は ADR-0087 にあり、旧 ADR と skill の文言も新しい経路を指す。</p>
+  <doc-flow caption="ADR-0087 が supersede し、旧 ADR の該当節が注記で指し返す。">
+<script type="text/plain">
++ n87 = ADR-0087 / 新規 [green]
+a86 = ADR-0086 / supersede
+a85 = ADR-0085 / 注記
+a57 = ADR-0057 / 注記
+sk  = skills / 文言
+| n87 | a86 |
+| .   | a85 |
+| .   | a57 |
+| .   | sk  |
+n87 -> a86 : supersede
+n87 -> a85 : 注記
+n87 -> a57 : 注記
+n87 -> sk : 文言
+</script>
+  </doc-flow>
+
+  <doc-claim>
+    <p>ADR-0086 の計測窓は、配線の日から切り直す。</p>
+    <doc-code src="docs/adr/0086-research-gate-before-plan.md" lines="121-124" hl="123-124" wrap></doc-code>
+    <doc-ask id="window">
+      <p>ADR-0086 の 30 日窓をどうしますか。</p>
+      <label><input type="radio" name="window" value="restart" checked> 配線の日から 30 日を数え直す <small>旧窓の記録は events.jsonl に残す</small></label>
+      <label><input type="radio" name="window" value="keep"> 旧窓をそのまま続ける <small>変更を注記するだけ。判定は混ざる</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>ADR-0085 の Review-when は、新規 plan 数を分母にする。</p>
+    <doc-code src="docs/adr/0085-plans-as-records-in-docs-plans.md" lines="59-60" wrap>
+      <doc-pin line="59" tone="warn" title="ExitPlanMode の承認数は 0 になる"></doc-pin>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>skill の文言は「plan mode」を html-plan に読み替える。</p>
+    <doc-tree caption="spawn-session だけが決定を待つ。">
+<script type="text/plain">
+skills/
+  ~ implementation-chain/SKILL.md   # :62 Plan（html-plan / plan mode）
+  ~ search-first/SKILL.md           # :85 起動の括弧に /html-plan
+  ~ adr-writer/SKILL.md             # :154 plan のリンク先は .html もある
+  ~ rfc-writer/SKILL.md             # :66 同上
+  ~ grill-me/SKILL.md               # :19 :82 EnterPlanMode を plan に
+  ? spawn-session/SKILL.md          # :118-133 decision を見る
+hooks/
+  ~ README.md                       # :56 :66 :79 の表
+</script>
+    </doc-tree>
+    <doc-ask id="spawn">
+      <p>spawn-session の kickoff は plan mode のままにしますか。</p>
+      <label><input type="radio" name="spawn" value="keep" checked> plan mode のまま <small>/grill-me の対話用。plan ファイル以外を書かない</small></label>
+      <label><input type="radio" name="spawn" value="html"> /html-plan の kickoff 例を足す <small>plan まで書かせる場合の例を併記する</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの。</p>
+  <ul>
+    <li>plan mode 本体と <code>hooks/plan-executor-notice.sh</code>。plan mode を使えば今までどおり動く。</li>
+    <li>html-plan plugin 本体。pack.mjs の「。」の警告も patch しない。</li>
+    <li>調査 report の形（md）と置き場（cwd 起点の <code>docs/plans/research/</code>）。</li>
+    <li>task-triage の packet（<code>docs/plans/*.md</code>）と cloud-dispatch。</li>
+    <li>調査の前に放置した依頼の閉じ方（research-gate.sh:206）。次の plan 依頼で戻る。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

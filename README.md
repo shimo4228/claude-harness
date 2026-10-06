@@ -103,6 +103,7 @@ Environment-specific facts, wiring, and traps auto-loaded every session (under `
 | [practitioner-identity](rules/common/practitioner-identity.md) | Author's self-definition, verbatim — searching for what counts as a good idea and a good means in the AI era; DOI is one means, not a researcher career; code fades, ideas persist |
 | [llm-first-code](rules/common/llm-first-code.md) | Optimizes code for its actual reader — the next LLM session, not humans: preserve verifiability (types, tests, goldens) over readability, enforce quality through machine gates, and spend human-readability budget only on READMEs and output text |
 | [boundary](rules/common/boundary.md) | The single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking, and when to stop and report |
+| [evals](rules/common/evals.md) | Eval wiring — routes each eval question to its owner: `/claude-api build-eval` → `hillclimb` for building and improving against an eval, with search-first before grading is fixed in unfamiliar domains; the `claude -p` runner trap for harness targets |
 <!-- END GENERATED: rules-table -->
 
 ### Hooks

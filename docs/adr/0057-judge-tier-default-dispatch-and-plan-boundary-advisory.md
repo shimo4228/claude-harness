@@ -92,6 +92,10 @@ Edit / Write を対象にした judge-tier 向けの hook も存在しない —
 > 依存する skill: `spawn-session`（EnterPlanMode で起動）、`grill-me`、`codex-review --plan`、`implementation-chain`
 > の Plan 行。
 
+> **注記（2026-10-06, ADR-0087）** plan の既定経路を skill html-plan に替えた（[ADR-0087](./0087-html-plan-as-default-plan-path.md)）。
+> Decision 2 の hook は plan mode を使ったときだけ鳴る。html plan では plan の `doc-ask`「実行者の決定」が想起を
+> 代わり、Respond に決定が残る（上の (a) (b) とは別の第 3 の経路）。spawn-session は plan mode のまま
+
 ## Alternatives Considered
 
 ### spawn.sh に --model opus を既定付与

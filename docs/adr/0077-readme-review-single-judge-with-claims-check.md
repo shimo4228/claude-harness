@@ -56,6 +56,11 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
    Read / Grep / Glob とし、証拠 JSON は orchestrator が作って path を渡す。model は opus のままにする。
    ADR-0033 の軸（出力を検査する層が下流にあるか）で見ると、統合後は判定器の後に別の agent の検査が
    無く、著者通読は README を読むが、主張とコードの照合は読まないため、上位のモデルに当たる。
+
+   > **注記（2026-10-06, [ADR-0088](./0088-readme-render-evidence-and-visual-judge-phase.md)）**: 判定順は
+   > Phase A → V → B → C になった。Phase V は orchestrator が `readme_render.py` の render directory を渡したとき
+   > だけ回り、描画した PNG と `render.json` で checklist §V に答える。tools（Read / Grep / Glob）・model・
+   > 1 本の agent であることは変わらない。
 3. 最終判定は fresh で 1 回にする。Fix なら span で直し、同じ質問セットで recheck を 1 回回して、結果に
    かかわらず著者通読へ渡す。新しい質問での再実行はしない。
 4. `codex-review` は著者が求めたときだけ回す。readme-writer の既定の工程から外す（ADR-0055 の opt-in を
@@ -79,6 +84,10 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
   通読の指摘数が 5（CA 2026-08-20 の記録）を上回ったら、1 本の agent の注意に収まっていない疑いとして、
   lens を分け直すかを再検討する。CA の 5 件は codex も回したうえでの数で、統合後は codex が拾っていた
   事実の誤りも通読の数に入るので、この比較は早めに発火する側に偏る。
+
+  > **注記（2026-10-06, [ADR-0088](./0088-readme-render-evidence-and-visual-judge-phase.md)）**: 判定器に描画を
+  > 渡した回（read-through-log の最終判定の欄が「§V あり」）は、質問数と入力が違う構成になる。この条件の
+  > 「次の 3 行」は「§V あり」と「なし」を分けて数える。
 - 通読の「主な種類」の欄に事実の誤り（Phase B をすり抜けたもの）が 2 行続けて記録されたら、照合を
   別の agent に分けるか、codex を公開 repo で既定に戻す。記入は著者が通読のときに行う。
 - recheck 1 回で止めた README で、判定器が拾う種類の欠陥（第一画面・論理・継ぎ足し）が公開後に
@@ -119,6 +128,9 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
 
 - 1 本の agent が読む量が増える。checklist の固定質問は §F 3 + R 15 + §J 4 + K 6 の 28 問で、
   動的な質問は 10〜15 問から約 5 問に減らした。注意が薄まるかは Review-when の 1 つ目で見る。
+
+  > **注記（2026-10-06, [ADR-0088](./0088-readme-render-evidence-and-visual-judge-phase.md)）**: 固定質問は §V の
+  > 6 問が加わり 34 問になった（描画が渡されたときだけ）。判定器は画像も読む。
 - Phase A と Phase B の隔離は、同じ process の中の順序の指示で、別 process ほど強くない（Read / Grep /
   Glob は最初から使える）。
 - 公開 repo での cross-model の脱相関が既定から消える。事実の誤りを拾った実測があるのは codex だけで、

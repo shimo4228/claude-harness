@@ -1,7 +1,7 @@
 {
   "path": "fixtures/sample_issues.md",
   "lang_guess": "en",
-  "line_count": 38,
+  "line_count": 61,
   "own_repo": null,
   "structure": {
     "h1_count": 2,
@@ -25,6 +25,11 @@
         "level": 1,
         "text": "Duplicate Title",
         "line": 38
+      },
+      {
+        "level": 2,
+        "text": "Getting started",
+        "line": 40
       }
     ],
     "heading_level_jumps": [
@@ -160,6 +165,137 @@
       }
     ]
   },
+  "layout": {
+    "sections": [
+      {
+        "heading": "Sample Project",
+        "line": 1,
+        "forms": {
+          "paragraphs": 0,
+          "list_items": 0,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 7,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 0
+        }
+      },
+      {
+        "heading": "Overview",
+        "line": 11,
+        "forms": {
+          "paragraphs": 4,
+          "list_items": 0,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 2,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 1
+        }
+      },
+      {
+        "heading": "Duplicate Title",
+        "line": 38,
+        "forms": {
+          "paragraphs": 0,
+          "list_items": 0,
+          "tables": 0,
+          "alerts": 0,
+          "blockquotes": 0,
+          "images": 0,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 0
+        }
+      },
+      {
+        "heading": "Getting started",
+        "line": 40,
+        "forms": {
+          "paragraphs": 1,
+          "list_items": 2,
+          "tables": 1,
+          "alerts": 3,
+          "blockquotes": 0,
+          "images": 0,
+          "diagrams": 0,
+          "code_blocks": 0,
+          "details": 0
+        }
+      }
+    ],
+    "lists": [
+      {
+        "line": 56,
+        "items": 2,
+        "lead_types": {
+          "bold": 1,
+          "text": 1
+        }
+      }
+    ],
+    "tables": [
+      {
+        "line": 59,
+        "columns": 2,
+        "rows": 1,
+        "longest_cell": 21
+      }
+    ],
+    "alerts": {
+      "count": 3,
+      "items": [
+        {
+          "type": "NOTE",
+          "line": 47
+        },
+        {
+          "type": "TIP",
+          "line": 50
+        },
+        {
+          "type": "WARNING",
+          "line": 53
+        }
+      ]
+    },
+    "heading_case": {
+      "title": 2,
+      "sentence": 2,
+      "items": [
+        {
+          "line": 1,
+          "text": "Sample Project",
+          "style": "title"
+        },
+        {
+          "line": 21,
+          "text": "Buried subsection",
+          "style": "sentence"
+        },
+        {
+          "line": 38,
+          "text": "Duplicate Title",
+          "style": "title"
+        },
+        {
+          "line": 40,
+          "text": "Getting started",
+          "style": "sentence"
+        }
+      ]
+    },
+    "generic_link_text": [
+      {
+        "text": "here",
+        "line": 42
+      }
+    ]
+  },
   "prose_signals": {
     "slop_words": [],
     "em_dash": {
@@ -191,6 +327,7 @@
     "figures[].prose_adjacent only says a prose line sits within 2 lines of the figure; whether that line states what the figure shows is the judge's call.",
     "prose_signals, history_signals and numeric_claims match fixed pattern lists; a hit is a line to read, and wording outside the patterns is not seen.",
     "register_ja classifies only sentences ending in 。！？ inside body paragraphs, by their last words; list items, tables, headings, quotes and sentences without a terminal mark are not counted.",
+    "layout counts Markdown block starts per H2 section; how GitHub draws them (whether a list reads lighter than the table beside it, where the fold falls) is in the readme_render.py screenshots, and whether a difference in form matches a difference in role is the judge's call. heading_case treats a capitalised proper noun as title case.",
     "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that quotes Japanese can read as ja."
   ]
 }

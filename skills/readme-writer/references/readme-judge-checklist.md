@@ -23,6 +23,14 @@
 | `history_signals` / `numeric_claims` | 内部史・生数値の行（R12 / R13） |
 | `prose_signals` | slop 語・em-dash・予告列挙・呼びかけ（R8） |
 | `register_ja` | 日本語版の地の文の文末（ですます / 常体）と常体の行（J1） |
+| `layout` | H2 ごとの block 形（list / table / alert / blockquote / 図）、list の頭の揃い、表の列数、alert の数、見出しの大文字化の型、行き先を言わないリンク文言（V3 / V6） |
+
+`scripts/readme_render.py` の `render.json` と PNG（判定はしない）: viewport ごとの見出しと block の
+`top`、fold（`first_screen_height` と `starts_below_fold`）、第一画面に入る block、横にはみ出す要素、
+画像の寸法。PNG は light / dark / squint（blur 6px）。描画は github-markdown-css による近似で、
+列の幅・上端・文字サイズは `readme_render.py` の `SURFACES`（github.com の実測）。2026-10-06 の検算では
+hub と AKC の README で見出しの位置が live と ±1 px で一致した。Mermaid 図とタスクリストは描かれない
+（図は code block のまま写る — 数は `layout.sections[].forms.diagrams`）。
 
 ## §F フロア（非交渉の最小コア。有無を問う）
 
@@ -63,6 +71,20 @@
 | R12 | 内部史（version 番号・モデル交代・「7 → 2」型の変遷・「以前は」）は、読者の問いに答えるときだけ残っているか |
 | R13 | 数値は README 内で読者が解釈できるときだけ置かれているか（比べる相手・単位・範囲が近くにあるか） |
 | R14 | Quick Start の前提（外部サービス登録・ハード要件・必要な鍵の種類と有料か）が README 内で説明されているか |
+
+## §V 描画した見た目（render directory があるときだけ。Phase V）
+
+テキスト判定（§F §R §J §K）が主で、§V は描画でしか分からない性質だけを問う。証拠は見えている
+文字列か要素名と `render.json` の `top` で書き、画像から目測した座標を使わない。
+
+| # | 質問 |
+|---|---|
+| V1 | **第一画面**: fold の内側に identity と「次にどこへ行くか」（入口のリンクか、その節の見出し）が見えるか。desktop と mobile を別々に答える（README が最初の画面より下から始まるとき — repo README と、mobile の profile README — は README 上端からの 1 画面） |
+| V2 | **squint**: blur 版で、意図した強調（identity と入口）が塊として残り、意図しない重い塊（装飾画像・長い段落・密な表）が入口より目を引いていないか |
+| V3 | **隣接節の形**: 隣り合う節の形（list / table / alert）の差が役割の差に対応しているか。No の Fix は「軽い方を重く / 重い方を軽く / 役割の差が見えるように見出しを付け替えるか節を分け直す」の 3 方向から選び、書式を足す方向だけにしない。**この基準は著者の taste**（隣接節の重さを揃える一般原則は検証されていない — ADR-0088 の Context） |
+| V4 | **狭幅**: load-bearing な表・画像・コードが mobile で横スクロール（`overflow`）や縮小で読めなくなっていないか。はみ出しが装飾だけなら Yes |
+| V5 | **light / dark**: 画像・図・alert が両方の theme で読めるか（背景に溶ける線・文字が無いか） |
+| V6 | **強調の段数**: 強調の水準（見出し・太字・alert・表 header）が 3 段以内で、最上位の強調が同時に 2 つ以内か。alert は文書に 1〜2 個（GitHub Docs の推奨）|
 
 ## §J 日本語版と言語間の対応
 
@@ -105,6 +127,11 @@ README の検査できる主張（version・コマンド・flag・設定キー�
 - 章立てテンプレを「埋める」加筆を Fix に出さない: 節が足りないことは欠陥ではない。読者の問いに
   答えない節があることが欠陥
 - 評価は欠陥検出に限定し、文体の方向づけに使わない（judge の好みへの収束 = 平坦化を起こさない）
+- §V の Fix は markup・順序・構造（節の並び・形・見出しの付け替えと節の分け直し・画像の有無と大きさ・
+  alert の数）だけを動かし、本文の言い換えを含めない。LLM の書き直しは 1 ラウンド目から register を均す方向に押すので、
+  ラウンド上限だけでは voice を守れない（ADR-0088 の Context）
+- 書式の量は人間にも LLM にも好まれる偏りがある（見出し・太字・リストが増えるほど選好が上がる）。
+  「地味」は欠陥の証拠ではない — 入口が見えないか、役割と形が食い違うときだけ No にする
 - 反証で覆らなかった No が 1 つでも残れば Publishable にしない。反証で覆った No は Yes に戻す
 
 ## 判定注意

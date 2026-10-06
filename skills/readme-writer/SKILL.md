@@ -1,7 +1,7 @@
 ---
 name: readme-writer
 description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直す・判定するときに使う。こんな時に呼ぶ — README が長い／継ぎ足しで文脈が重くなり初見で分からない、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、冒頭に一目で仕組みが分かる図を置きたい、著者のほかの仕事への導線を付けたい、コードの変更に README を追従させたい、README を判定だけしてほしい、GitHub の About（description / topics / homepage）が README と食い違っている。CLI でも研究 repo でも、日本語でも英語でも対象。AI 専用ドキュメント（llms.txt 等）は → llms-txt-writer、記事・エッセイは → writing-ecosystem、release に伴う version・DOI・数値の同期は → release-doi、文書間の役割の重なりの整理は → context-sync、tagline だけ欲しいときは → headline-craft。
-compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
+compatibility: Requires Python 3.11+ and uv; the render evidence also needs an authenticated gh CLI and Playwright Chromium (`uv run playwright install chromium`). Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---
@@ -22,7 +22,7 @@ origin: shimo4228
 |---|---|---|
 | **Rewrite** | 新規作成・全面的な作り直し | Workflow の全工程 |
 | **Incremental** | コードの変更に README を追従させる（implementation-chain の Doc Sync から来る） | 変わった節だけを書き換え、証拠 JSON → readme-judge（mode: draft。変えた節の名前を渡し、判定器が自分で質問を作る）。概要図は仕組みが変わったときだけ描き直す |
-| **Review-only** | 「この README を見て」「判定だけ」 | 証拠 JSON → readme-judge（mode: draft）。書き換えない |
+| **Review-only** | 「この README を見て」「判定だけ」「見た目を見て」 | 証拠 JSON（見た目が問いなら描画も）→ readme-judge（mode: draft）。書き換えない |
 | **About-only** | description / topics / homepage だけ | Workflow Step 6 だけ（`references/about.md`） |
 
 使わない場面: social-preview 画像の作成（どの skill も作らない。著者が GitHub の設定で置く）、
@@ -49,7 +49,8 @@ README 最適化の対立軸は「人間向け情報 vs LLM 向け情報」で�
 
 | 層 | 何を出すか | 所有者 |
 |---|---|---|
-| **証拠** | 第一画面の行数と新語、内部参照、造語候補、`<details>` の中身、図の前後の prose、切れたリンクと anchor、内部史・生数値の行、slop 語、日本語版の文末 | **code** — `scripts/readme_evidence.py`（JSON。verdict も閾値も exit gate も持たない） |
+| **証拠** | 第一画面の行数と新語、内部参照、造語候補、`<details>` の中身、図の前後の prose、切れたリンクと anchor、内部史・生数値の行、slop 語、日本語版の文末、節ごとの block 形 | **code** — `scripts/readme_evidence.py`（JSON。verdict も閾値も exit gate も持たない） |
+| **描画証拠** | GitHub と同じ HTML を github.com の README の列幅・文字サイズ（profile / repo、desktop / mobile。値の正本は `readme_render.py` の `SURFACES`）× light / dark で撮った PNG、squint 版、見出しと block の位置、fold、横にはみ出す要素 | **code** — `scripts/readme_render.py`（`gh api /markdown` + 同梱 github-markdown-css + Playwright。判定はしない） |
 | **判定** | フロア、第一画面、段落の役割、造語、参照が導線か、日本語の文体と言語間の対応、継ぎ足しと論理、**主張とコードの照合** | **LLM** — `readme-judge` agent（fresh context、集計しない named verdict）。レビュー agent はこれ 1 つ |
 
 README に研究値ベースの数値スコアは作らない。「良い入口か」は意味的判断で、同等の決定論的知見がない。
@@ -185,24 +186,30 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 3. 他言語版 — [skill: prose-translation] の term-lock と back-translation で訳す。README に固有の
    規則（JA のですます・日本語の段落を 1 行に・概要図の和文版 `assets/overview.ja.svg`・英語だけの
    docs へのリンクに（英語））はこの skill が持つ。同じフロア・見出し階層・アンカー・例で揃える
-4. 草稿判定 — 各言語版に証拠 JSON を作る:
+4. 草稿判定 — 各言語版に証拠 JSON と描画証拠を作る:
      uv run --quiet --directory ~/.claude/skills/readme-writer python -m scripts.readme_evidence <README の絶対パス> > <out>.json
-   → [agent: readme-judge]（mode: draft。全言語版・JSON・図・repo root の path を 1 回で渡す）
+     uv run --quiet --directory ~/.claude/skills/readme-writer python -m scripts.readme_render <README の絶対パス> --out <scratch>/render-r0 --surface repo|profile
+   （profile README は `--surface profile`。`render-r0` は改稿前の描画として最終判定まで残す。recheck と
+   final の前には、直した版を新しい dir（`render-r1` …）に描き直して渡す — 古い描画のままでは §V の
+   答えが変わらない。見た目の Fix は markup・順序・構造だけで、本文を言い換えない）
+   → [agent: readme-judge]（mode: draft。全言語版・JSON・render dir・図・repo root の path を 1 回で渡す）
      ├ Publishable → 5
      ├ Fix         → 本体が span 単位で直す → mode: recheck（同じ質問セット）で 1 回
      └ Rewrite     → ⏸ 著者へ差し戻し
    上限 2 ラウンド。届かなければ残指摘を添えて ⏸ 著者判断
-5. 最終判定【binding】— 凍結した全言語版に証拠 JSON を作り直し、readme-judge（mode: final、
-   質問を新しく作る）を 1 回。Fix なら span で直し、final の質問セットで recheck を 1 回だけ回して、
+5. 最終判定【binding】— 凍結した全言語版に証拠 JSON と描画証拠を作り直し、readme-judge（mode: final、
+   質問を新しく作る。改稿前の `render-r0` も渡し、前後比較を順序入れ替えで 2 回させる）を 1 回。Fix なら span で直し、final の質問セットで recheck を 1 回だけ回して、
    結果にかかわらず Step 6 へ（新しい質問での再実行はしない — 毎回新しい細部を拾って収束しない）。
    Rewrite なら ⏸ 著者へ差し戻す
 6. About 変更案 — description は README の lead と同じ主張・1 文目で機能が伝わる構成、topics は実勢を
    測ってから、DOI の無い repo の homepage はこの repo を解説した記事か docs サイト
    （細則 `references/about.md`）。成果物は「現状 → 提案」
-   ⏸ 著者通読 GO — README 全文 + 判定結果 + About 案を一括で渡す。著者は GitHub のプレビューで
-   スマホ幅と dark 表示も見る。著者通読が最上位のゲート
+   ⏸ 著者通読 GO — README 全文 + 判定結果 + About 案 + 描画の PNG（desktop / mobile、light / dark、
+   `render-r0` との前後）を一括で渡す。著者は GitHub のプレビューでもスマホ幅と dark 表示を見る（描画は
+   github-markdown-css による近似で、live のずれはここで気づく）。著者通読が最上位のゲート
 7. 適用 — commit / `gh repo edit`（`references/about.md`）。通読で見つかった指摘の数を
-   `evals/read-through-log.md` に 1 行記録する
+   `evals/read-through-log.md` に 1 行記録する。描画を判定に渡した回は最終判定の欄に「§V あり」と書き、
+   見た目の指摘は主な種類に「見た目」と書く（§V の有無で判定器の構成が違うので、行を分けて読む）
 ```
 
 - 人間ゲートは Step 1 と Step 6 の 2 つ。条件付きで Rewrite・上限到達のとき。readme-judge の起動は
@@ -228,10 +235,14 @@ cd ~/.claude/skills/readme-writer
 uv sync --dev
 uv run pytest tests/ --cov=scripts --cov-report=term-missing
 uv run python -m scripts.readme_evidence fixtures/sample_issues.md --text
+uv run playwright install --dry-run chromium   # 描画に使う Chromium が入っているか（無ければ install）
+uv run python -m scripts.readme_render fixtures/sample_clean.md --out <scratch>/render --surface repo
 ```
 
 判定器のスモークテスト: `evals/fixtures/` の README（作り直し前の実物）を readme-judge に渡し、
 `.expected.md` の指摘を 3 件中 2 件以上検出し、`fixtures/sample_clean.md` に Rewrite を出さないこと。
+見た目の canary は `evals/fixtures/visual-canary.md` を `--surface profile` で描画して渡し、
+`visual-canary.expected.md` の §V の指摘を 3 件中 2 件以上検出すること。
 
 ---
 
@@ -248,6 +259,5 @@ uv run python -m scripts.readme_evidence fixtures/sample_issues.md --text
 - skill: `archify` — 詳しい構成図（HTML）。README には概要図を置き、構成図は docs/ からリンクする
 - `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md` — AI slop の診断表の正本。執筆の原則は背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`
 - `references/` — `readme-judge-checklist.md` / `visual.md` / `overview-diagram.md` / `ja-register.md` / `about.md`
-- `templates/` — 概要図の雛形（`overview-linear.svg` / `overview-loop.svg`、illustrative）
 - `evals/read-through-log.md` — 通読指摘数の記録
 - `inspiration.md` — 設計の出自・外部エビデンスの出典

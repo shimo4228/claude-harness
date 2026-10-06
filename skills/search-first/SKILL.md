@@ -83,7 +83,7 @@ An Adopt or Adopt-part that adds a dependency goes through the dependency intake
 - **Quick (inline)** — a single obvious need: run 0–3 yourself with a few searches and write
   the report in chat.
 - **Full (parallel)** — a non-trivial question, and every question asked for a plan (plan mode,
-  or a prompt that asks for a plan; sizing and its sources: ADR-0086):
+  a prompt that asks for a plan, or skill: `html-plan`; sizing and its sources: ADR-0086, ADR-0087):
   1. **Brief.** Extend the step-0 text with what is still unknown and what would change the
      decision.
   2. **Angles.** Split the question into 3–5 angles with non-overlapping boundaries — usually

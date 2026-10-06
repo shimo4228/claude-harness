@@ -44,12 +44,16 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
    > **注記（2026-09-28, RFC-0035）** task-triage の kickoff packet もこの plan として扱う。dispatch の前に
    > `docs/plans/<task-id>-s<n>-<slug>.md` へ単独 commit し、build の commit は `Plan:` 行で指す。非公開の中身を
    > 持つ packet だけは `.notes/packets/` に残す（skill task-triage §3 step 3）
+   > **注記（2026-10-06, ADR-0087）** html plan の承認は Respond の貼り戻しで確定し、source の `docs/plans/<slug>.html` を
+   > 単独で commit する（[ADR-0087](./0087-html-plan-as-default-plan-path.md) Decision 2）
 4. plan は公開可能な書き方を既定にし、機微はリンク先へ、パスは `~/` で書く
 5. `docs/plans/` を claude-harness への同期対象に加える。同期は git が追跡している plan だけを集め、docs/plans に
    untracked・未 commit の変更があれば abort する（未承認の plan を出さないため）。script の変更と公開は著者の GO の後で、
    本 ADR の時点では未実施
    > **注記（2026-09-27, RFC-0033）** script 側は実装済み（claude-harness `6810192`）。過去 plan の移設で
    > `~/.claude/docs/plans` に 68 本が入り、次の harness-sync から同期される
+   > **注記（2026-10-06, ADR-0087）** 同期は tracked の `docs/plans/*.html` も集め、pack の副産物（`*.packed.html` /
+   > `*.artifact.html`）は除く（ADR-0087 Decision 5）
 6. commit を促す hook は作らない。既存の 255 本は移さない
    > **注記（2026-09-27, RFC-0033）** 既存の plan は移す。会話ログから repo を決め、公開先に入るものはエージェントの
    > 一次点検と著者の確認を通す。repo でない cwd の plan と、点検を通らない plan は非公開置き場に残す
@@ -58,6 +62,8 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
 
 - 2026-10-11 に、会話ログの `ExitPlanMode` 承認数（cwd が ~/.claude のもの）を分母、`docs/plans/` で commit された plan 数を分子に数え、半分未満なら
   `ExitPlanMode` の PostToolUse で commit を促す advisory を足す
+  > **注記（2026-10-06, ADR-0087）** plan の既定が html-plan になり `ExitPlanMode` は減る。分母は、会話ログで
+  > `docs/plans/` に新しく Write された plan ファイル（md と html。kickoff packet を除く）の数にする（ADR-0087 Decision 6）
 - plan mode が mod 化・廃止される、または `plansDirectory` の挙動が変わる（CHANGELOG）→ 設定と規約を見直す
 - 公開した plan で機微情報の事故が 1 件でも出る → 公開の既定を見直す
 - 同期の `$HOME` abort が続く → 同期側で `~/` への置換を足す

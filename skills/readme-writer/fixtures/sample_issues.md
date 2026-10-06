@@ -36,3 +36,26 @@ DOI 10.5281/zenodo.1234567
 </details>
 
 # Duplicate Title
+
+## Getting started
+
+For setup, click [here](https://example.com/setup) (layout.generic_link_text). Three
+alerts stack below, over GitHub's advice of one or two (layout.alerts); a list and a
+table sit side by side in one section (layout.sections, layout.lists, layout.tables);
+this heading is sentence case while "Sample Project" is title case (layout.heading_case).
+
+> [!NOTE]
+> First alert.
+
+> [!TIP]
+> Second alert.
+
+> [!WARNING]
+> Third alert.
+
+- **Install:** run the installer
+- read the guide
+
+| Option | Meaning |
+|---|---|
+| `--fast` | skips the slow checks |

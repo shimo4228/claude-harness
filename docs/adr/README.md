@@ -92,6 +92,8 @@
 | [0084](0084-retire-codex-review-skill-for-official-codex-plugin.md) | 自作 skill codex-review を退役し、cross-model の接点を OpenAI 公式 Codex plugin（`codex@openai-codex` v1.0.6）に置き換える。diff review は `/codex:review`、焦点付きの diff 反証は `/codex:adversarial-review`、plan 段の前提反証と README 等の prose review は read-only の `/codex:rescue`。model は Codex config 既定に従い harness は pin しない。起動は明示要求のみ（`codex:codex-rescue` の自発起動は task-triage で transcript を grep して見張る）。plugin の hook と `--write` 既定を Consequences に記録。ADR-0013 Decision 1・ADR-0055 Decision 2・ADR-0077 Decision 4 に注記 | accepted | 2026-09-27 |
 | [0085](0085-plans-as-records-in-docs-plans.md) | plan を repo の `docs/plans/` に置き、ADR / RFC / commit からリンクする記録層にする | accepted | 2026-09-27 |
 | [0086](0086-research-gate-before-plan.md) | plan の依頼（plan mode、または plan を頼むプロンプト）では researcher の調査 report ができるまで plan ファイルを書かせない（research gate）。search-first の Full を researcher 3〜5 本の並列多視点に置き換え、ADR-0066 Decision 4 を部分的に置き換える | accepted | 2026-10-04 |
+| [0087](0087-html-plan-as-default-plan-path.md) | plan の既定経路を plan mode から skill html-plan へ替える。html plan は書き込みそのもので research gate にかけ、1 つの report で新しい plan 1 本まで。ADR-0086 Decision 5 と plan mode を使わない workflow の却下を置き換える | accepted | 2026-10-06 |
+| [0088](0088-readme-render-evidence-and-visual-judge-phase.md) | readme-writer に描画証拠 `readme_render.py`（`gh api /markdown` の markdown mode + alert の書き換え + 同梱 github-markdown-css 5.9.0 + Playwright、github.com の README 列の幾何は `SURFACES`、PNG と squint と `render.json`）と evidence の `layout` を足し、readme-judge に Phase V（checklist §V の 6 問、証拠は見えている文字列と `top`、final は `render-r0` との前後比較を順序を入れ替えて 2 回）を置く。見た目の Fix は markup・順序・構造だけで、Step 6 のプレビューは残す。ADR-0077 の判定順・Review-when・固定質問数に注記 | accepted | 2026-10-06 |
 
 ## Template
 
