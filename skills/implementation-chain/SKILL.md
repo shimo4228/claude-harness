@@ -1,6 +1,6 @@
 ---
 name: implementation-chain
-description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」。writing 種別の orchestrator skill へのルーティング表と早期停止条件もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / tdd / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
+description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」。writing 種別の orchestrator skill へのルーティング表と早期停止条件もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
 user-invocable: true
 origin: shimo4228
 ---
@@ -61,7 +61,7 @@ routing を自発的に行うようになったら、この段落を外す。）
 |---|:-:|:-:|:-:|:-:|:-:|
 | Plan（メインループ / skill: `html-plan`（著者が入れたときは plan mode）。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
-| TDD（メインループ、skill: `tdd`） | C | C | - | - | - |
+| TDD（メインループ。RED → GREEN → REFACTOR） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
 | Code Review | Y | Y | Y | C | - |
 | Security Review | C | C | - | C | - |
@@ -72,6 +72,9 @@ routing を自発的に行うようになったら、この段落を外す。）
 
 - `feat` × TDD: **観測可能な振る舞いを実装前に固定する価値がある場合のみ Y**（[ADR-0040](../../docs/adr/0040-demote-feat-tdd-to-conditional.md)）。具体的には ① 仕様が曖昧で、テストを書くこと自体が仕様確定の作業になる ② 境界条件・エラー時の振る舞いが争点 ③ 既存挙動との互換性が要件。いずれにも当たらず、仕様が会話で確定していて実装が素直なら `-` — **ただしテストは書く**。順序を強制しないだけで、Verify の coverage floor は変わらない
 - `fix` × TDD: **再現手順が言語化できる不具合のみ Y**（再現テストを RED で先に書く）。設定値の誤り・typo・一過性の環境要因など、テストが資産にならない fix は `-`。着手時の照合規律（既済照合・schema 変更の全消費者棚卸し等）は skill: `repair-discipline`
+- TDD の実行: テストも実装も主ループで書く（仕様は会話にある — sub-agent に委ねない、ADR-0024）。テストが落ちたら
+  ① 独立性 — 単体で通り suite で落ちるなら他テストの残した状態 ② mock — args / config に `MagicMock` を使うと
+  `getattr(mock, "flag", False)` が False にフォールバックしない ③ 実装側を直す — テストを緩めて通さない、の順で診る
 - 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
 - `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら plan にその旨と大きさを 1 行書く（実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（ADR-0042）。

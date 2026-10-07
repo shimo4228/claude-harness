@@ -9,7 +9,7 @@ Slack digest 以外の外部送信 / 台帳の起票・drop（判断役は提案
 `.claude/verify.sh`（承認 hash）・rules・ADR・skills の無人変更（その diff を含む取り込みも）/
 自分が spawn していない pane・session / Herdr 委譲（`HERDR_ENV=1` と明示指示の両方。例外は
 create-only の skill: `spawn-session` — 新規 workspace/tab と自分が作った pane にしか触れないので
-server 稼働だけを前提に実行してよい。明示指示は要る）。
+server 稼働だけを前提に実行してよい。明示指示は要る — 著者が起動を含む cycle（task-triage）を呼ぶことが明示指示に当たり、無人の tick は当たらない）。
 
 **とる**（確認を待たない）: 検収を通した task branch の main への ff-only 取り込みと push
 （force は hook が止める）/ worktree と task branch の中の破壊・方針転換・粗い代替案 1 本・

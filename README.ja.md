@@ -46,9 +46,7 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [public-comment](skills/public-comment/SKILL.md) | 公開技術スレッドへの返信 — AI slop tell の除去、スレッド接地、投稿前の日本語訳併記による人間 gate |
 | [agent-stocktake](skills/agent-stocktake/SKILL.md) | subagent 定義をハイブリッド cost model（description = 毎セッション常駐 / body = 起動時ロード）で監査 — 抑制指示と substrate 吸収を検出する第 3 の stocktake |
 | [generation-audit](skills/generation-audit/SKILL.md) | モデル世代交代時に runtime 層（system prompt + tool description）を実セッションから採取し、競合 / 冗長 / ドリフトに分類して各 stocktake に証拠として渡すオーケストレータ |
-| [git-workflow](skills/git-workflow/SKILL.md) | この環境での git 実行作法 — 1 Bash call = 1 git コマンド。&& やパイプで連結すると Bash(git:*) の自動許可が外れて手動承認になる |
 | [headline-craft](skills/headline-craft/SKILL.md) | 「開かせる一行」の craft — タイトル・tagline・subtitle・SNS 告知文の候補生成と、流入経路 2 軸（検索 / フィード）での評価 |
-| [herdr-delegate](skills/herdr-delegate/SKILL.md) | Herdr の pane に別プロセスの CLI エージェント（Codex 等）を立てて実装タスクを丸ごと委譲する。ユーザーの明示指示があるときだけ使う — 並列化できそう、は理由にならない |
 | [prompt-perturb](skills/prompt-perturb/SKILL.md) | 多様性の注入。文脈をあえて持たない forager agent が外部の創造技法カタログからプロンプトを拾ってくるので、角度がセッション自身の手癖の外から来る |
 | [session-judgment-mining](skills/session-judgment-mining/SKILL.md) | 過去のセッション記録から、ユーザーが繰り返し下した判断を発掘し、再出現するものを skill / rule に正本化する |
 | [verify-bootstrap](skills/verify-bootstrap/SKILL.md) | repo の機械ゲート（format / lint / type check / security / dependency / test）を立てる、または古びたゲートを棚卸しする。ツール選定は skill に焼き込まず、その時点で調べ直す |
@@ -61,8 +59,6 @@ skills / agents / rules は `~/.claude/` 配下から `origin: shimo4228` タグ
 | [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
 | [rfc-writer](skills/rfc-writer/SKILL.md) | 公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when |
 | [review-to-lint](skills/review-to-lint/SKILL.md) | 既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チ |
-| [growth-astra](skills/growth-astra/SKILL.md) | GitHub follower campaign の北極星（`.growth/NORTH_STAR.md`）を書く役 — 初回設定と以後の修正。growth-fable からの escalation 先 |
-| [growth-fable](skills/growth-fable/SKILL.md) | 北極星に向かう施策を考え、worker に出し、結果を `.growth/EXPERIMENTS.md` に記録する役 |
 | [jev-skill-router](skills/jev-skill-router/SKILL.md) | prompt に合う skill を TypeSafe Jev に選ばせる UserPromptSubmit hook。shadow 計測が先、inject は精度が出てから |
 | [jev-judgment-design](skills/jev-judgment-design/SKILL.md) | LLM の閉じた判定（関係あるか・新しいか・証拠の強さ）を TypeSafe Jev に移す設計。比べる相手を state に入れ、採否は Jev の確率からコードが決め、canary で落としすぎを見る |
 | [author-calibrated-eval](skills/author-calibrated-eval/SKILL.md) | LLM が書く読み物を著者の読みを正解にして磨くループ。材料の固定、難所セット、強いモデルの参照稿を混ぜた blind 読み比べ、LLM 判定役は忠実さの足切り専任 |

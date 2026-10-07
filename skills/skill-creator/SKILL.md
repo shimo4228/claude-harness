@@ -24,6 +24,9 @@ skill は agent が実行する制御プログラムで、書いた瞬間から�
 - 置き場 — `skills/<name>/SKILL.md`（`commands/` は使わない）か `agents/<name>.md`
 - 検証可能な出力か（file 変換・固定手順なら with/without を見る価値がある。文体系は不要）
 
+既存 skill を改修するときは、書く前にその directory の `MAINTENANCE.md`（あれば）を読む — 規則の理由と
+経緯はそこにあり、読まずに書き換えると理由ごと戻る。
+
 **隣接 skill を library 全体で grep する**（name / description / NOT for 行）。重なりが
 見つかったら、新規でなく既存への統合か改修に倒す判断をここでする。batch 内限定の
 skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全体を見られる。
@@ -48,18 +51,19 @@ skill-stocktake Uniqueness と違い、作成時は対象が 1 件なので全�
   各行を見る
 - **現行規則として書く — 前版との差分を書かない。** 「（日付 追加 / 追記 / 移設 / 移管 /
   再編 / 明文化）」「Y から降格」「旧 X は廃止、no longer」「日付 に復活」は edit 履歴で、
-  git と ADR が持つ。本文は現在の規則 + 理由 1 句 + ADR/RFC 番号。**as-of 日付は claim に
+  git と ADR が持つ。本文は現在の規則 + 理由 1 句。ADR / RFC 番号・出典・経緯は同じ directory の
+  `MAINTENANCE.md` に置く（SKILL.md からリンクせず、公開しない）。**as-of 日付は claim に
   だけ付ける**（knowledge-staleness — 外部事実の検索時点、実測の観測日）。edit の日付は
   付けない。改修時に入る型で、新規作成ゲートを通らない — `harness_lint.py` が同一括弧内の
   日付 + edit 動詞を止める（実測: 2026-09-02 prompt-audit で 88 件中 55 件。ADR-0061）
 - **退役したものは本文から消す。** 退役した step / store / 機構は削除し、残す規則は正の形で
   書く（「Wikidata 連邦 — RETIRED、この step は実行しない」→ 「sameAs は self-sovereign な
   解決先のみ」）。モデルは見たことのない選択肢を幻の代替として読む
-- **経緯は ADR、本文は規則。** 「初見では X と推定しかけたが…」「第一波 / 第二波で移行」型の
+- **経緯は ADR と `MAINTENANCE.md`、本文は規則。** 本文は単体で実行できること — 行動に必要な値や規則を
+  skill の directory の外（ADR など）に委ねない。 「初見では X と推定しかけたが…」「第一波 / 第二波で移行」型の
   物語は残さない。理由が 1 句で言えるなら 1 句（「正本の改名時にコピーが取り残された前例あり」）
 - **改修は置換であって追記ではない。** 規則を変えたら旧記述を grep して消す — 同一ファイル内に
-  2 版が残るとモデルは両方を文字通り読んで毎回どちらかを選ぶ（config-gc の削除手順、
-  authorship-strategy の型 (b) 配置で実例）
+  2 版が残るとモデルは両方を文字通り読んで毎回どちらかを選ぶ（authorship-strategy の型 (b) 配置で実例）
 - **条件を列挙したら tie-breaker を置かない。** 「判断に迷ったら Y」は条件付きに降格した
   gate を Y 側へ戻す（implementation-chain feat×TDD で実例）
 - **例は出力の register を固定する。** 例の文体・長さ・言語がそのまま出力に写る。文体を

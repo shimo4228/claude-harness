@@ -80,7 +80,7 @@ skill: `herdr`、委譲の境界は `rules/common/boundary.md`。
 3. `herdr pane split --current --direction right --cwd "$PWD" --no-focus` で隣に pane を作り、
    `herdr agent start <name> --kind codex --pane <pane-id>` で Codex を立てる
 4. `herdr agent prompt <name> "<file> を読み、## Prompt の文で画像生成を 1 回行い、<出力 path> に保存し、path だけを返す" --wait --timeout 600000`
-5. 出力ファイルがあることを確かめてから `Read` で開く（settled は prompt が届いたことまでしか示さない — herdr-delegate §3）
+5. 出力ファイルがあることを確かめてから `Read` で開く（settled は prompt が届いたことまでしか示さない — rules/common/agents.md）
 6. 図の文字を prompt の文字と 1 つずつ照合する。抜け・崩れ・足された語があれば、その文字を
    prompt で強めて 1 回だけ再生成する。それでも合わなければ、mono-color の Generation and
    Inspection 4（文字の少ない下地に layout で文字を重ねる）の代わりに、SVG の道で描く

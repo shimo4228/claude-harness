@@ -169,7 +169,7 @@ git add CHANGELOG.md CITATION.cff pyproject.toml \
 test -f codemeta.json && git add codemeta.json
 # Phase 2 で /context-sync が自動適用したファイルもここに足す (git status --short で確認)
 
-# commit message はファイル経由（`$( )` は harness の PreToolUse hook が block する — skill: git-workflow）
+# commit message はファイル経由（`$( )` は harness の PreToolUse hook `hooks/validate-bash.sh` が block する）
 MSG_DIR=$(mktemp -d)
 cat > "$MSG_DIR/release-msg.txt" <<'EOF'
 release: vX.Y.Z — <one-line title>

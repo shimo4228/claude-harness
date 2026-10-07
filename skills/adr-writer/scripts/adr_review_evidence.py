@@ -105,8 +105,10 @@ _STATUS_FULL_SUPERSEDE_RE = re.compile(
 )
 _STATUS_PARTIAL_RE = re.compile(r"partial|in part|一部", re.IGNORECASE)
 _ANNOTATION_RE = re.compile(r"^\s*>\s*\*\*\s*(注記|Note)\b(.*)$")
+# The source after the date is a new ADR, or the commit whose body carries a change that missed
+# the filing bar (ADR-0089 Decision 2).
 _ANNOTATION_WELL_FORMED_RE = re.compile(
-    r"^\s*>\s*\*\*(注記|Note)\s*[（(]\d{4}-\d{2}-\d{2}[,、]\s*(\[)?ADR-\d{4}"
+    r"^\s*>\s*\*\*(注記|Note)\s*[（(]\d{4}-\d{2}-\d{2}[,、]\s*(\[?ADR-\d{4}|commit「[^」]+」)"
 )
 
 

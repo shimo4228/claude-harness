@@ -4,6 +4,10 @@
 
 accepted
 
+> **注記（2026-10-07, commit「chore(skills): growth-astra と growth-fable を退役」）**: 著者の判断で skill growth-astra と
+> growth-fable、`scripts/launchd/` の growth-fable plist と prompt を退役した（campaign window 2026-12-07 の前）。
+> campaign 状態 `~/MyAI_Lab/growth/.growth/` と `triage-tick.sh` の `--prompt-file` の seam は残る
+
 ## Date
 
 2026-09-08

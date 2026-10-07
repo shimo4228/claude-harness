@@ -1,6 +1,6 @@
 ---
 name: skill-comply
-description: "Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines. Use when a rule's or skill's real adherence is in question or right after adding one — \"is this rule actually being followed?\", \"measure how often this skill fires\", \"/skill-comply\". NOT for — static quality stocktakes (→ skill-stocktake / rules-stocktake), reference-integrity checks (→ skill-health), with/without ablation (→ skill-creator §5)."
+description: "Measure whether skills, rules, and agent definitions are actually followed — generates scenarios at 3 prompt strictness levels, runs agents, classifies their tool calls, and reports compliance rates with tool call timelines. Use when a rule's or skill's real adherence is in question or right after adding one — \"is this rule actually being followed?\", \"measure how often this skill fires\", \"/skill-comply\"."
 compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -10,24 +10,21 @@ user-invocable: true
 
 Measures whether coding agents actually follow skills, rules, or agent definitions by:
 1. Auto-generating expected behavioral sequences (specs) from any .md file
-2. Auto-generating scenarios with decreasing prompt strictness (supportive → neutral → competing)
+2. Auto-generating scenarios with decreasing prompt strictness (supportive → neutral → competing), to show
+   whether the target is followed even when the prompt does not support it
 3. Running `claude -p` and capturing tool call traces via stream-json
 4. Classifying tool calls against spec steps using LLM (not regex)
 5. Checking temporal ordering deterministically
 6. Generating self-contained reports with spec, prompts, and timelines
 
+It measures runtime adherence only. A static quality audit is skill `skill-stocktake` / `rules-stocktake`, a reference-integrity
+check is skill `skill-health`, and a with/without ablation of a skill's effect is skill `skill-creator` §5.
+
 ## Supported Targets
 
-- **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first, TDD guides
+- **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first
 - **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, debugging.md
-- **Agent definitions** (`agents/*.md`): Whether an agent gets invoked when expected (internal workflow verification not yet supported)
-
-## When to Activate
-
-- User runs `/skill-comply <path>`
-- User asks "is this rule actually being followed?"
-- After adding new rules/skills, to verify agent compliance
-- Periodically as part of quality maintenance
+- **Agent definitions** (`agents/*.md`): Whether an agent gets invoked when expected (internal workflow verification is not measured)
 
 ## Usage
 
@@ -58,7 +55,7 @@ generated spec is automatically saved to `results/<skill-name>.spec.yaml`
 with `--spec` to pin the questions so scores become comparable. The next generating run
 overwrites the file of the same name, so copy any spec you want to keep as a baseline under another name.
 Note that scenario prompts are still LLM-generated and vary on every run — pinning for run-to-run
-comparison stops at the spec; scenario non-determinism is currently out of scope.
+comparison stops at the spec; scenario non-determinism is out of scope.
 
 ## Run time and reading progress
 
@@ -71,8 +68,7 @@ Parallelism does not change scores or reports. Completion order is used only for
 the report is always assembled in supportive → neutral → competing order.
 `--concurrency 1` returns to fully serial execution.
 
-**Progress goes to stderr, results go to stdout.** This is a division of labor, not an accident,
-based on measurements taken 2026-08-01 (→ [ADR-0029](../../docs/adr/0029-skill-comply-parallel-scenarios-and-stderr-progress.md)):
+**Progress goes to stderr, results go to stdout**, so piping stdout does not hide progress:
 
 ```bash
 # Progress is visible. Only stdout goes into tail; stderr reaches the terminal directly
@@ -82,10 +78,8 @@ uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run <p
 uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run <path> 2>&1 | tee run.log
 ```
 
-**With `2>&1 | tail -40` you see nothing at all.** Without `-f`, `tail` is a tool that prints
-"the last N lines", so it cannot emit a single line until its input ends.
-This is a property of `tail`, so neither `python -u` nor flushing fixes it.
-To watch intermediate progress, use `tee` instead of `tail`.
+**With `2>&1 | tail -40` you see nothing until the run ends** — `tail` without `-f` prints only at end of
+input. Use `tee` to watch progress.
 
 When even one scenario fails (e.g. the child process exits abnormally),
 that scenario is not counted as 0% but reported to stderr as a "measurement failure", and the exit code is 1.
@@ -113,73 +107,33 @@ Project skills are measured in two tiers. **Which tier was used always appears i
   file is copied, not the directory (a skill with `references/` is measured short at Tier 2 —
   a visible limitation is preferred over a silent hole)
 
-**Tier 1 is a layer for measurement correctness, not a containment layer.** Its reason to exist is
-"make project skills discoverable so that compliance, not bare behavior, can be measured".
-
-`description` is required for discovery, so it always reaches the child. The 500-character cap is **a cap on length,
-not a cap on capability** — 500 characters is more than enough for an instruction, and it can carry effective
-commands to a child that has Read / Write / Edit / Glob / Grep. The difference between Tier 1 and Tier 2
-is **"the procedure does not arrive"**, not **"instructions do not arrive"**.
+**Treat Tier 1 as a measurement layer, not containment** — the `description` always reaches the child, and its
+500 characters can carry working commands to a child that has Read / Write / Edit / Glob / Grep.
 
 Combining `--load-target-skill` with `--allow-bash` hands **an untrusted document both a payload
 and an interpreter**, so it emits a warning.
 
 ## Trust boundary — the audited file is untrusted
 
-**This tool reads a .md you did not necessarily write, has an LLM write scenarios from it,
-and has another agent execute them.** The audited file becomes the generator's input as is, so
-the target file's body is treated as untrusted data (2026-07-25 security scan F2/F3/F4/F18).
+The tool hands a .md you may not have written to an LLM that writes scenarios, then has an unattended
+child agent run them. Treat the target's body as untrusted data. What the tool enforces, and what you control:
 
-- **`setup_commands` are not executed.** Only the two verbs `mkdir` / `touch` are interpreted via pathlib,
-  and paths are verified to resolve inside the sandbox. Anything else is rejected and reported to stderr
-- **Path validation collapses `..` before resolving symlinks.** The sandbox is deleted and recreated
-  just beforehand, so the first component never exists, and a `..` placed after a nonexistent component
-  (`a/../../elsewhere/x`) stays unresolved. `Path.parents` treats it as just a
-  directory name, so checking before collapsing lets creation outside the sandbox through
-- **The child's tools are removed with `permissions.deny`. `--allowedTools` does not remove them.**
-  As `claude --help` says, `--allowedTools` is "a list of tool names to allow" = an auto-approve
-  list, and tools not on it **do not disappear**. Measured on 2026-08-02 with Claude Code 2.1.220:
-  a child with only `--allowedTools "Read,Glob,Grep"` called Bash, and `uname -sr` ran
-  on the host. Neither `--permission-mode` (manual / dontAsk / acceptEdits)
-  nor `--setting-sources project` changes this.
-  `permissions.deny` in `--settings` removes `Bash` / `Agent` / `Workflow` /
-  `ToolSearch` / `ScheduleWakeup` (source of truth: `scripts/child_settings.py`).
-  Tools beyond Bash are removed because `Agent` and `Workflow` spawn **subagents whose tool sets
-  this code does not control**, and `ToolSearch` loads on demand the MCP surface inherited from user settings
-  (mail, drive, calendar, browser).
-  `--allow-bash` works by **removing** Bash from the deny list
-- `cwd` and `--add-dir` **widen** access; they do not confine it
-- **Generator prompts isolate the target document with nonce delimiters** and state explicitly that it is
-  data, not instructions. A fixed delimiter (`---`) can be reproduced by markdown frontmatter
-- **One sandbox per scenario, and one root per run.** Directory names derive from the LLM-generated
-  scenario id, so duplicates are detected and renamed before execution. Serially, duplicates are
-  harmless, but in parallel one scenario's sandbox creation (delete before create) wipes the other one mid-run.
-  This deduplication **only works within a process**, so roots are separated per run —
-  `/tmp/skill-comply-sandbox/run-<pid>/<id>`. Separate runs that generated the same id
-  do not delete each other's in-flight sandboxes (`scripts/runner.py: sandbox_run_root`).
-  When `SANDBOX_BASE` itself is a symlink (shared host, CI scratch area), it is resolved and followed
-  once when computing the root — the containment check is not redone across the link every time
-- **`<sandbox>/.claude/` and `<sandbox>/.git/` are reserved for the tool. Specifications originating from the audited file are not accepted.**
-  The sandbox is the child's **project root**, and there some file names are
-  loaded rather than "just sitting there" — even in an untrusted workspace,
-  `hooks.SessionStart` in `<sandbox>/.claude/settings.json` **silently runs commands
-  on the host**, and `<sandbox>/CLAUDE.md` is also read and obeyed.
-  The substrate stops the child's own Writes, but **this tool's pathlib writes are not stopped**, so
-  they are blocked here. `CLAUDE.md` / `AGENTS.md` / `.mcp.json` / `settings.json` /
-  `settings.local.json` / `.gitignore` are rejected at any depth.
-  **The check is case-folded** — APFS is case-insensitive, so `.CLAUDE/Settings.json`, if it
-  could be written, would be read as `.claude/settings.json`.
-  `.git/` is included because `_setup_sandbox` runs `git init` first so it is writable, and
-  `core.fsmonitor` / `core.pager` / `alias.*` are **config strings git executes without an execute bit**
-  (measured: placing `.git/config` via `files:` made `git status` run a command on the host.
-  Claude Code runs git in the workspace, so this fires even with the child's Bash blocked).
-  `.gitignore` is not execution but **sabotage of measurement** — Grep honors it and Glob does not, so a document
-  can hide its own fixtures from the tool the detector expects.
-  **Being contained and being inert are different properties**, and `_contained` answers only the former
+- **`setup_commands` are not executed.** Only `mkdir` / `touch` are interpreted, and only for paths that resolve
+  inside the sandbox; everything else is rejected and reported to stderr
+- **The child's tools are removed with `permissions.deny`, not `--allowedTools`** — `--allowedTools` is only an
+  auto-approve list, so unlisted tools stay callable. The deny list removes `Bash` / `Agent` / `Workflow` /
+  `ToolSearch` / `ScheduleWakeup` (source of truth: `scripts/child_settings.py`). `--allow-bash` takes Bash off
+  the deny list, so pass it only for a target you trust
+- `cwd` and `--add-dir` **widen** the child's access; they do not confine it
+- **`<sandbox>/.claude/` and `<sandbox>/.git/` are reserved for the tool**, and `CLAUDE.md` / `AGENTS.md` /
+  `.mcp.json` / `settings.json` / `settings.local.json` / `.gitignore` are rejected at any depth (case-folded) —
+  these files are loaded or executed by Claude Code and git, or hide fixtures from the detector
+- Each run gets its own sandbox root, `/tmp/skill-comply-sandbox/run-<pid>/<id>`, so parallel runs do not delete
+  each other's sandboxes
 
-When measuring an untrusted .md, read the generated scenarios first with `--dry-run`.
-In addition to the spec steps, `--dry-run` **prints in full the three fields an attacker may control** —
-`prompt`, which is handed to the unattended child, and `setup_commands` and `files:`, which touch the filesystem.
+When measuring an untrusted .md, run `--dry-run` first and read what it prints in full: the spec steps plus
+the three fields an attacker may control — `prompt` (handed to the unattended child), and `setup_commands` and
+`files:` (which touch the filesystem).
 
 ## Models
 
@@ -189,10 +143,6 @@ In addition to the spec steps, `--dry-run` **prints in full the three fields an 
 | `--model` | `sonnet` | Scenario execution (the agent under test). Accepts `haiku` / `sonnet` / `opus` / `fable`. |
 | `--classifier-model` | `sonnet` | Trace classification. Haiku times out on long traces (50+ events) and abstract specs (e.g. contemplative-axioms). Sonnet handles the load with a 300s timeout. |
 
-## Key Concept: Prompt Independence
-
-Measures whether a skill/rule is followed even when the prompt doesn't explicitly support it.
-
 ## Report Contents
 
 Reports are self-contained and include:
@@ -200,7 +150,4 @@ Reports are self-contained and include:
 2. Scenario prompts (what was asked at each strictness level)
 3. Compliance scores per scenario
 4. Tool call timelines with LLM classification labels
-
-### Advanced (optional)
-
-For users familiar with hooks, reports also include hook promotion recommendations for steps with low compliance. This is informational — the main value is the compliance visibility itself.
+5. Hook-promotion recommendations for low-compliance steps (informational)

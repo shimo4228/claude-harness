@@ -1,6 +1,6 @@
 ---
 name: adr-writer
-description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, writes the 7-section body (incl. `Review-when` expiry conditions) in the main loop, runs the mechanical evidence and the adr-reviewer, and updates the ADR index. Also the canonical place for the filing bar — an ADR is written only for a mechanism / gate / threshold / agent-tier change that other artifacts cite, or for superseding / annotating a prior ADR; everything else goes into the commit body. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
+description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, writes the 7-section body (incl. `Review-when` expiry conditions) in the main loop, runs the mechanical evidence and the adr-reviewer, and updates the ADR index. Also the canonical place for the filing bar — a new ADR is written only for a decision that is hard to reverse, surprising without context and the result of a real trade-off; a change to a prior ADR that misses the bar gets a dated Note on that ADR, and everything else goes into the commit body. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
 user-invocable: true
 origin: shimo4228
 ---
@@ -11,16 +11,21 @@ Capture a design decision as a numbered ADR with consistent structure. The skill
 
 ## Why the main loop writes
 
-Deterministic concerns — where the ADR goes, what number it gets, which index needs updating — are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift), so they live in scripted steps. The prose is written by the main loop that holds the decision: rendering to the house template is cheap for it, and the decision packet (Step 3) is the discipline that keeps *decide* and *render* apart — the packet is settled first, the file is a faithful expression of it, nothing is inferred while writing. That principle is [ADR-0016](../../docs/adr/0016-writer-agents-render-not-decide.md) (writer agents render, they do not decide), applied in the main loop per [ADR-0072](../../docs/adr/0072-retire-adr-writer-agent-and-narrow-adr-filing.md); the evidence script (Step 4.5) is the fidelity check.
+Deterministic concerns — where the ADR goes, what number it gets, which index needs updating — are easy to get wrong silently (number collisions, sub-directory cwd confusion, index drift), so they live in scripted steps. The prose is written by the main loop that holds the decision: rendering to the house template is cheap for it, and the decision packet (Step 3) is the discipline that keeps *decide* and *render* apart — the packet is settled first, the file is a faithful expression of it, nothing is inferred while writing. A writer renders a decision; it does not make one. The evidence script (Step 4.5) is the fidelity check.
 
 ## When to Use (filing conditions — canonical)
 
-Write an ADR when at least one holds:
+Write a new ADR only when the decision meets **all three**:
 
-- The change moves a **mechanism, gate, threshold, or agent tier that other artifacts cite** (a hook, a lint boundary, a chain step, a rule's default, a model pin) — the ADR is what those artifacts point at
-- The decision **supersedes or partially weakens a prior ADR** (a Status flip or a dated Note is needed on the old one)
+  - **hard to reverse** — undoing it means changing other artifacts (skills, rules, hooks, scripts) or public outputs too. Being revertible with git alone does not count as easy: nearly every harness change is git-revertible
+  - **surprising without context** — a future reader would ask "why is it like this?"
+  - **the result of a real trade-off** — chosen between genuine alternatives
 
-Entry points: the user says "let's ADR this" / "record this decision", `context-sync` Phase 3 surfaced a buried decision, a debate concluded and the outcome must outlive the session. Apply the two conditions to the request; when neither holds, say so and use the commit body.
+"Hard to reverse" is met by most harness changes, so it mainly excludes changes whose effects stay local; "surprising" and "real trade-off" do the filtering.
+
+Superseding or weakening a prior ADR does not by itself call for a new ADR. When the decision that changes it meets all three, write the new ADR (and flip the old Status or add a dated Note — Edge cases). When it does not, add a dated Note under the affected section of the old ADR — `> **注記（YYYY-MM-DD, commit「<subject>」）**: <what changed and what still stands>` — and record the decision in the same commit's body (below). The old ADR then never reads as current when it is not.
+
+Entry points: the user says "let's ADR this" / "record this decision", `context-sync` Phase 3 surfaced a buried decision, a debate concluded and the outcome must outlive the session. Apply the three conditions to the request; when they do not all hold, say so and use the commit body (plus the Note when a prior ADR is affected).
 
 ## When NOT to Use — the commit body carries it
 
@@ -64,7 +69,7 @@ ADRs in this repository use the 7-section template
 # ADR-NNNN: [Title]
 
 ## Status
-accepted | superseded | deprecated
+proposed | accepted | superseded | deprecated
 
 ## Date
 YYYY-MM-DD
@@ -121,7 +126,7 @@ Ask the user (or accept from caller) for:
 2. **Status** — `proposed | accepted | superseded | deprecated`. Default `accepted`.
 3. **Context** — what problem prompted this decision (raw text OK).
 4. **Decision** — what was decided (raw text OK).
-5. **Review-when** — the expiry conditions: which observation or premise failure would void or weaken this decision, 1-3 lines. It can only be captured at write time (ADR-0021); an ADR without it reads as permanent. If there genuinely is none, say so explicitly and write "none — a record, not a permanent decision".
+5. **Review-when** — the expiry conditions: which observation or premise failure would void or weaken this decision, 1-3 lines. It can only be captured at write time; an ADR without it reads as permanent. If there genuinely is none, say so explicitly and write "none — a record, not a permanent decision".
 6. **Alternatives** — what else was considered and why rejected, or, for an alternative that stays live, "Open — revisit when: …" (raw text or list). Keeping a rival open is allowed; a straw man is not.
 7. **Consequences** — what becomes easier / harder (raw text or list).
 
@@ -131,8 +136,7 @@ If 3-7 are missing, request them — do not proceed. ADRs without these sections
 (a dated casebook of frequent review findings) and self-check against the matching patterns — cited ADRs
 exist and say what is cited, where surviving scope is placed, provenance of coined terms, grounds for
 judging full vs partial supersede, references to gitignored paths, sources and denominators of numbers,
-what is held fixed in count conditions. This is write-time prevention, not a substitute for semantic
-review — do not skip the adr-reviewer before commit.
+what is held fixed in count conditions. This is write-time prevention; semantic review is Step 4.6.
 
 **Assemble and approve the decision packet before writing.** Settle the actual content here: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4 — Step 4 expresses the packet and adds nothing, so a fuzzy decision is resolved here.
 
@@ -152,7 +156,7 @@ Consequences splits into Positive / Negative / Neutral), then write
 - Links to sibling ADRs are relative (`./NNNN-slug.md`) and the file name is copied from `ls`,
   not typed from memory — Step 4.5's `refs.links_broken` is the check
 - When the decision went through a plan (skill: `html-plan`, or plan mode), the first line of Context links the approved plan:
-  `Plan: [docs/plans/<file>](../plans/<file>)（承認 YYYY-MM-DD）` (ADR-0085). `<file>` is the `.html` source for an html plan (ADR-0087). The plan is the frozen
+  `Plan: [docs/plans/<file>](../plans/<file>)（承認 YYYY-MM-DD）`. `<file>` is the `.html` source for an html plan. The plan is the frozen
   precommitment; the ADR still stands on its own — the link is provenance, not a substitute
 
 If a packet field is missing, stop and ask; do not write a partial ADR.
@@ -170,10 +174,10 @@ covers mechanical properties only and is not a substitute for semantic review (a
 
 When you want an ad hoc blocking verdict, add `--gate`. The exemption boundaries are unbounded by
 default, so pass per-repo values — harness uses `--sections-from 44 --require-review-when-from 44`
-(exempting ADR-0009's two missing sections and the absent Review-when in 0043 and earlier, ADR-0051).
+(exempting ADR-0009's two missing sections and the absent Review-when in 0043 and earlier).
 
-Next, take the per-ADR evidence for the one ADR you just wrote (ADR-0071 — the machine-countable part
-of the findings adr-reviewer repeated across 24 reports):
+Next, take the per-ADR evidence for the one ADR you just wrote (the machine-countable part
+of the findings adr-reviewer repeats):
 
 ```bash
 python3 ~/.claude/skills/adr-writer/scripts/adr_review_evidence.py --root "$REPO_ROOT" --adr "$NEXT_NUM" --diff worktree
@@ -191,7 +195,7 @@ does not mention, write them into the Decision or split them into a separate com
 ### Step 4.6: Run the semantic review (adr-reviewer)
 
 Before commit, launch agent: `adr-reviewer` and hand it the ADR you just wrote — do not skip this.
-**This skill is the only wiring for adr-reviewer** (ADR-0055). The main loop accepts or rejects each finding against the Step 3 packet, and fixes only the accepted ones.
+**This skill is the only wiring for adr-reviewer** — skipping it here means no semantic review runs at all. The main loop accepts or rejects each finding against the Step 3 packet, and fixes only the accepted ones.
 
 ### Step 5: Update the index
 
@@ -235,26 +239,25 @@ Index:   updated (+1 row)
 | Called from a sub-directory of the repo | Use `git rev-parse --show-toplevel`; never trust raw cwd |
 | Not a git repo | Fall back to cwd, warn the user that they should `git init` |
 | ADR number was reserved verbally but not yet written ("I'll write ADR-0010 later") | Skill cannot know; ask the user whether to take the next free number or the reserved one |
-| User wants to supersede an existing ADR | Update the old ADR's Status to `superseded by ADR-NNNN`, then create the new one. Two file writes. |
-| New ADR **partially weakens** an old one (a premise expired, a Review-when trigger fired) but does not supersede it | Do not flip Status. Append under the affected section of the old ADR: `> **Note (YYYY-MM-DD, ADR-NNNN)**: <what changed and what still stands>`. Never delete the original text — the strength history stays readable in place (precedents: ADR-0018 §Consequences, ADR-0028). Do this after Step 4 has written the new file. |
+| User wants to supersede an existing ADR and the new decision meets the filing bar | Update the old ADR's Status to `superseded by ADR-NNNN`, then create the new one. Two file writes. |
+| A change to a prior ADR's mechanism misses the filing bar | No new ADR. Add `> **注記（YYYY-MM-DD, commit「<subject>」）**` under the affected section of the old ADR, keep its Status, and put the 3 lines in the commit body. |
+| New ADR **partially weakens** an old one (a premise expired, a Review-when trigger fired) but does not supersede it | Do not flip Status. Append under the affected section of the old ADR: `> **注記（YYYY-MM-DD, ADR-NNNN）**: <what changed and what still stands>`. Keep the original text — the strength history stays readable in place. Do this after Step 4 has written the new file. |
 | Title contains spaces or non-ASCII | Skill normalizes to kebab-case ASCII for the filename; preserves original in the `# ADR-NNNN: ...` heading |
 
 ## Boundaries
 
-- **Do not** invent missing sections. Refuse to write an ADR with `Context: [TBD]` or similar placeholders.
-- **Do not** modify ADRs other than the new one and (optionally) the index, except the two explicit main-loop steps above (Status flip on full supersede; dated Note on partial weakening).
-- **Do not** infer the user's decision from chat history without confirming. Ask, even if the answer feels obvious.
-- **Do not** commit the file. The user owns the commit step.
+- The files this skill writes are the new ADR, the index, and the old ADR's Status or Note from the Edge cases table.
+- Leave the commit to the user — they own the commit step.
 
 ## Reference Files
 
 - ADR template canonical source: read the target repo's existing ADRs to mirror their voice. For the harness itself, see `~/.claude/docs/adr/README.md`.
-- Mechanical lint (evidence mode + `--gate`): `scripts/adr_lint.py` (ADR-0051; adapts the template automatically from the repo's
+- Mechanical lint (evidence mode + `--gate`): `scripts/adr_lint.py` (adapts the template automatically from the repo's
   `docs/adr/README.md` Template; tests are `tests/test_adr_lint.py`).
-- Per-ADR review evidence (evidence mode only): `scripts/adr_review_evidence.py` (ADR-0071;
+- Per-ADR review evidence (evidence mode only): `scripts/adr_review_evidence.py` (
   cited references exist, Note reciprocity, path classification, diff scope, unsourced numbers; tests are
   `tests/test_adr_review_evidence.py`). This one file is the entry point for running and importing; the
-  checks themselves are split across `scripts/adr_evidence_common.py` / `_paths.py` / `_prose.py` (the
-  ADR-0056 file-LOC budget).
+  checks themselves are split across `scripts/adr_evidence_common.py` / `_paths.py` / `_prose.py` to stay
+  within the per-file LOC budget.
 - Casebook of frequent review findings: `references/review-findings.md` (read during the Step 3 preventive check).
 - Evals: `evals/evals.json` (3 scenarios — new ADR / missing docs-adr / sequence collision).

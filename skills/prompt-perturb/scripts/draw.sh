@@ -5,8 +5,13 @@
 # 選択肢の供給源は常に外部（web 上のライブラリ・カタログ）であり、閉じたテンプレートを持たない。
 set -euo pipefail
 
-WORDS=$(awk 'length >= 4 && length <= 9 && /^[a-z]+$/' /usr/share/dict/words \
-  | awk -v seed="$RANDOM$RANDOM" 'BEGIN{srand(seed)} {if (rand() < 0.001) print}' \
-  | head -5 | paste -sd, -)
+# 辞書全体を読み込んでから一様に 5 語引く（先頭から間引くと a/b 始まりに偏る）
+WORDS=$(awk -v seed="$RANDOM$RANDOM" '
+  length >= 4 && length <= 9 && /^[a-z]+$/ { w[n++] = $0 }
+  END {
+    srand(seed)
+    for (k = 0; k < 5 && n > 0; k++) { i = int(rand() * n); out = out (k ? "," : "") w[i]; w[i] = w[--n] }
+    print out
+  }' /usr/share/dict/words)
 
 echo "stimulus words: $WORDS"

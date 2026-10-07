@@ -111,7 +111,7 @@ Note that it **passes even with a Recurrence of 1**.
 ## Phase 3 — User Review & Execution
 
 Present a summary table (`# | Principle | Verdict | Target | Confidence`) as the
-overview, then **confirm one by one** (config-gc's confirm-each design): walk the
+overview, then **confirm one by one**: walk the
 candidates sequentially — for each, show its evidence, violation risk, and draft text,
 then ask `[y/n/skip]`. The user can modify the draft before approving, and can stop at
 any point. Never batch the approval ("apply all 5? [y/n]" defeats the design — one

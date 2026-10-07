@@ -65,6 +65,10 @@ agent の描画が担っていた近隣 ADR の文体走査は skill の 1 ス�
    rule の既定、model pin）、(b) 旧 ADR の supersede または部分弱化（Status 変更か日付つき注記を
    伴う）。どちらでもない判断は commit 本文に `Context:` / `Decision:` / `Review-when:` の 3 行で
    残す。後に supersede されるか他 artifact から引かれたら、その時に commit を引用して ADR へ昇格する。
+   > **注記（2026-10-07, [ADR-0089](./0089-adr-filing-bar-three-conditions.md)）**: 条件 (a) を「戻しにくい・文脈なしでは意外・
+   > 本物のトレードオフの結果」の 3 条件の積に置き換え、条件 (b) も単独では新しい ADR を要求しないことにした — 3 条件を
+   > 満たさない置き換え・弱化は旧 ADR への日付つき注記と commit 本文で済ませる。commit 本文 3 行と昇格の規則は残る。
+   > Decision 3 の rule の 2 文は、条件を書き写さない pointer に置き換えた
 3. `rules/common/akc-cycle.md` の「ADR の扱い」に起票条件を 2 文足す（正本は skill、rule は pointer）。
 4. 参照の更新: `agents/adr-reviewer.md`（description と正本注記）、`agents/architect.md`、
    `skills/context-sync/SKILL.md` Phase 3、`skills/implementation-chain/SKILL.md` の writing 表、
@@ -83,9 +87,13 @@ agent の描画が担っていた近隣 ADR の文体走査は skill の 1 ス�
   2 条件が効いていない — 条件の書き方か、commit 本文への逃がし方を見直す。計器:
   `git log --diff-filter=A --since=2026-09-19 --format=%h -- 'docs/adr/0*.md' | wc -l`、
   判定者は判断役（次の rules-stocktake か skill-stocktake の回）。
+  > **注記（2026-10-07, [ADR-0089](./0089-adr-filing-bar-three-conditions.md)）**: 2026-10-07 に 19 本（本 ADR を除けば 18 本、うち 13 本は
+  > 条件 (b) 経由）で発火した。条件を ADR-0089 で絞った
 - 2026-12-19 までに、機構変更の経緯を追うときに commit 本文の 3 行が無く、著者が「経緯が追えない」
   と 2 回観測したら（記録先: その場で書く ADR の Context か `.notes/TASKS.md`）、commit 本文経路を
   弱いと判断し、条件 (a) を広げる。
+  > **注記（2026-10-07, [ADR-0089](./0089-adr-filing-bar-three-conditions.md)）**: この項目は ADR-0089 の Review-when 2 項目目が
+  > 引き継ぎ、期限を 2026-12-07 に前倒しした。広げる対象は ADR-0089 の 3 条件
 - 主ループ直書きの ADR 5 本（本 ADR を 1 本目とする）のうち 2 本以上で adr-reviewer が **Critical**
   （報告書式の固定ラベル。judge は本 ADR 時点の `agents/adr-reviewer.md`、`model: opus`）を出したら、
   Step 4 に描画の self-check 箇条を足す。agent 描画時代の比較値は取らない — commit 本文の Review 行は

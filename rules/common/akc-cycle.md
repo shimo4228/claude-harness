@@ -35,7 +35,6 @@ skill: `generation-audit` で再監査する。
 ## ADR の扱い
 
 ADR は日付つきの経緯記録。既存機構を変更するとき経緯を読む。新しい判断が旧 ADR と衝突したら
-supersede し、旧 ADR の該当節に `> **注記（YYYY-MM-DD, ADR-NNNN）**` を残す（ADR-0044）。
-起票するのは、他の artifact が引く機構・ゲート・閾値・agent 階層の変更か、旧 ADR の supersede /
-注記を伴うときだけ。それ以外の判断は commit 本文に `Context:` / `Decision:` / `Review-when:` の
-3 行で残す（正本は skill: `adr-writer`、ADR-0072）。
+supersede し、旧 ADR の該当節に `> **注記（YYYY-MM-DD, ADR-NNNN または commit「<subject>」）**` を残す（ADR-0044）。
+新しい ADR を書くか、旧 ADR への注記と commit 本文で済ませるかの条件は skill: `adr-writer` の When to Use が
+持つ（ADR-0089）。

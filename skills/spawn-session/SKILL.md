@@ -1,6 +1,6 @@
 ---
 name: spawn-session
-description: "新しい detached な Claude Code Remote Control セッションを Herdr 内に起動し、Claude モバイルアプリのセッション一覧に出す。生きている任意のセッションから（多くは iPhone の Remote Control 越しに）呼んで、別プロジェクトの新規セッションを Mac に触れず立ち上げる。Use when the user says 「新しいセッション立てて」「AAP のセッション開いて／立ち上げて」「contemplative のセッション作って」「spawn a (new) session」「launch a remote control session」「start a session for X」, or invokes `/spawn-session [project]`. NOT for: 既存会話の resume（`--continue`/`--resume`）、同一セッション内の文脈リセット（`/clear`）、現セッションの model 切替。"
+description: "新しい detached な Claude Code Remote Control セッションを Herdr 内に起動し、Claude モバイルアプリのセッション一覧に出す。生きている任意のセッションから（多くは iPhone の Remote Control 越しに）呼んで、別プロジェクトの新規セッションを Mac に触れず立ち上げる。Use when the user says 「新しいセッション立てて」「AAP のセッション開いて／立ち上げて」「contemplative のセッション作って」「spawn a (new) session」「launch a remote control session」「start a session for X」, or invokes `/spawn-session [project]`."
 user-invocable: true
 origin: shimo4228
 ---
@@ -45,7 +45,7 @@ origin: shimo4228
    bash <この skill のディレクトリ>/spawn.sh <解決した絶対パスの project-dir> "<表示名>" [--model <model>]
    ```
    `--model` は省略時 settings.json の既定（判断層 = fable）。build 層の worker session
-   （task-triage / growth-fable の dispatch）は `--model opus` で立てる（三役: ADR-0043）。
+   （task-triage の dispatch）は `--model opus` で立てる（判断は fable、実装は opus の三役分担のため）。
 
 3. **報告する。** 返ってきたセッション名をユーザーに伝える（アプリ一覧で何をタップすればよいかの目印になる）。
 
@@ -149,4 +149,4 @@ origin: shimo4228
 - `spawn.sh` は解決済みの dir と名前を受け取るだけの dumb な起動器（プロジェクト解決の知能はこの SKILL.md 側に置く＝エイリアス表をハードコードしないことで移植性を保つ）。
 - プロジェクト群が `~/MyAI_Lab` 以外にある環境では `CC_PROJECTS_ROOT` を設定して上書きする。
 - ターミナルからは `cc-spawn <dir> [name]`（`~/bin/cc-spawn` → 本 `spawn.sh` への symlink）でも同じことができる。
-- **herdr skill の `HERDR_ENV=1` ゲートとの整合**: 例外は `rules/common/agents.md` の canon 行に記載済み（そちらが正本）。根拠は本 skill が **create-only** であること — 新 workspace/tab の作成と自分が作った pane への `pane run` のみ、`--no-focus` の socket 利用で既存の pane・focus・他クライアントに触れない。前提は server 稼働のみ。
+- **herdr skill の `HERDR_ENV=1` ゲートとの整合**: 例外は `rules/common/boundary.md` の「人間に渡す」節の Herdr 委譲の項に記載済み（そちらが正本）。根拠は本 skill が **create-only** であること — 新 workspace/tab の作成と自分が作った pane への `pane run` のみ、`--no-focus` の socket 利用で既存の pane・focus・他クライアントに触れない。前提は server 稼働のみ。

@@ -1,28 +1,35 @@
 ---
 name: task-stocktake
-description: "Consolidate a repo's pending-task tracking into its single task ledger (default .notes/TASKS.md) — bootstrap it if missing, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines, verify pending entries against git log and actual code, archive detail files of completed tasks. Use when the user says 「残タスクを棚卸しして」「タスク台帳を作って/整理して」「残っているタスクは？」, \"task stocktake\", when task lines are scattered across notes files, or when a repo's ledger may be stale. Also the 正本 for two questions the library routes here: 状態語をどれにするか（draft / accepted / in_progress / blocked と終端 5 語、`blocked` の入場条件）と、レビュー指摘を起票すべきか（起票規律の足切りと producer 引用）— 「この状態でいい？」「blocked にしていい？」「このレビュー指摘は起票する？」. NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools."
+description: "Consolidate a repo's pending-task tracking into its one task ledger — a store `rfcs/NNNN-slug.md` when the repo has one, otherwise a single table `.notes/TASKS.md` — bootstrap the table if no ledger exists, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines and list them as filing candidates for the author to pick, verify pending entries against git log and actual code, archive detail files of completed tasks. Use when the user says 「残タスクを棚卸しして」「タスク台帳を作って/整理して」「残っているタスクは？」, \"task stocktake\", when task lines are scattered across notes files, or when a repo's ledger may be stale. Also the 正本 for two questions the library routes here: 状態語をどれにするか（draft / accepted / in_progress / blocked と終端 5 語、`blocked` の入場条件）と、レビュー指摘を起票すべきか（起票規律の足切りと producer 引用）— 「この状態でいい？」「blocked にしていい？」「このレビュー指摘は起票する？」. NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools."
 user-invocable: true
 origin: shimo4228
 ---
 
 # task-stocktake — Task Ledger Audit & Consolidation
 
-repo の pending タスク追跡を**単一台帳**に収束させ、台帳の鮮度を git 実態と突合する。
-原則の正本は rule `common/task-tracking.md`（台帳は 1 repo 1 ファイル / 詳細資料に
-タスク行の正本を持たせない / MEMORY.md はポインタのみ）。本 skill はその手順を持つ。
+repo の pending タスク追跡を**1 つの台帳**に収束させ、台帳の鮮度を git 実態と突合する。
+原則の正本は rule `common/task-tracking.md`（pending task の正本は repo ごとに 1 つ。形は
+単一表 `.notes/TASKS.md` か store `rfcs/NNNN-slug.md` の 2 つ）。そこから、詳細資料と
+MEMORY.md はタスク行の正本を持たずポインタだけを持つ。本 skill はその手順を持つ。
 
 ## Phase 1 — Bootstrap（台帳の解決・作成）
 
-1. 台帳を解決する: `.notes/TASKS.md` → 既存タスクファイル（`TODO.md` / `TASKS.md` /
-   `docs/backlog.md` 等）の順
-2. 見つかればそれを台帳と確定して Phase 2 へ
-3. 無ければ作成する。「作るか」は聞かない（skill の起動自体が依頼）— 確認するのは**置き場所だけ**:
+1. 形を先に決める: repo トップに `rfcs/` があり、エントリが frontmatter に `state:` を
+   持つなら **store 形**。台帳は `rfcs/` で、全件を読まず開いている 4 状態を
+   `python3 ~/.claude/scripts/claims.py ready --state <state>` で 1 状態ずつ引く（`--state` 無しは
+   `accepted` だけを出す）。単一表 `.notes/TASKS.md` が並存していても台帳は store — 単一表に
+   残る pending 行は Phase 2 の sweep 対象（store への移送か終端かを報告する）で、行が尽きた
+   単一表は store へのポインタ 1 行だけを残す。新しいタスクは skill: `rfc-writer` で `rfcs/` へ起票する
+2. store が無ければ **単一表形**。`.notes/TASKS.md` → 既存タスクファイル（`TODO.md` /
+   `TASKS.md` / `docs/backlog.md` 等）の順に解決し、見つかればそれを台帳と確定して Phase 2 へ
+3. どちらも無ければ単一表を作成する。「作るか」は聞かない（skill の起動自体が依頼）— 確認するのは**置き場所だけ**:
    - `.notes/` 慣行がある repo は `.notes/TASKS.md`（gitignored = private）に即決。
      無い repo は gitignore 状況を見て private / git-tracked（clone 先でも cold-start 可能）の
      トレードオフを提示して選んでもらう
-   - 初期内容: Phase 2 の sweep 結果を集約して生成
+   - 初期内容: 下のフォーマットの見出しと空の表だけ。Phase 2 の sweep 結果は候補として示し、
+     著者が選んだ行だけを載せる（Phase 2 末尾）
 
-台帳フォーマット（1 タスク 1 行）:
+単一表のフォーマット（1 タスク 1 行）:
 
 ```markdown
 # TASKS — <repo name>
@@ -44,8 +51,7 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 ## 状態語彙（この skill が正本）
 
 開いている状態は 4 つ。**この節が語彙の唯一の正本** — rule / ADR / 他 skill は
-ここを参照し、定義を複製しない（分散した版は誰も刈らず肥大する。
-[ADR-0050](../../docs/adr/0050-standardize-ledger-state-vocabulary.md)）。語は標準語彙
+ここを参照し、定義を複製しない（分散した版は誰も刈らず肥大する）。語は標準語彙
 （RFC 標準 + issue-tracker 標準 — 非標準語彙はセッションごとに写像がずれる）。
 
 | 状態 | 定義 |
@@ -60,7 +66,7 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 ### `blocked` の入場条件
 
 `blocked` に置けるのは、本文に次の 3 つを書けるタスクだけ。自由記述の一文でよく、
-機械可読フィールドにはしない（台帳を読む機構を足さない — CA ADR-0095）。
+機械可読フィールドにはしない（台帳を読む機構を足すと、その機構の保守が台帳を太らせる）。
 
 ```
 再開条件: X（観測可能な事実）
@@ -86,24 +92,17 @@ repo の pending タスク追跡を**単一台帳**に収束させ、台帳の�
 **削除・置換もその条件の決着に含める**。対象が消えたら `obsoleted` へ落とす。
 同じことは **成立時 が名指す機構**（閾値 / rule / 判定器）にも当てはまる — 再開条件が生きて
 いても、成立時に回すはずの機構が撤廃されていれば条件は決着している。`obsoleted` か条件の
-書き直し（先例: harness T-002 は「log 90 日 → zero-usage rule」を待っていたが、rule は
-撤廃済で、無人 cycle 2 回は日付だけ照合して待ち続けた）。
+書き直し（日付だけを照合すると、撤廃済みの機構を待ち続ける）。
 
 条件を発火させる主体が先に消えると、タスクは不死化する — 時間窓なら経過で必ず判定できるが、
-イベント条件は「発火した」と「発火源が消えた」を区別しないと永久に待ち続ける。先例: CA の
-`T-B4` は「view seed text の変更」を待っていたが、seed は CA ADR-0073 で**削除**された —
-棚卸しで気付くまで 1 ヶ月半止まっていた。
+イベント条件は「発火した」と「発火源が消えた」を区別しないと永久に待ち続ける。
 
 ### 台帳に置かない型 — 便乗（「次に X を触る時に同 PR で」）
 
 再開条件が「次に特定のファイル・モジュールを触るとき」の項目は、**台帳行にしない。
 そのコードの側に注記として置く。** 台帳は「そのファイルを編集する人」に届かないため
-（store 運用は全件を読まず、`claims.py ready` は開いている他状態を出さない）。
-
-CA 2026-08-16 の実測: 便乗 4 件のうち 2 件で対象ファイルが起票後に計 **12 回**変更され、
-全部空振りしていた（`T-OBS-INJ` の `core/llm/__init__.py` は 8 回 — うち 1 回は**ファイルごと
-パッケージへ分割する大手術**で、対象コードは別ファイルへ移設までされたのに、台帳が要求した
-audit ログは付かなかった）。配送機構を台帳に足して解く問題ではない。
+（store 運用は全件を読まず、`claims.py ready` は開いている他状態を出さない）。便乗行は
+対象ファイルが何度変更されても空振りし続ける。配送機構を台帳に足して解く問題ではない。
 
 ### 終端語彙の使い分け
 
@@ -128,9 +127,7 @@ audit ログは付かなかった）。配送機構を台帳に足して解く�
 
 観察タスクを閉じるときは特に混ざりやすい。「観察して結論が出た」＝ `done`、
 「観察対象が退役して観察が無意味になった」＝ `obsoleted`。後者を `done` に丸めると、
-**読みが取得されたのか取得されなかったのかが台帳から消える**（先例: CA の §B2 は
-CA ADR-0082 が観察対象アームを退役させたので `obsoleted`、§B5 は
-同じ B 系列だが読みが実在するので `done`）。
+**読みが取得されたのか取得されなかったのかが台帳から消える**。
 
 日付を続けてよい（`done 2026-06-17`）。**日付は台帳に書いた日でなく、終わった日を書く** —
 棚卸しで遅れて気付いた終端は、気付いた日でなく実際の決着日を入れると滞留が見える。
@@ -144,7 +141,7 @@ rule `common/task-tracking.md`）では、状態別の列挙は
 ## store の家 rfcs/（棚卸し側の規定）
 
 store 形の家は repo トップレベルの**公開 `rfcs/`**（1 エントリ 1 ファイル
-`NNNN-slug.md`、ID は `RFC-NNNN`。ADR-0049）。**起票の手順と規約（足切り・採番・
+`NNNN-slug.md`、ID は `RFC-NNNN`）。**起票の手順と規約（足切り・採番・
 本文様式・公開規約・index 規約）の正本は skill: `rfc-writer`** — ここには複製しない。
 本 skill が rfcs/ について持つのは棚卸し側の 2 つだけ:
 
@@ -156,8 +153,8 @@ store 形の家は repo トップレベルの**公開 `rfcs/`**（1 エントリ
 
 ## レビュー指摘の起票規律（この skill が正本）
 
-台帳が減らない最大の入口はレビュー指摘。CA 2026-08-15〜16 の実測では、fix commit ごとに
-reviewer が隣接コードの既存問題を平均 1.3 件出し、全部起票すると台帳は純増する。
+台帳が減らない最大の入口はレビュー指摘。reviewer は fix commit ごとに隣接コードの既存問題を
+出すので、全部起票すると台帳は純増する。
 
 **足切り**: build セッションからの
 即時起票は **loop 自身を壊す欠陥**（放置すると次の build セッションが bounce を食う類 —
@@ -174,20 +171,16 @@ commit message に 1 行（producer 付き）残して捨てる。起票する�
 実際）・決定可能な受入条件・producer `file:line` を付けて出した提案（1 build 最大 2 件）は、判断役が
 再現を自分で走らせて確かめたものに限り、digest に起票の提案として出せる。起票を決めるのは所有者で、
 RFC の書き方と由来の印は skill `rfc-writer` §2。再現しない提案と再現手順の無い指摘は、足切りどおり
-commit message に 1 行（根拠と失効条件は ADR-0076）。
+commit message に 1 行。
 
 捨てた指摘を後から拾い直す回収機構（commit body の定期 sweep 等）は**作らない** — durable な
 記録は commit body が既に担っており、イベント駆動の起票はレビュー → 修理 → 再レビューの
-補充エンジンになって台帳が収束しないため。この足切りの根拠は実測: 規約「HIGH + producer」を
-守った指摘 6 件のうち、即時対応が結果を変えたのは loop を壊す欠陥の 1 件だけだった（遡及判定、
-反実仮想を含む。数値の正本は
-[ADR-0055](../../docs/adr/0055-review-chain-single-pass-regression.md) Context）。
+補充エンジンになって台帳が収束しないため。即時対応が結果を変えるのは、実測でも loop を壊す
+欠陥にほぼ限られた。
 
 **severity だけでは濾せない。** severity を付けるのは reviewer で、濾す側は同じ次元で
-測っている。CA 2026-08-16 に T-PACKET-FLOOR-BYPASS が HIGH として起票され、**その 1 件が
-束ねていた 4 つの主張は全部 producer が machine-fixed**、うち 1 つは**誰も読んでいない
-producer** だった（`weekly-pipeline.sh:850` を 1 回 grep すれば消えていた）。足切り規則は
-守られていたのに通り抜けた。
+測っている。HIGH の指摘が足切りを守って起票されても、その主張の producer が machine-fixed
+だったり誰も読んでいなかったりすれば、1 回の grep で消える指摘が台帳に残る。
 
 そこで足切りに加えて、起票する指摘には**前提の検証**を重ねる:
 
@@ -203,6 +196,7 @@ producer** だった（`weekly-pipeline.sh:850` を 1 回 grep すれば消え�
 
 台帳の外にタスク行を持ちうるファイルを走査し、台帳に無い項目を列挙する:
 
+- store 形の repo に並存する単一表 `.notes/TASKS.md` の pending 行
 - handoff / cold-start ファイル（`handoff-*.md` 等）の「タスク一覧」「残課題」節
 - 監査台帳（`bug-audit-*.md` / `remaining-issues-*.md` / stocktake 出力）の未完項目
 - auto-memory `MEMORY.md` の Pending 節（あれば内容を台帳へ移しポインタ化を提案）
@@ -213,12 +207,13 @@ domain ledger（例: strategy 運用の public intervention timeline）と、wik
 **候補台帳**（採否判断前の候補はタスクではない）。これらは台帳に吸収せず、
 ポインタ 1 行を置く。候補が採択され、作業として残った時点で初めて台帳行になる。
 
-検出は列挙・報告まで（enumerate）。台帳へ載せるか・どの状態にするかはユーザー / 会話で
-判断する（decide）。
+検出した行は**起票候補**として列挙・報告する（enumerate）。どれを台帳に載せるか・どの状態に
+するかは著者が決める（decide）— 台帳の起票は人間に渡す操作（rule `common/boundary.md`）。
+著者が選んだ行だけを台帳へ書く。
 
 ## Phase 3 — Verify（既済・stale 照合）
 
-台帳（+ Phase 2 検出分）の各 pending 行を実態と突合する:
+台帳の各 pending 行と Phase 2 の起票候補を実態と突合する（候補の既済は著者の判断材料になる）:
 
 1. `git log --oneline` + 該当ファイル・コードの直読みで**既に完了していないか**確認
    （台帳は drift する、コマンドはしない）
@@ -228,17 +223,18 @@ domain ledger（例: strategy 運用の public intervention timeline）と、wik
 ## Phase 4 — Archive（完了詳細ファイルの退避提案）
 
 Done になったタスクの詳細ファイル（handoff / 台帳類）のうち、Pending 行から参照されて
-いないものを archive ディレクトリへの移動候補として提示する。**確認つき soft-delete**
+いないものを archive ディレクトリへの移動候補として提示する。store 形の `rfcs/` エントリは
+対象外（終端エントリもその場に残す）。**確認つき soft-delete**
 （rename / 移動のみ、削除しない）。直近参照が多いファイルは無理に動かさない。
 
 ## 出力
 
 ```
 Ledger: <path>（新規作成 or 既存）
-Swept: N 件の散在タスク行（うち M 件を台帳に追加）
+Swept: N 件の散在タスク行（起票候補 M 件 — Next action に並べ、載せるかは著者が決める）
 Verified: 既済 X / stale Y / 現役 Z
 Archived: K ファイル移動（提案 L 件中）
-Next action: <ユーザー判断が要る項目の一覧>
+Next action: <起票候補と、ほかにユーザー判断が要る項目の一覧>
 ```
 
 ## 境界

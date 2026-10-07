@@ -55,6 +55,9 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
    / 条件を列挙したら tie-breaker（「迷ったら Y」）を置かない / 例は出力の register を固定
    するので register 例は置かない。§4 草稿ゲートの Hygiene 問に版差 marker・tombstone・
    同一ファイル内 2 版を追加する。
+   > **注記（2026-10-07, [ADR-0090](./0090-skill-maintenance-md-unpublished-provenance.md)）**: 「経緯は ADR・本文は規則」のうち、
+   > ADR 番号と経緯の置き場を本文から同じ directory の `MAINTENANCE.md` へ移した。本文は現行規則 + 理由 1 句。
+   > 版差 marker・tombstone・2 版同居の規律はそのまま
 2. `rules/common/skills.md` に常駐 3 行を追加する: 小さな追記でも現行規則として書く — 正本は
    skill-creator §3、機械検査は `harness_lint.py`。
 3. `scripts/hooks/harness_lint.py` に検査 13 `lint_version_diff_markers` を追加する。
@@ -114,6 +117,8 @@ Close with a short recap」と直接矛盾する（product 同梱 style のた�
 - 改修時の版差 marker が precommit で止まる（baseline 0 件）
 - skill 本文が「現行規則 + 理由 + ADR 番号」の形に収束し、Fable が幻の代替を reconcile する
   思考消費が減る
+  > **注記（2026-10-07, [ADR-0090](./0090-skill-maintenance-md-unpublished-provenance.md)）**: 本文の形は「現行規則 + 理由 1 句」に
+  > 狭めた。ADR 番号は同じ directory の `MAINTENANCE.md` に移す
 - 再監査の手順が確定した（model release 時に `/claude-api prompt-audit` を再実行する）
   > **注記（2026-09-25, ADR-0078）**: 再監査の手順は generation-audit の Phase 3 に移った。
 

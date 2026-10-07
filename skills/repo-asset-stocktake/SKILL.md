@@ -1,6 +1,6 @@
 ---
 name: repo-asset-stocktake
-description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"which configs/workflows/runbooks are dead\", \"repo asset stocktake\", \"take stock of my non-code assets\", \"find the unused configs/workflows/runbooks\". NOT for — dead code → refactor-clean; doc-role overlap across CLAUDE.md/graph.jsonld/ADR/README → context-sync; ~/.claude config GC → config-gc; skills or rules → skill-stocktake / rules-stocktake."
+description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"repo asset stocktake\", \"which configs/workflows/runbooks are dead\", or \"take stock of my non-code assets\"."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:
@@ -25,7 +25,9 @@ Audit a project repository's **non-code assets** — configs, CI workflows, runb
 | Mode | When | Scope |
 |---|---|---|
 | `full` (default) | First audit, or a periodic sweep | Every non-code asset in REPO_DIR |
-| `changed` | Re-audit after edits | **tier-1 reachability always runs over the full asset set** — a reference edge breaks when a *referenced* target is deleted elsewhere, and the referencing asset's own mtime never changes, so an mtime filter would miss it (the failure `rules-stocktake` already guards against). Only the tier-2 holistic re-evaluation is scoped: re-judge assets modified since the last `evaluated_at` (detect via `git diff` / mtime comparison — see the results.json note) **plus any asset whose reachability changed vs the prior ledger**; carry prior verdicts forward only for assets that are both unmodified **and** reachability-unchanged. |
+| `changed` | Re-audit after edits | Tier-1 over every asset; tier-2 over the changed set below |
+
+**`changed` mode scoping.** Tier-1 reachability always runs over the full asset set — a reference edge breaks when a *referenced* target is deleted elsewhere, and the referencing asset's own mtime never changes, so an mtime filter would miss it. Tier-2 re-judges assets modified since the last `evaluated_at` **plus any asset whose reachability changed vs the prior ledger**. Carry a prior verdict forward **only** when its asset is both unmodified **and** reachability-unchanged — an asset whose reachability dropped to zero while its own file was untouched must be re-judged, never left a silent stale `Keep`. Find the modified set as described under the ledger section.
 
 ## Phase 1 — Inventory + tier-1 reachability
 
@@ -78,7 +80,7 @@ For each surfaced asset, ask 1–3 refutation questions before committing a verd
 | **Retire** | Consumer gone or content vestigial — the asset no longer earns its place | soft-delete (Phase 4) |
 | **Merge into [X]** | Superseded by / duplicate of another asset | consolidate into X, then retire this |
 
-**Mandatory-surface rule.** Any asset whose tier-1 reachability is **zero** (0 invocation sites / all references dead / 0 inbound links) MUST be surfaced as at least a Retire candidate — reachability zero is never silently a Keep. **This is the opposite of `skill-stocktake`'s stance, deliberately:** there, zero *usage* never creates a candidate, because a skill can be valid and simply unfired. Here the measure is *reachability* — no invocation site, every reference dead — which is a structural fact about the repo, not a behavioural one about the model, so it does create a candidate. (`rules-stocktake`'s absorption rule is the same kind of structural test.)
+**Mandatory-surface rule.** Any asset whose tier-1 reachability is **zero** (0 invocation sites / all references dead / 0 inbound links) MUST be surfaced as at least a Retire candidate — reachability zero is never silently a Keep. **This is the opposite of `skill-stocktake`'s stance, deliberately:** there, zero *usage* never creates a candidate, because a skill can be valid and simply unfired. Here the measure is *reachability* — no invocation site, every reference dead — which is a structural fact about the repo, not a behavioural one about the model, so it does create a candidate.
 
 Evaluate **origin-blind** — who wrote the asset, or how long it took, does not bear on whether it still earns its place.
 
@@ -90,11 +92,11 @@ One table, most-actionable first:
 |---|---|---|---|---|
 | `.textlintrc` | tool-invocation | 0 invocation sites | Retire | textlint dropped from CI and package.json; config now inert |
 
-Close with a one-line count — total assets, and how many Keep / Update / Retire / Merge — plus the delta since the previous audit if results.json exists.
+Close with a one-line count — total assets, and how many Keep / Update / Retire / Merge — plus the delta since the previous audit if the ledger exists.
 
 ## Phase 4 — Consolidation
 
-**Confirm one by one** (config-gc's confirm-each design). Walk the non-Keep candidates sequentially; show the evidence first, then ask `[y/n/skip]`. **Never batch the approval** — "Retire all 6? [y/n]" defeats the design. `skip` records the verdict without acting.
+**Confirm one by one**. Walk the non-Keep candidates sequentially; show the evidence first, then ask `[y/n/skip]`. **Never batch the approval** — "Retire all 6? [y/n]" defeats the design. `skip` records the verdict without acting.
 
 - **Retire** — soft-delete first, never an autonomous hard-delete. Rename to `<file>.disabled` or move to a repo-local trash; real deletion is a later, separate human step. Offer `adr-writer` when the retirement encodes a decision worth recording.
 - **Update** — apply mechanical fixes inline after confirm (repair a broken `on:` trigger, fix a dead `uses:` / `run:` ref, delete a stale config key). Flag prose-heavy content rewrites (a runbook describing a changed process) for the user or a writing skill rather than guessing the new content.
@@ -110,7 +112,7 @@ Every reason must stand alone — a reader who did not run the scan should under
 - ✅ Good — "Merge — `ci-lint.yml` and `lint.yml` both run the same ruff/black steps on push; fold `ci-lint.yml` into `lint.yml` and retire it."
 - ✅ Good — "Keep — `RUNBOOK.md` is linked from README and its rollback steps still match the current deploy job."
 
-## results.json (lean ledger)
+## Ledger — `.repo-asset-stocktake.json`
 
 Persist verdicts so `changed` mode can carry them forward. Written inline via Read/Write — never a script. The ledger lives **inside the audited repo** at `REPO_DIR/.repo-asset-stocktake.json` (not under the skill folder) — one ledger per repo, so auditing multiple repos never clobbers a shared file and `changed` mode's `evaluated_at` is scoped to the repo it belongs to. Suggest adding it to the repo's ignore file if it should not be committed.
 
@@ -131,20 +133,11 @@ Persist verdicts so `changed` mode can carry them forward. Written inline via Re
 }
 ```
 
-`evaluated_at` is an ISO-8601 UTC stamp (`date -u +%Y-%m-%dT%H:%M:%SZ`). To find the modified set in `changed` mode, prefer git (`git diff --name-only` / `git log --since`) when the repo is version-controlled — clone/checkout reset mtimes, so `find -newermt` comparisons mislead in git-managed trees even though the flag itself works on BSD/macOS find — or parse `evaluated_at` and compare each asset's mtime in the agent's own logic. Carry a prior row forward **only** when its asset is both unmodified **and** its tier-1 reachability is unchanged vs the prior ledger — an asset whose reachability dropped to zero while its own file was untouched must be re-judged, never left a silent stale `Keep`.
+`evaluated_at` is an ISO-8601 UTC stamp (`date -u +%Y-%m-%dT%H:%M:%SZ`). To find the modified set in `changed` mode, prefer git (`git diff --name-only` / `git log --since`) when the repo is version-controlled — clone/checkout reset mtimes, so `find -newermt` comparisons mislead in git-managed trees even though the flag itself works on BSD/macOS find — or parse `evaluated_at` and compare each asset's mtime in the agent's own logic.
 
 ## Related
 
 - **`refactor-clean`** — its Non-Code Assets sweep covers **code-consumed** data (files a program loads by glob/registry); its test is *structural* — whether any consumption edge exists at all. This skill covers **non-code-consumed** assets (tool / CI / human consumers) and judges *semantic value* — an asset can have a live edge and still be dead (a workflow that fires but no-ops). Structural deadness → refactor-clean; diminished value → here.
 - **`context-sync`** — audits the four documentation *roles* (CLAUDE.md / graph.jsonld / ADR / README) for placement overlap and freshness against code. Runbooks are the overlap zone — context-sync asks "is this doc in the right role and consistent with the code," this skill asks "does this doc still describe something that exists / earn its place at all."
-- **`config-gc`** — GC over `~/.claude` *harness* config (hooks / permissions / MCP / cache). This skill targets a **project repository** — different directory, same confirm-each gate.
 - **`skill-stocktake` / `rules-stocktake`** — the same stocktake pattern over a different asset class (installed skills / always-loaded rules). This skill is their sibling for a project repo's non-code assets.
 - **`harness-sync`** — syncs this `origin: shimo4228` skill to its public repo after edits.
-
-## References
-
-Binary-question decomposition without score aggregation — the stocktake family's shared basis:
-
-- BinEval "Ask, Don't Judge" — arXiv:2606.27226
-- CheckEval — arXiv:2403.18771
-- TICK — arXiv:2410.03608

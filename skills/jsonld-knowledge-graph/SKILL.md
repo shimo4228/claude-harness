@@ -1,6 +1,6 @@
 ---
 name: jsonld-knowledge-graph
-description: Design and ship a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt for projects with stable concept-level structure. Encodes domain entities and relationships as schema.org triples for LLM citation. Use when project has matrix / hierarchy / phase-binding structure that prose alone leaves implicit, AND that structure is stable across releases. Defers llms.txt navigator wording to llms-txt-writer.
+description: Design and ship a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt, encoding domain entities and relationships as schema.org triples for LLM citation. Use when a project has matrix / hierarchy / phase-binding structure that prose alone leaves implicit, AND that structure is stable across releases.
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -43,7 +43,7 @@ user-invocable: true
 | **主読者** | 作業中の agent | AI search engine + LLM が entity を citation する時 |
 | **trigger** | なし（都度計算） | concept / 関係の変化 |
 
-graph にコードのノード（file path・module・LOC）を置かない。置くと第 2 の module map になり、ソース commit ごとに同期コストを払う鏡が育つ（contemplative-agent ADR-0102: 手書き module map 6 枚がソース 197 commit に対し 159 commit の同期を要し、読者は観測されなかった）。設計理由は ADR、パイプラインの段構成はそれを走らせる script の冒頭コメントが持つ。
+graph にコードのノード（file path・module・LOC）を置かない。置くと第 2 の module map になり、ソース commit ごとに同期コストを払う鏡が育つ（手書き module map 6 枚がソース 197 commit に対し 159 commit の同期を要し、読者は観測されなかった実例がある）。設計理由は ADR、パイプラインの段構成はそれを走らせる script の冒頭コメントが持つ。
 
 ### Drift 防止のための運用規約
 
@@ -107,7 +107,7 @@ graph.jsonld に **以下の field を持たせない**:
 - count（ADR 数、test 数、ノード数）
 - 流動的 enumeration（churning skill list, dynamic capability list）
 
-schema に存在しない field は entity に乗らないので、routine release が graph に漏れない。`grep -E '"version"|"count"|v[0-9]+\.[0-9]+' graph.jsonld` が常に空を返すことを CI で検証可能。
+schema に存在しない field は entity に乗らないので、routine release が graph に漏れない。同梱 lint（Verification Workflow）の VOLATILE 検査は key `"version"` / `"versionNumber"` / `"adrCount"` / `"testCount"` の出現を検出する。それ以外の count field・`vX.Y.Z` 形の値・流動的 enumeration は lint が見ないので、作成時と review で目で確認する。
 
 ### 6. Matrix encoding via paired edges
 
@@ -188,7 +188,7 @@ hub-and-spoke topology の場合、各 line repo の README に **hub graph へ�
 
 namespace は dereferenceable である必要なし（典型的な "private vocab" pattern）。重要なのは **byte-identical re-use** が cross-graph で実現できること。
 
-`sameAs` の解決先は **self-sovereign または earned なもののみ**（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）。Wikidata QID は張らない（authorship-strategy ADR-0021 — host governance による一括削除の実測）。dead QID を検出したら purge する。
+`sameAs` の解決先は **self-sovereign または earned なもののみ**（ORCID / DOI / 自アカウントの platform profile / 無関係な第三者が作成した record）。Wikidata QID は張らない（host governance による一括削除を実測した）。dead QID を検出したら purge する。
 
 ## Cross-graph @id Discipline
 
@@ -254,18 +254,6 @@ DROPPED-KEY / URL-LITERAL が拾う層）:
 2. **未定義 key の無言ドロップ**: `@vocab` なしの明示マッピング型 context では、context に
    無い key（`sameAs` 等）が expansion で警告なく消える。
    - 対策: graph に新しい property を導入する前に context マッピングの存在を確認する
-
-#### なぜ自作 lint か（external research, 2026-06）
-
-標準ツールを調査した上での Build 判定:
-
-- **[pySHACL](https://github.com/RDFLib/pySHACL)** (RDFLib): 活発に維持されている W3C 標準の RDF 検証器。ただし**展開後の RDF graph に対して動く**ため、DROPPED-KEY は原理的に検出できない（落ちた key は SHACL が見る前に消えている）。URL-LITERAL は `sh:nodeKind sh:IRI` で書けるが、predicate ごとの shapes ファイル維持が必要
-- **[jsonld-lint](https://github.com/mattrglobal/jsonld-lint)** (Mattr): un-mapped term 検出（= DROPPED-KEY）を持つ唯一の専用 linter だったが **2025-09-26 に owner がアーカイブ**。採用不可
-- **jsonld.js の safe mode**: 展開時に未定義 term をエラー化できるが JS 専用。Python 側の pyld に相当機能なし
-
-つまり最も危険な DROPPED-KEY が標準ツールの死角にあり、VOLATILE はプロジェクト固有ポリシーなので、薄い自作 lint が正当。
-
-**pySHACL への移行条件**: 「すべての ResearchLine ノードは author と sameAs を持つ」のような**クラス単位の必須制約**を宣言的に強制したくなった時点で、URL-LITERAL 検査を shapes.ttl + pyshacl に置き換え、DROPPED-KEY / VOLATILE のみ graph_lint.py に残す構成に移行する。
 
 ### Manual checks
 

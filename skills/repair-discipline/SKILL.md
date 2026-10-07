@@ -1,6 +1,6 @@
 ---
 name: repair-discipline
-description: バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when a fix touches storage formats or shared gates. NOT for — chain の種別とレビュー条件の判定（implementation-chain）、TDD の手順（tdd）、台帳全体の棚卸し（task-stocktake — 本 skill は 1 件着手時の照合のみ）。
+description: バグ修正・残課題・schema/storage 変更で、直す前の診断から着手まで、いま何が真かを一次証拠で確定する規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」「止まってる気がする」「たまに失敗する」, when picking up a stale task file, when diagnosing a defect before the fix (a process that looks stuck, a failing or intermittent test, a time gap in a run), or when a fix touches storage formats or shared gates. NOT for — chain の種別・レビュー条件・TDD の手順（implementation-chain）、台帳全体の棚卸し（task-stocktake — 本 skill は 1 件着手時の照合のみ）。
 user-invocable: true
 origin: shimo4228
 replaces: contemplative-agent の feedback memory 5 本（verify-before-work / substrate-migration-sweep / verify-bypass-hides-all-gates / io-bound-process-diagnosis / no-background-retry-loop、2026-08-25 昇格）
@@ -8,16 +8,15 @@ replaces: contemplative-agent の feedback memory 5 本（verify-before-work / s
 
 # Repair Discipline
 
-直す前に、いま何が真かを一次証拠で確定する。6 原則、いずれも実地の失敗から
-（出所は CA repo での実測。原則自体はどの repo でも同じ形で壊れる）。
+直す前に、いま何が真かを一次証拠で確定する。原則 1–3 は着手するとき、4–6 は原因を
+診断するときに効く。6 原則とも実地の失敗から取った — どの repo でも同じ形で壊れる。
 
 ## 1. 着手前に既済照合
 
 残課題ファイル・古い TODO・引き継ぎメモは書かれた時点の観測。着手前に **git log と
 実コードで「もう直っていないか」を照合**する。台帳だけが古いまま残る drift は
 「作業 → 資料 → 台帳」の最後の 1 ホップで起きる — 見つける経路は日付でなく
-正本資料との突き合わせ。
-（出所: 2 ヶ月前に決着済みのタスク 2 件が store で open のまま残っていた 2026-08-16 の棚卸し）
+正本資料との突き合わせ（決着済みのタスクが数ヶ月 open のまま残る）。
 
 ## 2. schema / storage 変更は全消費者を同じ変更で棚卸す
 
@@ -50,18 +49,16 @@ I/O バウンドなプロセス（LLM 推論・ネットワーク待ち）は CP
 コードの仮説より先に環境で説明できないかを一次記録で見る。**成功した応答の `x-cache` /
 `age` / `via`**（HIT なら origin を通っていない。比較は cache に無い新しい query を client
 ごとに 1 本ずつ）と、**macOS の `pmset -g log | grep -E " Sleep | Wake "`**（その区間の
-sleep / hibernate）。
-（出所: jev-research-pipeline 2026-09-23 — arXiv の 406 を CDN の罰則と誤診したが、実際は
-httpx2 だけが cache miss で 406、cache hit は誰からでも 200 だった。run の 104 分の空白は
-battery 1% での hibernate だった）
+sleep / hibernate）。cache hit だけが成功して見える API を相手側の罰則と誤診し、
+hibernate の空白をコードの遅さと誤診する。
 
 ## 使い方
 
-修理・変更の着手時に該当原則を 1 つ名指しして通す（「原則 1 — この課題、git log で
-既済照合した？」）。機構を**足す**修理はこの skill の外 — implementation-chain の
-機構ゲート（agent: architect）が正本。
+修理・変更の着手時と、原因の診断中に該当原則を 1 つ名指しして通す（「原則 1 — この課題、
+git log で既済照合した？」「原則 4 — kill する前に一次ログを見た？」）。機構を**足す**
+修理はこの skill の外 — implementation-chain の機構ゲート（agent: architect）が正本。
 
 ## 失効条件
 
-- substrate がこれらの照合を着手時に自発するようになったら退役（Scaffold Dissolution）
+- substrate がこれらの照合を診断時と着手時に自発するようになったら退役（足場は不要になったら外す）
 - 原則の出所となった実測が反証されたら該当原則を削る

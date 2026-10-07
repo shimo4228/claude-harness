@@ -1,6 +1,6 @@
 ---
 name: authorship-strategy
-description: 著者戦略の具体案を評価するとき、または既存の判断枠組みの適用・説明を求められたときに使う。「この案を著者戦略の観点で評価して」「採用時の懸念を確認して」「この戦略を説明して」。NOT for — 自由な壁打ち、次のアイデア出し、日常のコーディング。
+description: 著者戦略の具体案を評価するとき、または既存の判断枠組みの適用・説明を求められたときに使う。「この案を著者戦略の観点で評価して」「採用時の懸念を確認して」「この戦略を説明して」。
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true
@@ -16,6 +16,7 @@ user-invocable: true
 具体案の評価、採用・実施の検討、既存 framework の説明を求められたときに使う。
 明示的にこの skill を呼んで探索を頼まれた場合も、依頼の目的を優先する。
 発想の順番、案の分類や件数、会話の結論を skill で決めない。
+自由な壁打ち、次のアイデア出し、日常のコーディングは対象外で、そこでは読み込まない。
 
 ## 判断の材料
 

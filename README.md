@@ -46,9 +46,7 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [public-comment](skills/public-comment/SKILL.md) | Replies in public technical threads (GitHub discussions / issues / PRs, HF discussions) — AI-slop tell removal, thread grounding, and a human gate with a Japanese translation before posting |
 | [agent-stocktake](skills/agent-stocktake/SKILL.md) | Audit subagent definitions with a hybrid cost model (description = per-session residency, body = invocation) — flags suppression instructions and substrate absorption; third sibling of skill-/rules-stocktake |
 | [generation-audit](skills/generation-audit/SKILL.md) | On a model-generation change, capture the live runtime layer (system prompt + tool descriptions), classify mismatches as conflict / redundancy / drift, and hand the evidence to the stocktake skills for verdicts |
-| [git-workflow](skills/git-workflow/SKILL.md) | Permission-friction discipline for git in this environment — one Bash call per git command; chaining with && or pipes breaks the Bash(git:*) auto-allow and stalls on manual prompts |
 | [headline-craft](skills/headline-craft/SKILL.md) | Craft skill for the one line that makes readers open — title / tagline / subtitle / SNS-post candidates, generated with concrete techniques and scored per traffic channel (search vs feed) |
-| [herdr-delegate](skills/herdr-delegate/SKILL.md) | Hand a whole implementation task to a different CLI agent running in a Herdr pane (Codex, etc.). Gated on an explicit user request — parallelism alone is not a reason |
 | [prompt-perturb](skills/prompt-perturb/SKILL.md) | Diversity injection. A deliberately context-starved forager agent fetches prompts from external creativity-technique catalogs, so the angles come from outside the session's own habits |
 | [session-judgment-mining](skills/session-judgment-mining/SKILL.md) | Mine past session transcripts for judgements the user made repeatedly, and promote the recurring ones into skills or rules |
 | [verify-bootstrap](skills/verify-bootstrap/SKILL.md) | Stand up a repo's machine gates (format / lint / type check / security / dependency / test), or take stock of gates that have gone stale. Tool choice is researched at bootstrap time rather than baked into the skill |
@@ -61,8 +59,6 @@ Skills, agents, and rules are a mechanical aggregation of assets tagged `origin:
 | [repair-discipline](skills/repair-discipline/SKILL.md) | バグ修正・残課題・schema/storage 変更に着手するときの規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」, when picking up a stale task file, or when |
 | [rfc-writer](skills/rfc-writer/SKILL.md) | 公開 rfcs/ 台帳へ 1 エントリを起票する手順と規約の唯一の正本（足切り → 採番 → 様式 → 公開規約 → spawn 接続 → index 行）。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when |
 | [review-to-lint](skills/review-to-lint/SKILL.md) | 既存 reviewer（agent / review skill）のチェックリストから機械判定可能な項目を決定論 script に抽出し、reviewer を意味的チェック専任に薄化する手順。著者が「このレビュアーを lint 化して」「レビューを lint に吸収して」「機械チ |
-| [growth-astra](skills/growth-astra/SKILL.md) | writes the north star for a GitHub follower campaign (`.growth/NORTH_STAR.md`) — initial pass and later revisions; escalation target of growth-fable |
-| [growth-fable](skills/growth-fable/SKILL.md) | plans experiments toward the north star, dispatches them to workers, records results in `.growth/EXPERIMENTS.md` |
 | [jev-skill-router](skills/jev-skill-router/SKILL.md) | UserPromptSubmit hook that asks TypeSafe Jev which installed skill fits the prompt; shadow-first, injects only after measured accuracy |
 | [jev-judgment-design](skills/jev-judgment-design/SKILL.md) | Moving closed LLM judgments (relevant? new? how strong?) to TypeSafe Jev: put what is judged against into the state, code decides from Jev's probabilities, canaries catch over-filtering |
 | [author-calibrated-eval](skills/author-calibrated-eval/SKILL.md) | Tuning LLM-written prose against the author's own reading: frozen inputs, a hard-case set, blind side-by-side reads with a strong-model reference, and an LLM judge that only gates faithfulness |
@@ -171,7 +167,7 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | config-gc, loop-design-check, refactor-clean, tdd | architect, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| ECC + local modifications | loop-design-check, refactor-clean | architect, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
 | [anthropics/claude-code](https://github.com/anthropics/claude-code) | — | Explore | — |
 | [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) + local modifications | mondo | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |

@@ -94,6 +94,8 @@
 | [0086](0086-research-gate-before-plan.md) | plan の依頼（plan mode、または plan を頼むプロンプト）では researcher の調査 report ができるまで plan ファイルを書かせない（research gate）。search-first の Full を researcher 3〜5 本の並列多視点に置き換え、ADR-0066 Decision 4 を部分的に置き換える | accepted | 2026-10-04 |
 | [0087](0087-html-plan-as-default-plan-path.md) | plan の既定経路を plan mode から skill html-plan へ替える。html plan は書き込みそのもので research gate にかけ、1 つの report で新しい plan 1 本まで。ADR-0086 Decision 5 と plan mode を使わない workflow の却下を置き換える | accepted | 2026-10-06 |
 | [0088](0088-readme-render-evidence-and-visual-judge-phase.md) | readme-writer に描画証拠 `readme_render.py`（`gh api /markdown` の markdown mode + alert の書き換え + 同梱 github-markdown-css 5.9.0 + Playwright、github.com の README 列の幾何は `SURFACES`、PNG と squint と `render.json`）と evidence の `layout` を足し、readme-judge に Phase V（checklist §V の 6 問、証拠は見えている文字列と `top`、final は `render-r0` との前後比較を順序を入れ替えて 2 回）を置く。見た目の Fix は markup・順序・構造だけで、Step 6 のプレビューは残す。ADR-0077 の判定順・Review-when・固定質問数に注記 | accepted | 2026-10-06 |
+| [0089](0089-adr-filing-bar-three-conditions.md) | 新しい ADR は 3 条件（戻しにくい・文脈なしでは意外・本物のトレードオフの結果）の積を満たす判断だけに書き、満たさない旧 ADR の置き換え・弱化は旧 ADR への日付つき注記と commit 本文で済ませる（ADR-0072 の計器が 19 本で発火、超過の 13/18 は旧 ADR 経由）。akc-cycle.md と grill-me は adr-writer への pointer。ADR-0072 Decision 2・3 を部分的に置き換え、注記 | accepted | 2026-10-07 |
+| [0090](0090-skill-maintenance-md-unpublished-provenance.md) | skill の ADR 番号・出典・経緯は同じ directory の MAINTENANCE.md に置き、SKILL.md からリンクせず公開しない。SKILL.md は単体で実行できるように書き、行動に必要な中身を directory の外へ委ねない。skill-creator は改修前に読み、stocktake は Phase 2 で読む。harness_lint がリンクを止める。skill の directory を写す同期 script 28 本は staging から消す（作業ツリーに入れ済み、公開 repo の commit は著者）。ADR-0061 を部分的に狭め、注記 | accepted | 2026-10-07 |
 
 ## Template
 
@@ -106,7 +108,7 @@
 # ADR-NNNN: [Title]
 
 ## Status
-accepted | superseded | deprecated
+proposed | accepted | superseded | deprecated
 
 ## Date
 YYYY-MM-DD

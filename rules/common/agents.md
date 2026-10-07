@@ -7,7 +7,7 @@ agent catalog の正本は `~/.claude/agents/*.md` の frontmatter。Review は�
 agent process で走らせる。必要な chain は skill: `implementation-chain` が持つ。
 
 Claude Code 外との rules 共有は [ADR-0015](../../docs/adr/0015-cross-agent-rules-sharing-reference-first.md)。
-Herdr の pane / agent の一般操作は skill: `herdr`、実装タスクの丸ごと委譲は skill: `herdr-delegate`
-（vendor の `agent_status` / `--wait` の settled は着弾確認までに使い、完了の信号にしない — 正本は
-herdr-delegate §3）、新規 session の作成は skill: `spawn-session`。委譲と pane 操作の境界は
-`boundary.md`。
+Herdr の pane / agent の操作は skill: `herdr`（vendor の `agent_status` / `--wait` の settled は
+着弾確認までに使い、完了の信号にしない — 完了は画面と成果物で確かめる。Codex が working 中に `idle` を
+返すフラッピングを実測済み）、新規 session の作成は skill: `spawn-session`。Codex への実装委譲は
+plugin `codex:rescue`。委譲と pane 操作の境界は `boundary.md`。

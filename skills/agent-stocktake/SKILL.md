@@ -1,6 +1,6 @@
 ---
 name: agent-stocktake
-description: "Audit ~/.claude/agents/*.md (subagent definitions) for description-layer residency cost, body-layer quality, suppression instructions, staleness, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my agents\", \"agent stocktake\", \"which agents should I retire or merge\", \"take stock of my agents\", \"review my agent definitions\", or when the model generation changed and agent bodies written for the previous one may suppress or over-constrain the current one. NOT for — skill quality → skill-stocktake; rules → rules-stocktake; cross-checking against the runtime layer → generation-audit; whole-config GC → config-gc."
+description: "Audit ~/.claude/agents/*.md (subagent definitions) for description-layer residency cost, body-layer quality, suppression instructions, staleness, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my agents\", \"agent stocktake\", \"which agents should I retire or merge\", \"take stock of my agents\", \"review my agent definitions\", or when the model generation changed and agent bodies written for the previous one may suppress or over-constrain the current one. NOT for — skill quality → skill-stocktake; rules → rules-stocktake; cross-checking against the runtime layer → generation-audit."
 license: MIT
 metadata:
   author: shimo4228
@@ -235,7 +235,7 @@ input to the aggregate-residency judgment next run.
 
 ## Phase 4 — Consolidation
 
-**Confirm one by one** (config-gc's confirm-each design): walk the non-Keep candidates
+**Confirm one by one**: walk the non-Keep candidates
 sequentially — evidence first, then `[y/n/skip]`. Never batch the approval; one agent,
 one decision. `skip` records the verdict unactioned.
 
@@ -298,7 +298,6 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
   findings, and hands the agents slice to this skill as Stage 2 evidence.
 - `skill-creator` — handoff target for the skill-creation half of Demote.
 - `adr-writer` — records the why of a Dissolve.
-- `config-gc` — whole-config GC; this skill judges agent *quality*.
 - `harness-sync` — syncs surviving `origin: shimo4228` agents to the public repo.
 - `harness-boundary` — design-time lens (layer / portability / obsolescence) for proposed
   mechanisms; applied to an installed agent, its Delete / Move are Stage 2 evidence only.

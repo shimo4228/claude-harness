@@ -1,6 +1,6 @@
 ---
 name: skill-health
-description: Scan the skill library for structural technical debt — dangling references where a SKILL.md names a script, bash file, agent, or sibling skill that does not exist on disk ("missing artifacts" debt), plus external skills whose directory is a symlink out of the skills root, where a local fix would be overwritten by the owning package manager. Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", "which skills are not really mine to edit", or "/skill-health". NOT for holistic skill quality verdicts (that is skill-stocktake), NOT for config GC over hooks/permissions/MCP (that is config-gc), and NOT for security scanning (that is the /claude-security plugin).
+description: Scan the skill library for structural debt and assemble a per-skill health table. The deterministic core finds dangling references — a SKILL.md naming a script, bash file, agent, or sibling skill that does not exist on disk — and external skills whose directory is a symlink out of the skills root, where a local fix would be overwritten by the owning package manager. It then federates the other health signals (usage and residency-fold candidates, SKILL.md size, the latest security results, missing validators) into a `skill × dimension` report and persists the scan to results.json. Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", "which skills are not really mine to edit", or "/skill-health".
 license: MIT
 metadata:
   author: shimo4228
@@ -21,44 +21,24 @@ a sibling skill that no longer exists on disk (it silently dangles after a
 rename or delete).
 
 This is a **structural** property — decidable from the literal text plus a
-filesystem `exists()` check — so it is owned by deterministic code at 100%
-accuracy (AKC ADR-0008 Code-LLM Layering). The semantic, risk, and validation
-dimensions are **delegated, never re-implemented here**.
+filesystem `exists()` check — so deterministic code owns it. The semantic, risk,
+and validation dimensions are **delegated, never re-implemented here**.
 
-### Three output categories — only one is a defect claim
+### Only `dangling` is a defect claim
 
-The scanner reports three lists, and conflating them is the mistake this section
-exists to prevent:
+The scanner (`--help` lists flags, `--json` the keys) reports three lists:
 
-- **Dangling references** (`dangling`, exit code 1) — the skill wrote a *path*,
-  and that path does not exist. `exists()` is authoritative here.
-- **Unresolved names** (`unresolved_names`, exit code unaffected) — the skill
-  named a skill/command *without a path* (`See skill: X`, `` `X` skill ``,
-  `` `/X` ``) and no file matches under the skills root. **This is an
-  enumeration handed to judgment, not a finding.** The name may still be a CLI
-  builtin, a bundled skill, a plugin command, or a project-scoped skill in
-  another repo — none of which live here.
-- **External skills** (`external`, exit code unaffected) — the skill's directory
-  is a **symlink out of the skills root**, so this harness does not own the file.
-  Also an enumeration, and it answers a different question from the other two:
-  not "is this skill correct?" but **"would a fix applied here survive?"** It
-  would not — the owning tree overwrites it on its next upgrade, and the change
-  never reaches version control (`git ls-files` cannot even be *asked* about a
-  path behind a symlink: `fatal: pathspec ... is beyond a symbolic link`, so
-  ownership is decided by `is_symlink()` alone). Route these **upstream**
-  (issue / PR); do not hand them a local verdict. References *inside* an
-  external skill are still scanned: ownership changes where a fix goes, not
-  whether the defect is real.
-
-The asymmetry is structural, not conservatism: the slash-command namespace a
-user actually types **is not enumerable from disk**, and the harness hides
-user-only commands from the agent entirely — an unresolved name has been live all
-along before (`/code-review`, 2026-07-25, absent from the skills root, from
-`enabledPlugins`, from `installed_plugins.json`, and from the agent's own skill
-listing). Code enumerates the names it cannot resolve; a human or
-a holistic pass decides which are real (enumerate/decide, per
-structural checks). `_KNOWN_NON_FILE_SKILLS` in the scanner is noise
-reduction only — never an authority on what exists.
+- **`dangling`** (exit code 1) — a written path that does not exist. This is the
+  only defect claim.
+- **`unresolved_names`** — skill / command names written without a path that match
+  no file under the skills root. **An enumeration handed to judgment, not a
+  defect**: the name may be a CLI builtin, a plugin command, or a skill in another
+  repo, and the slash-command namespace is not enumerable from disk.
+  `_KNOWN_NON_FILE_SKILLS` in the scanner is noise reduction, not an authority.
+- **`external`** — skills whose directory is a symlink out of the skills root.
+  **Also an enumeration, not a defect**: it answers "would a fix applied here
+  survive?" — it would not, since the owning tree overwrites it on upgrade. Route
+  these upstream (issue / PR). References inside them are still scanned.
 
 ## Boundary (read first — this skill does not overlap its neighbours)
 
@@ -68,17 +48,9 @@ three; `skill-health` adds the missing structural one and federates the rest:
 | Dimension (SkillOps) | Owner | `skill-health` does |
 |---|---|---|
 | **Compatibility** (refs resolve) | **`skill-health`** ← here | the deterministic scan (Phase 2) |
-| **Utility** (frequency, value) | `skill-stocktake` | read its signal; flag over-specialized (LLM) |
+| **Utility** (frequency, value) | `skill-stocktake` (holistic Keep/Improve/Retire/Merge) | read its signal; flag over-specialized (LLM) |
 | **Risk** (security, side effects) | `/claude-security` plugin | delegate; prompt to run if stale |
 | **Validation** (tests/consistency) | `skill-comply` / `skill-creator` | note which skills lack a validator |
-
-- **`skill-stocktake`** = holistic *quality* judgment (Keep/Improve/Retire/Merge). Semantic, single-context.
-- **`config-gc`** = GC over *existence* across 8 channels (hooks/permissions/MCP/cache/…).
-- **`/claude-security`** = *risk* (official plugin; results land in `CLAUDE-SECURITY-*/`).
-- **`skill-health`** = *structural debt within a skill* (do its references resolve?). Deterministic.
-
-If a finding is about whether a skill should *exist* or is *good*, it belongs to
-config-gc / skill-stocktake, not here.
 
 ## Phase 1 — Inventory
 
@@ -103,7 +75,7 @@ fence- and placeholder-aware, and exits 0 — it is the input to this skill's ot
 probe, `python -m scripts.url_liveness --urls-from -` (URL reachability as
 `live` / `dead` / `blocked` / `skip`; **`blocked` is not `dead`**). Reachability is
 checked by whoever owns the audit, once and serially, never inside parallel batch
-agents — `skill-stocktake` Phase 1 is the caller today (ADR-0052).
+agents — `skill-stocktake` Phase 1 is the caller.
 
 Exit code is the code-owned gate: `0` clean, `1` dangling references found, `2`
 scan root missing. The scanner is **conservative by design** — it skips template
@@ -113,7 +85,7 @@ than a missed one. Run `--help` for flags; omit `--json` for a human report.
 
 The same run also reports **external skills** (`external` in JSON). Surface these
 before any repair is proposed — they set *where* a fix can go — and name the
-owner of each (handling per the External skills category above).
+owner of each (handling per `external` above).
 
 Present each dangling reference with: skill, ref type, the raw reference, the
 resolved path, and the line. Do not auto-fix — a dangling reference may mean the
@@ -126,11 +98,11 @@ repair is a human judgment; surface the fact, let the user decide.
 ## Phase 3 — Federate the other three dimensions (read, don't re-implement)
 
 For the scanned skills, surface the existing signals so the report is a single
-health view — **labelling each value's source**, never recomputing it:
+health view — **labelling each value's source**:
 
-- **Utility** — do not read `~/.claude/metrics/skill-usage.jsonl` by hand. The four
-  corrections that decide whether its numbers mean anything are code, not prose
-  (ADR-0052); run the script once per window:
+- **Utility** — do not read `~/.claude/metrics/skill-usage.jsonl` by hand. The corrections
+  that decide whether its numbers mean anything
+  live in `usage_stats`; run the script once per window:
 
   ```bash
   uv run --frozen --project ~/.claude/skills/skill-stocktake python -m scripts.usage_stats --days 90
@@ -142,14 +114,14 @@ health view — **labelling each value's source**, never recomputing it:
   from "never". If `measurable` is false, or `span_shorter_than_window` is true, render
   usage as `unmeasured` — never `0`.
 
-  **Enumerate residency-fold candidates** (RFC-0017): skills with nonzero `context` (the
+  **Enumerate residency-fold candidates**: skills with nonzero `context` (the
   `/skill-doctor` residency column; `-` means the description is already off the listing
   and there is nothing left to fold) and zero `deliberate` use in the window. Their
   description resides in every system prompt without having driven a single selection —
   the description is the fold candidate. Hand the list to the author with the decision axis attached
   (default: add an explicit one-line reference from a related skill / rule, then
   `disable-model-invocation: true` — even a one-line description still resides in the
-  system prompt as an unaudited instruction, RFC-0018; a one-line description is the
+  system prompt as an unaudited instruction; a one-line description is the
   fallback only when no reference site exists); exclude skills whose window is
   shorter than their age would need (`span_shorter_than_window`, or added days ago).
   This is an enumeration, not a verdict — folding is the author's call.
@@ -187,12 +159,4 @@ next run can diff. Update it inline with Read/Write.
 
 ## Related
 
-- `skill-stocktake` — holistic skill *quality*; hand a Compatibility-clean but
-  low-quality skill there.
-- `config-gc` — skill *existence* / whole-config GC.
-- `/claude-security` (plugin) — the *risk* dimension this skill delegates to (ADR-0020).
 - `harness-sync` — use it to publish this skill to a public repo.
-- Debt taxonomy: SkillOps ([arXiv:2605.13716](https://arxiv.org/abs/2605.13716)).
-  The four-dimension *health rubric* deliberately lives here in the harness, not
-  in the genre-neutral AKC cycle core (a populated rubric is content, not
-  mechanism).

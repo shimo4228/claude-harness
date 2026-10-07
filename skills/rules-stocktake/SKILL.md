@@ -1,6 +1,6 @@
 ---
 name: rules-stocktake
-description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken skill pointers, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"which rules should be demoted or dissolved\", \"my rules have bloated\", \"take stock of my rules\", or when the model generation changed and over-constraints written for the previous one may now be net-negative (\"I want to revisit my rules for the new model\", \"I want to rightsize them\"). NOT for — a whole-harness audit on a model-generation change → generation-audit (it hands the rules slice here); skill quality → skill-stocktake; promoting skill patterns INTO rules → rules-distill (this is its inverse); runtime compliance → skill-comply; whole-config GC → config-gc."
+description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken skill pointers and substrate absorption, and assign Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"my rules have bloated\", or when a new model generation may have made rules written for the previous one net-negative."
 license: MIT
 metadata:
   author: shimo4228
@@ -27,7 +27,7 @@ instruction dilution.
 
 > Design note 2: unlike skill-stocktake, this skill **does** apply approved Improve/Update/
 > Merge edits itself instead of handing off. There is no improvement-engine skill for rules
-> (skill-creator's counterpart doesn't exist), and rule files average ~60 lines — delegation
+> (skill-creator's counterpart doesn't exist), and rule files are short — delegation
 > would be overengineering. The handoff exception is Demote (creating a new skill is
 > skill-creator's job).
 
@@ -64,9 +64,12 @@ judgment on what the findings mean → LLM, per the enumerate/decide split):
 - [ ] Every relative link between rule files resolves
 - [ ] Every rule file's line 1 carries `<!-- origin: X -->`
 - [ ] Every `rules/common/` file carries `<!-- rationale: ... -->` and
-  `<!-- review-when: ... -->` within its first 10 lines (ADR-0021; run
+  `<!-- review-when: ... -->` within its first 10 lines (run
   `python3 ~/.claude/scripts/hooks/harness_lint.py` and read its output instead of re-grepping)
 - [ ] `rules/README.md`'s table matches the actual file list (no missing, no phantom entries)
+
+A `skill-health` dangling-reference scan, when one has run, is ready-made evidence for the
+first check.
 
 State the scan result up front: files found, total lines, integrity failures. Carry the
 failures into Stage 1 as pre-computed evidence — do not re-grep there.
@@ -99,19 +102,24 @@ rule. Record answers internally; **surface only the No answers**:
   single-project content → Demote or Improve-by-shortening candidate)
 
 Six questions and no more — the two static questions (absorption, density) replace the
-lost usage signal; further decomposition degrades holistic judgment (see References).
+lost usage signal; further decomposition degrades holistic judgment.
 
 **Stage 2 — verdict pressure-test (non-Keep candidates only).** When Stage 1 plus the
 holistic read points away from Keep, generate **1–3 rule-specific atomic yes/no questions**
 that try to **refute the draft verdict** before finalizing it. **If the rule declares a
 `review-when:` comment, its triggers are the first questions** — they are the expiry
-conditions captured at write time (ADR-0021), which ad-hoc generation cannot recover.
+conditions captured at write time, which ad-hoc generation cannot recover.
 Ask "has trigger X fired — Yes/No" per declared trigger, then supplement with generated
 questions only if needed, each answered with one line
 of evidence (file read, path check, WebSearch, harness-doc check). For **Dissolve**
 candidates one question is mandatory: *"Can the absorbing harness feature be named
 concretely — Yes/No"* — an absorption claim that cannot name its absorber is refuted.
 Keep-bound rules get no dynamic questions.
+
+Outside evidence enters Stage 2 when it exists — read it, never require it: `skill-comply`
+results (a compliance-based verdict needs one; this audit is static), `generation-audit`'s
+runtime-layer findings on a model-generation change, and `harness-boundary`'s Delete / Move
+on an installed rule.
 
 Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence
 feeding the verdict, never aggregated into a score. Evaluation is **origin-blind** (do not
@@ -152,24 +160,22 @@ that delta is the input to the aggregate-residency-cost judgment next run.
 
 ## Phase 4 — Consolidation
 
-**Confirm one by one** (config-gc's confirm-each design): walk the non-Keep candidates
+**Confirm one by one**: walk the non-Keep candidates
 sequentially — for each rule, show the evidence first, then ask `[y/n/skip]`. Never batch
 the approval ("apply all edits? [y/n]" defeats the design — one rule, one decision; this
 matters doubly here because approved edits are applied in-session). The user can stop at
 any point; `skip` records the verdict in the ledger unactioned.
 
 - **Improve / Update / Merge**: present the concrete edit per rule → ask `[y/n/skip]`;
-  **after the user approves that rule, apply it directly in this session** (see Design
-  note 2 — no improvement engine exists for rules, and the files are small). If an
+  **after the user approves that rule, apply it directly in this session** (Design note 2). If an
   applied edit changes the rule's reason-to-exist or expiry conditions, refresh its
-  `rationale:` / `review-when:` comments in the same diff (ADR-0021).
+  `rationale:` / `review-when:` comments in the same diff.
 - **Demote to skill**: hand off skill creation to `skill-creator`; then reduce the rule
   to a 1–3 line principle + a ``skill: `name` `` pointer.
 - **Dissolve / Retire**: per file, present (1) the absorption evidence or defect, (2) what
   covers the need instead (Dissolve: the named harness feature; Retire: the replacement
   rule/skill), (3) removal impact — **other rules referencing it and the public repo copy**.
-  Act only after the user confirms. For Dissolve, offer to record the why via `adr-writer`
-  (akc-cycle.md, "Handling ADRs").
+  Act only after the user confirms. For Dissolve, offer to record the why via `adr-writer`.
 - **Sync README.md**: any file added/renamed/removed → update the table row and its one-line
   description (pairs with the Phase 1 consistency check).
 - **Update the ledger**: Read `results.json` → merge this run's verdicts → Write it back
@@ -214,27 +220,5 @@ not a script. Created on the first run — do not pre-seed an empty file.
 
 ## Related
 
-- `skill-stocktake` — the same audit for skills; this skill inverts its cost model (trigger pollution → residency).
-- `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code assets (configs / workflows / runbooks); rules-stocktake audits `~/.claude/rules/`.
-- `rules-distill` — promotes skill patterns *into* rules; rules-stocktake audits what accumulated and demotes back what stopped earning residency. Inverse directions over the same boundary.
-- `skill-comply` — measures whether rules are actually *followed* (dynamic). rules-stocktake stays static: never issue a compliance-based verdict without a skill-comply run; existing skill-comply results may serve as Stage 2 evidence (read, never require).
-- `generation-audit` — on a model-generation change, collects runtime-layer evidence (conflict / redundancy against the live system prompt and tool descriptions) and the `/claude-api prompt-audit` dated-pattern findings, and hands the rules slice here as Stage 2 evidence, same read-never-require contract as skill-comply results.
-- `config-gc` — whole-config GC across hooks/permissions/MCP; rules-stocktake judges rule *quality*.
-- `agent-stocktake` — the same audit for `~/.claude/agents/`; rules-stocktake covers `~/.claude/rules/`.
-- `skill-health` — the mechanical dangling-reference scan across skills; its output feeds the Phase 1 integrity checks.
-- `skill-creator` — handoff target for the skill-creation half of Demote.
-- `adr-writer` — records the why of a Dissolve.
-- `harness-sync` — syncs surviving `origin: shimo4228` rules to the public repo after edits/retirements.
-- `harness-boundary` — design-time lens (layer / portability / obsolescence) applied when a mechanism is proposed; when it is applied to an installed rule its Delete / Move become Stage 2 evidence here (read, never require).
-
-## References
-
-The two-stage binary-question design (screen → verdict pressure-test, holistic verdict,
-no score aggregation) is inherited from skill-stocktake and follows the
-checklist-decomposition evaluation line: BinEval "Ask, Don't Judge"
-([arXiv:2606.27226](https://arxiv.org/abs/2606.27226), as-of 2026-09-15), CheckEval (arXiv:2403.18771),
-TICK (arXiv:2410.03608) — over-decomposition degrades correlation on holistic quality,
-hence six questions and no score. The absorption question and the Dissolve verdict
-implement `rules/common/akc-cycle.md` — the Curate checks (redundancy / staleness /
-silence) and Scaffold Dissolution's two vectors (inward internalization, downward
-substrate absorption).
+- `agent-stocktake` — the same audit for `~/.claude/agents/`.
+- `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code assets (configs / workflows / runbooks).

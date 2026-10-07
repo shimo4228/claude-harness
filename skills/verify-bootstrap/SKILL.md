@@ -1,6 +1,6 @@
 ---
 name: verify-bootstrap
-description: "repo に機械ゲート（format / lint / type check / security / dependency audit / test）を立てる、または既存のゲートが古びていないか棚卸しする。Use when starting a new project, when a repo has no automated quality gate, when the user says 「lint を入れて」「この repo にゲートを立てて」「型チェックを入れたい」「静的解析を整備して」「ツールが古い」「verify を棚卸しして」, \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. ツール表を持たない設計なので、未知のスタックでも同じ手順で使える。NOT for — 既に立っているゲートを 1 回実行するだけ（それは repo の verify entrypoint を直接実行）、ハーネス自身の設定監査（→ config-gc）、コードの意味的レビュー（→ implementation-chain の Review 群）。"
+description: "repo に機械ゲート（format / lint / type check / security / dependency audit / test）を立てる、または既存のゲートが古びていないか棚卸しする。Use when starting a new project, when a repo has no automated quality gate, when the user says 「lint を入れて」「この repo にゲートを立てて」「型チェックを入れたい」「静的解析を整備して」「ツールが古い」「verify を棚卸しして」, \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. ツール表を持たない設計なので、未知のスタックでも同じ手順で使える。NOT for — 既に立っているゲートを 1 回実行するだけ（それは repo の verify entrypoint を直接実行）、コードの意味的レビュー（→ implementation-chain の Review 群）。"
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:

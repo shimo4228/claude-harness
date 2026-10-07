@@ -164,6 +164,17 @@ def test_relations_full_supersede_flag_and_malformed_annotation(repo: Path) -> N
     assert rel["index_rows"]["ADR-0002"] is not None  # fixture index already lists 0002
 
 
+
+def test_relations_commit_cited_annotation_is_well_formed(repo: Path) -> None:
+    # ADR-0089 Decision 2: a change that misses the filing bar annotates the old ADR with the commit subject
+    body = _adr(
+        "0002",
+        "second",
+        consequences="  > **注記（2026-10-07, commit「fix(x): narrow y」）**: what changed\n\nEasier: X. Harder: Y.",
+    )
+    e = _write_and_collect(repo, body)
+    assert e["relations"]["own_annotations"][0]["well_formed"] is True
+
 # ---------------------------------------------------------------- paths (gitignored / missing / cited lines)
 
 

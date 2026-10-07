@@ -196,8 +196,7 @@ description: "Description in 130 characters or less"
 6. **Per-verdict confirmation flow (one at a time, `[y/n/skip]`)**
 
    Even when multiple patterns were extracted from the session, confirm them
-   **one at a time — never ask for batch approval** (follows config-gc's confirm-each
-   design; a bulk "save them all? [y/n]" is banned).
+   **one at a time — never ask for batch approval** (a bulk "save them all? [y/n]" is banned).
    For each candidate, present the evidence first (checklist results + verdict
    rationale), then ask `[y/n/skip]`.
    The user can stop at any point. `n` = discard, `skip` = defer for now (leave a

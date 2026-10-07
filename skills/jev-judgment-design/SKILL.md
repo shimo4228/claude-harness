@@ -24,7 +24,7 @@ first and read only the judgments layered on top here.
 
 Sources: the implementation in jev-research-pipeline (https://github.com/shimo4228/jev-research-pipeline) and the article
 "Moving the research judgments I left to an LLM to Jev, a judgment-only model"
-(https://zenn.dev/shimo4228/articles/jev-research-judgment-offload, scheduled for publication 2026-09-25).
+(https://zenn.dev/shimo4228/articles/jev-research-judgment-offload).
 
 ## 1. Move only closed judgments
 

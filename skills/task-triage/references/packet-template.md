@@ -110,8 +110,7 @@ script の docstring に埋めない — measurement-discipline §8（CA RFC-004
   Chain Matrix に従う**（この packet は reviewer を列挙しない — 列挙漏れは省略の許可ではない）。
   種別の既定に加えて要るもの / 外してよいものがあれば**ここに理由付きで**書く（例: security-reviewer
   必須 — gate を触るため / E2E 追加 — 画面遷移に触れるため）
-- **packet に書いていないことは harness の規約が既定**（implementation-chain / task-tracking / security /
-  git-workflow）。省略・読み替えは可だが、報告に「逸脱: 何を・なぜ」と**必ず名指し**する。無言の逸脱は
+- **packet に書いていないことは harness の規約が既定**（implementation-chain / task-tracking / security）。省略・読み替えは可だが、報告に「逸脱: 何を・なぜ」と**必ず名指し**する。無言の逸脱は
   結果が正しくても bounce される>
 - diff 外の気づきは `rfcs/` にも台帳にも書かない。再現手順を書けるものは Report の `Proposed tasks`
   （最大 2 件）に、書けないものは `Out-of-diff findings` に 1 行ずつ（HIGH は producer `file:line` 付き）

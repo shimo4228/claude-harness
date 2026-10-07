@@ -1,6 +1,6 @@
 ---
 name: review-to-lint
-description: "A procedure for extracting the mechanically decidable items from an existing reviewer's (agent / review skill) checklist, or from past sessions' reviewer history, into a deterministic script, thinning the reviewer down to semantic checks only. Use via /review-to-lint when the author says \"turn this reviewer into a lint\", \"absorb the review into a lint\", \"move the mechanical checks into a script\", \"find what in the history can be linted\", or when a reviewer's findings show repeated mechanical items. NOT for — creating a new reviewer (→ skill-creator), changing the semantic criteria themselves (each reviewer owns them), designing a judge (→ llm-as-judge), re-extracting reviewers that already have an evidence script (done for readme-writer / adr-writer)."
+description: "Move the mechanically decidable items of an existing reviewer's checklist, or of past reviewers' findings, into a deterministic evidence script, and thin the reviewer down to semantic checks. Use via /review-to-lint when the author says \"turn this reviewer into a lint\" or \"find what in the history can be linted\", or when a reviewer's findings repeat mechanical items."
 user-invocable: true
 origin: shimo4228
 ---
@@ -9,21 +9,20 @@ origin: shimo4228
 
 A reviewer's checklist mixes in items that a script counts more accurately and cheaply than an LLM does.
 This skill draws that boundary, moves the mechanical side down into a script, and focuses the reviewer's attention
-on semantic checks. Prior examples: `readme_evidence.py` (readme-writer), `adr_lint.py` (adr-writer,
-ADR-0051). The division-of-labor principle is "existence = code, content = LLM" (introduced by ADR-0021, applied to ADRs by ADR-0044) and
-feedback: deterministic_semantic_layering (script measures + LLM interprets).
+on semantic checks. Prior examples: `readme_evidence.py` (readme-writer), `adr_lint.py` and
+`adr_review_evidence.py` (adr-writer). The division-of-labor principle is "existence = code, content = LLM":
+the script measures, the LLM interprets.
 
 ## 0. Entry — checklist-first vs history-first
 
 If the target reviewer is already decided, go straight to §1. If you are deciding "which reviewer / which convention should be linted,"
 mine the reviewers' history. A checklist-first inventory surfaces only the items a reviewer **holds in writing**,
-so it misses findings that actually recur (measured 2026-08-29: RFC-0005's
-12 candidates covered only the document / skill-asset layer and missed 3 classes targeting `hooks/*.sh`
-= #13–#15 of the same RFC).
+so it misses findings that actually recur (measured 2026-08-29: a checklist-first sweep covered only the
+document / skill-asset layer and missed 3 recurring classes targeting `hooks/*.sh`).
 
-**Build no mechanism** — create neither an extraction script nor a collection hook (ADR-0055 Decision 5, "build no collection
-mechanism"). One manual investigation is enough. If a second one is requested, propose a script at that time, including a supersede
-of ADR-0055.
+**Build no mechanism** — create neither an extraction script nor a collection hook; mining is rare enough that a standing
+mechanism costs more than it returns. One manual investigation is enough. If a second one is requested, propose a
+script then, for the author to approve.
 
 Non-obvious points about the corpus and extraction:
 
@@ -59,7 +58,7 @@ When unsure, lean to semantic — a wrongly mechanized item lets false negatives
 
 Before writing, look for external lint tools and existing evidence scripts in the harness (`skills/*/scripts/`).
 If an existing one can check the target corpus **without migration**, do not write one. If migration is needed, compare the migration cost with
-the cost of building your own, and record the reason for rejection in an ADR (precedent: the adrkit comparison, ADR-0051).
+the cost of building your own, and record the reason for rejection.
 
 ## 3. Script design
 
@@ -87,27 +86,29 @@ Decide the location on 2 axes:
 
 - **Tax rate** — the fraction of commits for which the check is meaningful. If low, a step in the writer skill / reviewer;
   if high, the repo's `verify.sh`
-- **Off-the-shelf fit** — if a config line for an off-the-shelf tool is enough, `verify.sh` (the landing shape of ADR-0056).
+- **Off-the-shelf fit** — if a config line for an off-the-shelf tool is enough, `verify.sh`.
   For a self-written script, the skill-step side is the default
 
 The default is the skill-step side — always-on wiring into a commit hook / verify.sh taxes every commit,
-including commits that do not touch the target (author's decision 2026-08-26, ADR-0051 Decision 2).
+including commits that do not touch the target.
 
 **Exception: targets with no canonical writer skill.** Executable assets such as `hooks/*.sh` have no writer skill
 equivalent to adr-writer / readme-writer, so the coordinate "skill step"
-does not exist in the first place. In this case `verify.sh` becomes the default (found in the 2026-08-29 history mining —
-ADR-0051 Decision 2 did not anticipate this case).
+does not exist in the first place. In this case `verify.sh` becomes the default.
 
 If hollowing-out is observed, revisit the wiring on the commit surface. Hold no aggregation, viewer, or grader agent
-(for the same reason as skill-creator's "what it does not hold").
+(each one is another asset to keep alive with no demand behind it).
 
 ## 6. Recording
 
-Record in an ADR: the code/LLM boundary (which items go where), overlaps with existing checks and the grounds for why they will not
+Record — in an ADR when it meets adr-writer's filing bar, otherwise in the commit body: the code/LLM boundary (which items go where), overlaps with existing checks and the grounds for why they will not
 drift, the measured values of the exemption boundary, and the reasons for rejection in search-first.
 
-## Application candidates
+## Choosing the next target
 
-The candidate ledger's source of truth is [RFC-0005](../../rfcs/0005-review-to-lint-rollout-ledger.md)
-(12 candidates, demand-driven firing conditions, won't-do decisions. 2026-08-26 sweep). Carry them out one at a time in
-separate sessions; decide priority by the demand firing conditions, not by room for mechanization.
+Take candidates one at a time in separate sessions. Decide priority by demand — a clear current need on a stable
+canonical source — not by room for mechanization; a lint built ahead of demand hollows out.
+Skip targets that are already done or need no script: readme-writer and adr-writer already have evidence scripts;
+security-reviewer already delegates to existing gates; `scripts/hooks/harness_lint.py` covers rules-stocktake's mechanical
+checks; llm-as-judge and skill-health are the reference designs, not targets; a reviewer whose checks belong to an off-the-shelf
+linter (e.g. SwiftLint for swift-reviewer) is thinned by delegating to that tool, not by writing a script.
