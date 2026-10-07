@@ -477,9 +477,10 @@ def _mark(rec: dict, hours: float | None, verbose: bool = False) -> str:
     STEALABLE = 宣言された lease が切れた（引き継いでよい）。
     STALE     = 期限の宣言が無いまま古い（生存確認が要る。奪う根拠にはならない）。
     """
-    if lease_expired(rec) is True:
+    expired = lease_expired(rec)
+    if expired is True:
         return "  ** STEALABLE (lease 期限切れ) **" if verbose else " STEALABLE"
-    if hours is not None and hours >= STALE_HOURS:
+    if expired is None and hours is not None and hours >= STALE_HOURS:
         return "  ** STALE (期限の宣言なし — 生存確認を) **" if verbose else " STALE"
     return ""
 

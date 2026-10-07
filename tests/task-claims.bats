@@ -193,6 +193,17 @@ claims() { python3 "$HELPER" "$@"; }
   [[ "$bar" != *"STEALABLE"* ]] || return 1
 }
 
+@test "an old claim with a live lease is not marked stale" {
+  # STALE は「期限の宣言が無いまま古い」の印。宣言された lease が生きている claim は
+  # 古くても印を付けない (RFC-0028 の 9 日目の claim が「期限の宣言なし」と出た)。
+  printf '{"ts":"2026-01-01T00:00:00+00:00","event":"claim","task":"T-FOO","session":"old","lease_expires":"2099-01-01T00:00:00+00:00"}\n' \
+    > "$REPO/.notes/claims.jsonl"
+  run claims open --oneline
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"T-FOO"* ]] || return 1
+  [[ "$output" != *"STALE"* ]] || return 1
+}
+
 @test "a claim written before leases existed still reads" {
   # 後方互換: lease_expires を持たない行は STALE_HOURS 側の判定に落ちる。
   printf '{"ts":"2026-01-01T00:00:00+00:00","event":"claim","task":"T-FOO","session":"old"}\n' \
