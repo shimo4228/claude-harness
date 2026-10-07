@@ -217,7 +217,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/jev-skill-router` ([repo](https://github.com/shimo4228/jev-skill-router)) | plugin (hook + skill) | `tools/sync-from-local.sh` (plugin 版、固定 allowlist。`.claude-plugin/`・`hooks/`・README は repo root 資産) | `~/.claude/skills/jev-skill-router` |
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
-| `~/MyAI_Lab/wikidata-federation` ([repo](https://github.com/shimo4228/wikidata-federation)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
+| `~/MyAI_Lab/wikidata-federation`（GitHub 上の repo は無い） | 単独 skill（local のみ） | sync abort（local 正本を退役済み） | なし（push 先が無いので同期しない） |
 | `~/MyAI_Lab/authorship-strategy-rules` ([repo](https://github.com/shimo4228/authorship-strategy-rules)) | rule | sync abort（local の `rules/common/authorship-strategy.md` を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
