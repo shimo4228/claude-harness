@@ -187,7 +187,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 - **レイアウト**: `install.sh`（skills/* → ~/.claude/skills/、agents/*.md →
   ~/.claude/agents/）+ `skills/<name>/SKILL.md` + `agents/<agent>.md`（top-level フラット。
   nest しない）。pure-skill repo は install.sh 省略可（citation-sync 等の先例）。
-- **install.sh は冪等**: 同一なら skip、異なれば `*.bak-<ts>` に退避してから上書き
+- **install.sh は冪等**: 同一なら skip（`.venv` とキャッシュは比較しない）、異なれば `~/.claude/backups/install-<ts>/` に退避してから上書き（skills/ の中に残すと旧版が同名の 2 つ目の skill として読まれる）
   （`--force` / `--dry-run`）。全 repo で byte-identical に保つ。README install 節は
   Option A（`./install.sh`）/ Option B（手動 `cp`）/ SkillsMP の 3 つを書く。
 - **SkillsMP caveat**: `/skills add <owner/repo>` は `skills/` のみ install し `agents/`
