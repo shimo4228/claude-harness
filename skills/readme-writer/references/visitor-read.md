@@ -34,19 +34,22 @@ Rewrite モードで、依頼が人に使ってもらう・試してもらうこ
   言語間の対応として見る
 - README を scratch にコピーしてラウンドごとに凍結する（`r0/`、`r1/` …）。コピーでは `<details>` の
   中身を消して `<summary>` だけを残す — 実際の訪問者は畳んだ節を開かずに判断する
-- fresh context の別 agent を 3 体、並列に起動する（general-purpose、`model: sonnet`。書き手と別の
-  モデルにし、回数を回せる重さにする）。渡すのはコピーの path だけで、執筆の文脈は渡さない
+- 読み手は 3 人を並列に、著者の CLAUDE.md・rules・skill を読み込まない隔離した `claude -p` で走らせる
+  （起動の形は `tagline-eval.md` の「読み手」。`model: sonnet` で書き手と別のモデルにし、回数を回せる重さにする）。
+  設定を読み込んだ読み手は著者の語彙を知っていて、初見の読者にならない。README のコピーの本文を prompt に
+  埋めて渡し、ツールは持たせない。執筆の文脈は渡さない
 - 既存の README があれば、改稿前の版を `r0` として先に読ませる。これが比べる起点になる
 
-prompt（形式を固定するための例。`{CHANNEL}`・`{PERSONA}`・`{README}` を埋める）:
+prompt（形式を固定するための例。`{PERSONA}` は system prompt に、`{CHANNEL}`・`{README_TEXT}` は本文に埋める）:
 
 ```
-You are a visitor who just clicked a link in {CHANNEL}. Persona: {PERSONA}
+You just clicked a link in {CHANNEL} and landed on this GitHub repository. Below is its README as
+rendered text (images appear as their alt text; collapsed sections are closed, you see only their
+summary line). Read it the way you really would: skim, and stop where you would stop.
 
-Read ONLY this file, as if it were the rendered GitHub page: {README}
-Images appear to you as their alt text. Collapsed sections are closed: you see only their summary
-line. Do not open any other file, link or tool. Read it the way your persona really would: skim, and
-stop where you would stop.
+=== README ===
+{README_TEXT}
+=== END ===
 
 Answer in JSON only, no prose around it:
 {
@@ -60,6 +63,17 @@ Answer in JSON only, no prose around it:
   "one_change": "<the single change that would most make you try it>"
 }
 ```
+
+## 新しい機能の語
+
+読み手のモデルは、知識のカットオフより後に出た機能を知らない（例: 2026-10-01 に出た Claude Code の mods）。
+README がそういう機能を名前で扱うときは:
+
+- 読ませる前に、その機能の一次資料（公式 docs・ブログ・changelog）を読み、正式な表記と要点を確かめる。
+  資料どうしで表記が割れていたら、著者に表と推奨を渡して決めてもらう
+- 読み手が挙げる「その語が分からない」「その語と既知の語の違いが分からない」は、その語で探して来る実際の
+  訪問者の反応ではない。初出に一句の言い換えを 1 回付けたら、それ以上は追わない
+- 著者の入口の語（流入経路で探される語）は、読み手の反応にかかわらず見える本文と tagline に残す
 
 ## 結果の使い方
 

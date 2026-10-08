@@ -57,7 +57,7 @@ README には 2 種類の読者がいる。人間は上から 1 回読み、合�
 |---|---|---|
 | **証拠** | 第一画面の行数と新語、内部参照、造語候補、`<details>` の中身、図の前後の prose、切れたリンクと anchor、内部史・生数値の行、slop 語、日本語版の文末、節ごとの block 形 | **code** — `scripts/readme_evidence.py`（JSON。verdict も閾値も exit gate も持たない） |
 | **描画証拠** | GitHub と同じ HTML を github.com の README の列幅・文字サイズ（profile / repo、desktop / mobile。値の正本は `readme_render.py` の `SURFACES`）× light / dark で撮った PNG、squint 版、見出しと block の位置、fold、横にはみ出す要素 | **code** — `scripts/readme_render.py`（`gh api /markdown` + 同梱 github-markdown-css + Playwright。判定はしない） |
-| **訪問者役の読み**（任意） | repo ごとに選んだ初見の訪問者 3 人が、どこで読むのをやめ、試すか、何が止めたか（JSON） | **LLM** — fresh context の sonnet 3 体。Rewrite モードで、人に試してもらうことが目的の依頼のとき（`references/visitor-read.md`） |
+| **訪問者役の読み**（任意） | repo ごとに選んだ初見の訪問者 3 人が、どこで読むのをやめ、試すか、何が止めたか（JSON） | **LLM** — 著者の設定を読み込まない隔離した `claude -p`（sonnet）の 3 人。Rewrite モードで、人に試してもらうことが目的の依頼のとき（`references/visitor-read.md`） |
 | **判定** | フロア、第一画面、段落の役割、造語、参照が導線か、日本語の文体と言語間の対応、継ぎ足しと論理、**主張とコードの照合** | **LLM** — `readme-judge` agent（fresh context、集計しない named verdict）。レビュー agent はこれ 1 つ |
 
 README に研究値ベースの数値スコアは作らない。「良い入口か」は意味的判断で、同等の決定論的知見がない。
@@ -199,7 +199,8 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
    - 節構成案（各節が答える読者の問いを 1 行ずつ）と概要図の枠案（型と、各枠の絵・見出し・補足）
    - 変わる事実の表: version・数値・日付・status ごとに持ち主を決める（badge / release-doi /
      as-of 日付付きで README）。持ち主の無い数値は README に置かない
-   - tagline 候補: [skill: headline-craft] で 3〜6 本。著者がここで選ぶ（質は Step 4 の R2 が見る）
+   - tagline: 著者の入口の語（流入経路で探される語）を先に聞く。[skill: headline-craft] の候補をその語を含む形で
+     作り、`references/tagline-eval.md` で測り、推奨と結果の表を添えて著者がここで選ぶ
    - 訪問者役の読みを回すなら、選んだ 3 人と、既存の README があればその版（r0）の読みの結果（`references/visitor-read.md`）
 2. 執筆（本体が直接書く）
    - 事実はコードと docs に照らしながら書く（version・コマンド・既定値・件数）
@@ -217,7 +218,9 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
    （profile README は `--surface profile`。`render-r0` は改稿前の描画として最終判定まで残す。recheck と
    final の前には、直した版を新しい dir（`render-r1` …）に描き直して渡す — 古い描画のままでは §V の
    答えが変わらない。見た目の Fix は markup・順序・構造だけで、本文を言い換えない）
-   → [agent: readme-judge]（mode: draft。全言語版・JSON・render dir・図・repo root の path を 1 回で渡す）
+   → [agent: readme-judge]（mode: draft。全言語版・JSON・render dir・図・repo root の path を 1 回で渡す。README が
+     判定器のカットオフより新しい機能を名前で扱うときは、その一次資料の要点 — 正式な表記・定義・版・URL — も
+     prompt に入れる。入れないと判定器はその語を説明不足の造語と読む）
      ├ Publishable → 5
      ├ Fix         → 本体が span 単位で直す → mode: recheck（同じ質問セット）で 1 回
      └ Rewrite     → ⏸ 著者へ差し戻し
@@ -275,7 +278,7 @@ uv run python -m scripts.readme_render fixtures/sample_clean.md --out <scratch>/
 
 - `readme-judge` agent（`~/.claude/agents/readme-judge.md`）— 唯一のレビュー agent（判定・主張の照合）。
   基準は `references/readme-judge-checklist.md`
-- [`headline-craft`](../headline-craft/SKILL.md) — tagline 候補の生成（Step 1）
+- [`headline-craft`](../headline-craft/SKILL.md) — tagline 候補の生成（Step 1。測り方は `references/tagline-eval.md`）
 - [`prose-translation`](../prose-translation/SKILL.md) — 他言語版の翻訳（Step 3）
 - [`release-doi`](../release-doi/SKILL.md) — DOI repo の release と、それに伴う version・DOI・homepage の同期
 - [`context-sync`](../context-sync/SKILL.md) — 文書間の役割の重なりと移送（README の外まで直すとき）
@@ -283,6 +286,6 @@ uv run python -m scripts.readme_render fixtures/sample_clean.md --out <scratch>/
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) / [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — 機械 surface
 - skill: `archify` — 詳しい構成図（HTML）。README には概要図を置き、構成図は docs/ からリンクする
 - `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md` — AI slop の診断表の正本。執筆の原則は背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`
-- `references/` — `readme-judge-checklist.md` / `visual.md` / `overview-diagram.md` / `ja-register.md` / `about.md` / `visitor-read.md`
+- `references/` — `readme-judge-checklist.md` / `visual.md` / `overview-diagram.md` / `ja-register.md` / `about.md` / `visitor-read.md` / `tagline-eval.md`
 - `evals/read-through-log.md` — 通読指摘数の記録
 - `inspiration.md` — 設計の出自・外部エビデンスの出典
