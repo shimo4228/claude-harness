@@ -197,6 +197,18 @@ def term_candidates(content: list[tuple[int, str]]) -> list[dict]:
     return sorted(seen.values(), key=lambda e: (-e["count"], e["first_line"]))
 
 
+def size(markdown: str, blocks: list[dict]) -> dict:
+    """Characters of the raw README, and of the lines outside every closed <details>
+    block (nested blocks counted once). An unclosed block hides nothing here."""
+    raw = markdown.splitlines(keepends=True)
+    folded: set[int] = set()
+    for b in blocks:
+        if b.get("close_line"):
+            folded.update(range(b["open_line"], b["close_line"] + 1))
+    visible = sum(len(t) for n, t in enumerate(raw, start=1) if n not in folded)
+    return {"chars": len(markdown), "chars_visible": visible}
+
+
 def details_blocks(markdown: str) -> list[dict]:
     blocks: list[dict] = []
     stack: list[int] = []  # open lines only; the body is sliced on close (no O(N^2) copies)

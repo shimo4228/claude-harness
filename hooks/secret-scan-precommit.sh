@@ -153,11 +153,19 @@ block() {
 # 1) detect-secrets があれば優先 (permissions 許可済みツール)
 # 注意: detect-secrets 1.5.0 は絶対パス指定だと results が空になる (file filter が
 # 相対パス前提) ため、tmpdir に cd して basename でスキャンする
+# DIGEST_LINE_RE: 名前付きの digest / id だけを除外する行。キー名が sha256 / sha1 / _sha /
+# digest / _id / uuid で終わり、値が小文字 16 進でちょうど 32 / 40 / 64 桁の JSON 行。
+# 監査ログ・evidence・manifest の pin は sha256 と 32 桁 id を設計上大量に書き、Hex High Entropy
+# String がそれを毎回 secret と読んでいた（計 5 回、bypass かパス除外か中身を削って回避 —
+# 著者判断 2026-10-07 で根本対策）。行ごと外すので、キー名が digest 形でも値が 16 進 digest の
+# 形でない行（AKIA… 等）と、名前の無い 16 進は通常どおり検出される。正規表現は Python re
+# （detect-secrets の --exclude-lines）なので POSIX クラスでなく \s を使う。
+DIGEST_LINE_RE='"[A-Za-z0-9_.-]*(sha256|sha1|_sha|digest|_id|uuid)"\s*:\s*"([0-9a-f]{64}|[0-9a-f]{40}|[0-9a-f]{32})"'
 if command -v detect-secrets >/dev/null 2>&1; then
   tmpdir=$(mktemp -d)
   trap 'rm -rf "$tmpdir"' EXIT
   printf '%s\n' "$added" > "$tmpdir/staged-additions"
-  results=$(cd "$tmpdir" && detect-secrets scan staged-additions 2>/dev/null | jq -r '.results | to_entries[]?.value[]? | "\(.type) (line \(.line_number))"' || true)
+  results=$(cd "$tmpdir" && detect-secrets scan --exclude-lines "$DIGEST_LINE_RE" staged-additions 2>/dev/null | jq -r '.results | to_entries[]?.value[]? | "\(.type) (line \(.line_number))"' || true)
   [[ -n "$results" ]] && block "detect-secrets findings:
 $results"
   exit 0

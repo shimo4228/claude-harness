@@ -1,0 +1,16 @@
+{
+ "tokens": {
+  "V": "bfdf5a",
+  "D": "424157",
+  "T": "76e3ec",
+  "L": "254665",
+  "S": "ead177"
+ },
+ "facts": {
+  "V": "kc-bfdf5a",
+  "D": "424157.toml",
+  "T": "@76e3ec",
+  "L": "https://example.invalid/api/254665",
+  "S": "KC_EAD177"
+ }
+}

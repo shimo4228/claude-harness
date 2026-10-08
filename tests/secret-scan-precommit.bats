@@ -268,3 +268,34 @@ digest() { printf 'contemplative' | shasum -a 256 | cut -c1-64; }
   run_hook "git -C $REPO commit -m 'docs: notes'"
   blocked
 }
+
+# --- named digests anywhere in the tree (2026-10-07) -------------------------
+# Audit logs, evidence and manifest pins record sha256 digests and 32-hex ids by
+# design; five commits were stopped on them before the line rule. The rule
+# excludes a JSON line only when the key names a digest/id AND the value is
+# lowercase hex of exactly 32 / 40 / 64 — so an unnamed hex string and a
+# credential under a digest-shaped key must both still block.
+
+sel_id() { printf 'contemplative' | shasum -a 256 | cut -c1-32; }
+
+@test "a named sha256 digest and a 32-hex id in an evidence JSON are allowed" {
+  mkdir -p "$REPO/docs/evidence"
+  printf '{\n "labels_jsonl_sha256": "%s",\n "selection_id": "%s"\n}\n' "$(digest)" "$(sel_id)" > "$REPO/docs/evidence/x.json"
+  git -C "$REPO" add docs/evidence/x.json
+  run_hook "git -C $REPO commit -m 'docs: evidence'"
+  [ -z "$output" ]
+}
+
+@test "the same hex under a non-digest key is still blocked" {
+  printf '{"webhook": "%s"}\n' "$(digest)" > "$REPO/conf.json"
+  git -C "$REPO" add conf.json
+  run_hook "git -C $REPO commit -m 'chore: conf'"
+  blocked
+}
+
+@test "a credential under a digest-shaped key is still blocked" {
+  printf '{"token_sha256": "%s"}\n' "$(example_id)" > "$REPO/conf.json"
+  git -C "$REPO" add conf.json
+  run_hook "git -C $REPO commit -m 'chore: conf'"
+  blocked
+}

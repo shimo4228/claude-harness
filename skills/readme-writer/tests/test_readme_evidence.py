@@ -597,3 +597,17 @@ class TestFixtureContracts:
             for part in dotted.split("."):
                 assert isinstance(node, dict) and part in node, dotted
                 node = node[part]
+
+
+@pytest.mark.unit
+class TestSize:
+    def test_folded_lines_leave_the_visible_count(self) -> None:
+        md = "# P\n\nvisible.\n\n<details>\n<summary>s</summary>\n\nfolded floor.\n\n</details>\n"
+        size = readme_evidence.collect("x.md", md, Path("."))["size"]
+        assert size["chars"] == len(md)
+        assert size["chars_visible"] == len("# P\n\nvisible.\n\n")
+
+    def test_nested_and_unclosed_blocks(self) -> None:
+        md = "a\n<details>\n<details>\nx\n</details>\n</details>\nb\n<details>\nopen\n"
+        size = readme_evidence.collect("x.md", md, Path("."))["size"]
+        assert size["chars_visible"] == len("a\n") + len("b\n<details>\nopen\n")

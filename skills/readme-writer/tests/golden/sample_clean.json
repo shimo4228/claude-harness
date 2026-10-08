@@ -68,6 +68,10 @@
     }
   ],
   "details_blocks": [],
+  "size": {
+    "chars": 871,
+    "chars_visible": 871
+  },
   "figures": [
     {
       "kind": "mermaid",
@@ -216,6 +220,7 @@
     "prose_signals, history_signals and numeric_claims match fixed pattern lists; a hit is a line to read, and wording outside the patterns is not seen.",
     "register_ja classifies only sentences ending in 。！？ inside body paragraphs, by their last words; list items, tables, headings, quotes and sentences without a terminal mark are not counted.",
     "layout counts Markdown block starts per H2 section; how GitHub draws them (whether a list reads lighter than the table beside it, where the fold falls) is in the readme_render.py screenshots, and whether a difference in form matches a difference in role is the judge's call. heading_case treats a capitalised proper noun as title case.",
-    "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that quotes Japanese can read as ja."
+    "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that quotes Japanese can read as ja.",
+    "size.chars counts the raw file (HTML comments included); size.chars_visible drops the lines of closed <details> blocks, where the LLM-read floor lives."
   ]
 }

@@ -144,6 +144,8 @@ accepted — [ADR-0077](./0077-readme-review-single-judge-with-claims-check.md) 
   前後比較で 22 枚になる。長い repo README は 1 言語で 20 枚を超える: AKC README（`--surface repo`）は light
   だけで desktop 6・mobile 12 枚、squint と dark を足して 22 枚（2026-10-06）。tile を 2000 px にしたので、
   20 枚を超えたときの縮小（約 2,000 px、Anthropic vision doc）でも縮まない
+
+  > **注記（2026-10-08, [ADR-0091](./0091-readme-human-top-llm-fold.md)）**: R16（README の長さ）が加わり、固定質問は 35 問になる。
 - Phase V の位置（Phase A の凍結の後、Phase B の前）は、同じ process の中の順序の指示で守られるだけ
 - 描画は GitHub の profile / repo の 2 種の幾何しか持たない。ほかの面（npm・PyPI・GitHub Mobile の
   native app）の見た目は判定の外

@@ -111,6 +111,33 @@ not thin" turn every README into a disguised `llms-full.txt` — the floor is a
 / landing-page tool whose exports do not embed in GitHub markdown, so it is
 simply not part of the README-visual path — no anti-pattern note needed.)
 
+## 2026-10 split: visible text for humans, the floor folded at the end
+
+The 2026-06 design was right for its readers: at the time the README's audience
+was mostly LLM search. By 2026-10 the author saw human readers increasing, and a
+sentence-marking pilot on four of the author's own READMEs/articles showed the
+cost — a reader abandoned one README.ja after 11 sentences ("cannot tell what it
+does from the opening", information overload) and skipped a whole limits/data-sent
+block in another. The author's model: a human README is like a catchphrase — say
+what it does briefly, spend the rest removing friction. The floor stays (the
+ReadMe.LLM point above still holds); it moves into a collapsed `<details>` at the end.
+
+Evidence for folding (first-hand, 2026-10-08, one sample per condition; fixture
+repo shimo4228/readme-fetch-canary, ≈26k-char README; record in
+`evals/grounding-canary/PROTOCOL.md`): every assistant path that fetched the URL —
+ChatGPT (GPT-6, Plus), Claude.ai (Opus 5.5, Max), Grok (X Premium), Qwen 3.7 Plus
+(free), Gemini 3.6 Flash (free, enhanced thinking, normal chat) — read a token
+inside `<details>` and a token at the README's tail. Grok said the README was
+truncated on first fetch and fetched the rest itself. Gemini in temporary chat
+without thinking and Perplexity free did not fetch at all; Perplexity saw only the
+repo's About description in a search snippet. llms.txt was read by 4 of the 5
+fetching paths — useful as a backstop, still not the load-bearing surface.
+
+This supersedes the earlier rules "floor not only inside `<details>`" and "machine
+pointers never in `<details>` (collapsed content is invisible to extractors)": the
+user-triggered fetch paths measured here do read collapsed content. Index-time
+crawler behavior on `<details>` remains unmeasured.
+
 ## External example galleries（参照系）
 
 Curated collections to mine for **hook / visual / structure ideas** — especially

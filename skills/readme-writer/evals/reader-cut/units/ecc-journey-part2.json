@@ -1,0 +1,1521 @@
+{
+ "text_id": "ecc-journey-part2",
+ "source": "~/MyAI_Lab/zenn-content/articles/ecc-journey-part2.md",
+ "sha256": "888e7b36a524f977188fff830c26592ce783c788d7504bc6bad4c7aa4e914e55",
+ "last_modified": "2026-08-27",
+ "reader": "author",
+ "units": [
+  {
+   "i": 0,
+   "line": 12,
+   "section": 1,
+   "kind": "sentence",
+   "text": "前回の記事で、Everything Claude Code (ECC) 環境で初めて本格的な開発を始めた 10 日間のことを書きました。",
+   "mark": null
+  },
+  {
+   "i": 1,
+   "line": 12,
+   "section": 1,
+   "kind": "sentence",
+   "text": "git も知らなかった初心者が、PDCAサイクルを何度も回しながら開発を覚えていく話でした。",
+   "mark": null
+  },
+  {
+   "i": 2,
+   "line": 14,
+   "section": 1,
+   "kind": "sentence",
+   "text": "今回は、その 10 日間の後半で作った pdf2anki というツールの話をします。",
+   "mark": null
+  },
+  {
+   "i": 3,
+   "line": 18,
+   "section": 2,
+   "kind": "sentence",
+   "text": "G検定の勉強のために、忘却曲線に基づく出題アプリを作りました。",
+   "mark": null
+  },
+  {
+   "i": 4,
+   "line": 18,
+   "section": 2,
+   "kind": "sentence",
+   "text": "Python/Streamlit で Web 版、Swift/SwiftUI で iOS 版。",
+   "mark": null
+  },
+  {
+   "i": 5,
+   "line": 18,
+   "section": 2,
+   "kind": "sentence",
+   "text": "ECC 環境の TDD で実装し、ADR で意思決定を記録しながら、2 週間で動くものができました。",
+   "mark": null
+  },
+  {
+   "i": 6,
+   "line": 20,
+   "section": 2,
+   "kind": "sentence",
+   "text": "できてから気づきました。",
+   "mark": null
+  },
+  {
+   "i": 7,
+   "line": 20,
+   "section": 2,
+   "kind": "sentence",
+   "text": "自分が作っていたのは Anki の再発明だったのです。",
+   "mark": null
+  },
+  {
+   "i": 8,
+   "line": 22,
+   "section": 2,
+   "kind": "sentence",
+   "text": "20 年以上の歴史を持つ Anki と同じものを 2 週間で作り直す意味はありません。",
+   "mark": null
+  },
+  {
+   "i": 9,
+   "line": 22,
+   "section": 2,
+   "kind": "sentence",
+   "text": "しかし開発の過程で、本当のボトルネックが見えました。",
+   "mark": null
+  },
+  {
+   "i": 10,
+   "line": 22,
+   "section": 2,
+   "kind": "sentence",
+   "text": "アプリではなくコンテンツです。",
+   "mark": null
+  },
+  {
+   "i": 11,
+   "line": 24,
+   "section": 2,
+   "kind": "sentence",
+   "text": "iOS 版では PDF からテキスト化したデータを正規表現と LLM で 410 問の問答ペアに抽出するアルゴリズムを実装しました。",
+   "mark": null
+  },
+  {
+   "i": 12,
+   "line": 24,
+   "section": 2,
+   "kind": "sentence",
+   "text": "しかし、表記揺れや章構造の不一致で精度が安定しませんでした。",
+   "mark": null
+  },
+  {
+   "i": 13,
+   "line": 24,
+   "section": 2,
+   "kind": "sentence",
+   "text": "「第 1 章」と「第1章」（スペースの有無）でマッチングが壊れるような世界です。",
+   "mark": null
+  },
+  {
+   "i": 14,
+   "line": 26,
+   "section": 2,
+   "kind": "sentence",
+   "text": "「どんなテキストからでも高品質な Anki カードを自動生成する」ツールがあれば、アプリ本体は Anki に任せられます。",
+   "mark": null
+  },
+  {
+   "i": 15,
+   "line": 28,
+   "section": 2,
+   "kind": "sentence",
+   "text": "そうして作り始めたのが pdf2anki です。",
+   "mark": null
+  },
+  {
+   "i": 16,
+   "line": 34,
+   "section": 2,
+   "kind": "sentence",
+   "text": "PDF、テキスト、Markdown を入力すると、Claude API でフラッシュカード（TSV/JSON）を出力する CLI ツールです。",
+   "mark": null
+  },
+  {
+   "i": 17,
+   "line": 36,
+   "section": 2,
+   "kind": "sentence",
+   "text": "この記事では、pdf2anki を作る過程で踏んだ 6 つの落とし穴 と、その防御策を書きます。",
+   "mark": null
+  },
+  {
+   "i": 18,
+   "line": 36,
+   "section": 2,
+   "kind": "sentence",
+   "text": "Claude API をこれから使う人が同じ穴を避けられるように。",
+   "mark": null
+  },
+  {
+   "i": 19,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "前回の記事で書いた「しつこく質問する」姿勢は、今回も変わりません。",
+   "mark": null
+  },
+  {
+   "i": 20,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "Claude Code に「なぜこうするのか？",
+   "mark": null
+  },
+  {
+   "i": 21,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "」「他の方法はないのか？",
+   "mark": null
+  },
+  {
+   "i": 22,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "」と聞き続けました。",
+   "mark": null
+  },
+  {
+   "i": 23,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "その質問と回答の中から見えてきた設計判断を、できるだけ正直に書きます。",
+   "mark": null
+  },
+  {
+   "i": 24,
+   "line": 46,
+   "section": 4,
+   "kind": "sentence",
+   "text": "Claude API にカード生成を依頼すると、返ってくる JSON がそのままパースできないことがあります。",
+   "mark": null
+  },
+  {
+   "i": 25,
+   "line": 48,
+   "section": 4,
+   "kind": "sentence",
+   "text": "プロンプトに「JSON だけを返せ」と書いても、マークダウンの ` ```json ``` ` で囲んでくることがあります。",
+   "mark": null
+  },
+  {
+   "i": 26,
+   "line": 48,
+   "section": 4,
+   "kind": "sentence",
+   "text": "配列の途中に説明テキストが混じることもあります。",
+   "mark": null
+  },
+  {
+   "i": 27,
+   "line": 48,
+   "section": 4,
+   "kind": "sentence",
+   "text": "カンマが余分だったり、閉じ括弧が足りなかったりします。",
+   "mark": null
+  },
+  {
+   "i": 28,
+   "line": 50,
+   "section": 4,
+   "kind": "sentence",
+   "text": "LLM の出力は確率的です。",
+   "mark": null
+  },
+  {
+   "i": 29,
+   "line": 50,
+   "section": 4,
+   "kind": "sentence",
+   "text": "「こう返せ」と指示しても、100% の保証はありません。",
+   "mark": null
+  },
+  {
+   "i": 30,
+   "line": 54,
+   "section": 5,
+   "kind": "sentence",
+   "text": "最初は `json.loads()` で一括パースし、失敗したら全体をリトライしていました。",
+   "mark": null
+  },
+  {
+   "i": 31,
+   "line": 54,
+   "section": 5,
+   "kind": "sentence",
+   "text": "10 枚のカードのうち 1 枚だけフォーマットが壊れていても、10 枚全部を再生成します。",
+   "mark": null
+  },
+  {
+   "i": 32,
+   "line": 54,
+   "section": 5,
+   "kind": "sentence",
+   "text": "API コストが無駄に膨らみました。",
+   "mark": null
+  },
+  {
+   "i": 33,
+   "line": 67,
+   "section": 6,
+   "kind": "sentence",
+   "text": "10 枚中 1 枚が壊れていても、残り 9 枚は救います。",
+   "mark": null
+  },
+  {
+   "i": 34,
+   "line": 69,
+   "section": 6,
+   "kind": "sentence",
+   "text": "「成功か失敗の二択」ではなく「部分的な成功を許容する」設計。",
+   "mark": null
+  },
+  {
+   "i": 35,
+   "line": 69,
+   "section": 6,
+   "kind": "sentence",
+   "text": "これは LLM を組み込むツール全般に通用する原則です。",
+   "mark": null
+  },
+  {
+   "i": 36,
+   "line": 71,
+   "section": 6,
+   "kind": "sentence",
+   "text": "JSON のラッピング（` ```json ``` `）は正規表現で事前に剥がしてからパースに回します。",
+   "mark": null
+  },
+  {
+   "i": 37,
+   "line": 71,
+   "section": 6,
+   "kind": "sentence",
+   "text": "泥臭い前処理ですが、こういう小さな防御の積み重ねが LLM 連携の安定性を支えています。",
+   "mark": null
+  },
+  {
+   "i": 38,
+   "line": 75,
+   "section": 6,
+   "kind": "sentence",
+   "text": "持ち帰り: LLM の出力パースは「壊れる前提」で書く。",
+   "mark": null
+  },
+  {
+   "i": 39,
+   "line": 75,
+   "section": 6,
+   "kind": "sentence",
+   "text": "全体リトライではなく、個別スキップ＋ログで回復力を持たせる。",
+   "mark": null
+  },
+  {
+   "i": 40,
+   "line": 85,
+   "section": 8,
+   "kind": "sentence",
+   "text": "JSON が正しくパースできても、中身の品質は保証されません。",
+   "mark": null
+  },
+  {
+   "i": 41,
+   "line": 87,
+   "section": 8,
+   "kind": "sentence",
+   "text": "実際に出てきた問題カードの例です：",
+   "mark": null
+  },
+  {
+   "i": 42,
+   "line": 89,
+   "section": 8,
+   "kind": "item",
+   "text": "表面が「説明してください」だけ。何を説明するのかわからない",
+   "mark": null
+  },
+  {
+   "i": 43,
+   "line": 90,
+   "section": 8,
+   "kind": "item",
+   "text": "裏面が 500 文字超。カードではなくレポート",
+   "mark": null
+  },
+  {
+   "i": 44,
+   "line": 91,
+   "section": 8,
+   "kind": "item",
+   "text": "1 枚に 3 つの概念が詰め込まれている。Anki のカードは 1 枚 1 概念が原則",
+   "mark": null
+  },
+  {
+   "i": 45,
+   "line": 92,
+   "section": 8,
+   "kind": "item",
+   "text": "リスト問題なのに QA 形式で出力されている。穴埋めにすべき",
+   "mark": null
+  },
+  {
+   "i": 46,
+   "line": 94,
+   "section": 8,
+   "kind": "sentence",
+   "text": "「LLM に任せたから大丈夫」は危険な前提でした。",
+   "mark": null
+  },
+  {
+   "i": 47,
+   "line": 98,
+   "section": 9,
+   "kind": "sentence",
+   "text": "全カードを LLM に再評価させる方式を最初に試しました。",
+   "mark": null
+  },
+  {
+   "i": 48,
+   "line": 98,
+   "section": 9,
+   "kind": "sentence",
+   "text": "生成と評価の両方で API を叩くので、コストが単純に倍になります。",
+   "mark": null
+  },
+  {
+   "i": 49,
+   "line": 98,
+   "section": 9,
+   "kind": "sentence",
+   "text": "100 枚のカードを作るたびに 200 回の API コール。",
+   "mark": null
+  },
+  {
+   "i": 50,
+   "line": 98,
+   "section": 9,
+   "kind": "sentence",
+   "text": "現実的ではありません。",
+   "mark": null
+  },
+  {
+   "i": 51,
+   "line": 102,
+   "section": 10,
+   "kind": "sentence",
+   "text": "第 1 層（コード判定・LLM 不要）: ヒューリスティックスコアリング",
+   "mark": null
+  },
+  {
+   "i": 52,
+   "line": 104,
+   "section": 10,
+   "kind": "sentence",
+   "text": "6 つの軸で 0〜1 のスコアを付け、重み付き合計が 0.90 以上なら合格。",
+   "mark": null
+  },
+  {
+   "i": 53,
+   "line": 104,
+   "section": 10,
+   "kind": "sentence",
+   "text": "LLM は呼びません。",
+   "mark": null
+  },
+  {
+   "i": 54,
+   "line": 115,
+   "section": 10,
+   "kind": "sentence",
+   "text": "原子性の判定が面白かったです。",
+   "mark": null
+  },
+  {
+   "i": 55,
+   "line": 115,
+   "section": 10,
+   "kind": "sentence",
+   "text": "裏面を句点で分割し、文数が多ければ「複数概念が混在している」と判定します。",
+   "mark": null
+  },
+  {
+   "i": 56,
+   "line": 128,
+   "section": 10,
+   "kind": "sentence",
+   "text": "「また、」「さらに」が出てきたら、1 枚のカードに情報を詰め込みすぎている可能性が高いです。",
+   "mark": null
+  },
+  {
+   "i": 57,
+   "line": 128,
+   "section": 10,
+   "kind": "sentence",
+   "text": "人間が見ても分割すべきと判断できるカードを、コードで検出できます。",
+   "mark": null
+  },
+  {
+   "i": 58,
+   "line": 130,
+   "section": 10,
+   "kind": "sentence",
+   "text": "第 2 層（LLM 使用）: 0.90 未満のカードだけを Claude に批評させる",
+   "mark": null
+  },
+  {
+   "i": 59,
+   "line": 132,
+   "section": 10,
+   "kind": "sentence",
+   "text": "批評結果は 3 択: `improve`（書き直し）、`split`（分割）、`remove`（削除）。",
+   "mark": null
+  },
+  {
+   "i": 60,
+   "line": 132,
+   "section": 10,
+   "kind": "sentence",
+   "text": "最大 2 ラウンドです。",
+   "mark": null
+  },
+  {
+   "i": 61,
+   "line": 134,
+   "section": 10,
+   "kind": "sentence",
+   "text": "ポイントは 全カードに LLM を使わない こと。",
+   "mark": null
+  },
+  {
+   "i": 62,
+   "line": 134,
+   "section": 10,
+   "kind": "sentence",
+   "text": "スコア 0.90 以上のカードは第 1 層で素通りさせます。",
+   "mark": null
+  },
+  {
+   "i": 63,
+   "line": 134,
+   "section": 10,
+   "kind": "sentence",
+   "text": "実測では生成カードの 60〜70% が第 1 層を通過しました。",
+   "mark": null
+  },
+  {
+   "i": 64,
+   "line": 134,
+   "section": 10,
+   "kind": "sentence",
+   "text": "LLM 批評が必要なのは 30〜40% です。",
+   "mark": null
+  },
+  {
+   "i": 65,
+   "line": 136,
+   "section": 10,
+   "kind": "sentence",
+   "text": "第 3 層（コード判定・LLM 不要）: 重複検出",
+   "mark": null
+  },
+  {
+   "i": 66,
+   "line": 138,
+   "section": 10,
+   "kind": "sentence",
+   "text": "文字バイグラムの Jaccard 類似度で重複を検出します。",
+   "mark": null
+  },
+  {
+   "i": 67,
+   "line": 138,
+   "section": 10,
+   "kind": "sentence",
+   "text": "表面の類似度が 0.7 を超えたら重複フラグを立てます。",
+   "mark": null
+  },
+  {
+   "i": 68,
+   "line": 140,
+   "section": 10,
+   "kind": "sentence",
+   "text": "前回の記事で書いた ECC の TDD と同じ発想です。",
+   "mark": null
+  },
+  {
+   "i": 69,
+   "line": 140,
+   "section": 10,
+   "kind": "sentence",
+   "text": "テストを先に書くように、品質の基準を先に定義する。",
+   "mark": null
+  },
+  {
+   "i": 70,
+   "line": 140,
+   "section": 10,
+   "kind": "sentence",
+   "text": "基準がなければ「良くなった気がする」で終わります。",
+   "mark": null
+  },
+  {
+   "i": 71,
+   "line": 144,
+   "section": 10,
+   "kind": "sentence",
+   "text": "持ち帰り: 「LLM で判定できること」と「コードで判定できること」を分ける。",
+   "mark": null
+  },
+  {
+   "i": 72,
+   "line": 144,
+   "section": 10,
+   "kind": "sentence",
+   "text": "コードで済む判定に LLM を使うのは、精度ではなくコストの問題。",
+   "mark": null
+  },
+  {
+   "i": 73,
+   "line": 154,
+   "section": 12,
+   "kind": "sentence",
+   "text": "Claude API は従量制です。",
+   "mark": null
+  },
+  {
+   "i": 74,
+   "line": 154,
+   "section": 12,
+   "kind": "sentence",
+   "text": "Sonnet で入力 $3/M tokens、出力 $15/M tokens。",
+   "mark": null
+  },
+  {
+   "i": 75,
+   "line": 156,
+   "section": 12,
+   "kind": "sentence",
+   "text": "100 ページの PDF を処理したらいくらかかるか。",
+   "mark": null
+  },
+  {
+   "i": 76,
+   "line": 156,
+   "section": 12,
+   "kind": "sentence",
+   "text": "実行してみるまでわかりません。",
+   "mark": null
+  },
+  {
+   "i": 77,
+   "line": 158,
+   "section": 12,
+   "kind": "sentence",
+   "text": "初期テスト中、うっかり長い PDF を処理して $2 近く使ったことがあります。",
+   "mark": null
+  },
+  {
+   "i": 78,
+   "line": 158,
+   "section": 12,
+   "kind": "sentence",
+   "text": "学習用の個人ツールでこの出費は痛いです。",
+   "mark": null
+  },
+  {
+   "i": 79,
+   "line": 162,
+   "section": 13,
+   "kind": "sentence",
+   "text": "① 実行前のコスト見積もり",
+   "mark": null
+  },
+  {
+   "i": 80,
+   "line": 164,
+   "section": 13,
+   "kind": "sentence",
+   "text": "`preview` コマンドで、API を叩かずに見積もりを出します。",
+   "mark": null
+  },
+  {
+   "i": 81,
+   "line": 172,
+   "section": 13,
+   "kind": "sentence",
+   "text": "ユーザーが「これなら OK」と判断してから `convert` を実行する流れにしました。",
+   "mark": null
+  },
+  {
+   "i": 82,
+   "line": 174,
+   "section": 13,
+   "kind": "sentence",
+   "text": "② budget_limit で暴走防止",
+   "mark": null
+  },
+  {
+   "i": 83,
+   "line": 176,
+   "section": 13,
+   "kind": "sentence",
+   "text": "`CostTracker` に予算上限（デフォルト $1.00）を設定し、API コールのたびに累積コストをチェックします。",
+   "mark": null
+  },
+  {
+   "i": 84,
+   "line": 176,
+   "section": 13,
+   "kind": "sentence",
+   "text": "超えたらそこで止まります。",
+   "mark": null
+  },
+  {
+   "i": 85,
+   "line": 185,
+   "section": 13,
+   "kind": "sentence",
+   "text": "`frozen=True` で不変にしています。",
+   "mark": null
+  },
+  {
+   "i": 86,
+   "line": 185,
+   "section": 13,
+   "kind": "sentence",
+   "text": "前回の記事で触れた「不変性の原則」がここで効きました。",
+   "mark": null
+  },
+  {
+   "i": 87,
+   "line": 185,
+   "section": 13,
+   "kind": "sentence",
+   "text": "API コールのたびに新しい `CostTracker` インスタンスを返します。",
+   "mark": null
+  },
+  {
+   "i": 88,
+   "line": 185,
+   "section": 13,
+   "kind": "sentence",
+   "text": "途中で値が書き換わることはありません。",
+   "mark": null
+  },
+  {
+   "i": 89,
+   "line": 185,
+   "section": 13,
+   "kind": "sentence",
+   "text": "「いまいくら使ったか」を常に正確に追跡できます。",
+   "mark": null
+  },
+  {
+   "i": 90,
+   "line": 187,
+   "section": 13,
+   "kind": "sentence",
+   "text": "③ テキスト量に応じたモデル自動選択",
+   "mark": null
+  },
+  {
+   "i": 91,
+   "line": 189,
+   "section": 13,
+   "kind": "sentence",
+   "text": "短いテキスト（10,000 文字未満、30 枚未満）ならコストが約 1/4 の Haiku を使い、多ければ Sonnet にルーティングします。",
+   "mark": null
+  },
+  {
+   "i": 92,
+   "line": 196,
+   "section": 13,
+   "kind": "sentence",
+   "text": "単純な閾値分岐ですが、短いテキストの処理コストが大幅に下がります。",
+   "mark": null
+  },
+  {
+   "i": 93,
+   "line": 200,
+   "section": 13,
+   "kind": "sentence",
+   "text": "持ち帰り: 従量制 API を使うツールには「実行前の見積もり」「実行中の上限」「モデルの使い分け」の 3 点セットを入れる。",
+   "mark": null
+  },
+  {
+   "i": 94,
+   "line": 200,
+   "section": 13,
+   "kind": "sentence",
+   "text": "ユーザーの財布を守るのは開発者の責任。",
+   "mark": null
+  },
+  {
+   "i": 95,
+   "line": 210,
+   "section": 15,
+   "kind": "sentence",
+   "text": "Claude の入力トークン上限は約 200K ですが、一度に大量のテキストを投げるとカードの品質が落ちます。",
+   "mark": null
+  },
+  {
+   "i": 96,
+   "line": 210,
+   "section": 15,
+   "kind": "sentence",
+   "text": "分割が必要です。",
+   "mark": null
+  },
+  {
+   "i": 97,
+   "line": 214,
+   "section": 16,
+   "kind": "sentence",
+   "text": "最初はテキストを文字数で均等に切っていました。",
+   "mark": null
+  },
+  {
+   "i": 98,
+   "line": 214,
+   "section": 16,
+   "kind": "sentence",
+   "text": "当然、章の途中で切れます。",
+   "mark": null
+  },
+  {
+   "i": 99,
+   "line": 216,
+   "section": 16,
+   "kind": "sentence",
+   "text": "「第 3 章の後半」と「第 4 章の前半」が混ざったチャンクから生成されたカードは、文脈がおかしくなりました。",
+   "mark": null
+  },
+  {
+   "i": 100,
+   "line": 216,
+   "section": 16,
+   "kind": "sentence",
+   "text": "ある章の用語定義が別の章の概念と混同されます。",
+   "mark": null
+  },
+  {
+   "i": 101,
+   "line": 220,
+   "section": 17,
+   "kind": "sentence",
+   "text": "Markdown の見出し（`#`、`##`、`###`）で論理的に分割する方式に変えました。",
+   "mark": null
+  },
+  {
+   "i": 102,
+   "line": 222,
+   "section": 17,
+   "kind": "sentence",
+   "text": "各セクションに breadcrumb（パンくずリスト） を付与します。",
+   "mark": null
+  },
+  {
+   "i": 103,
+   "line": 222,
+   "section": 17,
+   "kind": "sentence",
+   "text": "Web サイトの「ホーム > 製品 > iPhone」のような、いま全体のどの階層にいるかを示すナビゲーションです。",
+   "mark": null
+  },
+  {
+   "i": 104,
+   "line": 228,
+   "section": 17,
+   "kind": "sentence",
+   "text": "Claude はこの breadcrumb を見て「いま第 1 章の語源の話をしている」と理解できます。",
+   "mark": null
+  },
+  {
+   "i": 105,
+   "line": 228,
+   "section": 17,
+   "kind": "sentence",
+   "text": "チャンクの先頭にこのコンテキストがあるだけで、生成されるカードの文脈が格段に正確になりました。",
+   "mark": null
+  },
+  {
+   "i": 106,
+   "line": 230,
+   "section": 17,
+   "kind": "sentence",
+   "text": "見出し階層は `heading_stack` という辞書で追跡します。",
+   "mark": null
+  },
+  {
+   "i": 107,
+   "line": 230,
+   "section": 17,
+   "kind": "sentence",
+   "text": "H2 が出現したら、それ以下の H3 情報をクリアします。",
+   "mark": null
+  },
+  {
+   "i": 108,
+   "line": 238,
+   "section": 17,
+   "kind": "sentence",
+   "text": "1 セクションが 30,000 文字を超えたら段落単位でサブ分割し、見出しに `(cont.)` を付けて連続セクションだと示します。",
+   "mark": null
+  },
+  {
+   "i": 109,
+   "line": 242,
+   "section": 18,
+   "kind": "sentence",
+   "text": "2 つあります。",
+   "mark": null
+  },
+  {
+   "i": 110,
+   "line": 244,
+   "section": 18,
+   "kind": "sentence",
+   "text": "1 つ目。",
+   "mark": null
+  },
+  {
+   "i": 111,
+   "line": 244,
+   "section": 18,
+   "kind": "sentence",
+   "text": "Markdown 見出しがないテキストへの対応です。",
+   "mark": null
+  },
+  {
+   "i": 112,
+   "line": 244,
+   "section": 18,
+   "kind": "sentence",
+   "text": "日本語の書籍なら「第1章」「（1）」「一、」といったパターンで見出しを検出するフォールバックを入れました。",
+   "mark": null
+  },
+  {
+   "i": 113,
+   "line": 246,
+   "section": 18,
+   "kind": "sentence",
+   "text": "2 つ目。",
+   "mark": null
+  },
+  {
+   "i": 114,
+   "line": 246,
+   "section": 18,
+   "kind": "sentence",
+   "text": "トークン推定の誤差です。",
+   "mark": null
+  },
+  {
+   "i": 115,
+   "line": 246,
+   "section": 18,
+   "kind": "sentence",
+   "text": "`CHARS_PER_TOKEN = 4` という定数は英語基準です。",
+   "mark": null
+  },
+  {
+   "i": 116,
+   "line": 246,
+   "section": 18,
+   "kind": "sentence",
+   "text": "日本語は 1 トークンあたり 2〜3 文字なので、コスト推定が実際の半分程度になります。",
+   "mark": null
+  },
+  {
+   "i": 117,
+   "line": 246,
+   "section": 18,
+   "kind": "sentence",
+   "text": "これは既知の未修正問題です。",
+   "mark": null
+  },
+  {
+   "i": 118,
+   "line": 246,
+   "section": 18,
+   "kind": "sentence",
+   "text": "日本語を扱うなら係数を 2.5 程度に修正する必要があります。",
+   "mark": null
+  },
+  {
+   "i": 119,
+   "line": 250,
+   "section": 18,
+   "kind": "sentence",
+   "text": "持ち帰り: 長文を LLM に渡すときは「意味の境界」で切る。",
+   "mark": null
+  },
+  {
+   "i": 120,
+   "line": 250,
+   "section": 18,
+   "kind": "sentence",
+   "text": "機械的な文字数分割は文脈を壊す。",
+   "mark": null
+  },
+  {
+   "i": 121,
+   "line": 250,
+   "section": 18,
+   "kind": "sentence",
+   "text": "分割後のチャンクに「いまどこの話か」のメタ情報を付与すると、出力品質が大きく改善する。",
+   "mark": null
+  },
+  {
+   "i": 122,
+   "line": 260,
+   "section": 20,
+   "kind": "sentence",
+   "text": "PDF にはテキストだけでなく図やチャートもあります。",
+   "mark": null
+  },
+  {
+   "i": 123,
+   "line": 262,
+   "section": 20,
+   "kind": "sentence",
+   "text": "Claude API にはテキストだけでなく 画像も入力できる機能（Vision） があります。",
+   "mark": null
+  },
+  {
+   "i": 124,
+   "line": 262,
+   "section": 20,
+   "kind": "sentence",
+   "text": "写真や図を送ると、Claude が「この画像に何が写っているか」を理解して回答してくれます。",
+   "mark": null
+  },
+  {
+   "i": 125,
+   "line": 262,
+   "section": 20,
+   "kind": "sentence",
+   "text": "これを使えば、教科書の図表からもカードを生成できます。",
+   "mark": null
+  },
+  {
+   "i": 126,
+   "line": 264,
+   "section": 20,
+   "kind": "sentence",
+   "text": "「全ページを画像として Vision に投げれば完璧では？",
+   "mark": null
+  },
+  {
+   "i": 127,
+   "line": 264,
+   "section": 20,
+   "kind": "sentence",
+   "text": "」と思いました。",
+   "mark": null
+  },
+  {
+   "i": 128,
+   "line": 266,
+   "section": 20,
+   "kind": "sentence",
+   "text": "コストを計算して目が覚めました。",
+   "mark": null
+  },
+  {
+   "i": 129,
+   "line": 268,
+   "section": 20,
+   "kind": "sentence",
+   "text": "画像のトークンコストは `(幅 × 高さ) ÷ 750` です。",
+   "mark": null
+  },
+  {
+   "i": 130,
+   "line": 268,
+   "section": 20,
+   "kind": "sentence",
+   "text": "100 ページを全ページ画像化すると画像だけで約 15 万トークン。",
+   "mark": null
+  },
+  {
+   "i": 131,
+   "line": 268,
+   "section": 20,
+   "kind": "sentence",
+   "text": "テキストと合わせて 30 万トークン、約 $1。",
+   "mark": null
+  },
+  {
+   "i": 132,
+   "line": 268,
+   "section": 20,
+   "kind": "sentence",
+   "text": "テキストだけなら $0.15 程度です。",
+   "mark": null
+  },
+  {
+   "i": 133,
+   "line": 268,
+   "section": 20,
+   "kind": "sentence",
+   "text": "7 倍のコスト差です。",
+   "mark": null
+  },
+  {
+   "i": 134,
+   "line": 272,
+   "section": 21,
+   "kind": "sentence",
+   "text": "① 画像カバレッジ閾値: 20%",
+   "mark": null
+  },
+  {
+   "i": 135,
+   "line": 274,
+   "section": 21,
+   "kind": "sentence",
+   "text": "pymupdf でページ内の画像面積を計算し、ページ面積の 20% 以上を画像が占めるページだけ Vision に回します。",
+   "mark": null
+  },
+  {
+   "i": 136,
+   "line": 274,
+   "section": 21,
+   "kind": "sentence",
+   "text": "テキスト主体のページはテキスト抽出で十分です。",
+   "mark": null
+  },
+  {
+   "i": 137,
+   "line": 276,
+   "section": 21,
+   "kind": "sentence",
+   "text": "② DPI: 150 に固定",
+   "mark": null
+  },
+  {
+   "i": 138,
+   "line": 278,
+   "section": 21,
+   "kind": "sentence",
+   "text": "Vision の制約は長辺 1568px、最大 1.15 メガピクセルです。",
+   "mark": null
+  },
+  {
+   "i": 139,
+   "line": 280,
+   "section": 21,
+   "kind": "item",
+   "text": "300 DPI: きれいだがトークンが倍。1 画像 3,000 トークン超",
+   "mark": null
+  },
+  {
+   "i": 140,
+   "line": 281,
+   "section": 21,
+   "kind": "item",
+   "text": "72 DPI: 安いが図中の文字が潰れる",
+   "mark": null
+  },
+  {
+   "i": 141,
+   "line": 282,
+   "section": 21,
+   "kind": "item",
+   "text": "150 DPI: 文字が読める最低限の解像度。1 画像 1,500 トークン程度",
+   "mark": null
+  },
+  {
+   "i": 142,
+   "line": 284,
+   "section": 21,
+   "kind": "sentence",
+   "text": "③ 1 ページ最大 5 画像",
+   "mark": null
+  },
+  {
+   "i": 143,
+   "line": 286,
+   "section": 21,
+   "kind": "sentence",
+   "text": "5 枚 × 1,500 トークン = 7,500 トークン。",
+   "mark": null
+  },
+  {
+   "i": 144,
+   "line": 286,
+   "section": 21,
+   "kind": "sentence",
+   "text": "budget_limit と組み合わせれば暴走しません。",
+   "mark": null
+  },
+  {
+   "i": 145,
+   "line": 288,
+   "section": 21,
+   "kind": "sentence",
+   "text": "この 3 つの妥協で、Vision ありの処理コストをテキストのみの 1.5〜2 倍に抑えました。",
+   "mark": null
+  },
+  {
+   "i": 146,
+   "line": 288,
+   "section": 21,
+   "kind": "sentence",
+   "text": "7 倍にはなりません。",
+   "mark": null
+  },
+  {
+   "i": 147,
+   "line": 292,
+   "section": 21,
+   "kind": "sentence",
+   "text": "持ち帰り: Vision は強力だが高い。",
+   "mark": null
+  },
+  {
+   "i": 148,
+   "line": 292,
+   "section": 21,
+   "kind": "sentence",
+   "text": "「全部画像で投げれば楽」という誘惑に負けず、テキスト抽出で済む部分はテキストで処理する。",
+   "mark": null
+  },
+  {
+   "i": 149,
+   "line": 292,
+   "section": 21,
+   "kind": "sentence",
+   "text": "画像は本当に必要なページだけに絞る。",
+   "mark": null
+  },
+  {
+   "i": 150,
+   "line": 302,
+   "section": 23,
+   "kind": "sentence",
+   "text": "プロンプトを書き換えたとき、カードの品質への影響を判定できません。",
+   "mark": null
+  },
+  {
+   "i": 151,
+   "line": 302,
+   "section": 23,
+   "kind": "sentence",
+   "text": "「良くなった気がする」では心許ないです。",
+   "mark": null
+  },
+  {
+   "i": 152,
+   "line": 302,
+   "section": 23,
+   "kind": "sentence",
+   "text": "LLM の出力は非決定的で、同じプロンプトでも毎回違う結果が出ます。",
+   "mark": null
+  },
+  {
+   "i": 153,
+   "line": 306,
+   "section": 24,
+   "kind": "sentence",
+   "text": "LLM 開発では、出力品質の自動評価を Eval（エバル） と呼びます。",
+   "mark": null
+  },
+  {
+   "i": 154,
+   "line": 308,
+   "section": 24,
+   "kind": "sentence",
+   "text": "pdf2anki では「このテキストからはこういうカードが生成されるべき」という期待値を YAML で定義し、実際の出力と照合する方式を採りました。",
+   "mark": null
+  },
+  {
+   "i": 155,
+   "line": 325,
+   "section": 24,
+   "kind": "sentence",
+   "text": "生成されたカードにキーワードが含まれているかで一致度を計算し、Recall（網羅率）・Precision（正確率）・F1（両者のバランス指標）を出力します。",
+   "mark": null
+  },
+  {
+   "i": 156,
+   "line": 332,
+   "section": 24,
+   "kind": "sentence",
+   "text": "キーワードマッチには限界があります。",
+   "mark": null
+  },
+  {
+   "i": 157,
+   "line": 332,
+   "section": 24,
+   "kind": "sentence",
+   "text": "「ニューラルネットワーク」と「神経回路網」を同一視できません。",
+   "mark": null
+  },
+  {
+   "i": 158,
+   "line": 334,
+   "section": 24,
+   "kind": "sentence",
+   "text": "しかし重要なのは「プロンプト変更で回帰（＝前より悪くなること）が起きていないか」の検知です。",
+   "mark": null
+  },
+  {
+   "i": 159,
+   "line": 334,
+   "section": 24,
+   "kind": "sentence",
+   "text": "完璧な意味理解ではありません。",
+   "mark": null
+  },
+  {
+   "i": 160,
+   "line": 334,
+   "section": 24,
+   "kind": "sentence",
+   "text": "プロンプトを変えるたびに `pdf2anki eval` を回して F1 が下がっていないか確認する。",
+   "mark": null
+  },
+  {
+   "i": 161,
+   "line": 334,
+   "section": 24,
+   "kind": "sentence",
+   "text": "これだけで改善が博打ではなくなります。",
+   "mark": null
+  },
+  {
+   "i": 162,
+   "line": 336,
+   "section": 24,
+   "kind": "sentence",
+   "text": "ECC の TDD で学んだことと同じです。",
+   "mark": null
+  },
+  {
+   "i": 163,
+   "line": 336,
+   "section": 24,
+   "kind": "sentence",
+   "text": "テストがあれば、リファクタリングしても安心できます。",
+   "mark": null
+  },
+  {
+   "i": 164,
+   "line": 336,
+   "section": 24,
+   "kind": "sentence",
+   "text": "Eval があれば、プロンプトを書き換えても安心できます。",
+   "mark": null
+  },
+  {
+   "i": 165,
+   "line": 340,
+   "section": 24,
+   "kind": "sentence",
+   "text": "持ち帰り: LLM の出力品質は「テストケース」で管理する。",
+   "mark": null
+  },
+  {
+   "i": 166,
+   "line": 340,
+   "section": 24,
+   "kind": "sentence",
+   "text": "完璧な自動評価でなくていい。",
+   "mark": null
+  },
+  {
+   "i": 167,
+   "line": 340,
+   "section": 24,
+   "kind": "sentence",
+   "text": "「回帰を検知できる」だけで、プロンプト改善の生産性が大きく変わる。",
+   "mark": null
+  },
+  {
+   "i": 168,
+   "line": 348,
+   "section": 25,
+   "kind": "sentence",
+   "text": "pdf2anki を作る過程は、妥協の連続でした。",
+   "mark": null
+  },
+  {
+   "i": 169,
+   "line": 359,
+   "section": 25,
+   "kind": "sentence",
+   "text": "どれも「理想の設計」ではなく「現実との折り合い」の産物です。",
+   "mark": null
+  },
+  {
+   "i": 170,
+   "line": 361,
+   "section": 25,
+   "kind": "sentence",
+   "text": "開発全体を通して効いた判断基準が1つあります。",
+   "mark": null
+  },
+  {
+   "i": 171,
+   "line": 361,
+   "section": 25,
+   "kind": "sentence",
+   "text": "「これをやらない場合、同じ時間で何ができるか」 を常に問うことです。",
+   "mark": null
+  },
+  {
+   "i": 172,
+   "line": 363,
+   "section": 25,
+   "kind": "sentence",
+   "text": "途中で「OpenAI にも対応すべきでは」と考えました。",
+   "mark": null
+  },
+  {
+   "i": 173,
+   "line": 363,
+   "section": 25,
+   "kind": "sentence",
+   "text": "$10 クレジットが残っていたからです。",
+   "mark": null
+  },
+  {
+   "i": 174,
+   "line": 363,
+   "section": 25,
+   "kind": "sentence",
+   "text": "実装を見積もると 1,000 行、10 時間。",
+   "mark": null
+  },
+  {
+   "i": 175,
+   "line": 363,
+   "section": 25,
+   "kind": "sentence",
+   "text": "$10 の回収に時給 $1 で働く計算です。",
+   "mark": null
+  },
+  {
+   "i": 176,
+   "line": 363,
+   "section": 25,
+   "kind": "sentence",
+   "text": "同じ 10 時間で画像カード生成、TUI、Eval フレームワークが作れました。",
+   "mark": null
+  },
+  {
+   "i": 177,
+   "line": 365,
+   "section": 25,
+   "kind": "sentence",
+   "text": "前回の記事で書いた ECC の PDCA サイクルが、ここでも回っています。",
+   "mark": null
+  },
+  {
+   "i": 178,
+   "line": 367,
+   "section": 25,
+   "kind": "item",
+   "text": "Plan: Claude Code に「なぜこうするのか？」をしつこく質問し、設計の背景を理解する",
+   "mark": null
+  },
+  {
+   "i": 179,
+   "line": 368,
+   "section": 25,
+   "kind": "item",
+   "text": "Do: TDD でテストを先に書き、実装する",
+   "mark": null
+  },
+  {
+   "i": 180,
+   "line": 369,
+   "section": 25,
+   "kind": "item",
+   "text": "Check: Eval でプロンプトの品質を測定し、ヒューリスティックでカードの品質を検証する",
+   "mark": null
+  },
+  {
+   "i": 181,
+   "line": 370,
+   "section": 25,
+   "kind": "item",
+   "text": "Act: ADR で「なぜ OpenAI 対応を捨てたか」「なぜ画像閾値を 20% にしたか」を記録する",
+   "mark": null
+  },
+  {
+   "i": 182,
+   "line": 372,
+   "section": 25,
+   "kind": "sentence",
+   "text": "Claude API は強力なツールです。",
+   "mark": null
+  },
+  {
+   "i": 183,
+   "line": 372,
+   "section": 25,
+   "kind": "sentence",
+   "text": "しかし「API を叩けば解決する」と思った瞬間に、コストが膨らみ、品質が不安定になり、デバッグが困難になります。",
+   "mark": null
+  },
+  {
+   "i": 184,
+   "line": 372,
+   "section": 25,
+   "kind": "sentence",
+   "text": "API の力を引き出すのは、その周辺に積み上げる防御的な設計です。",
+   "mark": null
+  },
+  {
+   "i": 185,
+   "line": 374,
+   "section": 25,
+   "kind": "sentence",
+   "text": "この記事が、同じ道を歩く人の参考になれば幸いです。",
+   "mark": null
+  },
+  {
+   "i": 186,
+   "line": 376,
+   "section": 25,
+   "kind": "sentence",
+   "text": "pdf2anki は GitHub で公開 しています。",
+   "mark": null
+  },
+  {
+   "i": 187,
+   "line": 380,
+   "section": 26,
+   "kind": "item",
+   "text": "この記事のMarkdown正本（GitHub） — 全記事のMarkdownと索引（docs/PUBLICATIONS.md）は同じリポジトリにあります",
+   "mark": null
+  },
+  {
+   "i": 188,
+   "line": 381,
+   "section": 26,
+   "kind": "item",
+   "text": "著者のGitHub — DOI 付きの研究リポジトリ一覧",
+   "mark": null
+  }
+ ]
+}

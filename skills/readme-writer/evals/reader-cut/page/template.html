@@ -1,0 +1,158 @@
+<title>削り手の印付け</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1c1b19;--muted:#7a7568;--line:#e8e3d8;--card:#fff;--skip-bg:#fbe9e7;--skip-fg:#9b2c1f;--stop-bg:#fff4d6;--stop-fg:#8a5a00;--accent:#1c1b19}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17161a;--fg:#ecebe6;--muted:#9a968c;--line:#2c2a30;--card:#1f1e23;--skip-bg:#3a1f1c;--skip-fg:#ff9b8c;--stop-bg:#3a3018;--stop-fg:#f3c96a;--accent:#ecebe6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17161a;--fg:#ecebe6;--muted:#9a968c;--line:#2c2a30;--card:#1f1e23;--skip-bg:#3a1f1c;--skip-fg:#ff9b8c;--stop-bg:#3a3018;--stop-fg:#f3c96a;--accent:#ecebe6;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.tab{flex:none;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.tab[aria-selected="true"]{border-color:var(--accent);font-weight:650}
+.meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.help{font-size:13px;color:var(--muted);margin:10px 16px 0}
+main{max-width:720px;margin:0 auto;padding:4px 16px 80px}
+.sec{margin:18px 0 4px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted);padding-top:4px}
+.loading .u{cursor:progress;opacity:.75}
+.u{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:none;border:0;border-radius:6px;padding:6px 8px;margin:1px 0;cursor:pointer;overflow-wrap:anywhere}
+.u:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.u.item::before{content:"・";color:var(--muted)}
+.u[data-mark="skip"]{background:var(--skip-bg);color:var(--skip-fg);text-decoration:line-through}
+.u[data-mark="stop"]{background:var(--stop-bg);color:var(--stop-fg)}
+.tag{font-size:11px;font-weight:650;margin-left:6px;text-decoration:none;display:inline-block}
+.warn{margin:10px 16px;padding:8px 12px;border:1px solid var(--skip-fg);border-radius:8px;color:var(--skip-fg);font-size:13px}
+</style>
+<header>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="meta"><span id="count"></span><span id="status">読み込み中…</span></div>
+</header>
+<p class="help">文を押すたびに「要らない」→「止まった」→ 印なし と変わります。読みながら付け、迷ったら付けないでください。</p>
+<div id="warn"></div>
+<main id="list"></main>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+const TEXTS = JSON.parse(document.getElementById("data").textContent);
+const NEXT = { null: "skip", skip: "stop", stop: null };
+const LABEL = { skip: "要らない", stop: "止まった" };
+const state = {}; // text_id -> {i: mark}
+let current = TEXTS[0].text_id;
+let db = null;
+let ready = false; // clicks wait for the stored marks, or a click would overwrite them
+const timers = {};
+const $ = (id) => document.getElementById(id);
+
+function setStatus(t) { $("status").textContent = t; }
+function textOf(id) { return TEXTS.find((t) => t.text_id === id); }
+
+function renderTabs() {
+  $("tabs").replaceChildren(...TEXTS.map((t) => {
+    const b = document.createElement("button");
+    b.className = "tab"; b.role = "tab";
+    b.textContent = t.text_id;
+    b.setAttribute("aria-selected", String(t.text_id === current));
+    b.onclick = () => { current = t.text_id; render(); window.scrollTo(0, 0); };
+    return b;
+  }));
+}
+
+function renderCount() {
+  const marks = Object.values(state[current] || {});
+  const n = textOf(current).units.length;
+  const skip = marks.filter((m) => m === "skip").length;
+  const stop = marks.filter((m) => m === "stop").length;
+  $("count").textContent = `${n} 文 · 要らない ${skip} · 止まった ${stop}`;
+}
+
+function paint(btn, mark) {
+  btn.dataset.mark = mark || "";
+  btn.querySelector(".tag")?.remove();
+  if (mark) {
+    const s = document.createElement("span");
+    s.className = "tag"; s.textContent = LABEL[mark];
+    btn.append(s);
+  }
+}
+
+function render() {
+  renderTabs();
+  const t = textOf(current);
+  const marks = state[current] || {};
+  const nodes = [];
+  let sec = -1;
+  for (const u of t.units) {
+    if (u.section !== sec) {
+      sec = u.section;
+      const d = document.createElement("div");
+      d.className = "sec"; d.textContent = `§${sec}`;
+      nodes.push(d);
+    }
+    const b = document.createElement("button");
+    b.className = "u" + (u.kind === "item" ? " item" : "");
+    b.textContent = u.text;
+    paint(b, marks[u.i] || null);
+    b.onclick = () => toggle(u.i, b);
+    nodes.push(b);
+  }
+  $("list").replaceChildren(...nodes);
+  renderCount();
+}
+
+function toggle(i, btn) {
+  if (!ready) return;
+  const marks = (state[current] ||= {});
+  const next = NEXT[marks[i] || null];
+  if (next) marks[i] = next; else delete marks[i];
+  paint(btn, next);
+  renderCount();
+  scheduleSave(current);
+}
+
+function scheduleSave(id) {
+  if (!db) { setStatus("保存できません（db なし）"); return; }
+  setStatus("未保存");
+  clearTimeout(timers[id]);
+  timers[id] = setTimeout(() => save(id), 1200);
+}
+
+let saving = Promise.resolve();
+function save(id) {
+  saving = saving.then(async () => {
+    setStatus("保存中…");
+    try {
+      await db.doc(`marks/${id}`).set({ sha256: textOf(id).sha256, marks: { ...state[id] } });
+      setStatus("保存済み");
+    } catch (e) {
+      setStatus(e && e.code === "invalid_argument" ? "保存できません（書き込み権限なし）" : "保存に失敗。もう一度押すと再保存します");
+    }
+  });
+}
+
+async function load(db) {
+  const warns = [];
+  for (const t of TEXTS) {
+    const snap = await db.doc(`marks/${t.text_id}`).get();
+    if (!snap.exists) continue;
+    const d = snap.data();
+    if (d.sha256 !== t.sha256) { warns.push(t.text_id); continue; }
+    state[t.text_id] = { ...(d.marks || {}) };
+  }
+  if (warns.length) {
+    const w = document.createElement("div");
+    w.className = "warn";
+    w.textContent = `本文の版が変わったため、前の印を読み込んでいません: ${warns.join(", ")}`;
+    $("warn").replaceChildren(w);
+  }
+}
+
+document.body.classList.add("loading");
+render();
+(async () => {
+  const d = await window.claude?.use?.("db") ?? null;
+  if (!d) { setStatus("db が使えないため、印を付けられません"); return; }
+  try { await load(d); } catch { setStatus("読み込みに失敗。開き直してください"); return; }
+  db = d; ready = true;
+  document.body.classList.remove("loading");
+  setStatus("保存済み");
+  render();
+})();
+</script>

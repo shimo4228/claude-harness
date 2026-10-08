@@ -1,0 +1,6 @@
+# kumo-cache
+
+> Caches slow shell command output on disk.
+
+- API endpoint: https://example.invalid/api/254665
+- [Setup](docs/setup.md)

@@ -1,0 +1,33 @@
+# 削り手の一致試験の arm（plan: docs/plans/reader-cut-pilot.html claim 2.1）。
+# 隣り合う arm の差は 1 つだけ。reader は prompt/ からの相対 path、空文字は「読者なし」。
+# view = "full" は全文を一度に判定、"forward" はその節までの前方だけを見せて現在の節を判定する。
+
+[A0]
+reader = ""
+view = "full"
+runner = "claude"
+model = "sonnet"
+
+[A1]
+reader = "persona.md"
+view = "full"
+runner = "claude"
+model = "sonnet"
+
+[A2]
+reader = "evidence.md"
+view = "full"
+runner = "claude"
+model = "sonnet"
+
+[A3]
+reader = "evidence.md"
+view = "forward"
+runner = "claude"
+model = "sonnet"
+
+[A4]
+reader = "evidence.md"
+view = "full"
+runner = "codex"
+model = ""  # codex の既定モデル。走らせた版は results の meta に残す

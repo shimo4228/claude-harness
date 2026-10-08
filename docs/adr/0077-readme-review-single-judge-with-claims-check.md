@@ -49,6 +49,9 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
    2 本を名指していた `skills/prose-translation/SKILL.md`・`skills/implementation-chain/SKILL.md`
    （verdict の対応表）・`skills/agent-stocktake` のコメント・zenn-content の `prose-clarity-reviewer` は
    `readme-judge` か checklist を指すように付け替える。
+
+   > **注記（2026-10-08, [ADR-0091](./0091-readme-human-top-llm-fold.md)）**: §F の「フロアの有無」は、フロアが README 末尾の
+   > 畳んだ `<details>` に在るかを問う形に変わった（F1・F3）。R1 は冒頭の短い段落を問う。レビュー agent を 1 本にした判断は変わらない。
 2. `readme-judge` は 1 回の起動で全言語版を読み、Phase A（README だけを読んで答えを凍結）→ Phase B
    （主張を repo のコード・設定・docs と照らし `file:line` を添える。llms.txt・llms-full.txt・
    graph.jsonld があれば、README と食い違う箇所も挙げる）→ Phase C（反証 3–5 問、集計しない named
@@ -88,6 +91,9 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
   > **注記（2026-10-06, [ADR-0088](./0088-readme-render-evidence-and-visual-judge-phase.md)）**: 判定器に描画を
   > 渡した回（read-through-log の最終判定の欄が「§V あり」）は、質問数と入力が違う構成になる。この条件の
   > 「次の 3 行」は「§V あり」と「なし」を分けて数える。
+
+  > **注記（2026-10-08, [ADR-0091](./0091-readme-human-top-llm-fold.md)）**: R16 の追加と §F の意味の変更の前後でも
+  > 質問の構成が違う。比べるときは ADR-0091 の前後を分けて読む。
 - 通読の「主な種類」の欄に事実の誤り（Phase B をすり抜けたもの）が 2 行続けて記録されたら、照合を
   別の agent に分けるか、codex を公開 repo で既定に戻す。記入は著者が通読のときに行う。
 - recheck 1 回で止めた README で、判定器が拾う種類の欠陥（第一画面・論理・継ぎ足し）が公開後に
@@ -128,6 +134,8 @@ Decision 2 の README reviewer の名指し、[ADR-0055](./0055-review-chain-sin
 
 - 1 本の agent が読む量が増える。checklist の固定質問は §F 3 + R 15 + §J 4 + K 6 の 28 問で、
   動的な質問は 10〜15 問から約 5 問に減らした。注意が薄まるかは Review-when の 1 つ目で見る。
+
+  > **注記（2026-10-08, [ADR-0091](./0091-readme-human-top-llm-fold.md)）**: 固定質問に R16（README の長さ）が加わる。
 
   > **注記（2026-10-06, [ADR-0088](./0088-readme-render-evidence-and-visual-judge-phase.md)）**: 固定質問は §V の
   > 6 問が加わり 34 問になった（描画が渡されたときだけ）。判定器は画像も読む。

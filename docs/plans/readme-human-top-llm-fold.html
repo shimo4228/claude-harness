@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>README の上下分割</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<style data-mock-shared>
+  .rd { font: 14px/1.65 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; color: #1f2328; background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 14px 18px; }
+  .rd h1 { font-size: 22px; margin: 0 0 6px; border-bottom: 1px solid #d8dee4; padding-bottom: 4px; }
+  .rd h2 { font-size: 16px; margin: 14px 0 4px; border-bottom: 1px solid #d8dee4; padding-bottom: 2px; }
+  .rd p { margin: 4px 0; } .rd code { background: #eff1f3; padding: 1px 4px; border-radius: 4px; font-size: 12.5px; }
+  .rd .fold { margin-top: 14px; color: #59636e; } .rd .dim { color: #8c959f; }
+</style>
+<body>
+
+<header>
+  <h1>readme-writer の README を人間の上と LLM の下に分ける</h1>
+  <doc-changes new="1" changed="7"></doc-changes>
+  <details class="thread"><summary>Why · 6 件</summary>
+    <doc-quote via="prompt" from="著者">本当に人間の読むことを意識したREADMEはキャッチコピーのようなもので三行くらいで機能を説明してあとは摩擦の解消に費やされているように思う。記事とREADMEは全然性質が違うな</doc-quote>
+    <doc-quote via="prompt" from="著者">READMEはここにきて人間読者が増えだしたから、ちょっと前提が変わったな。以前はLLM検索のみだったから</doc-quote>
+    <doc-quote via="prompt" from="著者">むずかしいね。LLMにはできるだけ情報を与えた方がいいしな</doc-quote>
+    <doc-quote via="prompt" from="著者">readme-writerの改修をplanにして。</doc-quote>
+    <doc-quote via="prompt" from="著者（Respond 時の補正）">冒頭三行でわかるはわたしのレトリックだから三行に固執しないでね。あとREADMEの構造を変に縛るのはよしてね。今回のことで、人間向けのREADMEとLLM向けのDetailsに使い分けができたことが、いちばんの収穫なんだから。</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: external）" href="research/2026-10-08-readme-human-top-llm-fold.md">取得できた 5 回（ChatGPT / Claude.ai / Grok / Qwen / Gemini 3 回目）は V・D（<details>）・T（約 2.6 万字の末尾）をすべて ○ … Grok は初回取得で README が切れ、残りを自分で取りにいった</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>訪問者は冒頭の短い段落で、何をするものか分かる。</p>
+  <doc-mock frame="browser" url="github.com/shimo4228/contemplative-agent" w="460" caption="冒頭 2 文は今の README.ja の実物。節の名前は一例で、型ではない。"><template>
+<div class="rd">
+  <h1>Contemplative Agent</h1>
+  <p data-ref="three">ローカル LLM で動く自律エージェントで、自分の憲法と価値観の変更を自分で提案します。採用するかどうかは、毎回人間が決めます。</p>
+  <h2>インストール</h2><p><code>pip install -e .</code> <span class="dim">…</span></p>
+  <h2>最初の 1 回</h2><p class="dim">…</p>
+  <h2>詰まったら</h2><p class="dim">…</p>
+  <div class="fold" data-ref="fold">▸ ツールと AI アシスタント向けの資料</div>
+</div></template>
+    <doc-pin ref="three" title="冒頭の短い段落">何をするものかを言う。行数は決めない。</doc-pin>
+    <doc-pin ref="fold" title="畳んだ節" anchor="r">LLM 向けの情報は全部ここ（claim 3）。</doc-pin>
+  </doc-mock>
+  <doc-ask id="diagram">
+    <p>冒頭の概要図は残しますか。</p>
+    <label><input type="radio" name="diagram" value="need" checked> 仕組みを知らないと使えない repo だけ 3 行の直後に置く <small>既定は置かない</small></label>
+    <label><input type="radio" name="diagram" value="keep"> 今どおり既定で置く <small>ADR-0088 の描画の判定はそのまま</small></label>
+    <label><input type="radio" name="diagram" value="fold"> 第一画面から外し、畳んだ節か docs/ へ</label>
+  </doc-ask>
+
+  <doc-claim>
+    <p>見える本文は、何をするかと摩擦の解消に使う。</p>
+    <doc-code diff file="skills/readme-writer/SKILL.md" start="123">
+<script type="text/plain">
+@@ -123,4 +123,4 @@
+-- **above-the-fold（最初の 1 画面 = 30 秒で「自分向けか」を判断）**: 任意の hero → H1 → 一行 tagline
+-  （価値提案 = 最も確実に LLM に抽出される行）→ 2–4 functional badge → 概要図 → フロアの事実 →
+-  copy-paste の quick start。**深い rationale はこの後**。GitHub は README の上にファイル一覧を出す
+-  ので、repo の root が散らかっていれば、それも第一画面の一部になる
++- **見える本文は人間の読者に向ける**（上から 1 回読み、合わなければそこで離れる）: 冒頭の短い段落で
++  何をするものかを言い、残りは読者が使い始めるまでの摩擦を消すことに使う。節の立て方は repo ごとに
++  決める。LLM 向けの情報（why・事実・概念・限界）は末尾の畳んだ節（claim 3）。GitHub は README の上に
++  ファイル一覧を出すので、repo の root が散らかっていれば、それも第一画面の一部になる
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>判定器は、冒頭の段落だけで何者か言えるかを問う。</p>
+    <doc-code diff file="skills/readme-writer/references/readme-judge-checklist.md" start="49">
+<script type="text/plain">
+@@ -49,3 +49,3 @@
+-| R1 | identity 文（H1 直後の 1–2 文）が「何を / 誰向けに / どこで動くか」を、**読者がまだ知らない語を使わずに**言っているか。第一画面だけ読んで何者かを 1 文で言えるか |
++| R1 | H1 直後の短い段落が「何をするものか」を、**読者がまだ知らない語を使わずに**言っているか。その段落だけ読んで何者かを 1 文で言えるか |
+ | R2 | tagline（あれば）が価値提案を 1 行で運んでいるか — 題名の言い換えや抽象形容詞になっていないか |
+-| R3 | identity と canonical な事実（名前・stack・必要な鍵・DOI）が deep rationale より前に来ているか |
++| R3 | 見える本文に、摩擦の解消に効かない why・内部の仕組み・限界の説明が残っていないか（それらは畳んだ節） |
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>冒頭の後は、使い始めの摩擦を消すことに使う。</p>
+  <doc-code title="SKILL.md · 新しい節 · sketch" lang="markdown">
+<script type="text/plain">
+## 見える本文（人間の読者）
+
+冒頭で何をするものかを言ったら、残りは読者が使い始めるまでに止まる箇所を消すことに使う。
+例: 前提（OS・言語・有料の鍵）、copy-paste できるコマンド、動いたと分かる最小の実行、実際に
+起きた詰まりと直し方。節の立て方と順序は repo ごとに決める — 型は置かない。
+
+摩擦の解消に効かない説明（why・設計・限界の詳細・比較・実績）は、末尾の畳んだ節か docs/ へ。
+</script>
+  </doc-code>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>LLM 向けの情報は、末尾の畳んだ節に全部ある。</p>
+  <doc-mock frame="terminal" title="grounding canary · 2026-10-08" w="480" caption="取得できた回は、どれも畳んだ中身（D）と約 2.6 万字の末尾（T）を読んだ。各条件 1 回。"><template><span class="dim">アシスタント                V  D  T  L  S</span>
+ChatGPT  GPT-6 Plus         <span class="g">○  ○  ○</span>  −  <span class="g">○</span>
+Claude.ai Opus 5.5 Max      <span class="g">○  ○  ○  ○  ○</span>
+Grok  X Premium             <span class="g">○  ○  ○  ○  ○</span>  <span class="y">← 初回は切れて再取得</span>
+Qwen 3.7 Plus  無料          <span class="g">○  ○  ○  ○  ○</span>
+Gemini 3.6 Flash 無料 思考強化 <span class="g">○  ○  ○  ○  ○</span>
+Gemini 一時チャット ×2        <span class="r">取得せず</span>
+Perplexity 無料             <span class="r">取得せず</span>  <span class="dim">About の説明文だけ</span>
+<span class="dim">V 冒頭  D details の中  T 末尾  L llms.txt  S docs/</span></template></doc-mock>
+  <doc-ask id="disclosure">
+    <p>送信内容や限界の説明は、どこに置きますか。</p>
+    <label><input type="radio" name="disclosure" value="line" checked> 見える本文に 1 行、詳細は畳む <small>例: 「判定のたびにプロンプトが外部に送られます（詳細は下）」</small></label>
+    <label><input type="radio" name="disclosure" value="fold"> すべて畳んだ節へ <small>見える本文から完全に消える</small></label>
+    <label><input type="radio" name="disclosure" value="visible"> 今どおり見える本文に置く <small>jev-skill-router の §8〜9 はここで読み飛ばされた</small></label>
+  </doc-ask>
+
+  <doc-claim>
+    <p>フロアの規則を「畳んだ節に置く」に反転する。</p>
+    <doc-code diff file="skills/readme-writer/SKILL.md" start="60">
+<script type="text/plain">
+@@ -60,6 +60,7 @@
+-## 最小 LLM-read フロア（小さく・非交渉・肥大させない）
++## LLM-read フロア（末尾の畳んだ節に置く）
+
+ **規則**: README を LLM が*それ一枚だけ*読んだ（llms.txt も graph も読まれない）として、
+ **テキストだけで**プロジェクトを復元できること。
+
+-フロア要素（prose / markdown / Mermaid で。**画像のみ・`<details>` の中のみ・リンク先のみ は不可**）:
++フロア要素は README 末尾の `<details>`（summary: 「ツールと AI アシスタント向けの資料」）に文で置く。
++取得する経路は畳んだ中身も読む（2026-10-08 の canary）。**画像のみ・リンク先のみ は不可**:
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>検査表の F1 と F3 を、畳んだ節の前提に替える。</p>
+    <doc-code diff file="skills/readme-writer/references/readme-judge-checklist.md" start="39">
+<script type="text/plain">
+@@ -39,3 +39,3 @@
+-| F1 | フロア 5 要素（`../SKILL.md`）が本文の文として在るか — 画像だけ・`<details>` の中だけ・リンク先だけは数えない。研究 / DOI repo は DOI と引用方法（BibTeX / CITATION）があるか |
++| F1 | フロア 5 要素（`../SKILL.md`）が末尾の畳んだ節に文として在るか — 画像だけ・リンク先だけは数えない。研究 / DOI repo は DOI と引用方法（BibTeX / CITATION）があるか |
+ | F2 | どの図にも、前後の本文にテキスト等価（図の中身を言う文）と alt があるか |
+-| F3 | フロア以外の情報が `<details>` や図やフロア節に溜め込まれていないか（偽装 llms-full.txt） |
++| F3 | 見える本文に、3 行と摩擦の解消以外の説明が残っていないか。畳んだ節が docs/ の内容まで抱え込んでいないか |
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>README が長すぎると、証拠と判定器が知らせる。</p>
+  <doc-code title="readme_sections.py · size() · sketch" lang="py" caption="証拠は数えるだけ。判断は判定器（Code-LLM Layering）。">
+<script type="text/plain">
+def size(markdown: str, details: list[dict]) -> dict:
+    """生の README の字数と、そのうち畳んだ節の外にある字数。"""
+    folded = sum(b["chars"] for b in details)
+    return {"chars": len(markdown), "chars_visible": len(markdown) - folded}
+</script>
+  </doc-code>
+  <doc-ask id="cap">
+    <p>長さの上限はどう扱いますか。</p>
+    <label><input type="radio" name="cap" value="15k" checked> 生の字数が 1.5 万字を超えたら、判定器が docs/ への移動を問う <small>gate にしない</small></label>
+    <label><input type="radio" name="cap" value="20k"> 同じ扱いで 2 万字 <small>canary の 2.6 万字は Grok の初回取得で切れた</small></label>
+    <label><input type="radio" name="cap" value="none"> 字数は証拠に出すだけで、問いは置かない</label>
+  </doc-ask>
+  <doc-claim at="skills/readme-writer/scripts/readme_sections.py:200">
+    <p><b>readme_sections.py:200</b> · details_blocks() の隣に置く</p>
+    <doc-code src="skills/readme-writer/scripts/readme_sections.py" lines="200-206"></doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 5 ═════ -->
+<doc-claim>
+  <p>検索の断片に出る About も、冒頭と同じ主張になる。</p>
+  <doc-code diff file="skills/readme-writer/references/about.md" start="17">
+<script type="text/plain">
+@@ -17,1 +17,1 @@
+-| **description** | topic ページ・repo リスト・検索結果・外部ディレクトリ掲載時の唯一の一文 | README の lead と**同じ主張**にする（食い違いは cloaking）。**1 文目だけで機能が伝わる**構成にする（下記） |
++| **description** | topic ページ・repo リスト・検索結果・外部ディレクトリ掲載時の唯一の一文。URL を取得しない AI の経路が見るのもこれだけ（2026-10-08、Perplexity 無料） | README 冒頭の 3 行と**同じ主張**にする（食い違いは cloaking）。**1 文目だけで機能が伝わる**構成にする（下記） |
+</script>
+  </doc-code>
+</doc-claim>
+
+<doc-claim aux="shared">
+  <p>共有：判断は ADR に残し、skill の改修は skill-creator を通す。</p>
+  <doc-tree caption="ADR は前の判断の否定ではなく「読者が変わった」記録。フロアの経緯は inspiration.md にあり ADR は無い。">
+<script type="text/plain">
+docs/adr/
+  + 0091-readme-human-top-llm-fold.md   # 読者の構成が変わった → 上は人間・下は畳んだ LLM フロア
+  ~ README.md                           # index に 1 行
+skills/readme-writer/
+  ~ SKILL.md                            # claim 1・2・3。description と「軸」節も追従。行数・節の型は置かない
+  ~ inspiration.md                      # 2026-06 の較正に注記（canary の結果）
+  ~ references/readme-judge-checklist.md
+  ~ references/about.md
+  ~ scripts/readme_sections.py          # size()。golden と test を更新
+agents/
+  ~ readme-judge.md                     # §F の説明が変わる箇所だけ
+</script>
+  </doc-tree>
+  <doc-ask id="executor">
+    <p>実行者の決定：誰が作りますか。</p>
+    <label><input type="radio" name="executor" value="here" checked> この session <small>大半が skill と ADR の散文。implementation-chain の例外 (a)</small></label>
+    <label><input type="radio" name="executor" value="build"> build セッションへ dispatch <small>散文の改修を別 session に渡す</small></label>
+  </doc-ask>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの：記事の流れ・既存 README・AI 専用の文書。</p>
+  <ul>
+    <li>記事（writing-ecosystem）は変えない。記事と README は性質が違う。</li>
+    <li>既存の README の書き直しはしない。この改修の後に repo ごとに行う。</li>
+    <li>llms-txt-writer と AGENTS.md は変えない。llms.txt は補助のまま。</li>
+    <li>描画の判定（§V、ADR-0088）と主張の照合（§C）は変えない。</li>
+    <li>note・dev.to・Zenn での畳み構造の実験は、記事の側の別の作業にする。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

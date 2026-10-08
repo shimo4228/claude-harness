@@ -13,8 +13,11 @@ found / too large. There is no exit 1.
 
 JSON contract (top-level keys, in output order): path, lang_guess, line_count,
 own_repo, structure, identity_lead, first_screen, insider_refs, term_candidates,
-details_blocks, figures, badges, layout, prose_signals, register_ja, history_signals,
-numeric_claims, doi_citation, note, notes.
+details_blocks, size, figures, badges, layout, prose_signals, register_ja,
+history_signals, numeric_claims, doi_citation, note, notes.
+
+- size: {chars, chars_visible} — the raw file length and the part outside closed
+  <details> blocks. Counts only; the judge asks about length (checklist R16).
 
 - own_repo: "owner/repo" of the GitHub `origin` remote of the README's directory
   (`git -C <dir> remote get-url origin`, short timeout), or null on any failure or a
@@ -89,6 +92,7 @@ numeric_claims = _prose.numeric_claims
 prose_signals = _prose.prose_signals
 register_ja = _prose.register_ja
 details_blocks = _sec.details_blocks
+size = _sec.size
 doi_citation = _sec.doi_citation
 figures = _sec.figures
 first_screen = _sec.first_screen
@@ -159,6 +163,8 @@ NOTES = (
     "case.",
     "lang_guess is ja when 3 or more 。！？ appear outside code; an English README that "
     "quotes Japanese can read as ja.",
+    "size.chars counts the raw file (HTML comments included); size.chars_visible drops the "
+    "lines of closed <details> blocks, where the LLM-read floor lives.",
 )
 
 _MAX_BYTES = 10 * 1024 * 1024
@@ -200,6 +206,7 @@ def collect(path: str, markdown: str, base_dir: Path, own_repo: str | None = Non
     inside = _details_depth_map(content)
     ja = sum(len(_JA_SENTENCE_END_RE.findall(t)) for _, t in content) >= 3
     anchors = anchor_targets(headings, content)
+    blocks = details_blocks(stripped)
     return {
         "path": path,
         "lang_guess": "ja" if ja else "en",
@@ -210,7 +217,8 @@ def collect(path: str, markdown: str, base_dir: Path, own_repo: str | None = Non
         "first_screen": first_screen(content, headings, inside, own_repo),
         "insider_refs": insider_refs(content, own_repo),
         "term_candidates": term_candidates(content),
-        "details_blocks": details_blocks(stripped),
+        "details_blocks": blocks,
+        "size": size(markdown, blocks),
         "figures": figures(stripped, images, badges, headings),
         "badges": {
             "count": len(badges),

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>削り手の一致試験</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<style data-mock-shared>
+  .ui { font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; color: #1c1b19; background: #fff; border: 1px solid #ddd8cc; border-radius: 10px; overflow: hidden; }
+  .ui .hd { padding: 9px 14px; border-bottom: 1px solid #eee9dd; font-weight: 650; display: flex; justify-content: space-between; } .ui .hd small { color: #8a8578; font-weight: 400; }
+  .ui .u { padding: 6px 14px; border-bottom: 1px solid #f3efe6; color: #3d3a33; }
+  .ui .u.cut { background: #fbeaea; text-decoration: line-through; color: #8a8578; }
+  .ui .u.stop { background: #fff6dc; }
+  .ui .tag { font-size: 11px; font-weight: 650; margin-left: 6px; padding: 1px 6px; border-radius: 4px; }
+  .ui .tag.c { background: #b42318; color: #fff; } .ui .tag.s { background: #b47a12; color: #fff; }
+  .ui .ft { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid #eee9dd; background: #faf8f3; font-size: 13px; color: #5f5a4f; }
+  .ui .btn { font-weight: 600; padding: 5px 10px; border-radius: 7px; border: 1px solid #ddd8cc; background: #fff; }
+</style>
+<body>
+
+<header>
+  <h1>削り手と著者の印の一致試験</h1>
+  <doc-changes new="6" changed="1"></doc-changes>
+  <details class="thread"><summary>Why · 4 件</summary>
+    <doc-quote via="prompt" from="著者">あまりにもLLMのネイティブな動きは持っているコンテキストをできるだけ詰め込もうと足し算ばかりしてしまう。これはLLM向けには間違っていないが、人間向けのものには当てはまらない。むしろ、どれだけ研ぎ澄まされた一文で何かを伝えるか、摩擦を減らすかということに腐心してきたはずだ</doc-quote>
+    <doc-quote via="prompt" from="著者">これは、結局誰が読むのかという視点の問題なのではないか？…誰が読むのかをどう伝えるかが難しいのではないか？</doc-quote>
+    <doc-quote via="prompt" from="著者">試験を設計して</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: external）" href="research/2026-10-07-reader-grounded-cut-pilot.md">persona prompting は決定論的にほぼ完全な成績（"superhuman bias"）を出す … LLM 読者モデルの cut 判定と実読者の skip 印の一致を調べた研究 … 見つからなかった … 適用された review 指摘は ADD:CUT ≈ 2.4:1</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>著者は文ごとに「要らない」「止まった」を付けられる。</p>
+  <doc-mock frame="phone" w="380" caption="文は README の実物、印は例。1 回押すと「要らない」、2 回で「止まった」、3 回で消える。"><template>
+<div class="ui">
+  <div class="hd">jev-research-pipeline / README.ja <small>12 / 148 文</small></div>
+  <div class="u">jrp は、1 人で研究分野を追いかけるためのコマンドラインのツールです。</div>
+  <div class="u cut" data-ref="cut">ループを回すのは素の Python のコードです。<span class="tag c">要らない</span></div>
+  <div class="u stop" data-ref="stop">Jev は TypeSafe 社がホストする有料のモデルで、答えの決まった質問に確率で答え、文章は書きません。<span class="tag s">止まった</span></div>
+  <div class="u">ノートは英語・中国語・日本語で書けます。</div>
+  <div class="ft"><span class="btn">保存</span><span>要らない 9 · 止まった 2</span></div>
+</div></template>
+    <doc-pin ref="cut" title="削る側の証拠">読み飛ばした、または要らないと思った文。</doc-pin>
+    <doc-pin ref="stop" title="足す側の証拠" anchor="br">意味が取れず止まった文。削り手が削ってはいけない側。</doc-pin>
+  </doc-mock>
+  <doc-ask id="corpus">
+    <p>印を付ける本文はどれにしますか。</p>
+    <label><input type="radio" name="corpus" value="2+2" checked> README 2 本 + 記事 2 本 <small>約 6 万字・約 60 分。最終更新の古い順に選ぶ</small></label>
+    <label><input type="radio" name="corpus" value="3+3"> README 3 本 + 記事 3 本 <small>約 9 万字・約 100 分。n は 1.5 倍</small></label>
+    <label><input type="radio" name="corpus" value="readme"> README 4 本だけ <small>記事の結果は出ない</small></label>
+  </doc-ask>
+  <doc-note tone="warn"><strong>交絡</strong> 自分の文章なので、覚えている箇所を読み飛ばしやすい。最終更新から日の経った本文を先に選び、更新日を印と一緒に記録する。</doc-note>
+
+  <doc-claim>
+    <p>印は文単位で付け、本文の版と一緒に凍結する。</p>
+    <doc-schema id="label" lang="json" title="labels/&lt;text-id&gt;.json · sketch" caption="本文の sha が変わったら印は失効する（measurement-discipline 原則 7）。">
+<script type="text/plain">
+{
+  "text_id": "jev-research-pipeline.README.ja",
+  "source": "~/MyAI_Lab/jev-research-pipeline/README.ja.md",
+  "sha256": "…",            // 印を付けた版。違えば score は止まる
+  "last_modified": "2026-10-07",
+  "reader": "author",        // この試験の読者は著者本人だけ
+  "units": [
+    { "i": 12, "line": 17, "text": "ループを回すのは…コードです。", "mark": "skip" },
+    { "i": 13, "line": 17, "text": "Jev は TypeSafe 社が…書きません。", "mark": "stop" }
+    // mark: "skip" | "stop" | null。null は「要る」として数える
+  ]
+}
+</script>
+    </doc-schema>
+    <doc-ask id="page">
+      <p>印を付ける画面はどこに置きますか。</p>
+      <label><input type="radio" name="page" value="artifact" checked> private の Artifact <small>iPhone でも付けられる。印は Artifact の db に残る</small></label>
+      <label><input type="radio" name="page" value="local"> ローカルの HTML <small>外に出ない。最後に JSON をコピーして貼り戻す</small></label>
+    </doc-ask>
+    <doc-claim at="skills/readme-writer/scripts/readme_prose.py:163">
+      <p><b>readme_prose.py:163</b> · register_ja() の文分割を流用</p>
+      <doc-code src="skills/readme-writer/scripts/readme_prose.py" lines="176-186" hl="181-184">
+        <doc-pin line="181" tone="info" title="。！？で文を閉じる">段落をまたぐ文も 1 単位になる。</doc-pin>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>削り手は本文と読者の宣言だけを見て、文ごとに判定する。</p>
+  <doc-code title="prompt/cutter.md · sketch" lang="markdown" wrap caption="足す選択肢を持たない。判定は CUT / CONDENSE / PRESERVE の 3 つだけ。">
+<script type="text/plain">
+あなたは下の読者として、この本文を前から読む。
+仕事は削る文を選ぶことだけ。文を足す・書き換えることはしない。
+
+# 読者
+{reader}        ← arm ごとに差し替える（2.1）
+
+# 本文（番号付きの文）
+{units}
+
+各文に 1 行で答える:
+<i>\t<CUT|CONDENSE|PRESERVE>\t<根拠 1 句>
+CUT の根拠は「読者がこの文なしで同じ理解に届く理由」を、
+読者の欄の語を引いて書く。引けないなら PRESERVE。
+</script>
+  </doc-code>
+
+  <doc-claim>
+    <p>arm は 1 条件ずつ変える梯子にする。</p>
+    <doc-code title="arms.toml · sketch" lang="toml" caption="隣り合う arm の差は 1 つだけ。どの条件が効くかを対差で読む（原則 8）。">
+<script type="text/plain">
+[A0]  reader = "（空）"                         # 基準: 読者なし
+[A1]  reader = persona.md                        # 著者を説明する 1 段落
+[A2]  reader = evidence.md                       # A1 の段落を実物に置換:
+                                                 #   著者の発話の抜粋 + 既読記事の一覧
+[A3]  reader = evidence.md ; view = "前方のみ"   # その節までしか見せない（構造的制限）
+[A4]  = A2 ; model = "codex"                     # 別系統のモデル
+# 共通: model = sonnet-5.5（A4 以外）, 各 arm 2 run
+</script>
+    </doc-code>
+    <doc-ask id="arms">
+      <p>どの arm を回しますか。</p>
+      <label><input type="checkbox" name="arms" value="A0" checked> A0 読者なし <small>基準。外すと「読者の効果」が読めない</small></label>
+      <label><input type="checkbox" name="arms" value="A1" checked> A1 persona</label>
+      <label><input type="checkbox" name="arms" value="A2" checked> A2 証拠</label>
+      <label><input type="checkbox" name="arms" value="A3" checked> A3 証拠 + 前方のみ <small>呼び出しは節の数だけ増える</small></label>
+      <label><input type="checkbox" name="arms" value="A4" checked> A4 Codex <small>codex plugin の稼働が前提</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>数値・否定・限定を含む文は、根拠なしに削れない。</p>
+    <doc-code title="score.py · sketch" lang="py" caption="削り手には任せず、決定論で数える。著者が要らないとしなかった保護文の CUT は違反。">
+<script type="text/plain">
+PROTECTED = re.compile(
+    r"\d|％|%"                                  # 数値
+    r"|ない|ません|ず[、。]|なし"                 # 否定
+    r"|だけ|のみ|限り|場合|とき|未|ただし|以外"   # 限定・条件
+)
+
+def violations(units, labels, cuts):
+    return [u for u in cuts
+            if PROTECTED.search(units[u].text) and labels[u] != "skip"]
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>削り手の呼び出しは、user 設定から切り離す。</p>
+    <doc-code title="run.py · sketch" lang="py" caption="継承した output style が出力を汚す既知の罠。parse に失敗したら止める。">
+<script type="text/plain">
+cmd = ["claude", "-p", prompt,
+       "--model", arm.model,
+       "--settings", '{"outputStyle": "default"}']
+out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+rows = parse_rows(out, n_units)   # 行数が合わなければ例外。{} で続けない
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>一致は 1 枚の表で読め、run 間の揺れも並ぶ。</p>
+  <doc-mock frame="terminal" title="reader-cut-pilot" w="480" caption="lift が run 間の揺れを超えて初めて差と読む。数値は形の例。"><template><span class="dim">></span> uv run python -m scripts.reader_cut score
+text 4 本 · 文 <b>612</b> · 要らない 71 · 基準率 b = <b>0.116</b>
+
+arm  CUT  P     R     P/b   止∩CUT 保護違反 run一致
+A0   88   0.18  0.23  1.6   3      9        0.71
+A1   64   0.27  0.24  2.3   2      5        0.78
+A2   57   <span class="g">0.35</span>  0.28  <span class="g">3.0</span>   0      2        0.80
+A3   41   0.39  0.23  3.4   0      1        0.83
+
+削った字数（記録のみ）: A2 −4,120 字 / 全 61,300 字
+<span class="y">!</span> P の 95% CI 半幅 ≈ ±0.12（CUT 57 件）。方向だけを読む</template></doc-mock>
+
+  <doc-claim>
+    <p>精度は基準率と比べ、長さは記録にとどめる。</p>
+    <doc-code title="score.py · sketch" lang="py" caption="P が b を超えないなら雑音（原則 9）。長さを目標にすると削りすぎが報酬になる。">
+<script type="text/plain">
+b      = sum(m == "skip" for m in marks) / len(marks)
+P      = len(cut & skip) / len(cut)        # 削った文のうち、著者も要らない
+R      = len(cut & skip) / len(skip)       # 著者の要らないのうち、削れた分
+lift   = P / b
+stopcut = len(cut & stop)                  # 止まった文を削った数。0 が望ましい
+noise  = 1 - jaccard(cut_run1, cut_run2)   # 同じ arm の run 間の揺れ
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>次の一手は、試験の前に決めた条件で決まる。</p>
+  <doc-machine name="gate" caption="分岐の条件は 4 の決定で選ぶ。14 日で印が揃わなければ本数を減らして決める。">
+<script type="text/plain">
+machine gate initial marking
+state marking     # 著者が印を付ける。
+state running     # arm を 2 run ずつ回す。
+state scored      # 表が出る。
+state build final # 削り手を skill にする。
+state shrink      # 本数を減らして測り直す。
+state stop  final # 削り手は作らない。
+
+| marking | running | scored | build |
+| shrink  | .       | .      | stop  |
+
+marking -done->    running : 印が揃う
+marking -14d->     shrink  : 14 日
+shrink  -retry->   running : 本数半分
+running -ok->      scored  : 全 arm
+scored  -pass->    build   : 条件を満たす
+scored  -fail->    stop    : どの arm も満たさない
+</script>
+  </doc-machine>
+  <doc-ask id="threshold">
+    <p>削り手を作る条件はどれにしますか。</p>
+    <label><input type="radio" name="threshold" value="2b" checked> 最良 arm が P/b ≥ 2、R ≥ 0.4、止∩CUT ≤ 2 <small>どれも run 間の揺れの外にあること</small></label>
+    <label><input type="radio" name="threshold" value="3b"> 最良 arm が P/b ≥ 3、R ≥ 0.5、止∩CUT = 0 <small>厳しめ。n が小さいと通りにくい</small></label>
+  </doc-ask>
+  <doc-note tone="info"><strong>作るとき</strong> 読者の渡し方は A1 と A2 の lift の差で決める。差が揺れの外なら証拠で渡し、外でなければ安い persona を使う。作成は skill-creator を通し、readme-writer の内容 GO の後に挟む。<strong>作らないとき</strong> も、通読記録に「要らない」の列だけは残す。</doc-note>
+  <doc-ask id="executor">
+    <p>実行者の決定：誰が作りますか。</p>
+    <label><input type="radio" name="executor" value="build" checked> build セッションへ dispatch <small>既定。この session は検収と判定役に回る</small></label>
+    <label><input type="radio" name="executor" value="here"> この session で作る <small>script 3 本と画面 1 枚の小さな試作</small></label>
+    <label><input type="radio" name="executor" value="codex"> Codex に委譲 <small>codex:rescue。A4 と同じ系統になる</small></label>
+  </doc-ask>
+</doc-claim>
+
+<doc-claim aux="shared">
+  <p>共有：試験の置き場は readme-writer の sub-project。</p>
+  <doc-tree caption="pytest が verify に配線済みの場所に置く。本文と印は repo の外に出さない。">
+<script type="text/plain">
+skills/readme-writer/
+  + scripts/reader_cut.py          # split / run / score の 3 subcommand
+  + prompt/cutter.md               # 2 の prompt
+  + prompt/arms.toml               # 2.1 の梯子
+  + tests/test_reader_cut.py       # split と score は決定論なので test を付ける
+  evals/
+    + reader-cut/labels/           # 印（凍結）
+    + reader-cut/results/          # arm × run の生の判定
+    ~ read-through-log.md          # 「要らない」の列を足す
+</script>
+  </doc-tree>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの：判定器・執筆の流れ・宛先の決め方。</p>
+  <ul>
+    <li>readme-judge と writing-ecosystem の review ループには挟まない。挟むのは 4 で作ると決めた後。</li>
+    <li>公開文の宛先は決めない。この試験の読者は著者本人だけで、仕組みが実在の読者の読み飛ばしを追えるかを測る。</li>
+    <li>知識の少ない読者で削ると壊れるか（reverse cohesion）は測らない。調査 report の未解決として残す。</li>
+    <li>hillclimb はしない。n が小さいので、結果は方向と回帰ゲートの種にだけ使う。</li>
+    <li>本文は書き換えない。CUT を適用した版は score の中でだけ作る。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

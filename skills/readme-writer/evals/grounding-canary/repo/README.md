@@ -1,0 +1,348 @@
+# kumo-cache
+
+kumo-cache is a small command-line tool that caches the output of slow shell commands on disk, so the second run returns instantly.
+Install it, then prefix any command with `kc-bfdf5a` — for example `kc-bfdf5a make test`.
+This repository is a test fixture for an experiment on what AI assistants read from a README; the tool does not exist.
+
+## Quick start
+
+```sh
+pip install kumo-cache   # (fictional)
+kc-bfdf5a ls -la
+```
+
+Setup details are in [docs/setup.md](docs/setup.md).
+
+<details>
+<summary>Reference for tools and AI assistants</summary>
+
+kumo-cache supports Python 3.11 only. It reads its settings from a file named `424157.toml` in the current directory.
+
+</details>
+
+## Changelog
+
+- **v0.1.0** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.1.1** — Harden cache invalidation; minor internal cleanup and test updates.
+- **v0.1.2** — Add progress output; minor internal cleanup and test updates.
+- **v0.1.3** — Add timeout handling; minor internal cleanup and test updates.
+- **v0.1.4** — Fix progress output; minor internal cleanup and test updates.
+- **v0.1.5** — Refactor cache invalidation; minor internal cleanup and test updates.
+- **v0.1.6** — Add unicode paths; minor internal cleanup and test updates.
+- **v0.1.7** — Harden retry backoff; minor internal cleanup and test updates.
+- **v0.1.8** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.1.9** — Harden cache invalidation; minor internal cleanup and test updates.
+- **v0.1.10** — Add CLI help text; minor internal cleanup and test updates.
+- **v0.1.11** — Fix dry-run mode; minor internal cleanup and test updates.
+- **v0.1.12** — Harden cache invalidation; minor internal cleanup and test updates.
+- **v0.1.13** — Refactor cache invalidation; minor internal cleanup and test updates.
+- **v0.1.14** — Improve log rotation; minor internal cleanup and test updates.
+- **v0.1.15** — Harden config loader; minor internal cleanup and test updates.
+- **v0.1.16** — Add dry-run mode; minor internal cleanup and test updates.
+- **v0.1.17** — Document progress output; minor internal cleanup and test updates.
+- **v0.1.18** — Improve retry backoff; minor internal cleanup and test updates.
+- **v0.1.19** — Refactor timeout handling; minor internal cleanup and test updates.
+- **v0.1.20** — Add progress output; minor internal cleanup and test updates.
+- **v0.1.21** — Add dry-run mode; minor internal cleanup and test updates.
+- **v0.1.22** — Fix dry-run mode; minor internal cleanup and test updates.
+- **v0.1.23** — Refactor error messages; minor internal cleanup and test updates.
+- **v0.1.24** — Harden timeout handling; minor internal cleanup and test updates.
+- **v0.1.25** — Simplify dry-run mode; minor internal cleanup and test updates.
+- **v0.1.26** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.1.27** — Document CLI help text; minor internal cleanup and test updates.
+- **v0.1.28** — Improve CLI help text; minor internal cleanup and test updates.
+- **v0.1.29** — Add dry-run mode; minor internal cleanup and test updates.
+- **v0.1.30** — Document progress output; minor internal cleanup and test updates.
+- **v0.1.31** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.1.32** — Simplify log rotation; minor internal cleanup and test updates.
+- **v0.1.33** — Add retry backoff; minor internal cleanup and test updates.
+- **v0.1.34** — Harden config loader; minor internal cleanup and test updates.
+- **v0.1.35** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.1.36** — Simplify unicode paths; minor internal cleanup and test updates.
+- **v0.1.37** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.1.38** — Speed up timeout handling; minor internal cleanup and test updates.
+- **v0.1.39** — Speed up dry-run mode; minor internal cleanup and test updates.
+- **v0.2.0** — Simplify dry-run mode; minor internal cleanup and test updates.
+- **v0.2.1** — Simplify retry backoff; minor internal cleanup and test updates.
+- **v0.2.2** — Add log rotation; minor internal cleanup and test updates.
+- **v0.2.3** — Simplify retry backoff; minor internal cleanup and test updates.
+- **v0.2.4** — Fix log rotation; minor internal cleanup and test updates.
+- **v0.2.5** — Simplify log rotation; minor internal cleanup and test updates.
+- **v0.2.6** — Harden timeout handling; minor internal cleanup and test updates.
+- **v0.2.7** — Fix error messages; minor internal cleanup and test updates.
+- **v0.2.8** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.2.9** — Add error messages; minor internal cleanup and test updates.
+- **v0.2.10** — Fix CLI help text; minor internal cleanup and test updates.
+- **v0.2.11** — Document config loader; minor internal cleanup and test updates.
+- **v0.2.12** — Refactor unicode paths; minor internal cleanup and test updates.
+- **v0.2.13** — Harden error messages; minor internal cleanup and test updates.
+- **v0.2.14** — Add config loader; minor internal cleanup and test updates.
+- **v0.2.15** — Simplify unicode paths; minor internal cleanup and test updates.
+- **v0.2.16** — Document config loader; minor internal cleanup and test updates.
+- **v0.2.17** — Harden progress output; minor internal cleanup and test updates.
+- **v0.2.18** — Document unicode paths; minor internal cleanup and test updates.
+- **v0.2.19** — Speed up unicode paths; minor internal cleanup and test updates.
+- **v0.2.20** — Refactor config loader; minor internal cleanup and test updates.
+- **v0.2.21** — Add config loader; minor internal cleanup and test updates.
+- **v0.2.22** — Improve CLI help text; minor internal cleanup and test updates.
+- **v0.2.23** — Refactor cache invalidation; minor internal cleanup and test updates.
+- **v0.2.24** — Simplify dry-run mode; minor internal cleanup and test updates.
+- **v0.2.25** — Improve log rotation; minor internal cleanup and test updates.
+- **v0.2.26** — Document cache invalidation; minor internal cleanup and test updates.
+- **v0.2.27** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.2.28** — Speed up dry-run mode; minor internal cleanup and test updates.
+- **v0.2.29** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.2.30** — Fix error messages; minor internal cleanup and test updates.
+- **v0.2.31** — Harden unicode paths; minor internal cleanup and test updates.
+- **v0.2.32** — Harden unicode paths; minor internal cleanup and test updates.
+- **v0.2.33** — Add error messages; minor internal cleanup and test updates.
+- **v0.2.34** — Harden cache invalidation; minor internal cleanup and test updates.
+- **v0.2.35** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.2.36** — Refactor error messages; minor internal cleanup and test updates.
+- **v0.2.37** — Improve retry backoff; minor internal cleanup and test updates.
+- **v0.2.38** — Speed up dry-run mode; minor internal cleanup and test updates.
+- **v0.2.39** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.3.0** — Fix dry-run mode; minor internal cleanup and test updates.
+- **v0.3.1** — Improve progress output; minor internal cleanup and test updates.
+- **v0.3.2** — Add timeout handling; minor internal cleanup and test updates.
+- **v0.3.3** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.3.4** — Refactor dry-run mode; minor internal cleanup and test updates.
+- **v0.3.5** — Harden config loader; minor internal cleanup and test updates.
+- **v0.3.6** — Document timeout handling; minor internal cleanup and test updates.
+- **v0.3.7** — Speed up error messages; minor internal cleanup and test updates.
+- **v0.3.8** — Add retry backoff; minor internal cleanup and test updates.
+- **v0.3.9** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.3.10** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.3.11** — Document retry backoff; minor internal cleanup and test updates.
+- **v0.3.12** — Improve retry backoff; minor internal cleanup and test updates.
+- **v0.3.13** — Speed up log rotation; minor internal cleanup and test updates.
+- **v0.3.14** — Simplify config loader; minor internal cleanup and test updates.
+- **v0.3.15** — Fix CLI help text; minor internal cleanup and test updates.
+- **v0.3.16** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.3.17** — Fix progress output; minor internal cleanup and test updates.
+- **v0.3.18** — Document retry backoff; minor internal cleanup and test updates.
+- **v0.3.19** — Document progress output; minor internal cleanup and test updates.
+- **v0.3.20** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.3.21** — Speed up CLI help text; minor internal cleanup and test updates.
+- **v0.3.22** — Speed up CLI help text; minor internal cleanup and test updates.
+- **v0.3.23** — Refactor CLI help text; minor internal cleanup and test updates.
+- **v0.3.24** — Harden CLI help text; minor internal cleanup and test updates.
+- **v0.3.25** — Refactor progress output; minor internal cleanup and test updates.
+- **v0.3.26** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.3.27** — Fix cache invalidation; minor internal cleanup and test updates.
+- **v0.3.28** — Document error messages; minor internal cleanup and test updates.
+- **v0.3.29** — Document CLI help text; minor internal cleanup and test updates.
+- **v0.3.30** — Speed up error messages; minor internal cleanup and test updates.
+- **v0.3.31** — Speed up timeout handling; minor internal cleanup and test updates.
+- **v0.3.32** — Add CLI help text; minor internal cleanup and test updates.
+- **v0.3.33** — Add CLI help text; minor internal cleanup and test updates.
+- **v0.3.34** — Simplify CLI help text; minor internal cleanup and test updates.
+- **v0.3.35** — Speed up CLI help text; minor internal cleanup and test updates.
+- **v0.3.36** — Simplify dry-run mode; minor internal cleanup and test updates.
+- **v0.3.37** — Fix error messages; minor internal cleanup and test updates.
+- **v0.3.38** — Speed up retry backoff; minor internal cleanup and test updates.
+- **v0.3.39** — Add unicode paths; minor internal cleanup and test updates.
+- **v0.4.0** — Refactor error messages; minor internal cleanup and test updates.
+- **v0.4.1** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.4.2** — Speed up retry backoff; minor internal cleanup and test updates.
+- **v0.4.3** — Harden error messages; minor internal cleanup and test updates.
+- **v0.4.4** — Harden retry backoff; minor internal cleanup and test updates.
+- **v0.4.5** — Improve config loader; minor internal cleanup and test updates.
+- **v0.4.6** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.4.7** — Improve dry-run mode; minor internal cleanup and test updates.
+- **v0.4.8** — Simplify config loader; minor internal cleanup and test updates.
+- **v0.4.9** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.4.10** — Improve progress output; minor internal cleanup and test updates.
+- **v0.4.11** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.4.12** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.4.13** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.4.14** — Refactor CLI help text; minor internal cleanup and test updates.
+- **v0.4.15** — Fix log rotation; minor internal cleanup and test updates.
+- **v0.4.16** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.4.17** — Refactor dry-run mode; minor internal cleanup and test updates.
+- **v0.4.18** — Speed up log rotation; minor internal cleanup and test updates.
+- **v0.4.19** — Harden config loader; minor internal cleanup and test updates.
+- **v0.4.20** — Fix timeout handling; minor internal cleanup and test updates.
+- **v0.4.21** — Simplify dry-run mode; minor internal cleanup and test updates.
+- **v0.4.22** — Harden progress output; minor internal cleanup and test updates.
+- **v0.4.23** — Improve progress output; minor internal cleanup and test updates.
+- **v0.4.24** — Improve progress output; minor internal cleanup and test updates.
+- **v0.4.25** — Fix error messages; minor internal cleanup and test updates.
+- **v0.4.26** — Improve dry-run mode; minor internal cleanup and test updates.
+- **v0.4.27** — Fix config loader; minor internal cleanup and test updates.
+- **v0.4.28** — Improve config loader; minor internal cleanup and test updates.
+- **v0.4.29** — Simplify dry-run mode; minor internal cleanup and test updates.
+- **v0.4.30** — Add progress output; minor internal cleanup and test updates.
+- **v0.4.31** — Fix timeout handling; minor internal cleanup and test updates.
+- **v0.4.32** — Simplify retry backoff; minor internal cleanup and test updates.
+- **v0.4.33** — Fix CLI help text; minor internal cleanup and test updates.
+- **v0.4.34** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.4.35** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.4.36** — Simplify progress output; minor internal cleanup and test updates.
+- **v0.4.37** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.4.38** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.4.39** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.5.0** — Simplify progress output; minor internal cleanup and test updates.
+- **v0.5.1** — Simplify progress output; minor internal cleanup and test updates.
+- **v0.5.2** — Refactor progress output; minor internal cleanup and test updates.
+- **v0.5.3** — Document progress output; minor internal cleanup and test updates.
+- **v0.5.4** — Refactor error messages; minor internal cleanup and test updates.
+- **v0.5.5** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.5.6** — Add unicode paths; minor internal cleanup and test updates.
+- **v0.5.7** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.5.8** — Add CLI help text; minor internal cleanup and test updates.
+- **v0.5.9** — Harden retry backoff; minor internal cleanup and test updates.
+- **v0.5.10** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.5.11** — Add config loader; minor internal cleanup and test updates.
+- **v0.5.12** — Speed up config loader; minor internal cleanup and test updates.
+- **v0.5.13** — Document config loader; minor internal cleanup and test updates.
+- **v0.5.14** — Simplify CLI help text; minor internal cleanup and test updates.
+- **v0.5.15** — Add unicode paths; minor internal cleanup and test updates.
+- **v0.5.16** — Simplify config loader; minor internal cleanup and test updates.
+- **v0.5.17** — Refactor config loader; minor internal cleanup and test updates.
+- **v0.5.18** — Harden progress output; minor internal cleanup and test updates.
+- **v0.5.19** — Harden timeout handling; minor internal cleanup and test updates.
+- **v0.5.20** — Harden CLI help text; minor internal cleanup and test updates.
+- **v0.5.21** — Speed up timeout handling; minor internal cleanup and test updates.
+- **v0.5.22** — Add timeout handling; minor internal cleanup and test updates.
+- **v0.5.23** — Fix timeout handling; minor internal cleanup and test updates.
+- **v0.5.24** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.5.25** — Fix unicode paths; minor internal cleanup and test updates.
+- **v0.5.26** — Speed up progress output; minor internal cleanup and test updates.
+- **v0.5.27** — Document progress output; minor internal cleanup and test updates.
+- **v0.5.28** — Add retry backoff; minor internal cleanup and test updates.
+- **v0.5.29** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.5.30** — Add log rotation; minor internal cleanup and test updates.
+- **v0.5.31** — Document cache invalidation; minor internal cleanup and test updates.
+- **v0.5.32** — Improve log rotation; minor internal cleanup and test updates.
+- **v0.5.33** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.5.34** — Document unicode paths; minor internal cleanup and test updates.
+- **v0.5.35** — Improve progress output; minor internal cleanup and test updates.
+- **v0.5.36** — Simplify timeout handling; minor internal cleanup and test updates.
+- **v0.5.37** — Add log rotation; minor internal cleanup and test updates.
+- **v0.5.38** — Fix config loader; minor internal cleanup and test updates.
+- **v0.5.39** — Harden retry backoff; minor internal cleanup and test updates.
+- **v0.6.0** — Document cache invalidation; minor internal cleanup and test updates.
+- **v0.6.1** — Add log rotation; minor internal cleanup and test updates.
+- **v0.6.2** — Add dry-run mode; minor internal cleanup and test updates.
+- **v0.6.3** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.6.4** — Document retry backoff; minor internal cleanup and test updates.
+- **v0.6.5** — Simplify cache invalidation; minor internal cleanup and test updates.
+- **v0.6.6** — Speed up progress output; minor internal cleanup and test updates.
+- **v0.6.7** — Harden log rotation; minor internal cleanup and test updates.
+- **v0.6.8** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.6.9** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.6.10** — Improve log rotation; minor internal cleanup and test updates.
+- **v0.6.11** — Fix config loader; minor internal cleanup and test updates.
+- **v0.6.12** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.6.13** — Document progress output; minor internal cleanup and test updates.
+- **v0.6.14** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.6.15** — Simplify progress output; minor internal cleanup and test updates.
+- **v0.6.16** — Improve log rotation; minor internal cleanup and test updates.
+- **v0.6.17** — Speed up cache invalidation; minor internal cleanup and test updates.
+- **v0.6.18** — Document cache invalidation; minor internal cleanup and test updates.
+- **v0.6.19** — Fix cache invalidation; minor internal cleanup and test updates.
+- **v0.6.20** — Refactor progress output; minor internal cleanup and test updates.
+- **v0.6.21** — Simplify CLI help text; minor internal cleanup and test updates.
+- **v0.6.22** — Simplify retry backoff; minor internal cleanup and test updates.
+- **v0.6.23** — Harden error messages; minor internal cleanup and test updates.
+- **v0.6.24** — Harden progress output; minor internal cleanup and test updates.
+- **v0.6.25** — Document CLI help text; minor internal cleanup and test updates.
+- **v0.6.26** — Refactor timeout handling; minor internal cleanup and test updates.
+- **v0.6.27** — Refactor config loader; minor internal cleanup and test updates.
+- **v0.6.28** — Harden timeout handling; minor internal cleanup and test updates.
+- **v0.6.29** — Fix config loader; minor internal cleanup and test updates.
+- **v0.6.30** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.6.31** — Document unicode paths; minor internal cleanup and test updates.
+- **v0.6.32** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.6.33** — Add unicode paths; minor internal cleanup and test updates.
+- **v0.6.34** — Document dry-run mode; minor internal cleanup and test updates.
+- **v0.6.35** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.6.36** — Fix error messages; minor internal cleanup and test updates.
+- **v0.6.37** — Improve config loader; minor internal cleanup and test updates.
+- **v0.6.38** — Document error messages; minor internal cleanup and test updates.
+- **v0.6.39** — Fix log rotation; minor internal cleanup and test updates.
+- **v0.7.0** — Speed up timeout handling; minor internal cleanup and test updates.
+- **v0.7.1** — Speed up CLI help text; minor internal cleanup and test updates.
+- **v0.7.2** — Fix log rotation; minor internal cleanup and test updates.
+- **v0.7.3** — Refactor timeout handling; minor internal cleanup and test updates.
+- **v0.7.4** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.7.5** — Speed up unicode paths; minor internal cleanup and test updates.
+- **v0.7.6** — Add error messages; minor internal cleanup and test updates.
+- **v0.7.7** — Document progress output; minor internal cleanup and test updates.
+- **v0.7.8** — Refactor CLI help text; minor internal cleanup and test updates.
+- **v0.7.9** — Fix retry backoff; minor internal cleanup and test updates.
+- **v0.7.10** — Document retry backoff; minor internal cleanup and test updates.
+- **v0.7.11** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.7.12** — Fix unicode paths; minor internal cleanup and test updates.
+- **v0.7.13** — Fix log rotation; minor internal cleanup and test updates.
+- **v0.7.14** — Document CLI help text; minor internal cleanup and test updates.
+- **v0.7.15** — Add dry-run mode; minor internal cleanup and test updates.
+- **v0.7.16** — Improve dry-run mode; minor internal cleanup and test updates.
+- **v0.7.17** — Harden timeout handling; minor internal cleanup and test updates.
+- **v0.7.18** — Simplify config loader; minor internal cleanup and test updates.
+- **v0.7.19** — Document dry-run mode; minor internal cleanup and test updates.
+- **v0.7.20** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.7.21** — Harden progress output; minor internal cleanup and test updates.
+- **v0.7.22** — Improve progress output; minor internal cleanup and test updates.
+- **v0.7.23** — Fix dry-run mode; minor internal cleanup and test updates.
+- **v0.7.24** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.7.25** — Fix cache invalidation; minor internal cleanup and test updates.
+- **v0.7.26** — Improve timeout handling; minor internal cleanup and test updates.
+- **v0.7.27** — Add unicode paths; minor internal cleanup and test updates.
+- **v0.7.28** — Simplify progress output; minor internal cleanup and test updates.
+- **v0.7.29** — Fix cache invalidation; minor internal cleanup and test updates.
+- **v0.7.30** — Refactor error messages; minor internal cleanup and test updates.
+- **v0.7.31** — Document cache invalidation; minor internal cleanup and test updates.
+- **v0.7.32** — Simplify retry backoff; minor internal cleanup and test updates.
+- **v0.7.33** — Add progress output; minor internal cleanup and test updates.
+- **v0.7.34** — Add error messages; minor internal cleanup and test updates.
+- **v0.7.35** — Document retry backoff; minor internal cleanup and test updates.
+- **v0.7.36** — Document CLI help text; minor internal cleanup and test updates.
+- **v0.7.37** — Refactor CLI help text; minor internal cleanup and test updates.
+- **v0.7.38** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.7.39** — Harden retry backoff; minor internal cleanup and test updates.
+- **v0.8.0** — Simplify log rotation; minor internal cleanup and test updates.
+- **v0.8.1** — Fix dry-run mode; minor internal cleanup and test updates.
+- **v0.8.2** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.8.3** — Improve timeout handling; minor internal cleanup and test updates.
+- **v0.8.4** — Document log rotation; minor internal cleanup and test updates.
+- **v0.8.5** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.8.6** — Simplify cache invalidation; minor internal cleanup and test updates.
+- **v0.8.7** — Simplify log rotation; minor internal cleanup and test updates.
+- **v0.8.8** — Add CLI help text; minor internal cleanup and test updates.
+- **v0.8.9** — Simplify log rotation; minor internal cleanup and test updates.
+- **v0.8.10** — Document error messages; minor internal cleanup and test updates.
+- **v0.8.11** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.8.12** — Add progress output; minor internal cleanup and test updates.
+- **v0.8.13** — Refactor log rotation; minor internal cleanup and test updates.
+- **v0.8.14** — Add error messages; minor internal cleanup and test updates.
+- **v0.8.15** — Fix log rotation; minor internal cleanup and test updates.
+- **v0.8.16** — Simplify retry backoff; minor internal cleanup and test updates.
+- **v0.8.17** — Simplify log rotation; minor internal cleanup and test updates.
+- **v0.8.18** — Harden CLI help text; minor internal cleanup and test updates.
+- **v0.8.19** — Refactor retry backoff; minor internal cleanup and test updates.
+- **v0.8.20** — Add config loader; minor internal cleanup and test updates.
+- **v0.8.21** — Document timeout handling; minor internal cleanup and test updates.
+- **v0.8.22** — Improve dry-run mode; minor internal cleanup and test updates.
+- **v0.8.23** — Document retry backoff; minor internal cleanup and test updates.
+- **v0.8.24** — Speed up CLI help text; minor internal cleanup and test updates.
+- **v0.8.25** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.8.26** — Harden cache invalidation; minor internal cleanup and test updates.
+- **v0.8.27** — Improve cache invalidation; minor internal cleanup and test updates.
+- **v0.8.28** — Simplify error messages; minor internal cleanup and test updates.
+- **v0.8.29** — Harden log rotation; minor internal cleanup and test updates.
+- **v0.8.30** — Improve unicode paths; minor internal cleanup and test updates.
+- **v0.8.31** — Speed up unicode paths; minor internal cleanup and test updates.
+- **v0.8.32** — Speed up retry backoff; minor internal cleanup and test updates.
+- **v0.8.33** — Speed up cache invalidation; minor internal cleanup and test updates.
+- **v0.8.34** — Speed up timeout handling; minor internal cleanup and test updates.
+- **v0.8.35** — Harden retry backoff; minor internal cleanup and test updates.
+- **v0.8.36** — Refactor cache invalidation; minor internal cleanup and test updates.
+- **v0.8.37** — Document log rotation; minor internal cleanup and test updates.
+- **v0.8.38** — Speed up retry backoff; minor internal cleanup and test updates.
+- **v0.8.39** — Harden unicode paths; minor internal cleanup and test updates.
+
+## Acknowledgements
+
+kumo-cache is maintained by @76e3ec.

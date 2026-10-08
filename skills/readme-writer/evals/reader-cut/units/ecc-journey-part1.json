@@ -1,0 +1,1497 @@
+{
+ "text_id": "ecc-journey-part1",
+ "source": "~/MyAI_Lab/zenn-content/articles/ecc-journey-part1.md",
+ "sha256": "0171599c56cd2b6a8648874458b2c317c1d52050f7973733f78defc43788f279",
+ "last_modified": "2026-08-27",
+ "reader": "author",
+ "units": [
+  {
+   "i": 0,
+   "line": 14,
+   "section": 2,
+   "kind": "sentence",
+   "text": "Everything Claude Code (ECC) は、Claude Codeの完全な設定コレクションです。",
+   "mark": null
+  },
+  {
+   "i": 1,
+   "line": 14,
+   "section": 2,
+   "kind": "sentence",
+   "text": "その本質は単なる「設定集」ではありません。",
+   "mark": null
+  },
+  {
+   "i": 2,
+   "line": 16,
+   "section": 2,
+   "kind": "sentence",
+   "text": "ECCが提供するのは、開発の完全なPDCAサイクルを体験できる環境です。",
+   "mark": null
+  },
+  {
+   "i": 3,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "このリポジトリの作者はAffaan Mustafa氏です。",
+   "mark": null
+  },
+  {
+   "i": 4,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "2025年9月のAnthropic x Forum Ventures hackathonで、Claude Codeを使ってzenith.chatをわずか8時間で構築しました。",
+   "mark": null
+  },
+  {
+   "i": 5,
+   "line": 38,
+   "section": 2,
+   "kind": "sentence",
+   "text": "$15,000相当のAPIクレジットを獲得し優勝しています。",
+   "mark": null
+  },
+  {
+   "i": 6,
+   "line": 40,
+   "section": 2,
+   "kind": "sentence",
+   "text": "ECC は、agents (15+)、skills (30+)、commands (30+)、rules、hooksで構成されています。",
+   "mark": null
+  },
+  {
+   "i": 7,
+   "line": 40,
+   "section": 2,
+   "kind": "sentence",
+   "text": "重要なのは、これらが開発の一気通貫したフローを実現していることです。",
+   "mark": null
+  },
+  {
+   "i": 8,
+   "line": 44,
+   "section": 3,
+   "kind": "sentence",
+   "text": "Vibe Coding時代（Claude Code、Cursor等）では実装が高速化しました。",
+   "mark": null
+  },
+  {
+   "i": 9,
+   "line": 44,
+   "section": 3,
+   "kind": "sentence",
+   "text": "ボトルネックは「コードを書くこと」から「何を作るか・どう作るかの判断」に移っています。",
+   "mark": null
+  },
+  {
+   "i": 10,
+   "line": 46,
+   "section": 3,
+   "kind": "sentence",
+   "text": "ECCは、計画→実装→検証→改善という開発の全体フローを、誰でも短期間で体験できる環境を提供します。",
+   "mark": null
+  },
+  {
+   "i": 11,
+   "line": 48,
+   "section": 3,
+   "kind": "sentence",
+   "text": "参考:",
+   "mark": null
+  },
+  {
+   "i": 12,
+   "line": 50,
+   "section": 3,
+   "kind": "item",
+   "text": "GitHub - Everything Claude Code",
+   "mark": null
+  },
+  {
+   "i": 13,
+   "line": 51,
+   "section": 3,
+   "kind": "item",
+   "text": "Everything Claude Code: The Repo That Won Anthropic Hackathon",
+   "mark": null
+  },
+  {
+   "i": 14,
+   "line": 52,
+   "section": 3,
+   "kind": "item",
+   "text": "The Claude Code setup that won a hackathon",
+   "mark": null
+  },
+  {
+   "i": 15,
+   "line": 56,
+   "section": 4,
+   "kind": "sentence",
+   "text": "私は趣味でPythonを少し書く程度のプログラミング初心者でした：",
+   "mark": null
+  },
+  {
+   "i": 16,
+   "line": 58,
+   "section": 4,
+   "kind": "item",
+   "text": "gitって何？というレベル",
+   "mark": null
+  },
+  {
+   "i": 17,
+   "line": 59,
+   "section": 4,
+   "kind": "item",
+   "text": "本格的なアプリ開発の経験なし",
+   "mark": null
+  },
+  {
+   "i": 18,
+   "line": 60,
+   "section": 4,
+   "kind": "item",
+   "text": "テストも書かない、ドキュメントもない",
+   "mark": null
+  },
+  {
+   "i": 19,
+   "line": 61,
+   "section": 4,
+   "kind": "item",
+   "text": "バージョン管理という概念すら知らない",
+   "mark": null
+  },
+  {
+   "i": 20,
+   "line": 63,
+   "section": 4,
+   "kind": "sentence",
+   "text": "そんな私が、2026年1月末にポッドキャストでEverything Claude Codeを知り、初めて本格的な開発を始めました。",
+   "mark": null
+  },
+  {
+   "i": 21,
+   "line": 67,
+   "section": 5,
+   "kind": "sentence",
+   "text": "Everything Claude Code環境で開発を始めてから10日間で、私が体得したのは個別のスキルではありません。",
+   "mark": null
+  },
+  {
+   "i": 22,
+   "line": 69,
+   "section": 5,
+   "kind": "sentence",
+   "text": "開発の完全なPDCAサイクルを、繰り返し回す経験でした：",
+   "mark": null
+  },
+  {
+   "i": 23,
+   "line": 71,
+   "section": 5,
+   "kind": "item",
+   "text": "問題をどう理解するか（リサーチの方法）",
+   "mark": null
+  },
+  {
+   "i": 24,
+   "line": 72,
+   "section": 5,
+   "kind": "item",
+   "text": "システムをどう設計するか（アーキテクトの思考法）",
+   "mark": null
+  },
+  {
+   "i": 25,
+   "line": 73,
+   "section": 5,
+   "kind": "item",
+   "text": "実装をどう計画するか（プランニングの技術）",
+   "mark": null
+  },
+  {
+   "i": 26,
+   "line": 74,
+   "section": 5,
+   "kind": "item",
+   "text": "品質をどう保証するか（TDD、コードレビュー）",
+   "mark": null
+  },
+  {
+   "i": 27,
+   "line": 75,
+   "section": 5,
+   "kind": "item",
+   "text": "知識をどう蓄積するか（ドキュメント駆動）",
+   "mark": null
+  },
+  {
+   "i": 28,
+   "line": 79,
+   "section": 6,
+   "kind": "sentence",
+   "text": "多くの開発者は、従来の開発環境からClaude Codeに移行します。",
+   "mark": null
+  },
+  {
+   "i": 29,
+   "line": 79,
+   "section": 6,
+   "kind": "sentence",
+   "text": "そして、「効率化された」「開発が速くなった」と実感するでしょう。",
+   "mark": null
+  },
+  {
+   "i": 30,
+   "line": 81,
+   "section": 6,
+   "kind": "sentence",
+   "text": "私の場合は違います。",
+   "mark": null
+  },
+  {
+   "i": 31,
+   "line": 81,
+   "section": 6,
+   "kind": "sentence",
+   "text": "ECC環境が私の開発の「普通」です。",
+   "mark": null
+  },
+  {
+   "i": 32,
+   "line": 83,
+   "section": 6,
+   "kind": "sentence",
+   "text": "従来の開発環境も、手作業でのgit操作も、一切経験していません。",
+   "mark": null
+  },
+  {
+   "i": 33,
+   "line": 83,
+   "section": 6,
+   "kind": "sentence",
+   "text": "開発者として最初の一歩を踏み出したとき、すでにEverything Claude Code環境でした。",
+   "mark": null
+  },
+  {
+   "i": 34,
+   "line": 85,
+   "section": 6,
+   "kind": "sentence",
+   "text": "比較対象がないため：",
+   "mark": null
+  },
+  {
+   "i": 35,
+   "line": 87,
+   "section": 6,
+   "kind": "item",
+   "text": "「計画は面倒」という抵抗感がない",
+   "mark": null
+  },
+  {
+   "i": 36,
+   "line": 88,
+   "section": 6,
+   "kind": "item",
+   "text": "「テストは後回し」という悪習がない",
+   "mark": null
+  },
+  {
+   "i": 37,
+   "line": 89,
+   "section": 6,
+   "kind": "item",
+   "text": "「ドキュメントは負債」という先入観がない",
+   "mark": null
+  },
+  {
+   "i": 38,
+   "line": 90,
+   "section": 6,
+   "kind": "item",
+   "text": "PDCAサイクルを回すのが当たり前",
+   "mark": null
+  },
+  {
+   "i": 39,
+   "line": 92,
+   "section": 6,
+   "kind": "sentence",
+   "text": "私にとって、リサーチ→アーキテクト→プラン→実装→レビュー→ドキュメントという一気通貫のフローが、開発の「普通」です。",
+   "mark": null
+  },
+  {
+   "i": 40,
+   "line": 94,
+   "section": 6,
+   "kind": "sentence",
+   "text": "この環境で私が取った学習アプローチは、しつこく質問しまくることでした。",
+   "mark": null
+  },
+  {
+   "i": 41,
+   "line": 96,
+   "section": 6,
+   "kind": "sentence",
+   "text": "「ECC効果など感じることはない。",
+   "mark": null
+  },
+  {
+   "i": 42,
+   "line": 96,
+   "section": 6,
+   "kind": "sentence",
+   "text": "なぜならECC以外の枠組みを知らないから」",
+   "mark": null
+  },
+  {
+   "i": 43,
+   "line": 98,
+   "section": 6,
+   "kind": "sentence",
+   "text": "これが、私が10日経って気づいた逆説的な事実です。",
+   "mark": null
+  },
+  {
+   "i": 44,
+   "line": 98,
+   "section": 6,
+   "kind": "sentence",
+   "text": "そして同時に、良い学習環境で開発を始められたということでもあります。",
+   "mark": null
+  },
+  {
+   "i": 45,
+   "line": 104,
+   "section": 8,
+   "kind": "sentence",
+   "text": "ある日、Spotifyであるポッドキャストを聴きました。",
+   "mark": null
+  },
+  {
+   "i": 46,
+   "line": 104,
+   "section": 8,
+   "kind": "sentence",
+   "text": "尾原和啓氏といけとも氏の対談でした。",
+   "mark": null
+  },
+  {
+   "i": 47,
+   "line": 108,
+   "section": 8,
+   "kind": "sentence",
+   "text": "いけとも氏がEverything Claude Code (ECC) について語る内容を、私は集中して聴きました。",
+   "mark": null
+  },
+  {
+   "i": 48,
+   "line": 111,
+   "section": 8,
+   "kind": "sentence",
+   "text": "「これは使えるかもしれない」",
+   "mark": null
+  },
+  {
+   "i": 49,
+   "line": 114,
+   "section": 8,
+   "kind": "sentence",
+   "text": "そう判断し、ポッドキャストを聴き終わった後、すぐにECCを導入することにしました。",
+   "mark": null
+  },
+  {
+   "i": 50,
+   "line": 118,
+   "section": 9,
+   "kind": "sentence",
+   "text": "次に、いけとも氏のYoutube動画を見つけました。",
+   "mark": null
+  },
+  {
+   "i": 51,
+   "line": 122,
+   "section": 9,
+   "kind": "sentence",
+   "text": "この動画を注意深く視聴しました：",
+   "mark": null
+  },
+  {
+   "i": 52,
+   "line": 124,
+   "section": 9,
+   "kind": "item",
+   "text": "メモを取りながら再生",
+   "mark": null
+  },
+  {
+   "i": 53,
+   "line": 125,
+   "section": 9,
+   "kind": "item",
+   "text": "理解できない部分は何度も巻き戻し",
+   "mark": null
+  },
+  {
+   "i": 54,
+   "line": 126,
+   "section": 9,
+   "kind": "item",
+   "text": "使用法を学習",
+   "mark": null
+  },
+  {
+   "i": 55,
+   "line": 128,
+   "section": 9,
+   "kind": "sentence",
+   "text": "Youtubeでの学びは単なる概念理解ではなく、具体的な使い方までカバーしていました。",
+   "mark": null
+  },
+  {
+   "i": 56,
+   "line": 128,
+   "section": 9,
+   "kind": "sentence",
+   "text": "これが後の導入をスムーズにしてくれました。",
+   "mark": null
+  },
+  {
+   "i": 57,
+   "line": 132,
+   "section": 10,
+   "kind": "sentence",
+   "text": "次に、NotebookLMを使ってECCに関する情報を集めました：",
+   "mark": null
+  },
+  {
+   "i": 58,
+   "line": 134,
+   "section": 10,
+   "kind": "item",
+   "text": "いけとも氏のポッドキャストの内容",
+   "mark": null
+  },
+  {
+   "i": 59,
+   "line": 135,
+   "section": 10,
+   "kind": "item",
+   "text": "Youtube動画の内容",
+   "mark": null
+  },
+  {
+   "i": 60,
+   "line": 136,
+   "section": 10,
+   "kind": "item",
+   "text": "ECC開発者のページ",
+   "mark": null
+  },
+  {
+   "i": 61,
+   "line": 137,
+   "section": 10,
+   "kind": "item",
+   "text": "GitHub README・ドキュメント",
+   "mark": null
+  },
+  {
+   "i": 62,
+   "line": 138,
+   "section": 10,
+   "kind": "item",
+   "text": "ECC関連情報",
+   "mark": null
+  },
+  {
+   "i": 63,
+   "line": 140,
+   "section": 10,
+   "kind": "sentence",
+   "text": "NotebookLMに情報を集約することで、ベストプラクティスを探ることができました。",
+   "mark": null
+  },
+  {
+   "i": 64,
+   "line": 144,
+   "section": 11,
+   "kind": "sentence",
+   "text": "私はコマンドラインツール（CLI）に慣れていなかったため、GitHubから手動でZIPファイルをダウンロードしました。",
+   "mark": null
+  },
+  {
+   "i": 65,
+   "line": 148,
+   "section": 11,
+   "kind": "sentence",
+   "text": "しかし、ここで重大なミスを犯しました。",
+   "mark": null
+  },
+  {
+   "i": 66,
+   "line": 150,
+   "section": 11,
+   "kind": "sentence",
+   "text": "誤配置: `~/MyAI_Lab/.claude/` に全ファイルを配置してしまったのです。",
+   "mark": null
+  },
+  {
+   "i": 67,
+   "line": 152,
+   "section": 11,
+   "kind": "sentence",
+   "text": "本来は `~/.claude/`（ユーザーホーム直下）に配置すべきでした。",
+   "mark": null
+  },
+  {
+   "i": 68,
+   "line": 170,
+   "section": 11,
+   "kind": "sentence",
+   "text": "この誤配置により、全プロジェクトが同じ設定を強制的に共有することになり、プロジェクトごとの柔軟な設定ができない状態でした。",
+   "mark": null
+  },
+  {
+   "i": 69,
+   "line": 174,
+   "section": 12,
+   "kind": "sentence",
+   "text": "2026年1月31日〜2月7日の10日間、私はこの誤った配置のまま開発を続けました。",
+   "mark": null
+  },
+  {
+   "i": 70,
+   "line": 176,
+   "section": 12,
+   "kind": "sentence",
+   "text": "次第に「プロジェクトごとに異なる設定をしたいのにできない」という問題に気づき始めました。",
+   "mark": null
+  },
+  {
+   "i": 71,
+   "line": 180,
+   "section": 13,
+   "kind": "sentence",
+   "text": "公式ドキュメントとGitHub issuesを読み直し、ECCの階層構造（ユーザー > ワークスペース > プロジェクト）の真の意味を理解しました。",
+   "mark": null
+  },
+  {
+   "i": 72,
+   "line": 182,
+   "section": 13,
+   "kind": "sentence",
+   "text": "修正作業：",
+   "mark": null
+  },
+  {
+   "i": 73,
+   "line": 184,
+   "section": 13,
+   "kind": "item",
+   "text": "決断: MyAI_Lab/.claudeからの移行を決意",
+   "mark": null
+  },
+  {
+   "i": 74,
+   "line": 185,
+   "section": 13,
+   "kind": "item",
+   "text": "移動: `~/.claude/` にrules/skills/agentsを移動",
+   "mark": null
+  },
+  {
+   "i": 75,
+   "line": 186,
+   "section": 13,
+   "kind": "item",
+   "text": "削除: MyAI_Lab/.claude/からrules/skills/agentsを削除",
+   "mark": null
+  },
+  {
+   "i": 76,
+   "line": 187,
+   "section": 13,
+   "kind": "item",
+   "text": "整理: MyAI_Lab/.claude/には `settings.local.json` のみ残す",
+   "mark": null
+  },
+  {
+   "i": 77,
+   "line": 188,
+   "section": 13,
+   "kind": "item",
+   "text": "クリーンアップ: 不要なGitHub関連ファイル（README、LICENSE等）を削除",
+   "mark": null
+  },
+  {
+   "i": 78,
+   "line": 192,
+   "section": 14,
+   "kind": "sentence",
+   "text": "この10日間の配置ミスは、結果的に学習機会でした：",
+   "mark": null
+  },
+  {
+   "i": 79,
+   "line": 194,
+   "section": 14,
+   "kind": "item",
+   "text": "RTFM (Read The Fing Manual): 公式ドキュメントを最初に読むべきだった",
+   "mark": null
+  },
+  {
+   "i": 80,
+   "line": 195,
+   "section": 14,
+   "kind": "item",
+   "text": "階層構造の理解: ユーザー/ワークスペース/プロジェクトの役割分担",
+   "mark": null
+  },
+  {
+   "i": 81,
+   "line": 196,
+   "section": 14,
+   "kind": "item",
+   "text": "実践から学ぶ: 10日間の開発を通じて問題に気づき、修正",
+   "mark": null
+  },
+  {
+   "i": 82,
+   "line": 198,
+   "section": 14,
+   "kind": "sentence",
+   "text": "比較対象がないため、失敗を恐れずに試行錯誤できました。",
+   "mark": null
+  },
+  {
+   "i": 83,
+   "line": 198,
+   "section": 14,
+   "kind": "sentence",
+   "text": "この経験がなければ、ECCの階層構造を理解できなかったでしょう。",
+   "mark": null
+  },
+  {
+   "i": 84,
+   "line": 204,
+   "section": 16,
+   "kind": "sentence",
+   "text": "開発の全体フローを経験できるのは、従来は一部の限られたマネジメント層だけでした：",
+   "mark": null
+  },
+  {
+   "i": 85,
+   "line": 206,
+   "section": 16,
+   "kind": "item",
+   "text": "新人は「実装」だけを担当",
+   "mark": null
+  },
+  {
+   "i": 86,
+   "line": 207,
+   "section": 16,
+   "kind": "item",
+   "text": "中堅は「設計と実装」を担当",
+   "mark": null
+  },
+  {
+   "i": 87,
+   "line": 208,
+   "section": 16,
+   "kind": "item",
+   "text": "シニアが「計画から検証まで」を担当",
+   "mark": null
+  },
+  {
+   "i": 88,
+   "line": 209,
+   "section": 16,
+   "kind": "item",
+   "text": "マネージャーだけが「全体フロー」を経験",
+   "mark": null
+  },
+  {
+   "i": 89,
+   "line": 211,
+   "section": 16,
+   "kind": "sentence",
+   "text": "開発者がこの全体フローを経験するには、数年〜10年のキャリアが必要でした。",
+   "mark": null
+  },
+  {
+   "i": 90,
+   "line": 215,
+   "section": 17,
+   "kind": "sentence",
+   "text": "従来、開発の全体フローを経験するには数年のキャリアが必要でした。",
+   "mark": null
+  },
+  {
+   "i": 91,
+   "line": 215,
+   "section": 17,
+   "kind": "sentence",
+   "text": "ECCはそのサイクルを、誰でも短期間で何度も回せるようにします。",
+   "mark": null
+  },
+  {
+   "i": 92,
+   "line": 221,
+   "section": 19,
+   "kind": "sentence",
+   "text": "「gitって何ですか？",
+   "mark": null
+  },
+  {
+   "i": 93,
+   "line": 221,
+   "section": 19,
+   "kind": "sentence",
+   "text": "」「コミットって何ですか？",
+   "mark": null
+  },
+  {
+   "i": 94,
+   "line": 222,
+   "section": 19,
+   "kind": "sentence",
+   "text": "」「ADRって何ですか？",
+   "mark": null
+  },
+  {
+   "i": 95,
+   "line": 223,
+   "section": 19,
+   "kind": "sentence",
+   "text": "」「TDDって何ですか？",
+   "mark": null
+  },
+  {
+   "i": 96,
+   "line": 224,
+   "section": 19,
+   "kind": "sentence",
+   "text": "」「カバレッジって何ですか？",
+   "mark": null
+  },
+  {
+   "i": 97,
+   "line": 227,
+   "section": 19,
+   "kind": "sentence",
+   "text": "これが、私のECC導入初日の質問リストです。",
+   "mark": null
+  },
+  {
+   "i": 98,
+   "line": 229,
+   "section": 19,
+   "kind": "sentence",
+   "text": "未知の言葉を見つけるたびに、しつこく質問しました。",
+   "mark": null
+  },
+  {
+   "i": 99,
+   "line": 231,
+   "section": 19,
+   "kind": "sentence",
+   "text": "Claude Codeが何か提案してくる度に、わからない言葉があれば即座に質問。",
+   "mark": null
+  },
+  {
+   "i": 100,
+   "line": 231,
+   "section": 19,
+   "kind": "sentence",
+   "text": "回答を受けて、さらに質問。",
+   "mark": null
+  },
+  {
+   "i": 101,
+   "line": 231,
+   "section": 19,
+   "kind": "sentence",
+   "text": "この繰り返しでした。",
+   "mark": null
+  },
+  {
+   "i": 102,
+   "line": 235,
+   "section": 20,
+   "kind": "sentence",
+   "text": "Claude Codeの提案を鵜呑みにしたわけではありません。",
+   "mark": null
+  },
+  {
+   "i": 103,
+   "line": 235,
+   "section": 20,
+   "kind": "sentence",
+   "text": "常に以下のような疑問を持ち続けました：",
+   "mark": null
+  },
+  {
+   "i": 104,
+   "line": 237,
+   "section": 20,
+   "kind": "item",
+   "text": "なぜそうするのか？",
+   "mark": null
+  },
+  {
+   "i": 105,
+   "line": 238,
+   "section": 20,
+   "kind": "item",
+   "text": "他の方法はないのか？",
+   "mark": null
+  },
+  {
+   "i": 106,
+   "line": 239,
+   "section": 20,
+   "kind": "item",
+   "text": "この用語の意味は？",
+   "mark": null
+  },
+  {
+   "i": 107,
+   "line": 240,
+   "section": 20,
+   "kind": "item",
+   "text": "この設計の背景は？",
+   "mark": null
+  },
+  {
+   "i": 108,
+   "line": 242,
+   "section": 20,
+   "kind": "sentence",
+   "text": "こうして、納得するまで質問し続けました。",
+   "mark": null
+  },
+  {
+   "i": 109,
+   "line": 246,
+   "section": 21,
+   "kind": "sentence",
+   "text": "Claude Codeだけでは足りないとき、私は複数のLLMを使い分けました。",
+   "mark": null
+  },
+  {
+   "i": 110,
+   "line": 250,
+   "section": 22,
+   "kind": "sentence",
+   "text": "まず、開発中に出てきた用語や概念をClaude Codeに質問します。",
+   "mark": null
+  },
+  {
+   "i": 111,
+   "line": 257,
+   "section": 22,
+   "kind": "sentence",
+   "text": "しかし、Claude Codeの回答はそっけないときもあります。",
+   "mark": null
+  },
+  {
+   "i": 112,
+   "line": 257,
+   "section": 22,
+   "kind": "sentence",
+   "text": "開発に特化したエージェントなので、教育的な説明が不十分なこともありました。",
+   "mark": null
+  },
+  {
+   "i": 113,
+   "line": 261,
+   "section": 23,
+   "kind": "sentence",
+   "text": "Claude Codeの回答が不十分だと感じたとき、GeminiやClaude（通常版）に同じ質問をします。",
+   "mark": null
+  },
+  {
+   "i": 114,
+   "line": 268,
+   "section": 23,
+   "kind": "sentence",
+   "text": "より詳しい説明、丁寧な例示、初心者向けの解説が得られます。",
+   "mark": null
+  },
+  {
+   "i": 115,
+   "line": 272,
+   "section": 24,
+   "kind": "sentence",
+   "text": "それでもわからないとき、工夫しました。",
+   "mark": null
+  },
+  {
+   "i": 116,
+   "line": 280,
+   "section": 24,
+   "kind": "sentence",
+   "text": "漫画やアニメの例えで説明してもらうことで、理解が深まりました。",
+   "mark": null
+  },
+  {
+   "i": 117,
+   "line": 284,
+   "section": 25,
+   "kind": "sentence",
+   "text": "徹底的に調査したいとき、複数のLLMに同じ質問を並行投下します。",
+   "mark": null
+  },
+  {
+   "i": 118,
+   "line": 286,
+   "section": 25,
+   "kind": "item",
+   "text": "Claude Code: 実践的な使い方",
+   "mark": null
+  },
+  {
+   "i": 119,
+   "line": 287,
+   "section": 25,
+   "kind": "item",
+   "text": "Gemini: 概念の詳細説明",
+   "mark": null
+  },
+  {
+   "i": 120,
+   "line": 288,
+   "section": 25,
+   "kind": "item",
+   "text": "ChatGPT: ベストプラクティス",
+   "mark": null
+  },
+  {
+   "i": 121,
+   "line": 289,
+   "section": 25,
+   "kind": "item",
+   "text": "NotebookLM: 関連記事・ドキュメントの統合",
+   "mark": null
+  },
+  {
+   "i": 122,
+   "line": 291,
+   "section": 25,
+   "kind": "sentence",
+   "text": "この4段階アプローチで、難しい概念も理解できるようになりました。",
+   "mark": null
+  },
+  {
+   "i": 123,
+   "line": 297,
+   "section": 27,
+   "kind": "sentence",
+   "text": "最初は「コミット」の意味すらわかりませんでした。",
+   "mark": null
+  },
+  {
+   "i": 124,
+   "line": 299,
+   "section": 27,
+   "kind": "sentence",
+   "text": "しかし、Claude Codeと一緒に初めて `git commit` を実行したとき：",
+   "mark": null
+  },
+  {
+   "i": 125,
+   "line": 306,
+   "section": 27,
+   "kind": "sentence",
+   "text": "「ああ、これが『変更を記録する』ということか」と理解しました。",
+   "mark": null
+  },
+  {
+   "i": 126,
+   "line": 308,
+   "section": 27,
+   "kind": "sentence",
+   "text": "バージョン管理という概念を初めて体験しました。",
+   "mark": null
+  },
+  {
+   "i": 127,
+   "line": 312,
+   "section": 28,
+   "kind": "sentence",
+   "text": "あるプロジェクトで、重要なアルゴリズムを選択する決断をしました。",
+   "mark": null
+  },
+  {
+   "i": 128,
+   "line": 314,
+   "section": 28,
+   "kind": "sentence",
+   "text": "Claude Codeが「ADRを書きましょう」と提案してきました。",
+   "mark": null
+  },
+  {
+   "i": 129,
+   "line": 323,
+   "section": 28,
+   "kind": "sentence",
+   "text": "この説明で、私は「ドキュメント駆動開発」の価値を理解しました。",
+   "mark": null
+  },
+  {
+   "i": 130,
+   "line": 325,
+   "section": 28,
+   "kind": "sentence",
+   "text": "そして、ADRを書きました：",
+   "mark": null
+  },
+  {
+   "i": 131,
+   "line": 338,
+   "section": 28,
+   "kind": "sentence",
+   "text": "このADRは、後続のプロジェクトでも参照され、知識の再利用につながりました。",
+   "mark": null
+  },
+  {
+   "i": 132,
+   "line": 342,
+   "section": 29,
+   "kind": "sentence",
+   "text": "あるプロジェクトで、テストを先に書く手法へ初めて挑戦しました。",
+   "mark": null
+  },
+  {
+   "i": 133,
+   "line": 355,
+   "section": 29,
+   "kind": "sentence",
+   "text": "テストを実行して、`PASSED` が表示されました。",
+   "mark": null
+  },
+  {
+   "i": 134,
+   "line": 357,
+   "section": 29,
+   "kind": "sentence",
+   "text": "「なるほど、これがTDDか」と納得しました。",
+   "mark": null
+  },
+  {
+   "i": 135,
+   "line": 359,
+   "section": 29,
+   "kind": "sentence",
+   "text": "リファクタリングしても、テストが通れば安心。",
+   "mark": null
+  },
+  {
+   "i": 136,
+   "line": 359,
+   "section": 29,
+   "kind": "sentence",
+   "text": "この安心感がTDDの価値だと理解しました。",
+   "mark": null
+  },
+  {
+   "i": 137,
+   "line": 363,
+   "section": 30,
+   "kind": "sentence",
+   "text": "この「しつこく質問する」学習プロセスを10日間繰り返した結果、例えば：",
+   "mark": null
+  },
+  {
+   "i": 138,
+   "line": 365,
+   "section": 30,
+   "kind": "item",
+   "text": "gitワークフロー: コミット、ブランチ、マージ",
+   "mark": null
+  },
+  {
+   "i": 139,
+   "line": 366,
+   "section": 30,
+   "kind": "item",
+   "text": "TDD: テスト駆動開発",
+   "mark": null
+  },
+  {
+   "i": 140,
+   "line": 367,
+   "section": 30,
+   "kind": "item",
+   "text": "ADR: アーキテクチャ決定記録",
+   "mark": null
+  },
+  {
+   "i": 141,
+   "line": 368,
+   "section": 30,
+   "kind": "item",
+   "text": "ライセンス: AGPL-3.0等の違いと選択基準",
+   "mark": null
+  },
+  {
+   "i": 142,
+   "line": 369,
+   "section": 30,
+   "kind": "item",
+   "text": "E2Eテスト: Playwrightでの検証",
+   "mark": null
+  },
+  {
+   "i": 143,
+   "line": 370,
+   "section": 30,
+   "kind": "item",
+   "text": "型チェック: 型安全性",
+   "mark": null
+  },
+  {
+   "i": 144,
+   "line": 372,
+   "section": 30,
+   "kind": "sentence",
+   "text": "これらは序の口に過ぎません。",
+   "mark": null
+  },
+  {
+   "i": 145,
+   "line": 372,
+   "section": 30,
+   "kind": "sentence",
+   "text": "実際には、ほぼ全ての開発用語を10日前には知りませんでした。",
+   "mark": null
+  },
+  {
+   "i": 146,
+   "line": 374,
+   "section": 30,
+   "kind": "sentence",
+   "text": "「しつこく質問する」ことで、多くを学びました。",
+   "mark": null
+  },
+  {
+   "i": 147,
+   "line": 378,
+   "section": 31,
+   "kind": "sentence",
+   "text": "10日間で複数のプロジェクトに取り組む中で、PDCAサイクルが加速していくのを実感しました。",
+   "mark": null
+  },
+  {
+   "i": 148,
+   "line": 382,
+   "section": 32,
+   "kind": "sentence",
+   "text": "最初のプロジェクトで、Plan→Do→Check→Actという一気通貫のフローを初めて体験しました：",
+   "mark": null
+  },
+  {
+   "i": 149,
+   "line": 384,
+   "section": 32,
+   "kind": "item",
+   "text": "Plan: 技術調査、アーキテクチャ設計、実装計画",
+   "mark": null
+  },
+  {
+   "i": 150,
+   "line": 385,
+   "section": 32,
+   "kind": "item",
+   "text": "Do: TDDでテストを先に書き、Vibe Codingで高速実装",
+   "mark": null
+  },
+  {
+   "i": 151,
+   "line": 386,
+   "section": 32,
+   "kind": "item",
+   "text": "Check: コードレビュー、テスト実行、品質チェック",
+   "mark": null
+  },
+  {
+   "i": 152,
+   "line": 387,
+   "section": 32,
+   "kind": "item",
+   "text": "Act: ADRで意思決定を記録、ドキュメント整備",
+   "mark": null
+  },
+  {
+   "i": 153,
+   "line": 391,
+   "section": 33,
+   "kind": "sentence",
+   "text": "前回の学びを活かし、次のプロジェクトではサイクルが速く回りました：",
+   "mark": null
+  },
+  {
+   "i": 154,
+   "line": 393,
+   "section": 33,
+   "kind": "item",
+   "text": "前回の知見を再利用（アーキテクチャパターン、テスト戦略）",
+   "mark": null
+  },
+  {
+   "i": 155,
+   "line": 394,
+   "section": 33,
+   "kind": "item",
+   "text": "E2Eテストを含む包括的なテスト戦略",
+   "mark": null
+  },
+  {
+   "i": 156,
+   "line": 395,
+   "section": 33,
+   "kind": "item",
+   "text": "セキュリティレビューの習慣化",
+   "mark": null
+  },
+  {
+   "i": 157,
+   "line": 399,
+   "section": 34,
+   "kind": "sentence",
+   "text": "3つ目のプロジェクトで、より洗練されたサイクルを実現できました：",
+   "mark": null
+  },
+  {
+   "i": 158,
+   "line": 401,
+   "section": 34,
+   "kind": "item",
+   "text": "堅実な計画主義: 実装前に詳細仕様をドキュメント化",
+   "mark": null
+  },
+  {
+   "i": 159,
+   "line": 402,
+   "section": 34,
+   "kind": "item",
+   "text": "不変性の原則: `frozen=True` で予期しない変更を防ぐ",
+   "mark": null
+  },
+  {
+   "i": 160,
+   "line": 403,
+   "section": 34,
+   "kind": "item",
+   "text": "包括的なドキュメント: ADR、CONTRIBUTING.md、RUNBOOK.md、README完備",
+   "mark": null
+  },
+  {
+   "i": 161,
+   "line": 407,
+   "section": 35,
+   "kind": "sentence",
+   "text": "プロジェクトを通じて見えてきた本質：",
+   "mark": null
+  },
+  {
+   "i": 162,
+   "line": 409,
+   "section": 35,
+   "kind": "item",
+   "text": "計画の重要性 - 「いきなりコードを書かない」が当たり前に",
+   "mark": null
+  },
+  {
+   "i": 163,
+   "line": 410,
+   "section": 35,
+   "kind": "item",
+   "text": "TDDの価値 - テストを先に書き、安心してリファクタリング",
+   "mark": null
+  },
+  {
+   "i": 164,
+   "line": 411,
+   "section": 35,
+   "kind": "item",
+   "text": "レビューの徹底 - agentを活用した品質・セキュリティチェック",
+   "mark": null
+  },
+  {
+   "i": 165,
+   "line": 412,
+   "section": 35,
+   "kind": "item",
+   "text": "ドキュメント駆動 - 学びを蓄積し、次のサイクルへ",
+   "mark": null
+  },
+  {
+   "i": 166,
+   "line": 414,
+   "section": 35,
+   "kind": "sentence",
+   "text": "ECC環境が「当然のこと」として提案してくれ、私はしつこく質問しながら、その価値を理解していきました。",
+   "mark": null
+  },
+  {
+   "i": 167,
+   "line": 418,
+   "section": 36,
+   "kind": "sentence",
+   "text": "このSpotifyポッドキャストがなければ、私はECCと出会うことはありませんでした：",
+   "mark": null
+  },
+  {
+   "i": 168,
+   "line": 422,
+   "section": 36,
+   "kind": "sentence",
+   "text": "いけともさんのYoutube動画で具体的な使い方を学びました：",
+   "mark": null
+  },
+  {
+   "i": 169,
+   "line": 426,
+   "section": 36,
+   "kind": "sentence",
+   "text": "Before: gitも知らない趣味プログラマー。",
+   "mark": null
+  },
+  {
+   "i": 170,
+   "line": 427,
+   "section": 36,
+   "kind": "sentence",
+   "text": "After: 開発の完全なPDCAサイクルを体得。",
+   "mark": null
+  },
+  {
+   "i": 171,
+   "line": 429,
+   "section": 36,
+   "kind": "sentence",
+   "text": "この10日間の変化は、お二人の情報発信がなければ起こりませんでした。",
+   "mark": null
+  },
+  {
+   "i": 172,
+   "line": 431,
+   "section": 36,
+   "kind": "sentence",
+   "text": "この記事では、失敗談（配置ミスで10日間）も正直に書きました。",
+   "mark": null
+  },
+  {
+   "i": 173,
+   "line": 431,
+   "section": 36,
+   "kind": "sentence",
+   "text": "次の誰かが同じ失敗をしないために。",
+   "mark": null
+  },
+  {
+   "i": 174,
+   "line": 435,
+   "section": 37,
+   "kind": "sentence",
+   "text": "gitも知らなかった初心者が、10日間でこうしてZennに技術記事を書いています。",
+   "mark": null
+  },
+  {
+   "i": 175,
+   "line": 437,
+   "section": 37,
+   "kind": "sentence",
+   "text": "学んだのは個別のスキルではなく、開発の全体フローでした。",
+   "mark": null
+  },
+  {
+   "i": 176,
+   "line": 437,
+   "section": 37,
+   "kind": "sentence",
+   "text": "ECC環境と「しつこく質問する」姿勢の組み合わせが、この短期間での変化を可能にしました。",
+   "mark": null
+  },
+  {
+   "i": 177,
+   "line": 443,
+   "section": 38,
+   "kind": "sentence",
+   "text": "後編では、この10日間で到達した「エコシステム設計者」への道を明かします。",
+   "mark": null
+  },
+  {
+   "i": 178,
+   "line": 445,
+   "section": 38,
+   "kind": "item",
+   "text": "メタ認知の発動（「開発記録をコンテンツ化できる」という気づき）",
+   "mark": null
+  },
+  {
+   "i": 179,
+   "line": 446,
+   "section": 38,
+   "kind": "item",
+   "text": "マルチLLMディープリサーチの高度な活用",
+   "mark": null
+  },
+  {
+   "i": 180,
+   "line": 447,
+   "section": 38,
+   "kind": "item",
+   "text": "ECC Architectエージェント活用（システム設計からSkill化まで）",
+   "mark": null
+  },
+  {
+   "i": 181,
+   "line": 448,
+   "section": 38,
+   "kind": "item",
+   "text": "エコシステムの全体像（入力→処理→出力→フィードバック）",
+   "mark": null
+  },
+  {
+   "i": 182,
+   "line": 450,
+   "section": 38,
+   "kind": "sentence",
+   "text": "お楽しみに！",
+   "mark": null
+  },
+  {
+   "i": 183,
+   "line": 454,
+   "section": 39,
+   "kind": "item",
+   "text": "この記事のMarkdown正本（GitHub） — 全記事のMarkdownと索引（docs/PUBLICATIONS.md）は同じリポジトリにあります",
+   "mark": null
+  },
+  {
+   "i": 184,
+   "line": 455,
+   "section": 39,
+   "kind": "item",
+   "text": "著者のGitHub — DOI 付きの研究リポジトリ一覧",
+   "mark": null
+  },
+  {
+   "i": 185,
+   "line": 459,
+   "section": 39,
+   "kind": "sentence",
+   "text": "この記事が役に立ったら、いいねをお願いします。",
+   "mark": null
+  }
+ ]
+}
