@@ -222,7 +222,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/skill-comply` ([repo](https://github.com/shimo4228/skill-comply)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-comply` |
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
 | `~/MyAI_Lab/llms-txt-writer` ([repo](https://github.com/shimo4228/llms-txt-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llms-txt-writer` |
-| `~/MyAI_Lab/readme-writer` ([repo](https://github.com/shimo4228/readme-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/readme-writer` |
+| `~/MyAI_Lab/readme-writer` ([repo](https://github.com/shimo4228/readme-writer)) | skill + agent 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/readme-writer`（同梱 agent `agents/readme-judge.md` の正本は `~/.claude/agents/readme-judge.md`、script の対象外で手動 diff） |
 | `~/MyAI_Lab/release-doi` ([repo](https://github.com/shimo4228/release-doi)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/release-doi` |
 | `~/MyAI_Lab/search-first` ([repo](https://github.com/shimo4228/search-first)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/search-first` |
 | `~/MyAI_Lab/jsonld-knowledge-graph` ([repo](https://github.com/shimo4228/jsonld-knowledge-graph)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/jsonld-knowledge-graph` |
@@ -240,9 +240,9 @@ script 側の既定が移設先を指す（RFC-0019 手段 A）。既定以外�
 
 skill 本体の drift は script が拾う。手動 diff の対象は **script が置換しない同梱物だけ**:
 
-- **agents/*.md**（`claude-skill-paper-ecosystem` / `claude-skill-writing-ecosystem` の
+- **agents/*.md**（`claude-skill-paper-ecosystem` / `claude-skill-writing-ecosystem` / `readme-writer` の
   同梱 subagent。正本は writing 系が `~/MyAI_Lab/zenn-content/.claude/agents/`、
-  paper 系が `~/MyAI_Lab/paper-lab/.claude/agents/`）
+  paper 系が `~/MyAI_Lab/paper-lab/.claude/agents/`、readme-writer が `~/.claude/agents/readme-judge.md`）
 - **rules/writing-principles.md**（`claude-skill-writing-ecosystem` の同梱 rule。writing-ecosystem の
   背骨で、同梱しないと公開版 skill は原理を失う。正本 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`）
 - **hook script**（例: skill-stocktake の `hooks/log-skill-usage.sh`。正本 `~/.claude/hooks/`）

@@ -1,115 +1,139 @@
 ---
 name: measurement-discipline
-description: 測定に基づく主張・閾値・ガード・実験結果・観察期間を設計または評価するときの規律。Use when the user says 「この実験結果で判断していい？」「閾値を決めたい」「ガード/検査を足したい」「1 回通ったから大丈夫」「観察期間はどれくらい」「いつゲートを開く」「shadow のまま何週待つ」「この RFC 塩漬けでは」「本番より良い」「本番と比べて」, when a design places a numeric threshold, a suspicion flag, or a wait-for-N-observations condition, when a candidate is compared against production, or when a claim rests on measured data. NOT for — 計器（read-only 分布・読み値）そのものの設計（CA repo の skill read-only-instruments が正本）、LLM 判定器の設計（llm-as-judge）、ループ構造の妥当性（loop-design-check）。
+description: Discipline for designing or evaluating measurement-based claims, thresholds, guards, experiment results and observation periods. Use when the user says 「この実験結果で判断していい？」 / "can I decide on this experiment result?", 「閾値を決めたい」 / "I want to set a threshold", 「ガード/検査を足したい」 / "I want to add a guard or check", 「1 回通ったから大丈夫」 / "it passed once, so it's fine", 「観察期間はどれくらい」 / "how long should the observation period be?", 「いつゲートを開く」 / "when do we open the gate?", 「shadow のまま何週待つ」 / "how many weeks do we wait in shadow?", 「この RFC 塩漬けでは」 / "isn't this RFC just sitting idle?", 「本番より良い」 / "it's better than production", 「本番と比べて」 / "compare it against production", when a design places a numeric threshold, a suspicion flag, or a wait-for-N-observations condition, when a candidate is compared against production, or when a claim rests on measured data. NOT for — designing the instruments themselves (read-only distributions and readings) — out of scope here; designing an LLM judge (llm-as-judge); whether a loop's structure is sound (out of scope here).
 user-invocable: true
 origin: shimo4228
-replaces: contemplative-agent の feedback memory 5 本（one-run-not-evidence / gate-on-evidence-not-calendar / saturated-guard-is-worse-than-none / no-numeric-caps / relevance-distribution、2026-08-25 昇格）+ 速度設計 3 本（n の日数換算 / enforce-first / label-once、CA RFC-0047 から 2026-09-26 昇格）+ 本番比較 1 本（lab arm は本番の機構を写す、CA RFC-0046 の交絡から 2026-09-26 昇格）
+replaces: five contemplative-agent feedback memories (one-run-not-evidence / gate-on-evidence-not-calendar / saturated-guard-is-worse-than-none / no-numeric-caps / relevance-distribution, promoted 2026-08-25) + three speed-design memories (converting n into days / enforce-first / label-once, promoted 2026-09-26 from contemplative-agent RFC-0047) + one production-comparison memory (the lab arm mirrors production's mechanism, promoted 2026-09-26 from the confound in contemplative-agent RFC-0046)
 ---
 
 # Measurement Discipline
 
-測定の主張には、その測定が成立する条件を先に問う。9 原則、いずれも実地の失敗から
-（出所は CA repo での実測。原則自体はどの repo でも同じ形で壊れる）。
+Before accepting a measured claim, first ask under what conditions that measurement holds. Nine
+principles, each drawn from a failure in practice (the sources are measurements in the author's
+Contemplative Agent project, `shimo4228/contemplative-agent`; the principles themselves break the same way in any repo).
 
-## 1. 1 回の成功は証拠でない
+## 1. One success is not evidence
 
-smoke 1 回で「機能した」と言って commit しない。stochastic な系（LLM・外部 I/O・
-タイミング依存）では 1 回は分布の 1 標本。**主張の前に「何回・どの条件で見れば
-言えるか」を決める** — 決められないなら主張を「動くことがある」に弱める。
-（出所: follow 修正で 1 run 観察を「直った」と報告しかけた 2026-06 の訂正）
+Do not say "it worked" after one smoke run and commit. In a stochastic system (LLMs, external I/O,
+timing-dependent code), one run is one sample from a distribution. **Before making the claim, decide
+how many runs, under which conditions, would let you say it** — if you cannot decide, weaken the
+claim to "it can work".
+(Source: the 2026-06 correction, after a single observed run of a follow fix was nearly reported as "fixed")
 
-## 2. ゲートは暦でなく観測量で
+## 2. Gate on observations, not the calendar
 
-段階実装・部分導入の「次へ進む」条件を日付・期間にしない。**必要な観測数を事前に
-見積もり、その観測が溜まったら進む**。暦ゲートは観測ゼロでも発火し、観測量ゲートは
-データが無ければ止まる — 止まるのが正しい。
-（出所: shadow 計器の enforcement 判断を「2 週間後」でなく判定数で切った経緯）
+Do not make the "move to the next stage" condition of a staged or partial rollout a date or a
+duration. **Estimate the required number of observations in advance, and move on when those
+observations have accumulated.** A calendar gate fires even with zero observations; an observation
+gate stops when there is no data — and stopping is correct.
+(Source: the enforcement decision for a shadow instrument was cut by the number of verdicts, not by "in two weeks")
 
-観測数の決め方と開け方:
+How to set the observation count and open the gate:
 
-- **n は事前登録した問いから導く**（率の精度なら二項の 95% CI 半幅 ≈ 1/√n、±6 pt なら
-  300）。「十分溜まったら」は n でない
-- **到達率で日数に換算して台帳に書く**（`再開条件: answered 300 行（60〜105 行/日、切替から
-  3〜5 日）`）。到達率は読みのたびに実測して幅で更新する — 予定日を書けない観測数条件は
-  照合先を欠く
-- **n 到達日にゲートを開く。週次の儀式は clock でない** — 儀式でしか開かないゲートは n の
-  何倍も待たせる（出所: CA relevance shadow、1 日 60〜105 行で n = 300 の問いに「4 土曜 or
-  1,000 行」の clock を置いていた。2026-09-26 読み）
-- **n が短い上限（既定 14 日）で満ちなければ延長でなく決める** — retire か、問いを小さくして
-  n を下げる。待つほど台帳で寝る
+- **Derive n from the pre-registered question** (for the precision of a rate, the binomial 95% CI
+  half-width ≈ 1/√n; ±6 pt needs 300). "Once enough has accumulated" is not an n
+- **Convert n into days using the arrival rate and write it in the ledger** (`resume condition: 300
+  answered rows (60–105 rows/day, 3–5 days after the switch)`). Measure the arrival rate at every
+  reading and update it as a range — an observation-count condition with no expected date has
+  nothing to check against
+- **Open the gate on the day n is reached. A weekly ritual is not a clock** — a gate that opens only
+  at a ritual makes you wait many times longer than n requires (Source: contemplative-agent relevance
+  shadow; at 60–105 rows a day, a question needing n = 300 had a clock of "4 Saturdays or 1,000
+  rows". Read 2026-09-26)
+- **If n is not reached within a short cap (default 14 days), decide instead of extending** — retire,
+  or shrink the question to lower n. The longer you wait, the longer it sleeps in the ledger
 
-## 3. ガードの発火率 0% と 100% はどちらも設計ミス
+## 3. A guard firing 0% or 100% of the time is a design error
 
-疑わしさフィールド・警告・検査を置いたら、**実データで発火率を測る**。一度も発火
-しないガードは読者に「検査済み・問題なし」と誤読させ（無いより悪い）、常時発火する
-ガードは読み飛ばされる。較正できるデータが無いなら、ガードでなく生の読み値を出す。
-（出所: 恒久 0 の `observed` フィールドを読者が集計して逆の結論を出した ADR-0082）
+When you place a suspicion field, a warning, or a check, **measure its firing rate on real data**. A
+guard that never fires leads readers to read "checked, no problem" (worse than none), and a guard
+that always fires gets skipped. If you have no data to calibrate it, output the raw reading instead
+of a guard.
+(Source: contemplative-agent ADR-0082, where readers aggregated an `observed` field that was permanently 0 and drew the opposite conclusion)
 
-## 4. 数値キャップを品質フィルタにしない
+## 4. Do not use a numeric cap as a quality filter
 
-`max_N` 型の上限は量の制御であって質の判定ではない。「上位 N 件」で切ると、N+1 位
-以降の良品を黙って捨て、N 位以内の不良を黙って通す。品質を切りたいなら品質の軸で
-判定器を立て、量を切りたいときだけキャップを使う — 混ぜた瞬間、どちらの保証も消える。
+A `max_N`-style cap controls quantity; it does not judge quality. Cutting at "top N" silently discards
+good items ranked N+1 and below and silently passes bad items within the top N. To cut on quality,
+build a judge on a quality axis; use a cap only when you want to cut quantity — the moment you mix
+the two, both guarantees vanish.
 
-## 5. 通過分だけのスコアで分布を語らない
+## 5. Do not describe a distribution from the scores of what passed
 
-フィルタの下流に残ったデータは選択バイアス済み。「通過分の平均が高い」はフィルタの
-機能証明にならない（棄却分を見ていない）。分布・較正・閾値の議論は**フィルタ前の
-全量**か、少なくとも棄却側のサンプルを添えてから。
+Data left downstream of a filter is already selection-biased. "The mean of what passed is high" does
+not prove the filter works (you have not looked at the rejects). Discuss distributions, calibration
+and thresholds only on **the full pre-filter population**, or at least with a sample of the rejected
+side attached.
 
-## 6. 戻せる変更は切替えてから観察する
+## 6. Switch reversible changes first, then observe
 
-既に許された行動のどれを取るかだけを変え、**誤りの向きが縮小側**（外向き作用が減る。取り逃しは
-後で拾える）で、設定除去で以後の判定を戻せる変更は enforce-first — 切替え、旧経路を n 行のあいだ
-並走させて両方を同じ行に記録し（paired）、n 到達日に keep / kill を決める。kill switch は設定不在。
-観察専用の待機段は、誤りの向きが拡大側・外へ出す形が変わる・I/O 面が広がる・戻せない変更にだけ
-払う。paired が比較できるのは同じ入力上の判定まで — 出た副作用は以後の入力集合を変えるので
-「旧経路だけで運用した履歴」は得られない。比較すべきは誤りの向きであって、可逆性の一括宣言ではない。
-（出所: CA relevance gate、would-be gate 率 0.22〜0.39 対 live 0.58 = 縮小側で enforce-first。2026-09-26 読み）
+A change that only alters which already-permitted action is taken, whose **error direction is on the
+shrinking side** (fewer outward effects; misses can be picked up later), and whose subsequent verdicts
+can be reverted by removing a setting, goes enforce-first — switch over, run the old path alongside
+for n rows, record both on the same row (paired), and decide keep / kill on the day n is reached. The
+kill switch is the absence of the setting. Pay for an observation-only waiting stage only for changes
+whose error direction is on the expanding side, that change the form of what goes out, that widen the
+I/O surface, or that cannot be reverted. Paired runs can compare only verdicts on the same input —
+side effects that have already happened change the later input set, so "the history of running on
+the old path alone" is never available. Compare the error direction, not a blanket declaration of
+reversibility.
+(Source: contemplative-agent relevance gate; would-be gate rate 0.22–0.39 vs live 0.58 = shrinking side, so enforce-first. Read 2026-09-26)
 
-## 7. 高い判定は 1 回買い、繰り返す測定は決定論で $0 にする
+## 7. Buy expensive judgments once; make repeated measurement deterministic and $0
 
-天井モデルや人手のラベルは 1 回で凍結し（worktree でなく main tree — worktree の削除で行データが
-消えた実例）、以後の測定は安いスコアラ（temperature 0・logprobs・golden 比較）で回す。PR ごとに
-回らない指標は ratchet にならない。**再現性は仮定せず測る** — 同じ集合を 2 回回して run 間の差を
-noise floor にし、ratchet の線と閾値の近傍はその外に置く（temperature 0 の logprobs でも run 間で
-argmax 一致 0.913、max |Δp| 0.26 — CA S31、gemma4:e4b、2026-09-26）。**ラベルは判定の入力（prompt・モデル・参照する値層）を manifest に
-pin して凍結し、入力が変わったら失効させる**（再ラベルか ack）— 入力の正当な変化を退行と読まないため。
-（出所: CA `evals/` の pinned assets + `check_staleness.py`、RFC-0045 の行データ消失 2026-09-25）
+Freeze ceiling-model or human labels once (in the main tree, not a worktree — deleting a worktree has
+lost the row data in practice), and run later measurement with cheap scorers (temperature 0,
+logprobs, golden comparison). A metric that does not run on every PR cannot act as a ratchet.
+**Measure reproducibility instead of assuming it** — run the same set twice, take the run-to-run
+difference as the noise floor, and place the ratchet line and the neighborhood of any threshold
+outside it (even temperature-0 logprobs gave run-to-run argmax agreement 0.913, max |Δp| 0.26 —
+contemplative-agent S31, gemma4:e4b, 2026-09-26). **Freeze labels with the judgment's inputs (prompt,
+model, the value layer it references) pinned in a manifest, and expire them when an input changes**
+(relabel or ack) — so that a legitimate change in inputs is not read as a regression.
+(Source: contemplative-agent's `evals/` pinned assets + `check_staleness.py`; the row-data loss in contemplative-agent RFC-0045, 2026-09-25)
 
-## 8. 本番と比べる lab arm は本番の機構を写す
+## 8. A lab arm compared against production mirrors production's mechanism
 
-候補を本番と比べて「本番より良い」と言う測定は、候補と本番の差を**表で列挙**してから設計する
-（入力に見せる文・問いの形・答えの読み方・温度・審判が使う定義）。測りたい差は 1 つ。差が 2 つ以上
-あるなら 1 条件ずつ変える arm（梯子）を同じ標本で持ち、どの条件が差を担うかを対差で読む。
-審判（天井モデル・外部判定器）の問いと定義も本番の定義に揃える — 揃えないならそれは測定でなく
-定義の選択で、著者の判断として packet と RFC に事前登録する（script の docstring に埋めない —
-埋めた定義が審判の正解になり、修理がその上に建つ）。
-（出所: CA RFC-0045 → RFC-0046。identity のみ / 4 段 / logprobs の候補を identity + axioms / 0〜1 /
-数字生成の本番と比べ、審判も identity のみで採点 — 3 条件と定義が交絡した根拠の上に enforce が
-設計され、オーナーの指摘で梯子に戻した。2026-09-26）
+Design a measurement that claims a candidate is "better than production" only after **listing the
+differences between candidate and production in a table** (the text shown in the input, the form of
+the question, how the answer is read, temperature, the definitions the judge uses). Measure one
+difference. If there are two or more, keep arms that change one condition at a time (a ladder) on the
+same sample, and read which condition carries the difference from the paired differences. Align the
+judge's (ceiling model, external judge) question and definitions with production's as well — if you
+do not, that is not a measurement but a choice of definition, and you pre-register it as the author's
+decision in the packet and the RFC (not in a script docstring — a buried definition becomes the
+judge's ground truth, and fixes get built on top of it).
+(Source: contemplative-agent RFC-0045 → RFC-0046. A candidate with identity only / a 4-level scale /
+logprobs was compared against production with identity + axioms / a 0–1 scale / generated numbers, and
+the judge also scored with identity only — enforce was designed on evidence where three conditions
+and the definition were confounded, and the owner's review sent it back to a ladder. 2026-09-26)
 
-## 9. 出力をゲートに合わせる前に、ゲートを信頼できるラベルで検定する
+## 9. Before fitting outputs to a gate, test the gate against trusted labels
 
-自動の判定ゲート（LLM や判定モデル + 閾値）が、信頼できる判定（著者・bench の判定役）の通す出力を
-落とすとき、出力をゲートが通る形に直す前に**ゲート自身の識別力を測る**。判定が付いた出力を合格・
-不合格の両方が含まれるように集め（複数の版から）、本番と同じ入力の組み立てでゲートを再生し、生の
-スコアを保存する。見るのは、合格側の受理率と不合格側の受理率、受理した集合の precision と全体の
-合格率の比較、スコアの AUROC。受理した集合の precision が全体の合格率を超えないゲートは雑音で、
-それに合わせた修正は雑音への最適化になる。閾値・問い文・対象範囲の案は保存したスコアの上で
-オフラインに比べてから live に出す。どの案も偶然と見分けられなければ、ゲートから外してスコアは
-ラベルとして記録し、性質は信頼できる機構（プロンプト・自己点検・別の判定）に持たせる。ゲートが
-特定の失敗のために置かれたなら、その失敗を合成した入力で本当に捕まるかも確かめる。
-（出所: jev-research-pipeline の claim_fidelity。合格 120 件中 24 件・不合格 31 件中 10 件を受理、
-precision 0.71 が全体 0.79 を下回り、AUROC 0.42〜0.68。合成した主語のすり替えは閾値 0.6 の下で
-0.46〜0.54 と素通り。2026-10-01〜02、ゲートを外して記録だけ残し、本番の節のテンプレート落ちが解消）
+When an automatic judging gate (an LLM or judge model + a threshold) rejects outputs that a trusted
+judgment (the author, a bench judge) passes, **measure the gate's own discriminative power** before
+reshaping the outputs to pass it. Collect judged outputs so that both passes and fails are included
+(from several versions), replay the gate with the same input assembly as production, and save the
+raw scores. Look at the acceptance rate on the pass side and on the fail side, the precision of the
+accepted set compared with the overall pass rate, and the AUROC of the scores. A gate whose
+accepted-set precision does not exceed the overall pass rate is noise, and fixes fitted to it optimize
+for noise. Compare proposed thresholds, question wordings and scopes offline on the saved scores
+before taking them live. If no proposal can be distinguished from chance, take the check out of
+gating, record its score as a label, and give the property to a trusted mechanism (the prompt, a
+self-check, a separate judgment). If the gate was placed for a specific failure, also confirm that it
+actually catches inputs synthesized with that failure.
+(Source: claim_fidelity in the author's jev-research-pipeline project. It accepted 24 of 120 passes
+and 10 of 31 fails; precision 0.71 fell below the overall 0.79, AUROC 0.42–0.68. Synthesized subject
+swaps scored 0.46–0.54 under a threshold of 0.6 and passed straight through. 2026-10-01 to 02: the
+gate was removed and kept only as a record, and the template dropouts in production sections were
+resolved)
 
-## 使い方
+## How to use
 
-設計・レビューの場で該当原則を 1 つ名指しして問う（「これは原則 3 — このガードの
-発火率をどのデータで較正した？」）。原則を毎回全部なぞらない。
+In design or review, name one applicable principle and ask with it ("This is principle 3 — on what
+data did you calibrate this guard's firing rate?"). Do not walk through every principle each time.
 
-## 失効条件
+## Expiry conditions
 
-- substrate がこれらの問いを設計時に自発するようになったら退役（Scaffold Dissolution）
-- 原則の出所となった実測が反証されたら該当原則を削る（原則は経験則であり公理ではない）
+- Retire when the substrate starts raising these questions on its own at design time (Scaffold Dissolution)
+- If a measurement a principle came from is refuted, delete that principle (the principles are rules of thumb, not axioms)

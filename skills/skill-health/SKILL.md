@@ -159,4 +159,4 @@ next run can diff. Update it inline with Read/Write.
 
 ## Related
 
-- `harness-sync` — use it to publish this skill to a public repo.
+- Your publish step (the author's harness uses `harness-sync`) — use it to publish this skill to a public repo.

@@ -82,7 +82,7 @@ some other way ("skip anything you're unsure about", "avoid findings that would 
 appears in no JSON field. Keep reading for those; an empty list is not a clean bill.
 
 For the measured false-positive ratios and which lines produced them, see
-[ADR-0054](../../docs/adr/0054-extract-agent-stocktake-and-learn-eval-mechanical-checks.md)
+[ADR-0054](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0054-extract-agent-stocktake-and-learn-eval-mechanical-checks.md)
 — they are recorded once, there, so this step does not carry numbers that go stale.
 
 ### Step 2 — Read the gates that already own the rest
@@ -167,7 +167,7 @@ rest the **body layer** (invocation):
 - [ ] *Not absorbed by the substrate?* — does the harness now cover this agent's job
   natively (native review machinery, plan mode, built-in slash commands)? Absorption →
   Dissolve candidate; the claim must name its absorber concretely. Judge with the
-  **fresh/rich context axis** ([ADR-0023](../../docs/adr/0023-dissolve-planner-narrow-architect-to-essence-evaluation.md)):
+  **fresh/rich context axis** ([ADR-0023](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0023-dissolve-planner-narrow-architect-to-essence-evaluation.md)):
   roles that gain from *fresh* context (review, adversarial verification, essence
   evaluation — decorrelation from the proposer's sunk cost) legitimately live in a
   subagent; roles that gain from *rich* context (planning, generation, implementation —
@@ -252,7 +252,7 @@ one decision. `skip` records the verdict unactioned.
   (`evaluated_at` = real UTC from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode,
   preserve prior verdicts of files not re-evaluated.
 - **Public-repo note**: editing or retiring an `origin: shimo4228` agent leaves the
-  public repo stale — point the user at `harness-sync`.
+  public repo stale — point the user at their publish step (the author's harness uses `harness-sync`).
 
 ## Reason quality (required)
 
@@ -298,7 +298,7 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
   findings, and hands the agents slice to this skill as Stage 2 evidence.
 - `skill-creator` — handoff target for the skill-creation half of Demote.
 - `adr-writer` — records the why of a Dissolve.
-- `harness-sync` — syncs surviving `origin: shimo4228` agents to the public repo.
+- Your publish step (the author's harness uses `harness-sync`) — syncs surviving `origin: shimo4228` agents to the public repo.
 - `harness-boundary` — design-time lens (layer / portability / obsolescence) for proposed
   mechanisms; applied to an installed agent, its Delete / Move are Stage 2 evidence only.
 - Usage measurement: `~/.claude/hooks/log-agent-usage.sh` →

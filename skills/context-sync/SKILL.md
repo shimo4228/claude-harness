@@ -34,7 +34,7 @@ Every project document should serve exactly one of these four roles. Overlap cau
 | **Decisions** | Why the code is this way | Trade-offs, rejected alternatives, rationale | docs/adr/ |
 | **External** | What this project is | Purpose, quickstart, API overview | README.md |
 
-**Do not store file-level structure**: "which file X lives in / who calls whom" is derived from the code every time (Claude Code's LSP tool / an import graph from `grimp` etc.). Store only the concept layer (graph.jsonld — "what X is / how X and Y relate"), design rationale (ADRs), and a pipeline's stage layout (the header comment of the script that runs it). A hand-written module map is a mirror of derivable structure; it pays a sync cost on every source commit while nobody reads it. The `jsonld-knowledge-graph` skill holds the canonical details of the role boundaries.
+**Do not store file-level structure**: "which file X lives in / who calls whom" is derived from the code every time (Claude Code's LSP tool / an import graph from `grimp` etc.). Store only the concept layer (graph.jsonld — "what X is / how X and Y relate"), design rationale (ADRs), and a pipeline's stage layout (the header comment of the script that runs it). A hand-written module map is a mirror of derivable structure; it pays a sync cost on every source commit while nobody reads it. Your knowledge-graph skill (the author's harness uses `jsonld-knowledge-graph`) holds the canonical details of the role boundaries.
 
 ### Common Anti-Patterns
 
@@ -50,7 +50,7 @@ Every project document should serve exactly one of these four roles. Overlap cau
 
 Run all five phases in order. **Confirmation policy: apply edits to existing files automatically** — git diff is the audit trail, and `git checkout -- <file>` is the undo. Creating new files and directories is batch-confirmed once at the start of Phase 3 (Phase 2 and Phase 4 collect the candidates). List every created and edited file in the Phase 5 report so the user can revert any they did not want.
 
-**The project README is owned elsewhere — flag, do not edit.** For the top-level `README.md` / `README.*.md` (not index files such as `docs/adr/README.md`), README content (sections to remove, rewrite or create, including a missing README) goes to skill `readme-writer`; version, DOI and other release numbers in README go to skill `release-doi`. context-sync reports each README finding with its line and the owning skill, because those skills hold the owner of each fact and the judge that checks the README.
+**The project README is owned elsewhere — flag, do not edit.** For the top-level `README.md` / `README.*.md` (not index files such as `docs/adr/README.md`), README content (sections to remove, rewrite or create, including a missing README) goes to your README skill (the author's harness uses `readme-writer`); version, DOI and other release numbers in README go to your release skill (the author's harness uses `release-doi`). context-sync reports each README finding with its line and the owning skill, because those skills hold the owner of each fact and the judge that checks the README.
 
 The skill runs end-to-end; it pauses only for the Phase 3 creation batch and for ADR inputs it cannot find in the source. Phase 5 (Report) summarizes what was done.
 
@@ -107,7 +107,7 @@ Dependency graphs or data flows   → REMOVE; stage order → script header comm
 Internal API details              → REMOVE (read the code) or ADR if it is a decision
 ─────────────────────────────────────────────────────
 
-README contains... (flag for /readme-writer) → Should move to...
+README contains... (flag for the README skill) → Should move to...
 ─────────────────────────────────────────────────────
 Internal module structure         → REMOVE; point at the source layout
 Implementation details            → REMOVE or ADR (if rationale)
@@ -141,7 +141,7 @@ Also check for contradictions between files (e.g., a module count in a context f
 
 **Actions:**
 1. List each overlap with: source file, line range, target role, reason
-2. **Auto-apply migrations whose target is an existing file** (e.g., moving a buried rationale paragraph from CLAUDE.md into the ADR that owns it). These are edits — git diff is the audit trail. A migration whose source is README is the exception: copy the content to its target, and flag the README side for `/readme-writer`
+2. **Auto-apply migrations whose target is an existing file** (e.g., moving a buried rationale paragraph from CLAUDE.md into the ADR that owns it). These are edits — git diff is the audit trail. A migration whose source is README is the exception: copy the content to its target, and flag the README side for the README skill
 3. **Defer migrations whose target is a new file or new directory** to Phase 3, which will batch-confirm them. Examples: extracting a buried decision into a new ADR (creates `docs/adr/NNNN-*.md`), splitting architecture content into a new `docs/architecture/data.md` that doesn't exist yet.
 
 ### Phase 3: Create / Migrate
@@ -160,11 +160,11 @@ Delegate to the `adr-writer` skill. Do not inline an ADR template here — dupli
 4. If the user runs context-sync in non-interactive mode where invoking another skill is impractical, surface the list of decisions to extract and ask the user to run `/adr-writer` for each later — do not write partial ADRs from context-sync directly
 
 If Architecture docs are needed:
-1. Concept-level: create / extend graph.jsonld via the `jsonld-knowledge-graph` skill
+1. Concept-level: create / extend graph.jsonld via your knowledge-graph skill (the author's harness uses `jsonld-knowledge-graph`)
 2. Do not create a file-level module map — delete structural lists from context files instead; the code plus the LSP tool is the source
 
 **For all migrations:**
-- Replace moved content in the source file with a brief pointer (e.g., "See docs/adr/ for design decisions") — this is an edit, no confirmation. When the source is the project README, flag the README side for `/readme-writer` instead
+- Replace moved content in the source file with a brief pointer (e.g., "See docs/adr/ for design decisions") — this is an edit, no confirmation. When the source is the project README, flag the README side for the README skill instead
 - **Batch-confirm new file / new directory creation once at the start of Phase 3** (single Y/n covering all creations identified by Phase 2). If the user says no to a specific creation, skip that migration but keep the others.
 - Update any index files (e.g., ADR README.md table) — these are edits, no confirmation
 
@@ -237,17 +237,17 @@ duplicating the rule:
       reading as current
 - [ ] `llms.txt` does not duplicate README — `llms_txt.readme_h2_overlap.ratio` is the
       measured first-5-H2 overlap; above ~60% it is a README copy and should be
-      regenerated AI-first via `llms-txt-writer`
+      regenerated AI-first via your llms.txt skill (the author's harness uses `llms-txt-writer`)
 - [ ] `llms-full.txt` is **self-contained** — quoting and summarizing is fine,
       linking-out as the primary content source is not (`llms_txt.llms_full` carries
       the size and outbound link count)
 - [ ] If the ADR index or graph.jsonld changed more recently than `llms.txt`, flag for
-      `/llms-txt-writer` regeneration (`llms_txt_dates`)
+      llms.txt skill regeneration (`llms_txt_dates`)
 
 **Actions:**
 1. Report each mismatch with current value vs documented value
-2. **Apply edits to existing files automatically** — these are corrections to drift, covered by git diff. README is the exception: flag a README mismatch for `/readme-writer`, or for `/release-doi` when it is a version, DOI or release number
-3. If a freshness fix requires creating a new file, batch that into the Phase 3 creation confirmation block instead (a missing README.md is flagged for `/readme-writer`)
+2. **Apply edits to existing files automatically** — these are corrections to drift, covered by git diff. README is the exception: flag a README mismatch for the README skill, or for the release skill when it is a version, DOI or release number
+3. If a freshness fix requires creating a new file, batch that into the Phase 3 creation confirmation block instead (a missing README.md is flagged for the README skill)
 
 ### Phase 5: Report
 
@@ -261,7 +261,7 @@ Roles:      4 roles, N files discovered (incl. llms.txt, llms-full.txt at repo r
 Created:    3 ADRs via /adr-writer (extracted from CLAUDE.md decisions)
 Moved:      2 sections (buried rationale → docs/adr/); 1 module list deleted (derivable)
 Updated:    context file module count
-Deferred:   README.md version → /release-doi; README internal module section → /readme-writer
+Deferred:   README.md version → release skill; README internal module section → README skill
 Stale:      1 file flagged (docs/architecture.md, 120 days)
 AI-facing:  llms.txt nav-links resolve, no README duplication detected
 Skipped:    N items (user declined)
@@ -278,8 +278,8 @@ Status: All documentation roles covered (Context / Architecture / Decisions / Ex
 
 - Code quality checks (linting, testing, building) — use the Verify gate in
   `rules/common/planning.md`, or `/code-review` for review (to target a PR,
-  `/code-review <PR#>`; the canonical trigger conditions live in skill: `implementation-chain`)
+  `/code-review <PR#>`; the canonical trigger conditions live in your implementation workflow — the author's harness uses `implementation-chain`)
 - Agent-specific memory management (e.g., auto-memory systems)
-- `graph.jsonld` schema design / vocabulary extension — use `jsonld-knowledge-graph`
-- Rewriting or judging a README itself — use `readme-writer` (this skill only moves content
+- `graph.jsonld` schema design / vocabulary extension — use your knowledge-graph skill (the author's harness uses `jsonld-knowledge-graph`)
+- Rewriting or judging a README itself — use your README skill (the author's harness uses `readme-writer`) (this skill only moves content
   between documents and checks their roles)

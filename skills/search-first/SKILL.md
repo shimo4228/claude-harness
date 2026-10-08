@@ -1,6 +1,6 @@
 ---
 name: search-first
-description: "Look outside before deciding: search the live web, registries and primary sources at decision time and bring back a report the caller picks from. Use for any question that may have an answer outside this repo — choosing a library or tool (\"which one is mainstream now\"), prior implementations of a design problem (\"is there already a skill / repo that solved this problem\"), whether a paper or post's claim applies here (\"does this claim apply to us\"), what an official spec or CLI does now (\"what does the official source say\"), the current state of practice (\"where do things stand now\"), or checking a claim against its primary source (\"does the primary source really say that\"). Also on 'search first', 'is there a package for', or /search-first. Other entry points: this repo or the local machine → Explore agent; a whole article's fact-check → the writing repo's fact-checker; bug fixes, refactors and config edits → implementation-chain."
+description: "Look outside before deciding: search the live web, registries and primary sources at decision time and bring back a report the caller picks from. Use for any question that may have an answer outside this repo — choosing a library or tool (\"which one is mainstream now\"), prior implementations of a design problem (\"is there already a skill / repo that solved this problem\"), whether a paper or post's claim applies here (\"does this claim apply to us\"), what an official spec or CLI does now (\"what does the official source say\"), the current state of practice (\"where do things stand now\"), or checking a claim against its primary source (\"does the primary source really say that\"). Also on 'search first', 'is there a package for', or /search-first. Other entry points: this repo or the local machine → Explore agent; a whole article's fact-check → the writing repo's fact-checker; bug fixes, refactors and config edits → your implementation workflow (implementation-chain in the author's harness)."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -76,14 +76,14 @@ candidate fills
 ```
 
 An Adopt or Adopt-part that adds a dependency goes through the dependency intake of skill:
-`implementation-chain` before it lands.
+your dependency-intake step (the author's harness uses `implementation-chain`) before it lands.
 
 ## 4. Quick vs Full
 
 - **Quick (inline)** — a single obvious need: run 0–3 yourself with a few searches and write
   the report in chat.
 - **Full (parallel)** — a non-trivial question, and every question asked for a plan (plan mode,
-  a prompt that asks for a plan, or skill: `html-plan`; sizing and its sources: ADR-0086, ADR-0087):
+  a prompt that asks for a plan, or a plan-writing skill such as `html-plan`; sizing and its sources: ADR-0086, ADR-0087):
   1. **Brief.** Extend the step-0 text with what is still unknown and what would change the
      decision.
   2. **Angles.** Split the question into 3–5 angles with non-overlapping boundaries — usually

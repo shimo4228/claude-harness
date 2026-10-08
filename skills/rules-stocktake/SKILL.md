@@ -182,7 +182,7 @@ any point; `skip` records the verdict in the ledger unactioned.
   (`evaluated_at` = real UTC from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode,
   preserve prior verdicts of rules not re-evaluated.
 - **Public-repo note**: retiring or editing an `origin: shimo4228` rule leaves the public
-  repo stale — point the user at `harness-sync` for the follow-up.
+  repo stale — point the user at their publish step (the author's harness uses `harness-sync`) for the follow-up.
 
 ## Reason quality (required)
 

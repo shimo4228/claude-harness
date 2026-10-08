@@ -269,6 +269,15 @@ class TestReviewRegressions:
             {"open_line": 5, "close_line": None, "lines": None, "summary": "", "unclosed": True}
         ]
 
+    def test_details_named_in_inline_code_is_not_a_block(self) -> None:
+        # prose that names the tag (`<details>`) must not open a block or hide the lines after it
+        md = (
+            "# P\n\nlead.\n\nWhat `<details>` blocks hold, and `</details>` too.\n\n"
+            "<details><summary>s</summary>\nbody\n</details>\n\n## S\n"
+        )
+        assert [(b["open_line"], b["close_line"]) for b in details_blocks(md)] == [(7, 9)]
+        assert _ev(md)["layout"]["sections"][0]["forms"]["details"] == 1
+
     def test_cjk_and_citing_headings_count_as_how_to_cite(self) -> None:
         assert _ev("# P\n\nDOI 10.5281/zenodo.1\n\n## 引用方法\n")["doi_citation"][
             "how_to_cite_present"

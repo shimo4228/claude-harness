@@ -54,8 +54,8 @@ recurrence count exact and the "not already in rules" test reliable.
 > Tests 1–3 are `rules/README.md`'s admission criterion ("facts, wiring, and traps specific to this environment.
 > Procedures for thinking and work belong to skills, checks that need a firing time belong to hooks, and general judgment belongs to the substrate"),
 > established by
-> [ADR-0018](../../docs/adr/0018-rules-rightsize-for-claude5.md) and
-> [ADR-0035](../../docs/adr/0035-commit-review-hook-and-rules-rightsize.md).
+> [ADR-0018](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0018-rules-rightsize-for-claude5.md) and
+> [ADR-0035](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0035-commit-review-hook-and-rules-rightsize.md).
 >
 > **Recurrence is evidence, not a gate** — report the count, do not filter on it.
 > Frequency and residency-worthiness diverge often enough to matter: a general principle

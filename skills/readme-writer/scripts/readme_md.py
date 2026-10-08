@@ -32,6 +32,13 @@ _ATTR_ALT_RE = re.compile(r"\balt\s*=\s*(\"[^\"]*\"|'[^']*')", re.IGNORECASE)
 _SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.\-]*:")
 _DETAILS_OPEN_RE = re.compile(r"<details\b", re.IGNORECASE)
 _DETAILS_CLOSE_RE = re.compile(r"</details\s*>", re.IGNORECASE)
+_INLINE_CODE_RE = re.compile(r"(`+)(?:(?!\1).)+?\1")
+
+
+def details_tags(line: str) -> tuple[int, int]:
+    """(opening, closing) <details> tags on a line, not counting ones named inside `code`."""
+    bare = _INLINE_CODE_RE.sub("", line)
+    return len(_DETAILS_OPEN_RE.findall(bare)), len(_DETAILS_CLOSE_RE.findall(bare))
 _NON_PROSE_PREFIX_RE = re.compile(
     r"^(#{1,6}\s|[-*+>]\s|\d+[.)]\s|\||<|\[[^\]]+\]:\s"
     r"|={2,}\s*$|-{3,}\s*$|\*{3,}\s*$|_{3,}\s*$)"
@@ -222,9 +229,10 @@ def _details_depth_map(content: list[tuple[int, str]]) -> dict[int, bool]:
     inside: dict[int, bool] = {}
     depth = 0
     for line_no, line in content:
-        depth += len(_DETAILS_OPEN_RE.findall(line))
+        opens, closes = details_tags(line)
+        depth += opens
         inside[line_no] = depth > 0
-        depth = max(0, depth - len(_DETAILS_CLOSE_RE.findall(line)))
+        depth = max(0, depth - closes)
     return inside
 
 

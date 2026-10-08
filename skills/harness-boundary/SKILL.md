@@ -1,6 +1,6 @@
 ---
 name: harness-boundary
-description: "A design lens for adding, changing, or reviewing a mechanism (rule / skill / hook / agent / workflow / runtime extension / prompt chain) in an agent environment: it asks which of 6 layers (model capability / skill = procedural memory / values & policy / eval / data & memory / runtime) the mechanism belongs to, why it cannot be left to the model itself, whether the next model generation will make it unnecessary, and whether it is worth keeping when the runtime is swapped (Claude Code → Pi → Codex), and returns Keep / Move / Simplify / Make temporary / Delete / Defer. Use when — \"should this go in the harness?\", \"which layer does this belong in?\", \"can't the model handle this itself?\", \"will this survive a runtime change?\", \"the harness is bloated\", \"can I add this hook / rule / workflow?\", when implementation-chain's Plan judges a task to change the harness itself (rules / skills / hooks / agents / settings in ~/.claude), or /harness-boundary. Delete / Simplify count as success. NOT for — a standalone build-or-not decision on something not yet built (→ agent architect), periodic audits of installed assets and Retire / Dissolve verdicts (→ rules-stocktake / skill-stocktake / agent-stocktake; this skill only passes evidence), bulk cross-checks at a model generation change (→ generation-audit), validity of loop structure (→ loop-design-check)."
+description: "A design lens for adding, changing, or reviewing a mechanism (rule / skill / hook / agent / workflow / runtime extension / prompt chain) in an agent environment: it asks which of 6 layers (model capability / skill = procedural memory / values & policy / eval / data & memory / runtime) the mechanism belongs to, why it cannot be left to the model itself, whether the next model generation will make it unnecessary, and whether it is worth keeping when the runtime is swapped (Claude Code → Pi → Codex), and returns Keep / Move / Simplify / Make temporary / Delete / Defer. Use when — \"should this go in the harness?\", \"which layer does this belong in?\", \"can't the model handle this itself?\", \"will this survive a runtime change?\", \"the harness is bloated\", \"can I add this hook / rule / workflow?\", when an implementation plan judges a task to change the harness itself (rules / skills / hooks / agents / settings in ~/.claude), or /harness-boundary. Delete / Simplify count as success. NOT for — a standalone build-or-not decision on something not yet built (→ a build-or-not judge agent), periodic audits of installed assets and Retire / Dissolve verdicts (→ rules-stocktake / skill-stocktake / agent-stocktake; this skill only passes evidence), bulk cross-checks at a model generation change (→ generation-audit), validity of loop structure (→ loop-design-check)."
 user-invocable: true
 origin: shimo4228
 disable-model-invocation: true
@@ -35,7 +35,7 @@ failure but the moment to delete. Delete / Simplify count as success.
 | Model capability | reasoning / planning / coding / tool-use judgment / self-correction / decomposition / reflection | Claude itself (including the system prompt + tool descriptions) | substrate, generation-audit's runtime layer |
 | Skills (procedural memory) | this task follows this procedure / this review uses these angles / this failure has this runbook / this deliverable gets this verification | `skills/*/SKILL.md`, the body of `agents/*.md` | "procedures go in skills" (rules/README.md) |
 | Values / Policies / responsibility boundaries | what to prioritize / what not to do / operations that need human approval / scope of delegation / source of truth / priorities on failure | `rules/common/` (identity / values layer, ADR-0018 D7), permissions in `settings.json`, authority in the task request | "environment-specific facts, wiring, traps" (ADR-0035) |
-| Evals | acceptance criteria / tests / rubric / benchmark / regression / quality gate | `.claude/verify.sh`, `tests/`, `skill-comply`, `llm-as-judge`, judge agents (readme-judge, etc.) | Verify, binding judgment |
+| Evals | acceptance criteria / tests / rubric / benchmark / regression / quality gate | `.claude/verify.sh`, `tests/`, `skill-comply`, `llm-as-judge`, dedicated judge agents | Verify, binding judgment |
 | Data / Memory | deliverables / decision history / domain knowledge / preferences / provenance / historical state | `docs/adr/`, auto-memory, `.notes/`, `metrics/*.jsonl`, wiki | ADR = dated hypothesis |
 | Runtime | tool calling / shell & fs / permission implementation / sandbox / connector / retry / logging / state / routing / agent loop | Claude Code itself, `hooks/*.sh`, MCP servers, the Workflow / Agent tools, launchd tick | control plane (ADR-0019), hooks are timing (ADR-0035) |
 
@@ -95,14 +95,14 @@ When applied retroactively to **installed assets**, do not execute the conclusio
 | Move | Demote / Merge in the same, or rules-distill (skill → rule direction) |
 | Simplify | Improve in the same, built-in `/simplify` |
 | Make temporary | write a deadline in `review-when:` for a rule, `## Review-when` for an ADR, `## Expiry conditions` for a skill |
-| Defer | skill: file it as a `draft` with `rfc-writer` (in a small repo with a single table, one line in `.notes/TASKS.md`) |
+| Defer | skill: file it as a `draft` in your task ledger (the author's harness uses `rfc-writer`) (in a small repo with a single table, one line in `.notes/TASKS.md`) |
 | Keep | leave a 1-line reason (it becomes grounds for future stocktakes) |
 
 ## Out of scope
 
-- A standalone build-or-not decision on something not yet built → agent `architect` (zero-base test). This skill answers "if it is built,
+- A standalone build-or-not decision on something not yet built → a fresh-context build-or-not judge (the author's harness uses the `architect` agent; zero-base test). This skill answers "if it is built,
   in which layer and until when"
-- Validity of loop structure (servo / decidability / damping) → skill: `loop-design-check`
+- Validity of loop structure (servo / decidability / damping) → a loop-design review (the author's harness uses `loop-design-check`)
 - Bulk cross-check at a model generation change → skill: `generation-audit`
 - Human portability (whether others can install and use it) → `skill-creator/references/portability.md`
 
@@ -116,8 +116,8 @@ When applied retroactively to **installed assets**, do not execute the conclusio
 
 ## Related
 
-- `architect` agent — the up-front twin: build-or-not. This skill answers "if it is built, in which layer and how far"
-- `loop-design-check` — isomorphic to its Step 0 subtract gate (subtract before adding)
+- A build-or-not judge (the author's harness uses the `architect` agent) — the up-front twin: build-or-not. This skill answers "if it is built, in which layer and how far"
+- A loop-design review (the author's harness uses `loop-design-check`) — isomorphic to its Step 0 subtract gate (subtract before adding)
 - `generation-audit` — after-the-fact cross-check at a generation change. This skill is up-front judgment at design time; the evidence flows in the same direction
 - `rules-stocktake` / `skill-stocktake` / `agent-stocktake` — the source of truth for verdicts. For installed assets, this skill's
   Delete / Move become evidence for these

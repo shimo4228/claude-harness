@@ -173,7 +173,7 @@ in `evidence` are the improvement list handed to the next stage.
   — the architecture-level "LLM judge + Code enforce" pattern (judgment never
   mutates state directly); this skill designs the judge's inside. Not an
   installed skill: it lives in the AKC repo (and as a public skill repo that
-  `harness-sync` publishes to), so cite the ADR rather than a `skills/` path.
+  the author's publish step, `harness-sync`, publishes to), so cite the ADR rather than a `skills/` path.
 - `skill-stocktake` — worked implementation at library scale (binary screen →
   pressure-test → holistic verdict, deterministic pre-pass, overlap probe).
 - `learn-eval` — worked implementation at N=1 (unconditional dynamic questions,

@@ -322,8 +322,6 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001 — gh, OS and Playwright (browser missing) errors
         print(f"error: {exc}", file=sys.stderr)
         return 2
-        print(f"error: {exc}", file=sys.stderr)
-        return 2
     print(json.dumps(ev, ensure_ascii=False, indent=2))
     return 0
 

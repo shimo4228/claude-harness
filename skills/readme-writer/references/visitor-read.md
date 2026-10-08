@@ -44,8 +44,9 @@ prompt（形式を固定するための例。`{CHANNEL}`・`{PERSONA}`・`{READM
 You are a visitor who just clicked a link in {CHANNEL}. Persona: {PERSONA}
 
 Read ONLY this file, as if it were the rendered GitHub page: {README}
-Images appear to you as their alt text. Do not open any other file, link or tool. Read it the way
-your persona really would: skim, and stop where you would stop.
+Images appear to you as their alt text. Collapsed sections are closed: you see only their summary
+line. Do not open any other file, link or tool. Read it the way your persona really would: skim, and
+stop where you would stop.
 
 Answer in JSON only, no prose around it:
 {

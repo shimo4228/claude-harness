@@ -1,10 +1,12 @@
 # .github/workflows/verify.yml — template (verify-bootstrap Step 6)
 #
 # Runs the repo's single gate entrypoint (.claude/verify.sh) with no args on every push to
-# main and to claude/** (Claude Code cloud build branches — ADR-0075: the judge reads this
-# result instead of re-running verify). The checks live in verify.sh only; this workflow
-# provides the tools verify.sh needs and calls it. A separate job scans the history for
-# secrets (the local harness hook only sees staged additions).
+# main and to claude/** (Claude Code cloud build branches — the reviewer reads this result
+# instead of re-running verify, and trusts it only when the diff does not touch
+# .claude/verify.sh, .github/ or .claude/settings.json).
+# The checks live in verify.sh only; this workflow provides the tools verify.sh needs and
+# calls it. A separate job scans the history for secrets (a local pre-commit secret scan
+# sees only staged additions).
 #
 # Fill in: the "Install tools" step (what verify.sh resolves from PATH — read .claude/verify.md),
 # the language setup action(s), and the Python/Node versions. Keep: SHA-pinned actions,

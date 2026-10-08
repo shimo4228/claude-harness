@@ -9,7 +9,7 @@ origin: shimo4228
 
 A reviewer's checklist mixes in items that a script counts more accurately and cheaply than an LLM does.
 This skill draws that boundary, moves the mechanical side down into a script, and focuses the reviewer's attention
-on semantic checks. Prior examples: `readme_evidence.py` (readme-writer), `adr_lint.py` and
+on semantic checks. Prior examples: `readme_evidence.py` (the author's README skill), `adr_lint.py` and
 `adr_review_evidence.py` (adr-writer). The division-of-labor principle is "existence = code, content = LLM":
 the script measures, the LLM interprets.
 
@@ -93,7 +93,7 @@ The default is the skill-step side — always-on wiring into a commit hook / ver
 including commits that do not touch the target.
 
 **Exception: targets with no canonical writer skill.** Executable assets such as `hooks/*.sh` have no writer skill
-equivalent to adr-writer / readme-writer, so the coordinate "skill step"
+equivalent to adr-writer / the author's README skill, so the coordinate "skill step"
 does not exist in the first place. In this case `verify.sh` becomes the default.
 
 If hollowing-out is observed, revisit the wiring on the commit surface. Hold no aggregation, viewer, or grader agent
@@ -108,7 +108,7 @@ drift, the measured values of the exemption boundary, and the reasons for reject
 
 Take candidates one at a time in separate sessions. Decide priority by demand — a clear current need on a stable
 canonical source — not by room for mechanization; a lint built ahead of demand hollows out.
-Skip targets that are already done or need no script: readme-writer and adr-writer already have evidence scripts;
+Skip targets that are already done or need no script: the author's README skill and adr-writer already have evidence scripts;
 security-reviewer already delegates to existing gates; `scripts/hooks/harness_lint.py` covers rules-stocktake's mechanical
 checks; llm-as-judge and skill-health are the reference designs, not targets; a reviewer whose checks belong to an off-the-shelf
 linter (e.g. SwiftLint for swift-reviewer) is thinned by delegating to that tool, not by writing a script.

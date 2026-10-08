@@ -28,7 +28,7 @@ are owned by the stocktake for each asset class (ADR-0022); this skill stands on
 ## Phase 0 — Target model and scope
 
 - **Target model**: the model newly assigned to a role in this harness. When models differ by role, look at an asset
-  through the model of the role that reads it (task-triage's packet template → build role; rules / CLAUDE.md /
+  through the model of the role that reads it (a dispatch packet template → build role; rules / CLAUDE.md /
   output style → every session; judge-role skills → judge role)
 - **Scope**: the prompt surface of `~/.claude` — `rules/common/`, `CLAUDE.md`, `AGENTS.md`,
   `output-styles/`, `skills/*/SKILL.md` and `references/`, `agents/`, and the text hooks return to the model

@@ -1,6 +1,6 @@
 ---
 name: verify-bootstrap
-description: "repo に機械ゲート（format / lint / type check / security / dependency audit / test）を立てる、または既存のゲートが古びていないか棚卸しする。Use when starting a new project, when a repo has no automated quality gate, when the user says 「lint を入れて」「この repo にゲートを立てて」「型チェックを入れたい」「静的解析を整備して」「ツールが古い」「verify を棚卸しして」, \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. ツール表を持たない設計なので、未知のスタックでも同じ手順で使える。NOT for — 既に立っているゲートを 1 回実行するだけ（それは repo の verify entrypoint を直接実行）、コードの意味的レビュー（→ implementation-chain の Review 群）。"
+description: "Set up machine gates in a repo (format / lint / type check / security / dependency audit / test), or audit whether existing gates have gone stale. Use when starting a new project, when a repo has no automated quality gate, when the user says \"add linting\" (「lint を入れて」), \"put a gate on this repo\" (「この repo にゲートを立てて」), \"I want type checking\" (「型チェックを入れたい」), \"set up static analysis\" (「静的解析を整備して」), \"the tools are outdated\" (「ツールが古い」), \"audit verify\" (「verify を棚卸しして」), \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. The skill carries no tool table, so the same procedure works on an unfamiliar stack. NOT for — running an existing gate once (run the repo's verify entrypoint directly), or semantic code review (that belongs to the review step of your implementation workflow)."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:
@@ -10,161 +10,161 @@ user-invocable: true
 origin: shimo4228
 ---
 
-# verify-bootstrap — repo に機械ゲートを立てる
+# verify-bootstrap — set up machine gates in a repo
 
-人間がコードを読む速度は、AI が書く速度に追いつかない。だから構造的な正しさの判定は
-**機械に移す**。この skill は repo ごとに、
-その時点で最良の検査ツールを立てる。
+Humans cannot read code as fast as AI writes it. So judging structural correctness is
+**moved to machines**. For each repo, this skill sets up
+the best checking tools available at that moment.
 
-## この skill が持たないもの（設計上の中核）
+## What this skill does not carry (the core of the design)
 
-**ツール名の一覧を持たない。言語の検出テーブルも持たない。** ツールは陳腐化する
-（flake8 + black + isort → ruff は 2 年で起きた）。固定表を持てば表が腐り、
-腐った表が repo に配られる。
+**It carries no list of tool names. It carries no language-detection table either.** Tools go stale
+(flake8 + black + isort → ruff happened within two years). A fixed table rots,
+and the rotten table gets handed out to repos.
 
-持つのは **調べ方と契約**だけ:
+It carries only **how to investigate, and a contract**:
 
-- repo の実態を列挙する手順（静的な言語リストを参照しない）
-- category ごとに何を search-first に問うか
-- 生成物 `.claude/verify.sh` の契約（global hook がこれだけを知る）
-- strictness と陳腐化検知の規律
+- a procedure that enumerates what the repo actually contains (no static language list)
+- what to ask search-first for each category
+- the contract of the generated `.claude/verify.sh` (the only thing a pre-commit hook or CI needs to know)
+- the discipline of strictness and staleness detection
 
-結果として、この skill が書かれた時点で存在しなかった言語・ツールでも同じ手順で回る。
+As a result, the same procedure works for languages and tools that did not exist when this skill was written.
 
-## モード
+## Modes
 
-| モード | 起動条件 | やること |
+| Mode | Trigger | What to do |
 |---|---|---|
-| **bootstrap** | `.claude/verify.sh` が無い | Step 1–6 を通す |
-| **audit** | 既にある（`--audit` / 「棚卸し」） | Step 1 を再実行し、`.claude/verify.md` の選定を search-first で引き直して差分を提案 |
+| **bootstrap** | No `.claude/verify.sh` | Run Steps 1–6 |
+| **audit** | It already exists (`--audit` / "audit" / 「棚卸し」) | Re-run Step 1, re-derive the selections in `.claude/verify.md` with search-first, and propose the differences |
 
-## Step 1 — repo の実態を列挙する（検出、静的表なし）
+## Step 1 — Enumerate what the repo actually contains (detection, no static table)
 
-推測しない。**実測する**。
+Do not guess. **Measure.**
 
 ```bash
-# 追跡ファイルの拡張子分布（上位）— 生成物・依存ディレクトリは除く
+# Extension distribution of tracked files (top) — excludes generated and dependency directories
 git ls-files | sed -n 's/.*\.\([A-Za-z0-9_]*\)$/\1/p' | sort | uniq -c | sort -rn | head -20
-# ビルド/依存マニフェストの実在
+# Which build/dependency manifests exist
 git ls-files | grep -iE '(^|/)(pyproject\.toml|package\.json|Cargo\.toml|go\.mod|Gemfile|pom\.xml|build\.gradle.*|[^/]*\.xcodeproj/.*|Package\.swift|mix\.exs|composer\.json|Makefile|justfile)$'
-# 既存のゲート痕跡（重複導入の防止）
+# Traces of existing gates (prevents installing twice)
 git ls-files | grep -iE '(pre-commit-config|lefthook|\.github/workflows/|trunk\.yaml|\.golangci|\.eslintrc|ruff\.toml)'
 ```
 
-上のマニフェスト grep は**発見の補助であって権威ではない**。1 本目の拡張子分布が正本で、
-grep に載っていない生態系が出てきたらそれを Step 2 にそのまま渡す（表を編集して
-この skill に足さない — 表を持たないことがこの skill の設計）。
+The manifest grep above is **a discovery aid, not an authority**. The first command's extension distribution is the source of truth;
+when an ecosystem shows up that the grep does not list, pass it straight to Step 2 (do not edit the table and
+add it to this skill — carrying no table is this skill's design).
 
-散文・設定・スキーマも対象に含める。コードだけがゲートの対象ではない
-（Markdown の日本語 prose、YAML、CI 定義、シェルスクリプトはいずれも機械検査できる）。
+Include prose, configuration, and schemas. Code is not the only target of a gate
+(Japanese prose in Markdown, YAML, CI definitions, and shell scripts can all be checked by machine).
 
-## Step 2 — category ごとに現時点の最適ツールを調べる
+## Step 2 — Research the current best tool for each category
 
-検出した生態系ごとに、**6 category** を埋める。埋まらない category は「無い」と明記する
-（空欄と「その言語には該当がない」は別物）。
+For each detected ecosystem, fill in the **6 categories**. When a category cannot be filled, write "none" explicitly
+(an empty cell and "this language has nothing for it" are different things).
 
-| category | 問い |
+| category | Question |
 |---|---|
-| **format** | 整形の正規化。差分ノイズを消し、レビュー対象を意味の変化だけにする |
-| **lint** | 構造的な誤り・複雑度・デッドコード |
-| **type check** | 型で表現できる契約。型なし言語なら「型注釈を段階導入する手段があるか」 |
-| **security** | 危険な構文・秘密の混入（秘密スキャンは harness 側にもあるので重複を確認） |
-| **dependency** | 既知脆弱性・未使用依存・ライセンス |
-| **test** | テストランナーとカバレッジ測定 |
+| **format** | Normalize formatting. Remove diff noise so that only changes in meaning are left to review |
+| **lint** | Structural errors, complexity, dead code |
+| **type check** | Contracts expressible as types. For an untyped language: "is there a way to introduce type annotations incrementally?" |
+| **security** | Dangerous constructs and leaked secrets (if a pre-commit hook or CI already runs a secret scan, check for duplication) |
+| **dependency** | Known vulnerabilities, unused dependencies, licenses |
+| **test** | Test runner and coverage measurement |
 
-**予算系 rule（閾値を要する複雑度・関数/ファイル長・bundle サイズ等）は既定に頼らない。**
-主要 linter は予算系を既定 OFF で出荷するのが通例（閾値が opinionated なため）—
-「最大 strict」の運用では構造的に素通りする（2026-08-28 実測でカバー 0 を確認 —
-数値の正本は ADR-0056）。lint category を埋めるとき明示的に問う。stack の標準 toolchain が
-既定で予算を持つ場合（例: SwiftLint の cyclomatic_complexity / file_length）は追認して
-verify.md に 1 行記録するだけでよい。閾値は global に定めない — repo 間で分布は数倍
-割れる（同実測、正本は ADR-0056）。
-既存 corpus 全件の分布を実測してから、現状の外れ値だけが赤くなる位置に置く
-（skill `review-to-lint` の免除境界の原則。ゲートを初日に赤くする閾値は設計ミス）。
+**Do not rely on defaults for budget rules (rules that need a threshold: complexity, function/file length, bundle size, etc.).**
+Major linters usually ship budget rules OFF by default (because the thresholds are opinionated) —
+under "maximum strict" operation they structurally slip through (a 2026-08-28 measurement found zero coverage:
+no budget rule in 104 lint/build configs across 82 repos). Ask about them explicitly when filling the lint category. When the stack's standard toolchain
+has budgets on by default (e.g. SwiftLint's cyclomatic_complexity / file_length), confirm them and
+record one line in verify.md. Do not set thresholds globally — distributions differ several-fold
+between repos (same measurement).
+Measure the distribution over the whole existing corpus first, then place the threshold where only current outliers turn red
+(the exemption-boundary principle of the skill `review-to-lint`. A threshold that turns the gate red on day one is a design error).
 
-**lint / type check の選定方針は LLM-first**（読者・編集者とも LLM で、人間はコードを
-読まない前提。実例と根拠は `~/.claude/.claude/verify.md` の「lint の LLM-first 棚卸しと ANN 導入」節）。言語を問わず同じ 4 軸で select を組む:
+**The lint / type check selection policy is LLM-first** (the reader and the editor are both LLMs; humans do not
+read the code. Rationale: AKC ADR-0025 (LLM-first artifact readability)). Build the select set on the same 4 axes regardless of language:
 
-1. **バグクラス検出**（未定義名・未使用・既知の危険パターン・型矛盾）— 無相関の
-   検証者の中核。最優先
-2. **正準形**（formatter・import 順）— 目のためでなく diff 安定のため。別セッションが
-   触っても偽 diff が出ない = golden・review が静かに保てる
-3. **予算**（複雑度・ファイル長）— context 制限つきの次の編集者のための編集信頼性予算
-   （閾値は上の分布実測で）
-4. **境界の明示型強制** — 型は機械検証可能な仕様で、再生成・別セッション編集の凍結端。
-   production 側のみ（テスト関数は消費される境界ではないので除外）。
-   Python での実装例: ANN001-003 + ANN201 + ANN401、`tests/**` 除外
+1. **Bug-class detection** (undefined names, unused code, known dangerous patterns, type contradictions) — the core of an
+   uncorrelated verifier. Highest priority
+2. **Canonical form** (formatter, import order) — for diff stability, not for the eye. When another session
+   touches the code, no spurious diff appears = golden files and reviews stay quiet
+3. **Budget** (complexity, file length) — an edit-reliability budget for the next editor, who works within a limited context
+   (thresholds from the distribution measurement above)
+4. **Explicit type enforcement at boundaries** — types are a machine-verifiable specification and the frozen edge for regeneration and edits by other sessions.
+   Production side only (test functions are not consumed boundaries, so they are excluded).
+   Example implementation in Python: ANN001-003 + ANN201 + ANN401, excluding `tests/**`
 
-**人間美学系（docstring 様式・命名規約・コメント整形）は select しない。** 削る対象では
-なく、最初から入れない。「人間が読みにくい」だけを理由とする rule には LLM-first の
-正当化が立たない。
+**Do not select human-aesthetics rules (docstring style, naming conventions, comment formatting).** They are not something
+to remove later; they are never put in. A rule whose only justification is "hard for humans to read" has no LLM-first
+justification.
 
-各 category について **`search-first` skill を呼ぶ**（WebSearch を直接叩かない —
-依存追加・自作 utility の前は search-first、が `rules/common/planning.md` の配線）。問いには必ず
-「**今日の日付時点で**」の時点指定と「既存の代替から乗り換えが起きていないか」を含める。
-記憶している定番を答えにしない — この skill が防ごうとしているのはまさにそれ。
+For each category, **call the `search-first` skill** (do not call WebSearch directly — search-first comes before
+adding a dependency or writing your own utility). Every question must include the point in time, "**as of today's date**",
+and "has there been a migration away from the established alternative?".
+Do not answer with the standard tool you remember — that is exactly what this skill exists to prevent.
 
-報告を受けたら、次を確認してから採用する:
+When the report comes back, confirm the following before adopting:
 
-- **最終リリースが 12 ヶ月以内か**（放置プロジェクトを新規 repo に入れない）
-- **単一バイナリ / on-demand 実行が可能か**（`uvx` / `npx` / `brew` 等。repo の
-  実行環境を汚さずに走るか）
-- **設定を持ち込めるか**（strictness を宣言でき、例外を許可リスト化できるか）
-- **CI とローカルで同じものが走るか**（乖離するとローカルが形骸化する）
+- **Was the last release within 12 months?** (do not bring an abandoned project into a new repo)
+- **Can it run as a single binary, or on demand with an exact version pin?** (e.g. `uvx <tool>@<x.y.z>` /
+  `npx <pkg>@<x.y.z>` / `brew`. Does it run without polluting the repo's runtime environment?)
+- **Can the configuration be carried in?** (can strictness be declared, and exceptions allowlisted?)
+- **Does the same thing run in CI and locally?** (if they diverge, the local gate becomes a formality)
 
-## Step 3 — 最大 strict で導入する
+## Step 3 — Install at maximum strictness
 
-**既定は最大 strict**。AI は厳しさに文句を言わないので、従来「人間の忍耐」を理由に
-緩められていた分の天秤は正しさ側に倒す。
+**The default is maximum strict.** AI does not complain about strictness, so the balance that used to be loosened
+on account of "human patience" tips toward correctness.
 
-- 警告を warning のまま放置しない — **error にする**
-- 型の抜け穴（`any` 相当・型チェック抑制コメント）を **禁止側に倒す**
-- 版を **pin する**（`ruff==0.16.0` のように。supply chain の固定。bump は手動）
-- 例外は**インラインの抑制コメントでなく、設定ファイルの許可リストで理由付き**に
-  （インライン抑制は理由が消えて無限増殖する）
-- repo 固有の例外が要るときは、**まずスタックを標準に寄せる** — 寄せた上で残る分だけ
-  理由付きで許可リストへ（「この repo だけ独自」は設計不足のサイン）
+- Do not leave warnings as warnings — **make them errors**
+- **Forbid** type escape hatches (`any` equivalents, comments that suppress type checking)
+- **Pin versions** (like `ruff==0.16.0`. Fixes the supply chain. Bumps are manual)
+- Exceptions go **in the config file's allowlist with a reason, not as inline suppression comments**
+  (inline suppressions lose their reasons and multiply without limit)
+- When a repo-specific exception is needed, **first move the stack toward the standard** — only what remains after that
+  goes into the allowlist with a reason ("only this repo is special" is a sign of insufficient design)
 
-**新規 repo は初日から最大 strict**（drain すべき負債がゼロなので ratchet 不要）。
-**既存 repo への後付けだけ ratchet を使う** — 全 rule を warn で入れ、既存違反を
-drain し切ってから error に上げる。初日から block にすると「回避の作法」が育つ。
+**A new repo is maximum strict from day one** (there is zero debt to drain, so no ratchet is needed).
+**Use a ratchet only when retrofitting an existing repo** — install every rule as warn, drain the existing
+violations completely, then raise them to error. Blocking from day one grows "workaround etiquette".
 
-予算系 rule の閾値も同じく**一方向** — 超過したら閾値を上げるのではなく**刈る**
-（dead code・重複の除去、分割）。閾値の設定行に「上げずに刈る — 変更は verify.md に
-日付つき理由」のコメントを付ける。ゲートが赤くなった瞬間に config を触る agent の
-目に入る位置が、この運用規約の配達点である。
+Budget-rule thresholds are likewise **one-way** — when exceeded, do not raise the threshold; **prune**
+(remove dead code and duplication, split). Put the comment "prune, don't raise — record changes in verify.md
+with a dated reason" on the threshold's config line. The spot that an agent touching the config sees the moment the gate turns red
+is where this operating rule gets delivered.
 
-## Step 4 — `.claude/verify.sh` を生成する（global hook との契約）
+## Step 4 — Generate `.claude/verify.sh` (the contract with pre-commit hooks and CI)
 
-repo が持つ **唯一の入口**。ハーネス側の hook はこのファイルの存在と exit code しか
-見ない — だから repo が何語で書かれていても hook を変更せずに済む。
+The repo's **single entrypoint**. A caller (a pre-commit hook, CI) looks only at this file's existence and its exit code
+— so the caller needs no change whatever language the repo is written in.
 
-**契約（厳守）**:
+**Contract (mandatory)**:
 
-| 項目 | 仕様 |
+| Item | Specification |
 |---|---|
-| パス | `<repo root>/.claude/verify.sh`（実行可能） |
-| 引数 | `--staged` = commit 境界の高速検査（staged ファイルのみ）。引数なし = repo 全体の完全検査 |
-| 環境 | `$VERIFY_REPO_ROOT` があれば repo root として使う（承認機構が渡す） |
-| exit code | `0` = PASS / `1` = FAIL（commit を止める）/ `2` = 検査不能（ツール不在等、fail-soft） |
-| 出力 | FAIL 時は**人間と LLM が読んで直せる検出行**。PASS 時の出力は **advisory**（commit は止めないが伝えたいこと — 昇格待ちの ratchet、眠っているゲートの通知）として `verify-precommit.sh` が model へ渡す。言うことが無ければ**無出力**（無言 PASS にノイズを足さない）。**stdout と stderr は区別されない** — hook は `2>&1` でまとめて受けるので、成功時に stderr へ出る進捗・非推奨警告も advisory になる。黙っていたいものは黙らせる |
-| 実行時間 | `--staged` は**数秒以内**。超えるものは無引数側にだけ置く |
+| Path | `<repo root>/.claude/verify.sh` (executable) |
+| Arguments | `--staged` = fast check at the commit boundary (staged files only). No argument = full check of the whole repo |
+| Environment | If `$VERIFY_REPO_ROOT` is set, use it as the repo root (a caller that approves the content before running it passes it) |
+| exit code | `0` = PASS / `1` = FAIL (blocks the commit) / `2` = cannot check (tool missing, etc.; fail-soft) |
+| Output | On FAIL, **detection lines a human and an LLM can read and act on**. Output on PASS is **advisory** (things that do not block the commit but should be passed on — a ratchet awaiting promotion, a notice that a gate is asleep); the calling hook hands it to the model. With nothing to say, **no output** (do not add noise to a silent PASS). **stdout and stderr are not distinguished** — the caller captures both with `2>&1`, so progress lines and deprecation warnings written to stderr on success also become advisory. Silence what should stay silent |
+| Run time | `--staged` **within a few seconds**. Anything slower goes only in the no-argument mode |
 
-**速い / 遅いの分離**（これを守らないと bypass の作法が育つ）:
+**The fast / slow split** (if it is not kept, bypass etiquette grows):
 
-- `--staged`: format check・lint・security scan（ファイル単位で完結するもの）
-- 無引数: build・type check・test・dependency audit（repo 全体・分単位）
+- `--staged`: format check, lint, security scan (things that complete per file)
+- no argument: build, type check, test, dependency audit (whole repo, minutes)
 
-ツール解決は `PATH にあれば使う → 無ければ on-demand 実行（uvx / npx 等）→ それも
-無ければ exit 2 で fail-soft`。**fail-soft でも無音にしない** — どのゲートが眠って
-いるかを stdout に出す（眠っているゲートは、無いゲートより危険）。
+Tool resolution: `use it if it is on PATH → otherwise run it on demand with an exact version pin (e.g. uvx <tool>@<x.y.z> / npx <pkg>@<x.y.z>, the same pin as Step 3) → if that is
+not possible either, exit 2 fail-soft`. **Fail-soft is not silent** — print to stdout which gate is
+asleep (a sleeping gate is more dangerous than a missing one).
 
-**実装上の罠（どちらも実測で踏んだもの）**:
+**Implementation traps (both were hit in practice)**:
 
-- **repo root は `$VERIFY_REPO_ROOT` → 自分自身の位置、の順で決める** — cwd 起点にすると
-  hook 経由で**別 repo を検査して無言で PASS する fail-open** になる。承認機構は照合済み
-  バイト列を一時ファイルに置いて実行する（TOCTOU 回避）ので `BASH_SOURCE` が repo を
-  指さない場合がある。両対応が必須:
+- **Determine the repo root in the order `$VERIFY_REPO_ROOT` → the script's own location** — if it starts from cwd,
+  then when called through a hook it **checks a different repo and passes silently: fail-open**. A caller that approves content
+  may run the verified bytes from a temporary file (to avoid TOCTOU), so `BASH_SOURCE` may not
+  point into the repo. Supporting both is mandatory:
 
   ```bash
   if [[ -n "${VERIFY_REPO_ROOT:-}" ]]; then
@@ -173,71 +173,69 @@ repo が持つ **唯一の入口**。ハーネス側の hook はこのファイ�
     ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P) || exit 2
   fi
   ```
-- **追跡されているか確認する** — `.gitignore` が `.claude/*` を除外している repo は多い。
-  除外されたままだと CI と他クローンからゲートが消える。`git check-ignore` で確認し、
-  必要なら `!.claude/verify.sh` / `!.claude/verify.md` を足す
+- **Confirm the file is tracked** — many repos have a `.gitignore` that excludes `.claude/*`.
+  If it stays excluded, the gate disappears from CI and other clones. Check with `git check-ignore`, and
+  add `!.claude/verify.sh` / `!.claude/verify.md` if needed
 
-**生成しただけでは commit 境界で走らない** — hook は permission プロンプトを経ずに実行するため、
-「ファイルがある」を「実行してよい」と読み替えない設計になっている（clone しただけの外部 repo で
-コードが自動実行される経路を塞ぐ）。**人間が内容を読んで承認**して初めて実行される:
+**Generating the file does not by itself make it run at the commit boundary.** Whatever runs `verify.sh` without a
+permission prompt must run it only after **a human has read the content and approved it**, with the approval bound to
+a content hash. A file that merely exists — for example in an external repo that was only cloned — must not run.
+In the author's harness, a pre-commit hook (`verify-precommit.sh`) enforces this with
+`python3 ~/.claude/scripts/hooks/verify_allow.py approve <repo>`, and passes PASS-time output to the model as advisory.
 
-```
-python3 ~/.claude/scripts/hooks/verify_allow.py approve <repo>
-```
+Because approval is bound to the content hash, after editing `verify.sh` read the new text before approving it again. This is the trust boundary for repo-local code that runs without a permission prompt.
 
-承認は内容ハッシュに紐づくので、`verify.sh` を編集したら `verify_allow.py` の台帳を更新する前に
-新しい本文を確認する。これは permission prompt を経ない repo-local code 実行の信頼境界である。
+**Run the generated `verify.sh` once on the spot to confirm it works.** Then
+**inject a violation temporarily and prove each category fires** (broken formatting, an unused import,
+`eval`, etc.). A check that only passes is not evidence, because a sleeping gate also passes.
+When the proof is done, always delete the injected probes.
 
-生成した `verify.sh` は**その場で 1 回実行して動作を確認する**。さらに
-**違反を一時注入して category ごとに発火を実証する**（format 崩し・未使用 import・
-`eval` 等）。PASS するだけの確認は、ゲートが眠っていても PASS するので証拠にならない。
-実証が済んだら注入した probe を必ず削除する。
+## Step 5 — Record the selections (make staleness visible)
 
-## Step 5 — 選定を記録する（陳腐化を可視化する）
-
-`<repo root>/.claude/verify.md` に、category ごとに次を残す:
+In `<repo root>/.claude/verify.md`, leave the following for each category:
 
 ```
 ## type check
 tool: pyright ==1.1.x
-選定日: 2026-07-31
-理由: mypy より速く既定が strict。ty / pyrefly は 2026-07 時点で pre-1.0
-再調査トリガー: 12 ヶ月経過 / 代替が 1.0 到達 / 現行ツールの最終リリースが 12 ヶ月以上前
+selected: 2026-07-31
+reason: faster than mypy and strict by default. ty / pyrefly are pre-1.0 as of 2026-07
+re-research triggers: 12 months elapsed / an alternative reaches 1.0 / the current tool's last release is more than 12 months old
 ```
 
-この記録が無いと audit モードが「何を引き直すべきか」を判断できない。
-**選定日と再調査トリガーは必須**、理由は 1 行でよい。予算系 rule は**閾値と実測分布の
-as-of** も記録する（例: `C901=15 — p99=14、2026-08-28 実測`。audit 時に分布の再実測と
-突き合わせる基点になる）。
+Without this record, audit mode cannot decide "what to re-derive".
+**The selection date and the re-research triggers are mandatory**; one line of reason is enough. For budget rules, also record
+**the threshold and the as-of date of the measured distribution** (e.g. `C901=15 — p99=14, measured 2026-08-28`. It is the baseline
+compared against the re-measured distribution at audit time).
 
-## Step 6 — CI に同じものを配線する
+## Step 6 — Wire the same thing into CI
 
-ローカルゲートだけでは、bypass された commit が素通りする。CI が `.claude/verify.sh`
-を無引数で実行する job を持てば、ローカルと CI の乖離が構造的に起きない
-（**同じ入口を両方から呼ぶ**。CI 用に別のコマンド列を書くと必ず drift する）。
-build 役が cloud session で走る repo では、CI が verify の唯一の判定者になる — 判断役は
-ローカルで再実行せず、branch tip に対する run の結論を読む（ADR-0075）。CI を持たない repo は
-cloud に出せないので、github.com に remote がある repo ではこの Step を bootstrap に含める。
+With only a local gate, a bypassed commit slips through. If CI has a job that runs `.claude/verify.sh`
+with no argument, local and CI cannot diverge structurally
+(**call the same entrypoint from both**. Writing a separate command sequence for CI always drifts).
+In a repo where the implementing agent runs in a cloud session, CI is the only verify judge — the reviewer does not
+re-run it locally but reads the conclusion of the run on the branch tip. Trust that conclusion only when the diff does not
+touch `.claude/verify.sh`, `.github/` or `.claude/settings.json`: CI runs the branch's own copies, so send such a diff back. A repo without CI
+cannot be handed to cloud sessions, so for a repo with a remote on github.com, include this Step in bootstrap.
 
-雛形は `references/ci-verify.yml`。固定するもの: `main` と `claude/**` への push で発火 /
-actions は commit SHA で pin（tag から `gh api repos/<o>/<r>/git/ref/tags/<tag>` で引く）/
-`permissions: contents: read` / `persist-credentials: false` / 履歴全体の secret scan job
-（ローカル hook `secret-scan-precommit.sh` は staged 追加分しか見ない）。埋めるもの: verify.sh が
-PATH から解決するツールの導入（`.claude/verify.md` の選定記録が正本）と言語 setup。
-Linux runner で落ちるテスト（macOS 専用の launchd / BSD `stat`）は `skipif` で自己申告させ、
-production 側の platform ガードでテストが `SystemExit` になる形は直す — 「CI で赤 = ローカルでも
-赤」を保つため。
+The template is `references/ci-verify.yml`. Fixed parts: triggers on push to `main` and `claude/**` /
+actions pinned by commit SHA (resolve from the tag with `gh api repos/<o>/<r>/git/ref/tags/<tag>`) /
+`permissions: contents: read` / `persist-credentials: false` / a secret scan job over the whole history
+(a local pre-commit secret scan sees only staged additions). Parts to fill in: installing the tools verify.sh
+resolves from PATH (the selection record in `.claude/verify.md` is the source of truth) and the language setup.
+Tests that fail on a Linux runner (macOS-only launchd / BSD `stat`) declare themselves with `skipif`, and a test
+that hits `SystemExit` because of a production-side platform guard gets fixed — to keep "red in CI = red
+locally".
 
-## audit モード
+## audit mode
 
-1. Step 1 を再実行（stack が変わっていないか — 言語が増えていれば category が空く）
-2. `.claude/verify.md` の各 category について、**再調査トリガーに該当するものだけ**
-   search-first で引き直す（全件引き直すと毎回コストが出る）
-3. 差分を提示: 現行 → 候補、乗り換えコスト、据え置きの理由
-4. 判断はユーザー。**自動で乗り換えない** — ツール変更は repo 全体の diff を生み、
-   元に戻すコストが導入コストを上回る
+1. Re-run Step 1 (has the stack changed? — if a language was added, categories open up)
+2. For each category in `.claude/verify.md`, re-derive with search-first **only those that match a re-research trigger**
+   (re-deriving everything costs every time)
+3. Present the differences: current → candidate, switching cost, reason for staying
+4. The user decides. **Do not switch automatically** — a tool change produces a repo-wide diff,
+   and the cost of reverting exceeds the cost of introducing
 
-## 関連
+## Related
 
-- Phase 0 のエントリポイント: skill `search-first`（ツール選定は必ずここを通す）
-- ゲートを含む実装フロー全体: skill `implementation-chain`
+- Entry point for Phase 0: skill `search-first` (tool selection always goes through it)
+- The overall implementation flow that includes the gate: your implementation workflow (plan → test → review → verify)

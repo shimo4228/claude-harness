@@ -1,6 +1,6 @@
 ---
 name: learn-eval
-description: "Extract a reusable pattern from the current session, judge it Save / Improve then Save / Absorb / Drop against a grounding checklist, and route every Save to a destination something actually reaches — absorbed into an existing skill / rule / doc section, or promoted to a real skill via skill-creator. Use when the user says \"save what we learned this time\", \"run learn-eval\" or /learn-eval. There is no notes parking lot: if nothing would route to it, the verdict is Drop. NOT for mining past sessions (session-judgment-mining), auditing skills (skill-stocktake), or distilling rules (rules-distill)."
+description: "Extract a reusable pattern from the current session, judge it Save / Improve then Save / Absorb / Drop against a grounding checklist, and route every Save to a destination something actually reaches — absorbed into an existing skill / rule / doc section, or promoted to a real skill via skill-creator. Use when the user says \"save what we learned this time\", \"run learn-eval\" or /learn-eval. There is no notes parking lot: if nothing would route to it, the verdict is Drop. NOT for mining past sessions in bulk, auditing skills (skill-stocktake), or distilling rules (rules-distill)."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
@@ -43,7 +43,7 @@ Look for:
    content exists (measurement: ADR-0047).
 
    Global vs project placement (once a destination type is chosen): the source of truth is
-   [`docs/adr/0025-global-vs-project-asset-placement.md`](../../docs/adr/0025-global-vs-project-asset-placement.md).
+   [`docs/adr/0025-global-vs-project-asset-placement.md`](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0025-global-vs-project-asset-placement.md).
 
 4. Draft the candidate as a scratch note (the final skill shape belongs to `skill-creator`;
    `overlap_candidates.py` reads name / description / Problem / Solution / When to Use):

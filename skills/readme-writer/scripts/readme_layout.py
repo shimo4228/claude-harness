@@ -25,7 +25,6 @@ _TABLE_DELIM_RE = re.compile(r"^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$")
 _ALERT_RE = re.compile(r"^\s*>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$", re.IGNORECASE)
 _CODE_SPAN_RE = re.compile(r"`[^`]*`")
 _QUOTE_RE = re.compile(r"^\s*>")
-_DETAILS_OPEN_RE = re.compile(r"<details\b", re.IGNORECASE)
 # Link texts that name no destination; matched on the whole, lower-cased link text.
 _GENERIC_LINK_TEXTS = frozenset(
     {"here", "click here", "this", "link", "this link", "read more", "more", "こちら", "ここ"}
@@ -124,8 +123,9 @@ class _Scanner:
 
     def other(self, line_no: int, stripped: str) -> None:
         prose = _md._is_prose_line(stripped)
-        if _DETAILS_OPEN_RE.search(stripped):
-            self.forms["details"] += len(_DETAILS_OPEN_RE.findall(stripped))
+        opens, _ = _md.details_tags(stripped)
+        if opens:
+            self.forms["details"] += opens
             self.prev = "html"
         elif line_no in self.image_lines and not prose:
             self.forms["images"] += 1

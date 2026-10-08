@@ -17,8 +17,6 @@ if __package__:
 else:  # Support the documented direct script invocation.
     import readme_md as _md
 
-_DETAILS_CLOSE_RE = _md._DETAILS_CLOSE_RE
-_DETAILS_OPEN_RE = _md._DETAILS_OPEN_RE
 _FENCE_RE = _md._FENCE_RE
 _HTML_IMG_RE = _md._HTML_IMG_RE
 _MD_IMAGE_RE = _md._MD_IMAGE_RE
@@ -214,9 +212,9 @@ def details_blocks(markdown: str) -> list[dict]:
     stack: list[int] = []  # open lines only; the body is sliced on close (no O(N^2) copies)
     raw = markdown.splitlines()
     for n, t in enumerate(raw, start=1):  # raw lines: a fenced BibTeX inside counts
-        for _ in _DETAILS_OPEN_RE.findall(t):
-            stack.append(n)
-        for _ in _DETAILS_CLOSE_RE.findall(t):
+        opens, closes = _md.details_tags(t)
+        stack.extend([n] * opens)
+        for _ in range(closes):
             if stack:
                 open_line = stack.pop()
                 blk = {"open_line": open_line}
