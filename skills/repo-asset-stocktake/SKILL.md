@@ -1,6 +1,6 @@
 ---
 name: repo-asset-stocktake
-description: "Audit a project repo's non-code assets — tool configs, CI/GitHub workflows, runbooks, other docs — for assets whose consumer has vanished, and assign Keep/Update/Retire/Merge verdicts. Use when the user says \"audit my repo assets\", \"repo asset stocktake\", \"which configs/workflows/runbooks are dead\", or \"take stock of my non-code assets\"."
+description: "Audit a repo's non-code assets (tool configs, CI workflows, runbooks, docs) for ones whose consumer is gone. Use when configs, workflows or runbooks may be dead."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:

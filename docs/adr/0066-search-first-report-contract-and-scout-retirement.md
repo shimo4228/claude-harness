@@ -77,6 +77,9 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
    する。種類はゲートでなく探索の手掛かり。別入口への routing: repo 内・ローカル環境 → Explore
    agent、記事全体の fact-check → writing repo の fact-checker、bug fix / refactor / config 値 →
    implementation-chain。
+
+   > **注記（2026-10-09, ADR-0092）**: description は 6 種の問いを分岐として 1 つずつ残し、発話例・総称句・
+   > 別入口への routing は外した（約 1,000 字 → 344 幅）。6 種の探索先と止め方は本文の表に残る。
 3. 種類別の表（探索先 / 証拠として数えるもの / 止め方）と書き方の規則（全 claim に as-of と出所
    URL、不在は範囲付き、snippet と本文の区別、主張に対象・前提・相違、判断は事実に基づく散文 —
    「evidence, not scores」の正本は本 skill §3 Report に置く）は skill 本文が持つ。
@@ -128,6 +131,10 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
   再読する（固定するもの: セッション単位 = 20 KB 超の `projects/<slug>/<session>.jsonl` 1 本、走査 =
   一段 glob で `-private-tmp` slug 除外、窓 = mtime 60 日、分母 = WebSearch の tool_use か外部調査
   regex に一致する Agent prompt、分子 = そのうち Skill(search-first) を持たないもの）。
+
+  > **注記（2026-10-09, ADR-0092）**: search-first の description は 2026-10-09 に書き換わった（約 1,000 字 → 344 幅）。
+  > 2026-11 の取り直しは、窓の始まりを 2026-10-09 以降にする。窓が書き換えの前後にまたがると 2 つの版が混ざり、
+  > 93.7% との比較は「発火しない原因は trigger surface」の検定にならない。
 - 報告を受けた呼び出し側が「移せる部分無し」で報告を捨てる例が続く（著者観測）— 報告契約の設計を
   再読する。
 - transcript の形式変更で上の手順が測れなくなった — 計器を置き換える。

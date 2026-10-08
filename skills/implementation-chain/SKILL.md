@@ -1,6 +1,6 @@
 ---
 name: implementation-chain
-description: "実装に着手する前に task 種別（feat / fix / refactor / chore / prototype / writing）を判定し、その種別に対応する agent chain（Plan → Phase 0 → TDD → Review 群 → Doc Sync → Verify）を plan に front-load するための判断表。Use when starting to implement a feature, fix a bug, refactor, or write a document and you need to decide which reviewers and gates apply — 「これから実装する」「chain を組む」「どのレビューを回すべきか」。writing 種別の orchestrator skill へのルーティング表と早期停止条件もここが正本。NOT for — chain 内の各ステップの実装詳細（それは search-first / writing-ecosystem 等の各 skill）、既に chain が確定した後の実行。"
+description: "Decide the task type (feat / fix / refactor / chore / prototype / writing) and front-load its review chain and gates into the plan. Use when starting to implement, fix, refactor or write something (これから実装する), or when deciding which reviews to run."
 user-invocable: true
 origin: shimo4228
 ---

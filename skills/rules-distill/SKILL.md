@@ -1,6 +1,6 @@
 ---
 name: rules-distill
-description: Scan installed skills to extract principles that belong in the always-loaded rules layer (environment-specific facts, wiring, and traps — not general principles the substrate already applies) and distill them into rules — append to, revise, or create rule files. Use when the user says "distill rules", "/rules-distill", "promote patterns to rules", "what principles should become rules", after installing new skills, or when a skill-stocktake surfaces recurring patterns. NOT for auditing skill quality (that is skill-stocktake) and NOT for editing a single skill (that is skill-creator).
+description: "Distill principles from the installed skills into the always-loaded rules layer."
 license: MIT
 user-invocable: true
 origin: shimo4228

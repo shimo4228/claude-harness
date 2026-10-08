@@ -1,6 +1,6 @@
 ---
 name: headline-craft
-description: 「開かせる一行」を作る候補生成スキル。記事タイトル・README tagline・subtitle・SNS告知文の候補を、著者の言葉と本文を素材に、文の形を変えて広く生成する。Use when the user asks for タイトル案・キャッチコピー・タグライン・見出し候補、or a frozen draft needs title candidates. NOT for — 公開記事候補の点検（→ title-reviewer）、本文が回収しない釣り題、topics / emoji、platform文字数の定義。
+description: "Generate a wide range of one-line hooks from the author's words and the draft: article titles, README taglines, subtitles, announcement lines. Use when asking for title or tagline candidates (タイトル案)."
 user-invocable: true
 origin: shimo4228
 ---

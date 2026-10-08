@@ -173,7 +173,7 @@ The live harness also runs components from external upstreams. Their content —
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
 | [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |
-| [tt-a1i/archify](https://github.com/tt-a1i/archify) | archify | — | — |
+| [tt-a1i/archify](https://github.com/tt-a1i/archify) + local modifications | archify | — | — |
 <!-- END GENERATED: upstream-components -->
 
 ## Related repos

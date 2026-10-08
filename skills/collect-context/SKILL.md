@@ -1,6 +1,6 @@
 ---
 name: collect-context
-description: "記事・エッセイを書く前の素材収集。セッション内外のコンテキストを集め、全項目ソース付きの証拠台帳（evidence dossier）— Claims Register・一次/⚠未検証の tier・セッションログ索引 — を生成する。Use when — 「素材を集めて」「証拠台帳を作って」「この作業の記事コンテキストをまとめて」、執筆に着手する前、fact-checker に渡す主張リストが要るとき。NOT for — 過去ログから記事の問いを発見（→ session-theme-mining）、テーマ・構成・タイトル等の編集判断（受け側 repo の責務。正本は受け側 repo の rules のチャンネル表、執筆 orchestrator は writing-ecosystem — zenn-content 常駐）、事実の検証そのもの（→ fact-checker agent）。収集者は推薦・提案・方向性メモを出力に書かない"
+description: "Collect sourced material into an evidence dossier before writing an article or essay. Use when gathering material for a draft (素材を集めて)."
 user-invocable: true
 origin: shimo4228
 ---

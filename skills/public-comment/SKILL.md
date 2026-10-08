@@ -1,6 +1,6 @@
 ---
 name: public-comment
-description: "公開の技術ピア議論への返信コメントを書く skill。GitHub discussions / issues / PR コメント・Hugging Face discussions・技術フォーラムなど、初対面の技術者が読む公開スレッドへの返信を作成・改稿・投稿するときに使う。Use when the user says 「GitHub のコメントに返信して」「discussion にコメント書いて」「issue に返信」「このスレッドに参加したい」 or asks to draft/revise/post a reply in a public technical thread. 2026 年の OSS は AI slop 危機下にあり、tell（em-dash・対比構文・triad 等）は「未レビューの生ダンプ」のシグナルとして読まれる — 本 skill は content ownership・スレッド接地・脱 tell 改稿・日本語訳併記の人間 gate までを扱う。NOT for: 記事・エッセイ（→ writing-ecosystem）、AI 向け doc（→ llms-txt-writer）、既知の相手との Slack/Discord 会話、コードの PR 本体。"
+description: "Write, revise or post a reply in a public technical thread (GitHub issues, discussions and PR comments, Hugging Face discussions, forums) read by engineers you do not know. Use when replying to such a thread (コメントに返信)."
 user-invocable: true
 origin: shimo4228
 ---

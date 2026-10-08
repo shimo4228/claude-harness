@@ -24,5 +24,6 @@
 - 承認は Respond の貼り戻し。plan に `doc-ask`「実行者の決定」を置く（plan mode の `hooks/plan-executor-notice.sh` の代わり）
 
 Verify の正本は repo の `.claude/verify.sh`。無ければ skill: `verify-bootstrap` で作る。
-完了前に doc sync と `git status` を確認する。commit 境界では PreToolUse hook が staged diff に
+完了前に doc sync と `git status` を確認する。cwd の外で `~/.claude` を編集したときは `git -C ~/.claude status` も見て、
+触ったパスだけを `~/.claude` 側で commit する（編集時に `hooks/harness-commit-notice.sh` が 1 回知らせる）。commit 境界では PreToolUse hook が staged diff に
 同じ機械ゲートを適用する。

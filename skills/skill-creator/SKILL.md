@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: "Entry point and draft gate for writing a new skill / agent definition or substantially revising one. Use when the author says 'make a skill' (「skill 作って」), 'turn this procedure into a skill' (「この手順を skill にして」), 'write an agent definition' (「agent 定義を書いて」) or 'rewrite this skill' (「この skill を書き直して」); when learn-eval decides to Promote; when a creation-notice hook, if your harness has one, detects a new skill; or via /skill-creator. Fixes the intent as one packet, draws the boundary against adjacent skills across the whole library, writes for the strongest model tier you run, has a fresh-context subagent return a non-aggregated named verdict (Publishable / Fix / Drop), and closes with the author's read-through. NOT for — auditing the existing skill set (→ skill-stocktake), measuring compliance (→ skill-comply), checking broken references and ownership (→ skill-health), syncing to a public repo (→ your publish/sync step), extracting from a conversation and deciding Save/Drop (→ learn-eval)."
+description: "Draft gate for writing or substantially revising a skill or agent definition. Use when making or revising a skill (skill 作って), writing an agent definition, or when learn-eval promotes a pattern."
 user-invocable: true
 origin: shimo4228
 replaces: "skill-creator (origin: anthropics/skills-customized, sha b9e19e6, rewritten in place 2026-08-22 — retired the description-optimization loop / eval-viewer / grader set, promoted creation-time judgments from memory)"
@@ -21,10 +21,11 @@ If the conversation holds material, extract it first, then fill in (tools used, 
 corrections, inputs and outputs):
 
 - What it enables (one sentence)
-- When to use it — **three example utterances from the author** (they go into the description
-  verbatim; only for skills meant to fire on their own — otherwise use `disable-model-invocation`
-  from §3)
-- NOT for — adjacent skills / agents **by name**
+- When to use it — **one trigger per branch, in the word the author actually types** (a branch is a
+  distinct case the skill handles; only for skills meant to fire on their own — choose invocation
+  first, §3)
+- NOT for — adjacent skills / agents **by name** (input to the boundary grep below; the description
+  keeps a routing clause only for a colliding pair, §3)
 - Location — `skills/<name>/SKILL.md` (not `commands/`) or `agents/<name>.md`
 - Whether the output is verifiable (file transforms and fixed procedures are worth a with/without
   comparison; style-type skills are not)
@@ -89,16 +90,25 @@ single target, so the whole library is in view.
   them illustrative
 - Handle overlapping content by **reference** (one canonical place; a duplicated copy is pruned by no
   one and drifts)
-- frontmatter: `name` (matches the directory) / `description` (example utterances + NOT for) /
+- frontmatter: `name` (matches the directory) / `description` (the next two bullets) /
   `user-invocable` / `origin` (from your origin vocabulary, if you track one). Agents also get
   `tools` / `model` (opus for judge-type agents; read-only + Bash only when an evidence script
   exists)
-- **The description is the trigger surface and stays resident in the listing every session** —
-  beyond its character cost, merely being listed makes it an unaudited resident instruction layer
-  that can interfere with behavior. For a skill not meant to fire on its own (one reached by slash,
-  by an imperative in a rule, or by a reference from another skill), consider
-  `disable-model-invocation: true` as the default — the skill leaves the listing and the description
-  stays only in the human slash menu. The three example utterances from §1 are then unnecessary
+- **Choose invocation first.** Ask: could the model usefully reach for this skill on its own, or
+  must a rule or another skill call it through the Skill tool? If neither, set
+  `disable-model-invocation: true` — the skill is user-invoked, leaves the listing and costs no
+  context; a rule or skill can still point at its path. Its description is one human-facing line
+  for the slash menu, with no trigger list. Reuse is the reason to extract a skill, not the test
+  for model invocation
+- **A model-invoked description is a resident pointer.** Every word costs every turn, and merely
+  being listed makes it a resident instruction layer. The listing has a budget: in Claude Code
+  2.1.295, context window × 3 characters per token × 1%, full-width characters count 2, and over
+  budget the least-used skills drop to name only (as-of 2026-10-09). Front-load the leading word.
+  Write one trigger per branch, in the word the author actually types — synonyms that rename one
+  branch collapse into one, and a phrase appears in one language only. Leave what the skill does
+  step by step, its outputs and its verdict names to the body (a description that summarizes the
+  procedure gets followed instead of the body). Keep a routing clause only for a colliding pair,
+  stated positively ("For X, use y"). Aim for 400 width or less
 - Limit: 500 lines (Anthropic official best practices, as-of 2026-08-29). Move the excess into
   `references/`. If the skill has a script, add `pyproject.toml` + tests
 - Make every path / agent / CLI flag you name exist at the time of writing (skill-health's scan_refs
@@ -120,7 +130,8 @@ Questions to pass (canonical in skill-stocktake Phase 2; this is a reference, no
   prohibition meets the §3 conditions — concrete action / observed / no gate / one-clause reason —
   and everything else is affirmative)
 - Two extra questions — Generation fit (no text written for an older model generation) / Trigger
-  realism (the design does not depend on self-triggering)
+  realism (the design does not depend on self-triggering; the description follows §3 — invocation
+  chosen, pointer form for a model-invoked skill, one line for a user-invoked one)
 
 The output follows the shape of skill: llm-as-judge — Yes/No + one line of evidence per question,
 1–3 counter-questions for a non-Keep, and a **named verdict**: `Publishable` (on to the author's

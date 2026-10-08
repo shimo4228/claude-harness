@@ -1,6 +1,6 @@
 ---
 name: spawn-session
-description: "新しい detached な Claude Code Remote Control セッションを Herdr 内に起動し、Claude モバイルアプリのセッション一覧に出す。生きている任意のセッションから（多くは iPhone の Remote Control 越しに）呼んで、別プロジェクトの新規セッションを Mac に触れず立ち上げる。Use when the user says 「新しいセッション立てて」「AAP のセッション開いて／立ち上げて」「contemplative のセッション作って」「spawn a (new) session」「launch a remote control session」「start a session for X」, or invokes `/spawn-session [project]`."
+description: "Start a new detached Claude Code Remote Control session inside Herdr, so it shows in the Claude mobile app. Use when asked to start a session for a project (新しいセッション立てて)."
 user-invocable: true
 origin: shimo4228
 ---

@@ -1,6 +1,6 @@
 ---
 name: context-sync
-description: Audit and fix project documentation — detect role overlaps between context files (CLAUDE.md, ADR, README, graph.jsonld), migrate misplaced content, check freshness against code, and create missing docs; README findings are flagged, not edited.
+description: "Audit a repo's context documents (CLAUDE.md, ADRs, README, graph.jsonld) for role overlap and staleness against the code, and fix them; README findings are only flagged. Use when the docs may have drifted from the code or duplicate each other. For README content, use readme-writer."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228

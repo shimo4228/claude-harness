@@ -1,6 +1,6 @@
 ---
 name: repair-discipline
-description: バグ修正・残課題・schema/storage 変更で、直す前の診断から着手まで、いま何が真かを一次証拠で確定する規律。Use when the user says 「このバグ直して」「残課題をやって」「この schema を変えたい」「止まってる気がする」「たまに失敗する」, when picking up a stale task file, when diagnosing a defect before the fix (a process that looks stuck, a failing or intermittent test, a time gap in a run), or when a fix touches storage formats or shared gates. NOT for — chain の種別・レビュー条件・TDD の手順（implementation-chain）、台帳全体の棚卸し（task-stocktake — 本 skill は 1 件着手時の照合のみ）。
+description: "Establish what is true now from primary evidence before a fix. Use when fixing a bug (このバグ直して), picking up a stale task, diagnosing something stuck or flaky, or changing a schema or storage format that anything else reads."
 user-invocable: true
 origin: shimo4228
 replaces: contemplative-agent の feedback memory 5 本（verify-before-work / substrate-migration-sweep / verify-bypass-hides-all-gates / io-bound-process-diagnosis / no-background-retry-loop、2026-08-25 昇格）

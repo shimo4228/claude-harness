@@ -1,6 +1,6 @@
 ---
 name: session-judgment-mining
-description: 過去の Claude Code セッション群（~/.claude/projects/<project>/*.jsonl）を遡及的に一括発掘し、ユーザーが繰り返し下した判断・価値観を抽出して skill / rule に正本化するワークフロー。人間発話の抽出、既存資産（skills / rules / ADR / memory）とのカバレッジ照合による重複回避、価値観リファレンス（why）と判断ゲート（when/what）の二層設計判断、既存スキルとの矛盾解消（免除条項）と memory への昇格マークまでを扱う。Use when — 「過去セッションから私の判断・価値観をスキルにして」「セッション履歴を紐解いて規約化して」、同じ指摘・修正がセッションを跨いで繰り返されていると気づいたとき、memory の feedback が溜まって確率的リコール頼みになっているとき。NOT for — 過去ログから記事の問いを発見 → session-theme-mining、現行セッションからの単発パターン抽出 → learn-eval、skill 品質の監査 → skill-stocktake、既存 skill 群からの rule 蒸留 → rules-distill、会話ログの要約・議事録作成。
+description: "Mine past Claude Code sessions for the author's recurring judgments and codify them as skills or rules."
 user-invocable: true
 origin: shimo4228
 disable-model-invocation: true

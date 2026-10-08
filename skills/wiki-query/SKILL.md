@@ -1,6 +1,6 @@
 ---
 name: wiki-query
-description: Obsidian Vault の LLM wiki (wiki/concept/) に問い合わせ、[[ ]] 出典付きで合成回答し、複数ページを横断した良回答は wiki/concept/ に書き戻す。vault セッションからも研究 repo のセッションからも呼べる。Use when the user invokes /wiki-query <問い>, asks 「wiki に聞いて」「wiki ではどうなってる？」, or when a synthesized understanding of past daily-research notes would answer the question faster than grep.
+description: "Ask the Obsidian LLM wiki (wiki/concept/) a question and get a synthesized answer with [[ ]] sources; good cross-page answers go back into the wiki. Use when asking the wiki (wiki に聞いて), or when past daily-research notes would answer faster than grep."
 user-invocable: true
 origin: shimo4228
 ---

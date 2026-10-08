@@ -1,6 +1,6 @@
 ---
 name: verify-bootstrap
-description: "Set up machine gates in a repo (format / lint / type check / security / dependency audit / test), or audit whether existing gates have gone stale. Use when starting a new project, when a repo has no automated quality gate, when the user says \"add linting\" (「lint を入れて」), \"put a gate on this repo\" (「この repo にゲートを立てて」), \"I want type checking\" (「型チェックを入れたい」), \"set up static analysis\" (「静的解析を整備して」), \"the tools are outdated\" (「ツールが古い」), \"audit verify\" (「verify を棚卸しして」), \"set up linting\", \"add a quality gate\", \"bootstrap the toolchain\", or invokes /verify-bootstrap. The skill carries no tool table, so the same procedure works on an unfamiliar stack. NOT for — running an existing gate once (run the repo's verify entrypoint directly), or semantic code review (that belongs to the review step of your implementation workflow)."
+description: "Set up a repo's machine gates (format, lint, type check, security, dependency audit, tests), or audit whether existing gates have gone stale. Use when a repo has no automated gate (lint を入れて), or its tools may be outdated."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 license: MIT
 metadata:

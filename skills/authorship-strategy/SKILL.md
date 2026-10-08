@@ -1,6 +1,6 @@
 ---
 name: authorship-strategy
-description: 著者戦略の具体案を評価するとき、または既存の判断枠組みの適用・説明を求められたときに使う。「この案を著者戦略の観点で評価して」「採用時の懸念を確認して」「この戦略を説明して」。
+description: "Evaluate a concrete proposal against the author's authorship strategy, or apply and explain the existing judgment framework. Use when weighing a plan against the strategy (著者戦略), checking its adoption risks, or explaining the strategy."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true

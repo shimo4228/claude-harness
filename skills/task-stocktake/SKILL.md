@@ -1,6 +1,6 @@
 ---
 name: task-stocktake
-description: "Consolidate a repo's pending-task tracking into its one task ledger — a store `rfcs/NNNN-slug.md` when the repo has one, otherwise a single table `.notes/TASKS.md` — bootstrap the table if no ledger exists, sweep handoff / audit / remaining-issues files and auto-memory for stray task lines and list them as filing candidates for the author to pick, verify pending entries against git log and actual code, archive detail files of completed tasks. Use when the user says 「残タスクを棚卸しして」「タスク台帳を作って/整理して」「残っているタスクは？」, \"task stocktake\", when task lines are scattered across notes files, or when a repo's ledger may be stale. Also the 正本 for two questions the library routes here: 状態語をどれにするか（draft / accepted / in_progress / blocked と終端 5 語、`blocked` の入場条件）と、レビュー指摘を起票すべきか（起票規律の足切りと producer 引用）— 「この状態でいい？」「blocked にしていい？」「このレビュー指摘は起票する？」. NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools."
+description: "Consolidate a repo's pending tasks into its one ledger and check each entry against the code. Use when taking stock of remaining tasks (残タスクの棚卸し), choosing a task state word, or deciding whether to file a review finding (起票). For judging and dispatching open tasks, use task-triage."
 user-invocable: true
 origin: shimo4228
 ---

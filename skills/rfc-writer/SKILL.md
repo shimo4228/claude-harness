@@ -1,6 +1,6 @@
 ---
 name: rfc-writer
-description: "公開 rfcs/ 台帳へ 1 エントリを起票する — 起票するかの足切り、採番、本文様式、公開規約、claims.py spawn への接続、index 行の追加までを行う。Use when the user says 「これ起票して」「RFC にしておいて」「提案を台帳に載せて」, when harness-boundary の Defer や task-triage の起票提案が承認されたとき, or /rfc-writer. NOT for — 状態語彙・review 指摘の起票判定・棚卸し（→ task-stocktake）、決定の記録（→ adr-writer）。"
+description: "File one entry in the public rfcs/ ledger. Use when filing a proposal or task (起票して), or when a triage proposal to file is approved. For task state words or whether a review finding gets filed, use task-stocktake."
 user-invocable: true
 origin: shimo4228
 ---

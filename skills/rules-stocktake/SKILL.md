@@ -1,6 +1,6 @@
 ---
 name: rules-stocktake
-description: "Audit ~/.claude/rules (always-loaded behavioral rules) for residency cost, staleness, redundancy, broken skill pointers and substrate absorption, and assign Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my rules\", \"rules stocktake\", \"my rules have bloated\", or when a new model generation may have made rules written for the previous one net-negative."
+description: "Audit ~/.claude/rules for residency cost, staleness, redundancy and substrate absorption, and give each rule a verdict. Use when the rules may have bloated."
 license: MIT
 metadata:
   author: shimo4228

@@ -1,6 +1,6 @@
 ---
 name: jsonld-knowledge-graph
-description: Design and ship a companion JSON-LD knowledge graph (graph.jsonld) next to llms.txt, encoding domain entities and relationships as schema.org triples for LLM citation. Use when a project has matrix / hierarchy / phase-binding structure that prose alone leaves implicit, AND that structure is stable across releases.
+description: "Design and ship a JSON-LD knowledge graph (graph.jsonld) beside llms.txt that encodes a project's entities and relations as schema.org triples. Use when a project has a matrix, hierarchy or phase structure that prose leaves implicit and that stays stable across releases."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true

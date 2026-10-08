@@ -1,6 +1,6 @@
 ---
 name: skill-health
-description: Scan the skill library for structural debt and assemble a per-skill health table. The deterministic core finds dangling references — a SKILL.md naming a script, bash file, agent, or sibling skill that does not exist on disk — and external skills whose directory is a symlink out of the skills root, where a local fix would be overwritten by the owning package manager. It then federates the other health signals (usage and residency-fold candidates, SKILL.md size, the latest security results, missing validators) into a `skill × dimension` report and persists the scan to results.json. Use when the user says "scan skills for debt", "check for dangling/broken references in my skills", "skill health check", "do referenced scripts/agents still exist", "which skills are not really mine to edit", or "/skill-health".
+description: "Scan the skill library for dangling references and build a per-skill health table."
 license: MIT
 metadata:
   author: shimo4228

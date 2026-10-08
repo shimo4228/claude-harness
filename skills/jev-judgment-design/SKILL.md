@@ -1,15 +1,6 @@
 ---
 name: jev-judgment-design
-description: >
-  How to hand over judgments and decide accept/reject when moving closed judgments an LLM used to make
-  (is this source relevant, is it new, how strong is the evidence) to TypeSafe's Jev. Putting what the
-  judgment is made against into state, the bottom tier of a Score, Jev answers and code decides, the unit
-  of judgment, sources that must pass (canary), calling from Pydantic AI.
-  Use when — "I want to replace the LLM's judgment with Jev", "build a relevance judgment with Jev",
-  "Jev's judgment lets everything through", or before designing Jev into screening / triage / rerank.
-  NOT for — Jev's API, docs, or general guidance on choosing primitives (→ plugin skill `typesafe:typesafe-ai`;
-  read that first), the Claude Code skill-selection hook (→ `jev-skill-router`), designing an LLM as the
-  judge (→ `llm-as-judge`).
+description: "Design how a closed LLM judgment (relevance, novelty, evidence strength) moves to TypeSafe Jev. Use when replacing an LLM judgment with Jev, or when a Jev judgment lets everything through. For Jev's API and primitives, use typesafe:typesafe-ai first."
 user-invocable: true
 origin: shimo4228
 ---

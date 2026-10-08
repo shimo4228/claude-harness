@@ -1,6 +1,6 @@
 ---
 name: x-draft
-description: "daily-research のリサーチレポートから X (Twitter) 投稿用の日本語長文下書きをオンデマンド生成する対話 skill。Use when the user says 「X に投稿したい」「X 用の下書き作って」「これポストしたい」「ツイートにして」, invokes /x-draft, or mentions turning a daily-research report into a social media post — even if they just say 「今朝の akc のやつ X に流したい」 like shorthand. pull 型: 通知もノルマもなく、ユーザーがレポートを読んで投稿したいと思ったときだけ呼ぶ。軽量事故ゲート (一次ソース再確認 + 3 日陳腐化チェック) と脱 AI-tell 改稿を通した、コピペ 1 回で投稿できる長文 1 ポストを出力する。NOT for: 記事・エッセイ執筆（→ writing-ecosystem）、公開スレッドへの返信（→ public-comment）、タイトル・一行コピーだけの生成（→ headline-craft）、X への自動投稿（本 skill は下書きまで — 投稿は人間が行う）。"
+description: "Draft one long Japanese X (Twitter) post from a daily-research report. Use when wanting to post a report to X (X に投稿したい)."
 user-invocable: true
 origin: shimo4228
 ---

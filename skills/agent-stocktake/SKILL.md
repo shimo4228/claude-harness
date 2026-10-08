@@ -1,6 +1,6 @@
 ---
 name: agent-stocktake
-description: "Audit ~/.claude/agents/*.md (subagent definitions) for description-layer residency cost, body-layer quality, suppression instructions, staleness, and substrate absorption, assigning Keep/Improve/Update/Merge/Demote-to-skill/Dissolve/Retire verdicts. Use when the user says \"audit my agents\", \"agent stocktake\", \"which agents should I retire or merge\", \"take stock of my agents\", \"review my agent definitions\", or when the model generation changed and agent bodies written for the previous one may suppress or over-constrain the current one. NOT for — skill quality → skill-stocktake; rules → rules-stocktake; cross-checking against the runtime layer → generation-audit."
+description: "Audit the ~/.claude/agents definitions and give each a verdict."
 license: MIT
 metadata:
   author: shimo4228

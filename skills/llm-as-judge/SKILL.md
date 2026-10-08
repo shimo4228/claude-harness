@@ -1,6 +1,6 @@
 ---
 name: llm-as-judge
-description: Design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation. Use when designing or reviewing any LLM-based quality gate, evaluator, judge prompt, or verdict schema; when a judge's rubric scores fluctuate between runs; when you catch yourself asking an LLM for a 1-5 score, averaging check results, or thresholding a satisfaction ratio. NOT for choosing whether a task needs deterministic or semantic processing, and NOT for the architecture-level judge+enforce state-mutation split.
+description: "Design pattern for LLM-as-judge evaluators: binary checks as evidence, one named verdict."
 license: MIT
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228

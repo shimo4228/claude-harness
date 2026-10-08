@@ -1,6 +1,6 @@
 ---
 name: author-calibrated-eval
-description: "How to build and run a loop that polishes LLM-written reading material (body text, summaries, explanatory prose) by treating the author's reading as ground truth. Fix the materials, build a hard-case set, run blind side-by-side reads by the author, measure the ceiling with a strong model's reference draft, and keep the LLM judge dedicated to a faithfulness cutoff. Invoke with /author-calibrated-eval. NOT for — designing the judge's prompt or verdict format (→ llm-as-judge), validity of measured values and thresholds (→ measurement-discipline), rewriting a README (→ readme-writer)."
+description: "Polish LLM-written prose with the author's own reading as ground truth."
 user-invocable: true
 disable-model-invocation: true
 origin: shimo4228

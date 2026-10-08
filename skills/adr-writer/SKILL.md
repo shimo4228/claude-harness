@@ -1,6 +1,6 @@
 ---
 name: adr-writer
-description: Record a design decision as an Architecture Decision Record (ADR) in the project's `docs/adr/` directory. Use this skill whenever the user says "let's ADR this", "record this decision", "write an ADR for X", or when context-sync Phase 3 needs to extract a buried decision. The skill resolves the target ADR directory from cwd, picks the next sequence number with no collision, writes the 7-section body (incl. `Review-when` expiry conditions) in the main loop, runs the mechanical evidence and the adr-reviewer, and updates the ADR index. Also the canonical place for the filing bar — a new ADR is written only for a decision that is hard to reverse, surprising without context and the result of a real trade-off; a change to a prior ADR that misses the bar gets a dated Note on that ADR, and everything else goes into the commit body. Works across any repo — auto-detects or creates `docs/adr/` from the repo root.
+description: "Record a design decision as an ADR in the repo's docs/adr/, or decide whether it clears the filing bar or belongs in a note or the commit body. Use when recording a decision (ADR にして), or when context-sync finds a buried decision."
 user-invocable: true
 origin: shimo4228
 ---

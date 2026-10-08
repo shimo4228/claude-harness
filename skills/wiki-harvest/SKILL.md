@@ -1,6 +1,6 @@
 ---
 name: wiki-harvest
-description: 研究 repo セッションから LLM wiki (Obsidian Vault wiki/concept/) を走査し、その repo の主担当 concept ページから「repo の次アクションを変えうる候補」だけを抽出して、一次出典付き・landing slot マップ付きのランク付き候補台帳 (ledger) を repo の .notes/ に生成する。Use when the user invokes /wiki-harvest, asks「wiki から repo に還元して」「wiki の有益分を AKC/AAP/CA/authorship に持ってきて」, or when closing the daily-research→wiki→repo loop.
+description: "Pull candidates that could change a research repo's next action from the LLM wiki into a ranked ledger."
 user-invocable: true
 origin: shimo4228
 disable-model-invocation: true

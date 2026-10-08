@@ -1,6 +1,6 @@
 ---
 name: task-triage
-description: "Run one cycle of the task-triage loop over a repo's task ledger — judge every open task (verify its premise in code, check its start condition against the 照合先, decide whether it is still worth doing, look for a better solution), then dispatch the accepted ones to fresh implementation sessions and act as their independent judge until the branch is merged. Use when the user says 「残タスクを見て」「タスクを整理して」「台帳を回して」「dispatch して」「未マージある？」, invokes /task-triage, or when a task ledger has grown and nobody can say what is dispatchable. NOT for consolidating scattered task files into a ledger (task-stocktake), NOT for deciding a single build-or-not question (architect), and NOT for running a task yourself."
+description: "Run one cycle of the task-triage loop over a repo's open tasks. Use when reviewing the open tasks (残タスクを見て), dispatching work to build sessions, or checking for unmerged branches (未マージ)."
 license: MIT
 origin: shimo4228
 compatibility: Developed on Claude Code. Build sessions are Claude Code cloud sessions by default (`scripts/cloud-dispatch.sh`, needs a github.com remote and a CI job that runs the repo's verify); §3 names the local alternatives (Agent tool, Herdr via `spawn-session`) and when they apply.

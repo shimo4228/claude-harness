@@ -1,6 +1,6 @@
 ---
 name: learn-eval
-description: "Extract a reusable pattern from the current session, judge it Save / Improve then Save / Absorb / Drop against a grounding checklist, and route every Save to a destination something actually reaches — absorbed into an existing skill / rule / doc section, or promoted to a real skill via skill-creator. Use when the user says \"save what we learned this time\", \"run learn-eval\" or /learn-eval. There is no notes parking lot: if nothing would route to it, the verdict is Drop. NOT for mining past sessions in bulk, auditing skills (skill-stocktake), or distilling rules (rules-distill)."
+description: "Extract a reusable pattern from this session and route it to where something reads it, or drop it. Use when saving what was learned in this session (今回の学びを残して)."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228

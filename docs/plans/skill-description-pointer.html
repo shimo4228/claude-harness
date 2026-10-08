@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>description の常駐ポインタ化</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+
+<header>
+  <h1>skill の description を常駐ポインタとして整理する</h1>
+  <doc-changes new="1" changed="57"></doc-changes>
+  <details class="thread"><summary>Why · 6 件</summary>
+    <doc-quote via="prompt" from="著者">なんか私のスキルのDescription長すぎない？</doc-quote>
+    <doc-quote via="prompt" from="著者">ちょっとあまりにも多すぎるな。まず先にベストプラクティスをかなり深く探索して。トークンは気にしなくていい。</doc-quote>
+    <doc-quote via="prompt" from="著者">Mattpocockとかはどう言ってる？彼はかなりこの辺検討してそう</doc-quote>
+    <doc-quote via="prompt" from="著者">そうだな、彼の設計指針には同意だ。この方向でスキル設計することをハーネスに反映した上で、descriptionを整理しようか</doc-quote>
+    <doc-quote via="prompt" from="著者">Description英語にそろえたらまずい？</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: external）" href="research/2026-10-09-skill-description-design.md">Our 40 model-invoked skills already take 81% of a 30k budget, and loop-design-check (1,048 chars) is already name-only.</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>モデルが自分で手に取らない skill は listing から外れる。</p>
+  <doc-tree caption="判定の問いは「モデルが自分で手に取って役に立つか、または rule / 他 skill が Skill tool で呼ぶか」（Pocock の invocation.md）。">
+<script type="text/plain">
+skills/
+  user-invoked のまま（14）      # description を人向けの 1 行にする
+    agent-stocktake  author-calibrated-eval  generation-audit  harness-boundary
+    jev-skill-router  llm-as-judge  mondo  prompt-perturb  review-when-watch
+    rules-distill  session-judgment-mining  skill-health  wait-what  wiki-harvest
+  + user-invoked へ（2）         # 決定 1 の回答
+    review-to-lint               # 本人の description が「Use via /review-to-lint」。120 日で invoke 0
+    grill-me                     # slash 50 / invoke 15。Pocock と同じく人が呼ぶ
+  ~ model-invoked のまま（37）    # description をポインタの形に書き直す（claim 3）
+  hunk-review                    # 外部 symlink。触らない
+</script>
+  </doc-tree>
+  <doc-ask id="flip">
+    <p>ほかに user-invoked へ移す skill はありますか。</p>
+    <label><input type="checkbox" name="flip" value="review-to-lint" checked> review-to-lint <small>slash 3 / invoke 0（120 日）</small></label>
+    <label><input type="checkbox" name="flip" value="grill-me" checked> grill-me <small>slash 50 / invoke 15。Pocock は grill-me を user-invoked にしている</small></label>
+    <label><input type="checkbox" name="flip" value="jev-judgment-design"> jev-judgment-design <small>使用 0。ただし名前だけ表示の影響を除けない</small></label>
+    <label><input type="checkbox" name="flip" value="mono-color"> mono-color <small>使用 0。mono-figure が path で読む</small></label>
+  </doc-ask>
+  <doc-note tone="warn"><strong>使用 0 は証拠として弱い</strong> loop-design-check・repair-discipline・mono-color・jev-judgment-design は、予算超過で名前だけになっていた。使用 0 はその結果かもしれない。だから既定では残し、整理後に観測する。</doc-note>
+
+  <doc-claim>
+    <p>user-invoked の description は人向けの 1 行になる。</p>
+    <doc-code diff file="skills/harness-boundary/SKILL.md" start="3" wrap>
+<script type="text/plain">
+@@ -3,1 +3,1 @@
+-description: "A design lens for adding, changing, or reviewing a mechanism (rule / skill / hook / agent / workflow / runtime extension / prompt chain) in an agent environment: it asks which of 6 layers … Use when — \"should this go in the harness?\", … NOT for — … (1,367 字)"
++description: "Design lens: which layer a harness mechanism belongs in, and whether it outlives the next model or runtime."
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>配線された user-invoked skill は、path で読まれる。</p>
+    <doc-code src="rules/common/evals.md" lines="5-12" hl="10" caption="既存の配線。author-calibrated-eval は user-invoked だが、rule の 1 行から読まれている。">
+      <doc-pin line="10" tone="info" title="user-invoked への配線">この形は今後も使う。</doc-pin>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>listing の skill は、全部 description 付きで載る。</p>
+  <doc-mock frame="terminal" title="skill listing · 予算 30,000（幅）" w="480" caption="後の数字は目標で、実測ではない。plugin と claude.ai 由来は推定で約 1 万幅。"><template><span class="dim">                          今（2026-10-09）    整理後（目標）</span>
+自前 model-invoked の幅     <span class="r">24,203（81%）</span>      <span class="g">≤ 12,000（40%）</span>
+1 本の最大幅               <span class="r">1,176</span>              <span class="g">≤ 400</span>
+名前だけの skill           <span class="r">29 本</span>              <span class="g">0 本</span>
+  うち自前                  <span class="r">4〜6 本</span>             <span class="g">0 本</span>
+<span class="dim">/skill-doctor の context 列と、本体と同じ数え方の幅で比べる</span></template></doc-mock>
+
+  <doc-claim>
+    <p>予算は window × 3 × 1% で、日本語は幅 2 で数える。</p>
+    <doc-code title="Claude Code 2.1.295 · 抜粋（minified を整形）" lang="js" caption="本体のバイナリから読んだ。失効条件は listing の作り方が変わること。">
+<script type="text/plain">
+const FRACTION = 0.01, MAX_DESC = 1536, DEFAULT_WINDOW = 200000
+const charsPerToken = m => CLAUDE_3_TO_4_6.has(m) ? 4 : 3   // Claude 5 は 3
+const budget = env.SLASH_COMMAND_TOOL_CHAR_BUDGET
+  ?? (window ?? DEFAULT_WINDOW) * charsPerToken(model) * (settings.skillListingBudgetFraction ?? FRACTION)
+const entry = `- ${name}: ${(description + (whenToUse ? ` - ${whenToUse}` : "")).slice(0, MAX_DESC)}`
+const cost  = Bun.stringWidth(entry)   // 全角 = 2
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>超えると、使われない skill から名前だけになる。</p>
+    <doc-code title="Claude Code 2.1.295 · 抜粋（minified を整形）" lang="js" caption="一度名前だけになると呼ばれず、名前だけのまま残る。">
+<script type="text/plain">
+const score = s => s.usageCount * Math.max(0.5 ** (daysSinceLastUse(s) / 7), 0.1)
+rest.sort((a, b) => score(b) - score(a))          // bundled と name-only 指定は対象外
+for (const s of rest) {
+  const extra = width(full(s)) - width(nameOnly(s))
+  if (extra <= remaining) { keepFull(s); remaining -= extra }
+  else listNameOnly(s)                              // 長い description ほど入りにくい
+}
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>description は、分岐ごとに引き金の語を 1 つ持つ。</p>
+  <doc-code diff file="skills/measurement-discipline/SKILL.md" start="3" wrap caption="同じ分岐を日英で 2 回書かない。著者が日本語でしか打たない語だけを括弧で 1 回残す。">
+<script type="text/plain">
+@@ -3,1 +3,1 @@
+-description: Discipline for designing or evaluating measurement-based claims, thresholds, guards, experiment results and observation periods. Use when the user says 「この実験結果で判断していい？」 / "can I decide on this experiment result?", 「閾値を決めたい」 / "I want to set a threshold", 「ガード/検査を足したい」 / "I want to add a guard or check", 「1 回通ったから大丈夫」 / "it passed once, so it's fine", 「観察期間はどれくらい」 / … （残り 8 対と NOT for）
++description: "Measurement discipline for claims that rest on data. Use when deciding on an experiment result, setting a threshold (閾値) or guard, choosing an observation period (観察期間) or when to open a gate, or comparing a candidate with production (本番比較)."
+</script>
+    <doc-pin line="3" tone="info" title="幅 1,176 → 277">分岐は 4 つで、言い換えは畳んだ。</doc-pin>
+  </doc-code>
+  <doc-ask id="lang">
+    <p>description の言語はどうしますか。</p>
+    <label><input type="radio" name="lang" value="mixed" checked> 英語の文。日本語でしか打たない語だけ括弧で 1 回 <small>同じ分岐の日英二重書きはしない</small></label>
+    <label><input type="radio" name="lang" value="en"> 英語だけ <small>先に日本語プロンプト 10 本で発火を測る</small></label>
+    <label><input type="radio" name="lang" value="ja"> 日本語だけ <small>公開 repo の読者には読みにくい</small></label>
+  </doc-ask>
+  <div data-if="lang=en"><doc-note tone="warn">英語だけにする前に、日本語プロンプト 10 本を <code>claude -p</code> で流し、Skill tool が呼ばれるかを今と比べる。落ちたら mixed に戻す。</doc-note></div>
+
+  <doc-claim>
+    <p>手順と出力の要約は消し、本文に任せる。</p>
+    <doc-code diff file="skills/skill-creator/SKILL.md" start="3" wrap caption="本文にある「何をするか」は書かない。要約があると本文を読まずに動く（superpowers の観察）。">
+<script type="text/plain">
+@@ -3,1 +3,1 @@
+-description: "Entry point and draft gate for writing a new skill / agent definition or substantially revising one. Use when the author says 'make a skill' (「skill 作って」), … Fixes the intent as one packet, draws the boundary against adjacent skills across the whole library, writes for the strongest model tier you run, has a fresh-context subagent return a non-aggregated named verdict (Publishable / Fix / Drop), and closes with the author's read-through. NOT for — … (1,003 字)"
++description: "Draft gate for writing or substantially revising a skill or agent definition. Use when making a skill (skill 作って), turning a procedure into a skill, writing an agent definition, or when learn-eval promotes a pattern."
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>NOT for は、実際に衝突する対だけに残す。</p>
+    <doc-code diff file="skills/task-stocktake/SKILL.md" start="3" wrap caption="stocktake の 4 本は leading word を共有するので、行き先を肯定形の 1 節で残す。">
+<script type="text/plain">
+@@ -3,1 +3,1 @@
+-description: Consolidate a repo's pending-task tracking into its one task ledger — a store `rfcs/NNNN-slug.md` when the repo has one, otherwise … Also the 正本 for two questions the library routes here: … NOT for — skills → skill-stocktake; rules → rules-stocktake; repo non-code assets → repo-asset-stocktake; in-session todos → harness task tools. (979 字)
++description: "Consolidate a repo's pending tasks into its one ledger and check each entry against the code. Use when taking stock of remaining tasks (残タスクの棚卸し), choosing a task state word, or deciding whether to file a review finding (起票). For skills, rules or repo assets, use skill-stocktake, rules-stocktake or repo-asset-stocktake."
+</script>
+    </doc-code>
+    <doc-ask id="notfor">
+      <p>NOT for 節はどう扱いますか。</p>
+      <label><input type="radio" name="notfor" value="pair" checked> 衝突する対だけ、肯定形の 1 節で残す <small>例: stocktake 4 本、skill-* 4 本</small></label>
+      <label><input type="radio" name="notfor" value="none"> 全部消し、leading word を分けて避ける <small>Pocock の 38 本と同じ</small></label>
+      <label><input type="radio" name="notfor" value="keep"> 今の形で残し、短くするだけ</label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>新しい skill も同じ形で書かれ、lint が幅を数える。</p>
+  <doc-code diff file="skills/skill-creator/SKILL.md" start="96" wrap caption="正本は skill-creator §3 の 1 か所。§1 の「例文 3 つ」も「分岐ごとに 1 つ」に替える。">
+<script type="text/plain">
+@@ -96,6 +96,7 @@
+-- **The description is the trigger surface and stays resident in the listing every session** —
+-  beyond its character cost, merely being listed makes it an unaudited resident instruction layer
+-  that can interfere with behavior. For a skill not meant to fire on its own (one reached by slash,
+-  by an imperative in a rule, or by a reference from another skill), consider
+-  `disable-model-invocation: true` as the default — the skill leaves the listing and the description
+-  stays only in the human slash menu. The three example utterances from §1 are then unnecessary
++- **Choose invocation first.** Ask: could the model usefully reach for this on its own, or must a
++  rule or another skill call it through the Skill tool? If not, set `disable-model-invocation: true`
++  (user-invoked: zero context load; a rule can still point at its path) and write one human line.
++- **A model-invoked description is a resident pointer**: every word costs every turn, and the
++  listing has a budget (window × 3 × 1%, full-width counts 2). Front-load the leading word; one
++  trigger per branch, in the word the author types; leave the procedure, outputs and verdict names
++  to the body; keep a routing clause only for a colliding pair, stated positively. ≤ 400 width
+</script>
+  </doc-code>
+
+  <doc-claim at="scripts/hooks/harness_lint.py:263">
+    <p><b>harness_lint.py:263</b> · lint_skills() の隣に幅の検査を置く</p>
+    <doc-code title="harness_lint.py · lint_skill_listing_width() · sketch" lang="py">
+<script type="text/plain">
+LISTING_WIDTH_MAX = 12_000   # 予算 30,000 の 40%。残りは plugin と claude.ai 由来
+DESCRIPTION_WIDTH_MAX = 400
+
+def lint_skill_listing_width(root: Path, findings: list[str]) -> None:
+    """model-invoked skill の listing 行を、本体と同じく全角 2 で数える。"""
+    total = 0
+    for name, front in iter_skill_fronts(root):          # hunk-review も listing に載るので数える
+        if front.get("disable-model-invocation"):
+            continue
+        w = east_asian_width(f"- {name}: {front['description']}")
+        if w > DESCRIPTION_WIDTH_MAX:
+            findings.append(f"skills/{name}/SKILL.md: description の幅 {w} > {DESCRIPTION_WIDTH_MAX}")
+        total += w
+    if total > LISTING_WIDTH_MAX:
+        findings.append(f"skills/: model-invoked の listing 幅 {total} > {LISTING_WIDTH_MAX}")
+</script>
+    </doc-code>
+    <doc-ask id="gate">
+      <p>幅の検査はどこまで止めますか。</p>
+      <label><input type="radio" name="gate" value="both" checked> 合計 12,000 と 1 本 400 を lint で止める <small>commit gate に乗る</small></label>
+      <label><input type="radio" name="gate" value="total"> 合計だけ止める <small>1 本の長さは skill-creator の判定に任せる</small></label>
+      <label><input type="radio" name="gate" value="none"> 止めない <small>skill-stocktake が /skill-doctor を読むだけ</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<doc-claim aux="shared">
+  <p>共有：判断は ADR に残し、書き換えは一括で判定を通す。</p>
+  <doc-tree caption="書き換えは fresh context の判定 1 回にまとめて渡す（skill-creator §4 の問い）。その後 harness_lint・scan_refs・/skill-doctor で名前だけ 0 本を確かめる。">
+<script type="text/plain">
+docs/adr/
+  + 0092-skill-description-as-resident-pointer.md   # invocation 先決・ポインタの形・予算。Pocock と 2.1.295 の実装が根拠
+  ~ 0066-…search-first….md                         # 注記: 約 830 字の description は本 ADR で置き換え
+  ~ README.md                                      # index に 1 行
+skills/
+  ~ skill-creator/SKILL.md                         # §1・§3（claim 4）
+  ~ skill-creator/MAINTENANCE.md                   # 根拠と出典
+  ~ */SKILL.md ×52                                 # description だけ。本文は触らない
+scripts/hooks/
+  ~ harness_lint.py                                # claim 4.1（決定 4 次第）
+tests/
+  ~ golden-harness-lint.bats / fixtures            # 新しい検査の赤と緑
+</script>
+  </doc-tree>
+  <doc-ask id="executor">
+    <p>実行者の決定：誰が作りますか。</p>
+    <label><input type="radio" name="executor" value="here" checked> この session <small>Opus 5.5。大半が skill と ADR の散文で、implementation-chain の例外 (a)</small></label>
+    <label><input type="radio" name="executor" value="build"> 別の build セッションへ dispatch</label>
+  </doc-ask>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの：本文・plugin・agent・予算の設定。</p>
+  <ul>
+    <li>skill の本文は変えない。description と invocation の frontmatter だけを変える。</li>
+    <li>plugin と claude.ai 由来の skill は変えない。整理後に /skill-doctor で名前だけが残れば、別に扱う。</li>
+    <li>agents/*.md の description は変えない。Agent tool の一覧は別の予算なので、別の作業にする。</li>
+    <li><code>skillListingBudgetFraction</code> は上げない。予算を増やすより、刈るほうを先にする。</li>
+    <li>hunk-review は外部の symlink なので触らない。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

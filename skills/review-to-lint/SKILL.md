@@ -1,6 +1,7 @@
 ---
 name: review-to-lint
-description: "Move the mechanically decidable items of an existing reviewer's checklist, or of past reviewers' findings, into a deterministic evidence script, and thin the reviewer down to semantic checks. Use via /review-to-lint when the author says \"turn this reviewer into a lint\" or \"find what in the history can be linted\", or when a reviewer's findings repeat mechanical items."
+description: "Move the mechanical items of a reviewer's checklist or past findings into a deterministic script."
+disable-model-invocation: true
 user-invocable: true
 origin: shimo4228
 ---

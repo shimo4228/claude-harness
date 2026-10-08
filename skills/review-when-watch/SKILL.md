@@ -1,10 +1,6 @@
 ---
 name: review-when-watch
-description: >
-  launchd が毎朝 06:10（jev-research-pipeline の jrp run の後）に起動する job。jrp が vault の
-  daily-research/ に書いた新しいノート 1 本ごとに、この harness の RFC（frontmatter の review-when:）と
-  ADR（## Review-when 節）に書かれた見直し条件を TypeSafe Jev に 1 組ずつ聞き、条件を満たしたノートを
-  Slack に送る。model からは呼ばない — この文書は運用手引き。
+description: "Operating manual for the daily launchd job that checks new research notes against RFC and ADR review-when conditions."
 origin: shimo4228
 disable-model-invocation: true
 user-invocable: false

@@ -1,6 +1,6 @@
 ---
 name: skill-comply
-description: "Measure whether skills, rules, and agent definitions are actually followed — generates scenarios at 3 prompt strictness levels, runs agents, classifies their tool calls, and reports compliance rates with tool call timelines. Use when a rule's or skill's real adherence is in question or right after adding one — \"is this rule actually being followed?\", \"measure how often this skill fires\", \"/skill-comply\"."
+description: "Measure whether a skill, rule or agent definition is actually followed. Use when a rule's or skill's real adherence is in question, or right after adding one."
 compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 origin: shimo4228
 user-invocable: true

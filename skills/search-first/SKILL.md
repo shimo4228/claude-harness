@@ -1,6 +1,6 @@
 ---
 name: search-first
-description: "Look outside before deciding: search the live web, registries and primary sources at decision time and bring back a report the caller picks from. Use for any question that may have an answer outside this repo — choosing a library or tool (\"which one is mainstream now\"), prior implementations of a design problem (\"is there already a skill / repo that solved this problem\"), whether a paper or post's claim applies here (\"does this claim apply to us\"), what an official spec or CLI does now (\"what does the official source say\"), the current state of practice (\"where do things stand now\"), or checking a claim against its primary source (\"does the primary source really say that\"). Also on 'search first', 'is there a package for', or /search-first. Other entry points: this repo or the local machine → Explore agent; a whole article's fact-check → the writing repo's fact-checker; bug fixes, refactors and config edits → your implementation workflow (implementation-chain in the author's harness)."
+description: "Search the live web, registries and primary sources at decision time and report what exists outside. Use when choosing a library or tool, looking for a prior implementation, checking whether a paper or post applies here, reading what an official spec does now, surveying current practice, or checking a claim against its source."
 compatibility: Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228

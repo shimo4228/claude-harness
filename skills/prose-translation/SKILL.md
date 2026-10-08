@@ -1,6 +1,6 @@
 ---
 name: prose-translation
-description: 日本語⇄英語の voice 保持翻訳スキル（**両方向**）。エッセイ・記事・README・ADR 等の人間向け prose を、出力先の publication channel contract が宣言する register と原文の確度を保って自然に訳す。逐語訳でも MT でもなく、term-lock + 2-pass（訳→自己添削）+ back-translation QA で品質を担保する。JA→EN は英語 AI-slop の自己添削、EN→JA は訳す-by-default の term policy と脱翻訳調 passを追加する。AI 向け doc は llms-txt-writer、学術 citation format は citation-formatter、shared craft は執筆の背骨（zenn-content の writing-principles rule）と writing-ecosystem へ defer。
+description: "Translate human-facing prose (essays, articles, README, ADRs) between Japanese and English, keeping the author's voice and the target channel's register. Use when translating a document (英訳 / 和訳)."
 user-invocable: true
 origin: shimo4228
 ---

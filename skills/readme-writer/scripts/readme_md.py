@@ -39,6 +39,8 @@ def details_tags(line: str) -> tuple[int, int]:
     """(opening, closing) <details> tags on a line, not counting ones named inside `code`."""
     bare = _INLINE_CODE_RE.sub("", line)
     return len(_DETAILS_OPEN_RE.findall(bare)), len(_DETAILS_CLOSE_RE.findall(bare))
+
+
 _NON_PROSE_PREFIX_RE = re.compile(
     r"^(#{1,6}\s|[-*+>]\s|\d+[.)]\s|\||<|\[[^\]]+\]:\s"
     r"|={2,}\s*$|-{3,}\s*$|\*{3,}\s*$|_{3,}\s*$)"

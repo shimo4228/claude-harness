@@ -55,6 +55,12 @@ ADR-0052 の Review-when「substrate が skill 使用統計を native に持っ�
    `uses` は cross-check。乖離が sandbox 補正で説明できない場合は報告に書き、平均しない。
    ADR-0052 の Review-when は発火したが usage_stats は畳まない — `uses` は窓が無く sandbox
    子セッションを含み、4 補正の代替にならない（0052 に注記）。
+
+   > **注記（2026-10-09, ADR-0092）**: residency cost の計器に、commit を止める 2 つ目として `harness_lint.py` の
+   > listing 幅（Claude Code の数え方を写し、全角 2。model-invoked 1 本 400・合計 12,000）を足した。実際に注入された
+   > token の計器は引き続き `/skill-doctor` の `context` で、決定 3 の「順序づけにだけ使う」も `context` について
+   > はそのまま。lint の幅は設計時の近似で、2.1.295 の listing 予算の式に依存する。
+
 3. Phase 4 の description audit で `context` は **価格**として使う: nonzero `context` かつ
    意図的使用 0 が RFC-0017 の fold case（参照を 1 行足してから
    `disable-model-invocation: true`）。順序づけにだけ使い、verdict の入力にはしない

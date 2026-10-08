@@ -1,6 +1,6 @@
 ---
 name: mono-figure
-description: 記事や README の図（線・矢印・数字・ラベルで仕組みを見せる静的な図）を、mono-color の見た目（紙・インク・書体・余白）で作る橋渡し。既定は Claude が SVG で描く（Zenn などは PNG に撮る）。画像生成で作るときは、mono-color が組んだ prompt を Herdr で立てた Codex に渡す。Use when 「この節の図を mono-color で描いて」「README の概要図を mono-color の見た目で作って」「この図を Codex で画像生成してみて」。NOT for — 文字や数字の無いポスター・カバー（→ mono-color をそのまま）、操作できる構成図（→ archify）、データのグラフ（→ dataviz）、図を置くか・何枚か・置き場の約束（→ その repo の規約。Zenn は zenn-format の Figures、README は readme-writer の Visual）。
+description: "Draw a static explanatory figure (lines, arrows, numbers, labels) for an article or README in the mono-color look, as SVG or through Codex image generation. Use when a section or README needs a mono-color diagram. For a poster with no text, use mono-color; for an interactive diagram, use archify."
 user-invocable: true
 origin: shimo4228
 ---

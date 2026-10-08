@@ -1,6 +1,6 @@
 ---
 name: readme-writer
-description: README やプロジェクトのトップページ（repo を開いた人が最初に見る入口）を書く・直す・判定するときに使う。こんな時に呼ぶ — README が長い／継ぎ足しで文脈が重くなり初見で分からない、開いて数十秒で「何のプロジェクトで自分向けか」が伝わる入口にしたい、冒頭に一目で仕組みが分かる図を置きたい、著者のほかの仕事への導線を付けたい、コードの変更に README を追従させたい、README を判定だけしてほしい、GitHub の About（description / topics / homepage）が README と食い違っている。CLI でも研究 repo でも、日本語でも英語でも対象。AI 専用ドキュメント（llms.txt 等）は → llms-txt-writer、記事・エッセイは → writing-ecosystem、release に伴う version・DOI・数値の同期は → release-doi、文書間の役割の重なりの整理は → context-sync、tagline だけ欲しいときは → headline-craft。
+description: "Write, revise or judge a README, the page someone sees first when opening a repo, and keep the GitHub About in step with it. Use when a README is hard to read or overgrown, needs to follow a code change, or needs only a verdict."
 compatibility: Requires Python 3.11+ and uv; the render evidence also needs an authenticated gh CLI and Playwright Chromium (`uv run playwright install chromium`). Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
