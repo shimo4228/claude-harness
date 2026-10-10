@@ -1,31 +1,36 @@
 # claude-harness
 
 > Public snapshot of the Claude Code harness (skills, agents, rules,
-> commit-boundary and session-surface hooks, the harness's own ADRs, and
-> its public task-and-proposal ledger `rfcs/`) used day-to-day by
-> shimo4228. Skills, agents, and rules are mechanically aggregated from
-> `~/.claude/` for assets tagged `origin: shimo4228`, excluding
-> ECC-derived material (`origin: ECC` / `ECC-customized`) and
-> auto-extracted artifacts. ADRs and rfcs sync wholesale (both are
+> commit-boundary and session-surface hooks, the harness's own ADRs, its
+> public task-and-proposal ledger `rfcs/`, approved plans in `docs/plans/`,
+> and eval cards in `docs/evals/`) used day-to-day by shimo4228.
+> Status: active, synced one way from the author's live `~/.claude/` by
+> `scripts/sync-from-local.sh` (run by the harness-sync skill: origin
+> filter and hook allowlist, secret scan, subtree replacement); the README
+> prose, `docs/hooks.md`, and these llms files are maintained by hand.
+> Skills, agents, and rules are included only when tagged
+> `origin: shimo4228`, excluding ECC-derived material (`origin: ECC` /
+> `ECC-customized`), other upstream components, and auto-extracted
+> artifacts. ADRs, rfcs, plans, and eval cards sync wholesale (all are
 > self-authored judgement records); hooks come from a
 > curated allowlist, since publishing a hook is a judgement about reuse
 > outside this machine rather than about who wrote it.
 >
 > Bundles skills covering research-before-coding, knowledge extraction,
-> skill auditing, AI-facing documentation, human-facing writing review,
-> JSON-LD knowledge graph design, academic paper writing / review / deposit, AI-native preprint submission,
-> JA→EN translation, Wikidata identifier federation, authorship strategy,
-> and DOI release; agents for prompt generation, editorial review, and
-> academic paper review; rules covering planning, the AKC cycle,
-> authorship strategy, and skill origin tracking.
-> The first six skills (search-first, learn-eval, skill-stocktake,
+> skill / rule / agent auditing, AI-facing documentation, README writing,
+> JSON-LD knowledge graph design, JA↔EN prose translation, authorship
+> strategy, DOI release, task-ledger triage, and eval design; agents for
+> prompt generation, ADR review, README judging, research, and Swift
+> review; rules covering planning, the AKC cycle, boundaries, eval wiring,
+> and skill origin tracking.
+> Six of the skills (search-first, learn-eval, skill-stocktake,
 > rules-distill, skill-comply, context-sync) are the building blocks of
 > the Agent Knowledge Cycle (AKC) and are also published as standalone
 > repos.
 
 ## Core documentation
 
-- [Full AI Reference](llms-full.txt): self-contained AI-facing reference — Project Facts, Prior Research References, and 18+ Q&A covering AKC, origin tracking, skills vs rules, agent orchestration, contemplative axioms, and Python-implemented skills. Optimized for AI search engine citation (ChatGPT, Perplexity, Gemini). English-only by design.
+- [Full AI Reference](llms-full.txt): self-contained AI-facing reference — Project Facts, Prior Research References, and 18+ Q&A covering AKC, origin tracking, skills vs rules, commit-boundary hooks, contemplative axioms, and installation. Optimized for AI search engine citation (ChatGPT, Perplexity, Gemini). English-only by design.
 - [README](README.md): project overview, positioning, install instructions (English, human-facing, canonical)
 - [README (Japanese)](README.ja.md): same content in Japanese
 
@@ -35,7 +40,7 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 
 - [search-first](skills/search-first/SKILL.md): look outside before deciding — searches the live web, registries, and primary sources at decision time and returns a report the caller picks from (scope searched / found / still unknown; judgement as prose backed by facts, no verdict line — ADR-0066)
 - [learn-eval](skills/learn-eval/SKILL.md): extracts reusable patterns from sessions, evaluates quality, and decides save destination (memory / skill / rule)
-- [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — inline Glob inventory + single-context holistic evaluation (full / changed modes), Keep/Improve/Update/Retire/Merge verdicts
+- [skill-stocktake](skills/skill-stocktake/SKILL.md): skill quality audit — deterministic structural pre-pass, per-item scrutiny in parallel fresh-context batches, a set-level overlap probe (full / changed modes), Keep/Improve/Update/Retire/Merge verdicts
 - [skill-health](skills/skill-health/SKILL.md): structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts, agents, or sibling skills that don't resolve on disk); deterministic, delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply
 - [skill-creator](skills/skill-creator/SKILL.md): write or rewrite a skill / agent definition — intent packet, library-wide boundary check, a fresh-context draft gate with a named verdict (Publishable / Fix / Drop, no scoring), author read-through; replaces the upstream anthropics skill-creator in place (ADR-0046)
 - [rules-distill](skills/rules-distill/SKILL.md): scans skills to extract cross-cutting principles and promotes them to deterministic rules
@@ -67,17 +72,32 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [public-comment](skills/public-comment/SKILL.md): drafts replies for public technical threads (GitHub discussions, issues, PRs, Hugging Face discussions) — AI-slop tell removal, thread grounding, and a human gate with a Japanese translation before posting
 - [llm-as-judge](skills/llm-as-judge/SKILL.md): design pattern for LLM-as-judge evaluators — binary checks as evidence, one named holistic verdict, no score aggregation
 - [headline-craft](skills/headline-craft/SKILL.md): craft skill for the one line that makes readers open — title / tagline / subtitle / SNS-post candidate generation with concrete techniques, evaluated per traffic channel (search vs feed)
+- [prompt-perturb](skills/prompt-perturb/SKILL.md): diversity injection — a deliberately context-starved forager agent fetches prompts from external creativity-technique catalogs when work is stuck in the same moves
+- [session-judgment-mining](skills/session-judgment-mining/SKILL.md): mines past session transcripts for judgements the user made repeatedly and promotes the recurring ones into skills or rules
+- [verify-bootstrap](skills/verify-bootstrap/SKILL.md): stands up a repo's machine gates (format / lint / type check / security / dependency / test) or takes stock of stale ones; tool choice is researched at bootstrap time
+- [x-draft](skills/x-draft/SKILL.md): turns a research report into one long-form social post — pull-only, rechecks the primary source, strips AI tells, stops at the draft
+- [prose-translation](skills/prose-translation/SKILL.md): translates human-facing prose (essays, articles, READMEs, ADRs) between Japanese and English, keeping the author's voice and the target channel's register
+- [rfc-writer](skills/rfc-writer/SKILL.md): files one entry in the public `rfcs/` ledger — filing bar, numbering, template, publication rules, index line
+- [jev-skill-router](skills/jev-skill-router/SKILL.md): operating manual for a UserPromptSubmit hook that asks TypeSafe Jev which installed skill fits the prompt; shadow-first, injects only after measured accuracy (needs a `TYPESAFE_API_KEY`)
+- [jev-judgment-design](skills/jev-judgment-design/SKILL.md): moving closed LLM judgments (relevance, novelty, evidence strength) to TypeSafe Jev — code decides from Jev's probabilities, canaries catch over-filtering
+- [author-calibrated-eval](skills/author-calibrated-eval/SKILL.md): tuning LLM-written prose against the author's own reading — frozen inputs, a hard-case set, blind side-by-side reads, an LLM judge that only gates faithfulness
+- [review-when-watch](skills/review-when-watch/SKILL.md): operating manual for a daily launchd job that checks new research notes against the Review-when conditions in this repo's ADRs and RFCs via TypeSafe Jev and posts matches to Slack; not model-invoked
+- [mono-figure](skills/mono-figure/SKILL.md): draws static explanatory figures for articles and READMEs in the mono-color look, as SVG by default
 
 ## Agents
 
 Specialized agents in `agents/`, each with its own tool allowlist.
 
 - [prompt-writer](agents/prompt-writer.md): generates concise, focused prompts using a lightweight model (Haiku)
+- [adr-reviewer](agents/adr-reviewer.md): checks an ADR's record, not its decision — verifiable Context, an observable `Review-when` trigger, real Alternatives, two-sided Consequences, stated override relations with prior ADRs
+- [prompt-forager](agents/prompt-forager.md): the context-starved half of prompt-perturb — receives one line of purpose and nothing else
+- [researcher](agents/researcher.md): one research angle per run for search-first's parallel Full mode and the plan research gate; writes one dated notes file or the merged report
+- [swift-reviewer](agents/swift-reviewer.md): Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance
 - [readme-judge](agents/readme-judge.md): the single README judge for readme-writer — answers a fixed checklist from the README alone, freezes that verdict, then checks factual claims against the repo (file:line) and returns Publishable / Fix / Rewrite
 
 ## Rules
 
-Environment-specific facts, wiring, and traps auto-loaded every session from `rules/common/`. Rules load deterministically; skills fire probabilistically. Procedures live in skills, time-critical checks in hooks, general judgment in the model.
+Rules auto-loaded every session from `rules/common/`: mostly environment-specific facts, wiring, and traps, plus the author's personal rules (practitioner-identity, contemplative-axioms) and working principles such as llm-first-code. Rules load deterministically; skills fire probabilistically. Procedures live in skills, time-critical checks in hooks, general judgment in the model.
 
 - [agents](rules/common/agents.md): pointer to the agent catalog (the frontmatter of `agents/*.md` is canonical), the rule that review runs in a different agent process from the implementer, and the entry points to the Herdr delegation skills
 - [akc-cycle](rules/common/akc-cycle.md): pointer edition of the Agent Knowledge Cycle — maps each mechanism (six phases, judge / build / human loop, LLM-first readability, expiry-conditioned knowledge) to the skill or rule that owns it, states the Scaffold Dissolution criteria, and says how ADRs are treated (dated records, supersede with dated annotations, a two-condition filing bar)
@@ -89,6 +109,7 @@ Environment-specific facts, wiring, and traps auto-loaded every session from `ru
 - [knowledge-staleness](rules/common/knowledge-staleness.md): external LLM-domain knowledge is treated as going stale on a one-week scale — no asserting tooling, specs, or going rates from memory; check at search time, date the evidence as-of, and attach an expiry condition to every recommendation
 - [llm-first-code](rules/common/llm-first-code.md): code is optimized for its actual reader — the next LLM session, not humans; preserve verifiability (types, tests, golden files) over readability, enforce quality through machine gates, spend human-readability budget only on READMEs and output text
 - [boundary](rules/common/boundary.md): the single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking, and when to stop and report (ADR-0069)
+- [evals](rules/common/evals.md): eval wiring — routes each eval question to its owner (`/claude-api build-eval` → `hillclimb` for building and improving against an eval, skill-creator, author-calibrated-eval, llm-as-judge, measurement-discipline) and records the `claude -p` runner trap for harness targets
 - [practitioner-identity](rules/common/practitioner-identity.md): the author's self-definition, verbatim — a practitioner searching for good ideas and means in the AI era, not a researcher; DOIs are a means, and the work is not reframed into existing categories
 
 ## Hooks
@@ -99,6 +120,9 @@ Environment-specific facts, wiring, and traps auto-loaded every session from `ru
 - [bandit-precommit.sh](hooks/bandit-precommit.sh): PreToolUse hook running bandit at MEDIUM severity + MEDIUM confidence over the staged (index) content of `.py` files; stands down if the repo owns a `.claude/verify.sh`
 - [ruff-format-precommit.sh](hooks/ruff-format-precommit.sh): PreToolUse hook running `ruff format --check` over staged `.py` content — checks only, never rewrites, because per-edit auto-formatting raced with in-progress edits
 - [review-chain-notice.sh](hooks/review-chain-notice.sh): advisory PreToolUse hook that asks whether review and verify ran before commit / revert / merge
+- [task-claims-reminder.sh](hooks/task-claims-reminder.sh): advisory PostToolUse hook that prints the open claims and the ledger etiquette when the agent reads `TASKS.md` or `rfcs/`; pairs with the `scripts/claims.py` ledger CLI
+- [review-model-notice.sh](hooks/review-model-notice.sh): PreToolUse hook that routes `code-review` / `simplify` runs off a judge-tier session — a direct Skill call on the judge tier is refused with a reason to relaunch via a build-tier subagent; an Agent launch without a `model` pin gets an advisory
+- [_advisory-common.sh](hooks/_advisory-common.sh): shared builder of the message a hook hands to the model
 - [_git-target-common.sh](hooks/_git-target-common.sh): shared extractor for which repositories a command will commit to — drops backslash escapes and quoted spans before segment parsing so a commit message cannot redirect the scan, and returns every matching repo rather than one, since a single answer leaves one half of a compound commit unexamined
 - [verify_allow.py](scripts/hooks/verify_allow.py): direnv-style approval ledger — only a human-approved content hash of a repo's gate is executed, and the checked bytes are the executed bytes
 
@@ -106,11 +130,16 @@ Environment-specific facts, wiring, and traps auto-loaded every session from `ru
 
 - [ADR index](docs/adr/README.md): dated Architecture Decision Records for the harness itself — why each skill, agent, and rule was adopted, retired, or reversed, including superseded decisions. The audit trail that makes the harness's evolution (and its value layer) inspectable rather than merely declared. Written in Japanese; each follows a fixed template (Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences — `Review-when` holds the expiry conditions and is required from ADR-0044 on; an ADR is a dated hypothesis, not a permanent constraint)
 - [RFC ledger](rfcs/README.md): the harness's public task-and-proposal ledger (ADR-0049) — one entry per proposal or work item in Rust-RFC-template form, state in the frontmatter in standard vocabulary (draft / accepted / in_progress / blocked / done / resolved / rejected / withdrawn / obsoleted — ADR-0050), a prose `## Status` section in the IETF "Status of This Memo" lineage, and a `## Next action` tracking section; terminal entries are left in place so rejected proposals stay readable with their reasons. The operator-scale counterpart of the AI-native SDLC playbook's "intent home"; read with `scripts/claims.py ready`
+- [Approved plans](docs/plans/): the approved plan-mode plans behind the decisions (ADR-0085) — since 2026-09-27 an approved plan is committed on its own as the first commit of its implementation and later commits point to it with a `Plan:` line. Written in Japanese
 - [Eval cards](docs/evals/README.md): cards for the instruments the harness measures itself with (RFC-0030) — design, environment, raw readings, what was not measured, known failures, and a validity state (再現済み / 単発 / 不成立); field names borrowed from `claude plugin eval`'s aggregate-result.json, Every Eval Ever 0.3.0 and Inspect AI's EvalLog, with a mapping table per card. Written in Japanese
 
 ## Related repositories
 
-- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200726) — the framework that the first six skills here implement
+- [shimo4228](https://github.com/shimo4228/shimo4228): the author's hub — the five long-running practice lines with their concept DOIs, and the public dashboard that tracks this repo's traffic
+- [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle): AKC concept and DOI release on Zenodo (10.5281/zenodo.19200726) — the framework that six of the skills here implement
+- [akc-cycle](https://github.com/shimo4228/akc-cycle): installs the Agent Knowledge Cycle as one Claude Code plugin plus a self-contained rules file; `rules/common/akc-cycle.md` here is its pointer edition
+- [harness-scope](https://github.com/shimo4228/harness-scope): a Claude Code Mod that turns a global harness like this one on or off per repo with named profiles
+- [harness-pruning](https://github.com/shimo4228/harness-pruning): the dated record of every skill, rule, agent, and hook retired from this harness, each with the decision behind it
 - [contemplative-agent-rules](https://github.com/shimo4228/contemplative-agent-rules): rule-only implementation of the four Contemplative AI axioms with adapters for Cursor, Copilot, and the Iterated Prisoner's Dilemma benchmark
 - [contemplative-agent](https://github.com/shimo4228/contemplative-agent): autonomous agent built on the AKC + Contemplative AI foundations — reference application of these patterns in a long-running runtime
-- standalone skill repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync) and design-pattern skills (when-code-when-llm, signal-first-research, code-and-llm-collaboration, llm-agent-security-principles), plus rules-stocktake and generation-audit
+- standalone skill repos: independent published versions of each AKC skill (search-first, learn-eval, skill-stocktake, rules-distill, skill-comply, context-sync), rules-stocktake, generation-audit, and design-pattern skills (code-and-llm-collaboration, llm-agent-security-principles; when-code-when-llm and signal-first-research are frozen records)
