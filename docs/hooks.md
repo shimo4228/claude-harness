@@ -16,7 +16,7 @@ will see when a gate goes quiet, and they date their own bug fixes.
 | Script | Fires on | Blocks when | Bypass |
 |---|---|---|---|
 | [`secret-scan-precommit.sh`](../hooks/secret-scan-precommit.sh) | Bash command containing `git … commit` | A line the command **will commit** looks like a credential. Prefers `detect-secrets`, falls back to regex. Machine-written digest-only files (`evals/baselines/*.ack.json`) are excluded from the scan | `SECRET_SCAN_BYPASS=1` |
-| [`verify-precommit.sh`](../hooks/verify-precommit.sh) | same | The repo's own `.claude/verify.sh --staged` exits non-zero (other than the codes below), or — in a repo whose gate you approved — the gate has gone missing or can no longer be checked | `VERIFY_BYPASS=1` |
+| [`verify-precommit.sh`](../hooks/verify-precommit.sh) | same | The repo's own `.claude/verify.sh --staged` exits non-zero (other than the codes below), or — in a repo whose gate you approved — the gate has gone missing or can no longer be checked | none — fix the cause, or fix a false positive in the gate itself ([ADR-0094](adr/0094-remove-verify-bypass.md)) |
 | [`bandit-precommit.sh`](../hooks/bandit-precommit.sh) | same | Staged `.py` trips bandit at `-ll -ii` (MEDIUM severity + MEDIUM confidence) | `BANDIT_SCAN_BYPASS=1` |
 | [`ruff-format-precommit.sh`](../hooks/ruff-format-precommit.sh) | same | Staged `.py` fails `ruff format --check`. Checks only, never rewrites | `RUFF_FORMAT_BYPASS=1` |
 | [`review-chain-notice.sh`](../hooks/review-chain-notice.sh) | `git … commit`/`revert`/`merge` | Never — injects an advisory asking whether review and verify ran | — |
@@ -205,11 +205,14 @@ Until you approve it, the gate does not run and the commit is not blocked:
 ```bash
 # read the gate first, then:
 python3 ~/.claude/scripts/hooks/verify_allow.py approve /path/to/repo
+python3 ~/.claude/scripts/hooks/verify_allow.py diff /path/to/repo     # changes since the approved version
 python3 ~/.claude/scripts/hooks/verify_allow.py list
 python3 ~/.claude/scripts/hooks/verify_allow.py revoke /path/to/repo
 ```
 
-Editing `verify.sh` invalidates the approval, so you re-read and re-approve.
+Editing `verify.sh` invalidates the approval. `approve` keeps a copy of what you approved under
+`~/.claude/verify-approved/`, so `diff` shows exactly what changed since then; read that, then approve again
+([ADR-0093](adr/0093-verify-approval-via-permission-prompt.md)).
 The ledger lives at `~/.claude/verify-allow.json`, outside every repo it governs.
 
 Once approved, a gate cannot quietly disappear. If a repo in the ledger loses its

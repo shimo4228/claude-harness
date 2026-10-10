@@ -20,12 +20,15 @@
 #     harness are self-authored AND ~/.claude-specific, so an origin filter would
 #     conflate the two and publish code that cannot run anywhere else. ADR-0038.
 #
-# LICENSE and llms*.txt are never
-# touched; README.md / README.ja.md are rewritten ONLY inside their
+# LICENSE, README* and llms*.txt are never touched. The component roster lives
+# in docs/components.md / docs/components.ja.md (outside every subtree, so the
+# sync never deletes it), rewritten ONLY inside their
 # `<!-- BEGIN/END GENERATED: ... -->` marker regions (the upstream-components
 # manifest and the skill/agent/rule tables) — all prose outside markers is
 # left intact, so those regions are mechanically owned and must not be
-# hand-edited except for the Purpose text they carry. The script never
+# hand-edited except for the Purpose text they carry. The README points at the
+# page instead of carrying ~16k characters of tables (a size that truncated an
+# LLM fetcher's first read of the README, claude-harness ADR-0091). The script never
 # commits — `git diff` in this repo is the review gate.
 #
 # Usage:
@@ -269,6 +272,38 @@ if hits="$(grep -rFn "$HOME/" "$STAGING" 2>/dev/null | grep -v 'pragma: allow-ho
   exit 1
 fi
 
+# --- hand-written files must not link into subtree paths the synced payload does not have ---
+# Subtrees are replaced wholesale; README / llms*.txt / CHANGELOG / docs/hooks.md and the
+# prose of docs/components*.md are not, so a renamed or removed file inside a subtree leaves
+# their links dangling. GENERATED regions are skipped (regenerated from the payload after
+# apply). Checked before anything is applied: dry-run reports it, apply aborts with the tree intact.
+python3 - "$TARGET_DIR" "$STAGING" "${SUBTREES[@]}" <<'PYEOF' || exit 1
+import os, pathlib, re, sys, urllib.parse
+target, staging, subtrees = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]), sys.argv[3:]
+link = re.compile(r"\]\(<?([^)\s>]+)|(?:href|src)=\"([^\"]+)\"")
+fence = re.compile(r"^(```|~~~).*?^\1", re.M | re.S)
+generated = re.compile(r"<!-- BEGIN GENERATED: (\S+) -->.*?<!-- END GENERATED: \1 -->", re.S)
+code = re.compile(r"`[^`\n]*`")
+docs = [*sorted(target.glob("README*.md")), *sorted(target.glob("docs/components*.md")),
+        *(target / n for n in ("llms.txt", "llms-full.txt", "CHANGELOG.md", "docs/hooks.md"))]
+bad = []
+for f in docs:
+    if not f.is_file():
+        continue
+    text = code.sub("", fence.sub("", generated.sub("", f.read_text(encoding="utf-8"))))
+    for m in link.finditer(text):
+        raw = (m.group(1) or m.group(2)).split("#", 1)[0]
+        if not raw or "://" in raw or raw.startswith(("mailto:", "/", "~")):
+            continue
+        rel = os.path.normpath(os.path.join(os.path.relpath(f.parent, target), urllib.parse.unquote(raw)))
+        if any(rel == t or rel.startswith(t + "/") for t in subtrees) and not (staging / rel).exists():
+            bad.append(f"  {f.relative_to(target)}: {rel}")
+if bad:
+    print("ABORT: hand-written files link to subtree paths the synced payload does not have:", file=sys.stderr)
+    print("\n".join(sorted(set(bad))), file=sys.stderr)
+    sys.exit(1)
+PYEOF
+
 # --- report / apply ---
 if (( DRY_RUN )); then
   echo "# DRY-RUN (origin: $ORIGIN) — differences staging vs $TARGET_DIR"
@@ -289,10 +324,10 @@ for t in "${SUBTREES[@]}"; do
 done
 cp -R "$STAGING"/. "$TARGET_DIR"/
 
-# --- regenerate the upstream-components manifest in README.md ---
+# --- regenerate the upstream-components manifest in docs/components.md ---
 # Names only, no content: external-origin components are credited, never
 # redistributed. Generated so the list cannot drift by hand-editing.
-python3 - "$SOURCE_DIR" "$TARGET_DIR/README.md" <<'PYEOF' || true
+python3 - "$SOURCE_DIR" "$TARGET_DIR/docs/components.md" <<'PYEOF' || true
 import re
 import sys
 from pathlib import Path
@@ -407,7 +442,7 @@ for key in ordered:
 block = "\n".join(
     [
         BEGIN,
-        "### Upstream components (names only)",
+        "## Upstream components (names only)",
         "",
         "The live harness also runs components from external upstreams."
         " Their content — including any local modifications to it — is"
@@ -421,26 +456,26 @@ block = "\n".join(
 text = readme.read_text(encoding="utf-8")
 if BEGIN not in text or END not in text:
     print(
-        "WARN: upstream-components markers missing in README.md — manifest NOT written",
+        "WARN: upstream-components markers missing in docs/components.md — manifest NOT written",
         file=sys.stderr,
     )
     sys.exit(0)
 new = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END), block, text, flags=re.S)
 if new != text:
     readme.write_text(new, encoding="utf-8")
-    print("# manifest: README.md upstream-components regenerated")
+    print("# manifest: docs/components.md upstream-components regenerated")
 else:
     print("# manifest: unchanged")
 PYEOF
 
-# --- regenerate the skill / agent / rule tables in README.md / README.ja.md ---
+# --- regenerate the skill / agent / rule tables in docs/components*.md ---
 # Membership is derived from the just-synced payload; the Purpose column is
 # preserved from the existing tables so hand-written curation survives, and only
 # genuinely new components get a seeded Purpose (first clause of the SKILL.md
 # `description`). Generated between markers so the roster cannot drift by
 # hand-editing. Aggregate counts ("N skills") are deliberately written nowhere:
 # a churning count baked into prose only drifts (No-volatile-state).
-# No `|| true`: compute-then-write means a failure leaves every README untouched
+# No `|| true`: compute-then-write means a failure leaves every page untouched
 # and aborts the run (set -e) rather than silently shipping a half-written table.
 if command -v python3 >/dev/null 2>&1; then
 python3 - "$TARGET_DIR" <<'PYEOF'
@@ -459,8 +494,10 @@ KINDS = [
     ("agents-table", "Agent", "agents"),
     ("rules-table", "Rule", "rules"),
 ]
-# Table rows look like: | [name](link/path) | purpose text |
-ROW_RE = re.compile(r"^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|\s*(.*?)\s*\|\s*$", re.M)
+# Table rows look like: | [name](../link/path) | purpose text |. Rows link from docs/ up
+# to the payload; the key stays repo-relative (`../` stripped) so Purpose curation
+# carries over from the README-era rows too.
+ROW_RE = re.compile(r"^\|\s*\[([^\]]+)\]\((?:\.\./)?([^)]+)\)\s*\|\s*(.*?)\s*\|\s*$", re.M)
 _BLOCK_INDICATORS = {">", ">-", ">+", "|", "|-", "|+"}
 
 
@@ -544,19 +581,22 @@ def regenerate(text, rname):
             # key-presence, not truthiness: an intentionally blank Purpose cell
             # is preserved, never silently re-seeded on the next run.
             purpose = existing[pth] if pth in existing else (seed_purpose(p) or "—")
-            rows.append(f"| [{name}]({pth}) | {purpose} |")
+            rows.append(f"| [{name}](../{pth}) | {purpose} |")
         block = begin + "\n" + "\n".join(rows) + "\n" + end
         new_text = new_text[: mo.start()] + block + new_text[mo.end():]
     return new_text
 
 
-# Compute every README first; only then write. A crash mid-compute writes
+# Compute every page first; only then write. A crash mid-compute writes
 # nothing, so the two files can never end up asymmetrically updated.
 updates = []
 for rname in ("README.md", "README.ja.md"):
+    if "BEGIN GENERATED: skills-table" in (target / rname).read_text(encoding="utf-8"):
+        print(f"WARN: {rname} still carries a generated table — the roster lives in docs/components*.md now; remove it", file=sys.stderr)
+for rname in ("docs/components.md", "docs/components.ja.md"):
     rp = target / rname
     if not rp.exists():
-        continue
+        sys.exit(f"ABORT: {rname} missing — it is the only component roster")
     text = rp.read_text(encoding="utf-8")
     new_text = regenerate(text, rname)
     if new_text != text:
@@ -568,10 +608,10 @@ for rp, new_text, rname in updates:
     tmp.replace(rp)
     print(f"# tables: {rname} skill/agent/rule tables regenerated")
 if not updates:
-    print("# tables: READMEs unchanged")
+    print("# tables: component pages unchanged")
 PYEOF
 else
-  echo "WARN: python3 not available — README tables not regenerated" >&2
+  echo "WARN: python3 not available — component tables not regenerated" >&2
 fi
 
 echo "# APPLIED (origin: $ORIGIN). Review before committing:"
