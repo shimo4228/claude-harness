@@ -4,7 +4,7 @@
 `readme-judge` agent は判定の前にこのファイルを全文読む。フロア 5 要素・Voice 規約の骨格は
 `../SKILL.md` にあり、判定の問いはここにだけ置く。
 
-判定の型（正本は `~/.claude/skills/llm-as-judge/SKILL.md`）: 二値チェックに 1 行の引用証拠 →
+判定の型（正本は `llm-as-judge` skill の SKILL.md）: 二値チェックに 1 行の引用証拠 →
 反証 → **集計しない** named verdict（Publishable / Fix / Rewrite）。
 
 ## §E 証拠層（`scripts/readme_evidence.py` の JSON。判定はしない）

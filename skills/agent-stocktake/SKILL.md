@@ -39,8 +39,10 @@ this skill exists as a third sibling next to skill-stocktake and rules-stocktake
 | `changed` | Re-evaluate only files whose mtime is newer than `results.json`'s `evaluated_at`; carry the rest forward from the ledger |
 
 `changed` detects changes inline (no script):
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
 ```bash
-find ~/.claude/agents -name "*.md" -newermt "$(jq -r .evaluated_at ~/.claude/skills/agent-stocktake/results.json)"
+find ~/.claude/agents -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
 ```
 
 As in rules-stocktake, the Phase 1 integrity checks **always run over the full set** —
@@ -55,8 +57,8 @@ would give wrong numbers rather than fewer ones.
 ### Step 1 — Run the evidence script (do not count by hand)
 
 ```bash
-uv run --frozen --project ~/.claude/skills/agent-stocktake \
-       --directory ~/.claude/skills/agent-stocktake \
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" \
+       --directory "${CLAUDE_SKILL_DIR}" \
        python scripts/agent_evidence.py --root ~/.claude
 ```
 

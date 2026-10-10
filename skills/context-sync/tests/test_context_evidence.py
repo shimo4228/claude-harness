@@ -557,3 +557,54 @@ def test_gate_paths_flag_opts_the_path_check_in(repo: Path):
     proc = _run(["--root", str(repo), "--gate", "--gate-paths"])
     assert proc.returncode == 3
     assert "docs/missing.md" in proc.stdout
+
+
+# --- README links (opt-in gate) ---------------------------------------------- #
+
+
+def test_readme_links_reports_broken_relative_links_in_root_docs(repo: Path):
+    (repo / "skills" / "kept").mkdir(parents=True)
+    (repo / "skills" / "kept" / "SKILL.md").write_text("x\n", encoding="utf-8")
+    (repo / "README.md").write_text(
+        "# P\n[ok](skills/kept/SKILL.md) [gone](skills/gone/SKILL.md#x) [web](https://e.com/a)\n"
+        "```\n[fenced](docs/fenced.md)\n```\n",
+        encoding="utf-8",
+    )
+    (repo / "README.ja.md").write_text("[ja](./docs/ja-gone.md)\n", encoding="utf-8")
+    (repo / "CHANGELOG.md").write_text("[c](docs/adr/README.md)\n", encoding="utf-8")
+    ev = ce.collect_evidence(repo)
+    broken = ev["checks"]["readme_links"]["broken_links"]
+    assert broken == [
+        {"file": "README.ja.md", "line": 1, "token": "./docs/ja-gone.md"},
+        {"file": "README.md", "line": 2, "token": "skills/gone/SKILL.md"},
+    ]
+
+
+def test_readme_links_resolve_exactly_not_by_suffix(repo: Path):
+    # A suffix match would let `skills/gone/README.md` resolve against any README.md.
+    (repo / "README.md").write_text("[x](gone/README.md)\n", encoding="utf-8")
+    ev = ce.collect_evidence(repo)
+    assert [b["token"] for b in ev["checks"]["readme_links"]["broken_links"]] == ["gone/README.md"]
+
+
+def test_gate_readme_flag_opts_the_readme_check_in(repo: Path):
+    (repo / "README.md").write_text("[gone](docs/gone.md)\n", encoding="utf-8")
+    plain = _run(["--root", str(repo), "--gate"])
+    assert plain.returncode == 0
+    assert "docs/gone.md" not in plain.stdout
+    gated = _run(["--root", str(repo), "--gate", "--gate-readme"])
+    assert gated.returncode == 3
+    assert "README.md:1: link does not resolve: docs/gone.md" in gated.stdout
+
+
+def test_readme_links_cover_images_and_html_attributes(repo: Path):
+    (repo / "README.md").write_text(
+        '![badge](docs/badge.svg)\n<details><a href="skills/gone/SKILL.md">x</a></details>\n'
+        '<img src="docs/adr/README.md"> and `[](url)` in code\n',
+        encoding="utf-8",
+    )
+    ev = ce.collect_evidence(repo)
+    assert [(b["line"], b["token"]) for b in ev["checks"]["readme_links"]["broken_links"]] == [
+        (1, "docs/badge.svg"),
+        (2, "skills/gone/SKILL.md"),
+    ]

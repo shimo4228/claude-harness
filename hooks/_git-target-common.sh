@@ -43,6 +43,14 @@ git_target_dirs() {
   # セグメント境界で分割してから照合する。分割済みなので、path と verb が同一セグメントに
   # あることは構造的に保証される (旧実装の [^;&|]* による近似が不要になる)
   s_re='^[[:space:]]*git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*[[:space:]]('"${verbs}"')([[:space:]]|$)'
+  # git の前置き (環境変数の代入・env / command / time / nohup・git のフルパス・`-c k=v` や `--no-pager`
+  # のような global option) は読み飛ばしてから照合する。読み飛ばさないと `-C` の行き先を取りこぼして
+  # カレント repo を検査し、前置きを 1 つ付けるだけで X のゲートを避けられた (2026-10-09、ADR-0094)。
+  # GIT_* の代入 (GIT_DIR / GIT_WORK_TREE など) は commit 先そのものを変えるので、そのセグメントの `-C`
+  # は信じない (読み飛ばすと `-C` の囮を確信を持って指してしまう — 同日の code review)
+  local pre_re='^[[:space:]]*(env|command|time|nohup|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*)[[:space:]]+(.*)$'
+  local path_re='^[[:space:]]*[^[:space:]]*/git([[:space:]].*)$'
+  local opt_re='^[[:space:]]*git[[:space:]]+(-c[[:space:]]+[^[:space:]]+|--[a-z][a-z-]*)([[:space:]].*)$'
   # 供給側は `%s\n` であって `%s` ではない: 末尾に改行が無いと read は最終セグメントを
   # 読んだうえで非ゼロを返し、ループ本体が実行されないまま抜ける (単一セグメントのコマンドが
   # 丸ごと取りこぼされ、抽出は常に空になる)
@@ -50,6 +58,12 @@ git_target_dirs() {
   # (`done` の直前に置くと SC1123 でパーサが停止する)、`while` の前でループ全体を覆う
   # shellcheck disable=SC2020  # 意図どおりの文字集合置換 (3 区切り文字 → いずれも改行)
   while IFS= read -r seg; do
+    while [[ "$seg" =~ $pre_re ]]; do
+      [[ "${BASH_REMATCH[1]}" == GIT_* ]] && { seg=""; break; }
+      seg=${BASH_REMATCH[2]}
+    done
+    [[ "$seg" =~ $path_re ]] && seg="git${BASH_REMATCH[1]}"
+    while [[ "$seg" =~ $opt_re ]]; do seg="git${BASH_REMATCH[2]}"; done
     [[ "$seg" =~ $s_re ]] || continue
     dir="${BASH_REMATCH[1]/#\~/$HOME}"
     seen=0

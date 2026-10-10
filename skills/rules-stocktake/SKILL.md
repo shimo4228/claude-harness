@@ -39,8 +39,10 @@ instruction dilution.
 | `changed` | Re-evaluate only rules whose mtime is newer than `results.json`'s `evaluated_at`; carry the rest forward from the ledger |
 
 `changed` detects changes inline (no script):
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
 ```bash
-find ~/.claude/rules -name "*.md" -newermt "$(jq -r .evaluated_at ~/.claude/skills/rules-stocktake/results.json)"
+find ~/.claude/rules -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
 ```
 
 **The Phase 1 integrity checks always run over the full set, including in `changed`

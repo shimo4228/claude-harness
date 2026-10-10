@@ -22,7 +22,10 @@ security-reviewer が CRITICAL として指摘)。既存 hook の方針
                         0 = ある (一致した key を stdout に出す) / 70 = 無い / 73 = 台帳が壊れている。
                         hook が gate 不在時に「未導入の repo」と「承認済み repo の gate 消失」を
                         区別するために引く
-  approve <repo>        現在の内容のハッシュを台帳に記録する (人間が読んだ後に実行する)
+  approve <repo>        現在の内容のハッシュを台帳に記録し、内容の写しを SNAPSHOTS に残す
+                        (人間が許可の確認で通す — hooks/validate-bash.sh が ask を返す、ADR-0093)
+  diff <repo>           承認した版の写しから現在の内容への unified diff を出す (読み取り専用)。
+                        写しの無い古い承認や未承認は、現在の内容の全文を出す
   revoke <repo>         承認を取り消す
   list                  台帳を表示
 
@@ -46,6 +49,7 @@ VERIFY_ALLOW_LEDGER は **テスト用**の差し替え口 (攻撃者が到達�
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import json
 import os
@@ -57,6 +61,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 LEDGER = Path(os.environ.get("VERIFY_ALLOW_LEDGER", Path.home() / ".claude" / "verify-allow.json"))
+# 承認した版の写し (<sha256>.sh)。承認切れのときに「人間が読んだ版」から何が変わったかを示す。
+# HEAD との diff では、外から commit 済みで入った変更が空に見える (2026-10-09 code review)
+SNAPSHOTS = LEDGER.parent / "verify-approved"
+DIFF_MAX_CHARS = 6000
 GATE_RELPATH = Path(".claude") / "verify.sh"
 
 OK = 0
@@ -357,12 +365,66 @@ def cmd_approve(repo_arg: str) -> int:
     except OSError as e:
         print(f"gate を読めません: {e}", file=sys.stderr)
         return UNSAFE_PATH
+    try:
+        SNAPSHOTS.mkdir(parents=True, exist_ok=True)
+        (SNAPSHOTS / f"{digest}.sh").write_bytes(gate.read_bytes())
+    except OSError as e:
+        print(f"承認した版の写しを残せません (承認は続けます): {e}", file=sys.stderr)
     data[str(repo)] = {
         "sha256": digest,
         "approved": datetime.now(UTC).date().isoformat(),
     }
     save(data)
     print(f"承認しました: {gate}")
+    return OK
+
+
+def cmd_diff(repo_arg: str) -> int:
+    """承認した版の写しから現在の内容への diff を出す。台帳は変えない。
+
+    ledger_key で引くので linked worktree は main の承認と比べる。写しが無い (古い承認・未承認) ときは、
+    比べる相手が無いことを書いて現在の全文を出す — 人間が読むのは全文になる。
+    """
+    resolved = resolve_checked(repo_arg)
+    if resolved is None:
+        print("gate が存在しないか、symlink で repo 外を指しています", file=sys.stderr)
+        return UNSAFE_PATH
+    repo, gate = resolved
+    try:
+        current = gate.read_bytes().decode("utf-8", "replace")
+    except OSError as e:
+        print(f"gate を読めません: {e}", file=sys.stderr)
+        return UNSAFE_PATH
+    data = load_or_empty()
+    key, _ = ledger_key(repo, data)
+    digest = (data.get(key) or {}).get("sha256", "")
+    snap = SNAPSHOTS / f"{digest}.sh" if digest else None
+    if snap is not None and snap.is_file():
+        old = snap.read_bytes().decode("utf-8", "replace")
+        text = (
+            "\n".join(
+                difflib.unified_diff(
+                    old.splitlines(),
+                    current.splitlines(),
+                    fromfile="approved:.claude/verify.sh",
+                    tofile="current:.claude/verify.sh",
+                    lineterm="",
+                )
+            )
+            or "(承認した版から変わっていません)"
+        )
+    else:
+        why = (
+            "承認の記録がありません"
+            if not digest
+            else "承認した版の写しがありません (写しを残す前の承認)"
+        )
+        text = f"{why}。現在の .claude/verify.sh の全文:\n{current}"
+    if len(text) > DIFF_MAX_CHARS:
+        text = (
+            text[:DIFF_MAX_CHARS] + f"\n…（{len(text) - DIFF_MAX_CHARS} 字を省略。全文は {gate}）"
+        )
+    print(text)
     return OK
 
 
@@ -404,11 +466,12 @@ def main(argv: list[str]) -> int:
         return cmd_list()
     if cmd == "run" and args:
         return cmd_run(args[0], args[1:])
-    if cmd in {"check", "known", "approve", "revoke"} and len(args) == 1:
+    if cmd in {"check", "known", "approve", "diff", "revoke"} and len(args) == 1:
         handlers = {
             "check": cmd_check,
             "known": cmd_known,
             "approve": cmd_approve,
+            "diff": cmd_diff,
             "revoke": cmd_revoke,
         }
         return handlers[cmd](args[0])

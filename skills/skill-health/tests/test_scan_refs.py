@@ -95,6 +95,33 @@ class TestExtractRunModules:
         md = "uv run --project $UV python -m scripts.run\n"
         assert extract_run_modules(md, "foo", tmp_path / "foo") == []
 
+    def test_project_from_claude_skill_dir_resolves_to_self(self, tmp_path: Path) -> None:
+        # Claude Code substitutes ${CLAUDE_SKILL_DIR} in skill Markdown, so it is
+        # resolvable, not an undecidable shell variable.
+        (tmp_path / "foo").mkdir()
+        md = 'uv run --project "${CLAUDE_SKILL_DIR}" python -m scripts.run\n'
+        refs = extract_run_modules(md, "foo", tmp_path / "foo")
+        assert [r.target for r in refs] == [str(tmp_path / "foo/scripts/run.py")]
+
+    def test_project_from_claude_skill_dir_sibling(self, tmp_path: Path) -> None:
+        (tmp_path / "foo").mkdir()
+        md = 'uv run --project "${CLAUDE_SKILL_DIR}/../skill-health" python -m scripts.scan\n'
+        refs = extract_run_modules(md, "foo", tmp_path / "foo")
+        assert [r.target for r in refs] == [str(tmp_path / "skill-health/scripts/scan.py")]
+
+    def test_project_from_plugin_root_skills_path(self, tmp_path: Path) -> None:
+        # The akc-cycle sync rewrites sibling paths to ${CLAUDE_PLUGIN_ROOT}/skills/<name>.
+        (tmp_path / "foo").mkdir()
+        md = "uv run --project ${CLAUDE_PLUGIN_ROOT}/skills/bar python -m scripts.run\n"
+        refs = extract_run_modules(md, "foo", tmp_path / "foo")
+        assert [r.target for r in refs] == [str(tmp_path / "bar/scripts/run.py")]
+
+    def test_directory_from_claude_skill_dir_sibling_is_resolved(self, tmp_path: Path) -> None:
+        (tmp_path / "foo").mkdir()
+        md = 'uv run --directory "${CLAUDE_SKILL_DIR}/../skill-health" python -m scripts.scan\n'
+        refs = extract_run_modules(md, "foo", tmp_path / "foo")
+        assert [r.target for r in refs] == [str(tmp_path / "skill-health/scripts/scan.py")]
+
     def test_records_raw_text(self) -> None:
         refs = extract_run_modules("python -m scripts.run\n", "foo", Path("/s/foo"))
         assert "scripts.run" in refs[0].raw
@@ -121,6 +148,14 @@ class TestExtractBashScripts:
     def test_absolute_path_used_as_is(self) -> None:
         refs = extract_bash_scripts("bash /opt/tools/run.sh\n", "foo", Path("/s/foo"))
         assert refs[0].target == "/opt/tools/run.sh"
+
+    def test_claude_skill_dir_resolves_to_the_skill_dir(self) -> None:
+        refs = extract_bash_scripts('bash "${CLAUDE_SKILL_DIR}/run.sh"\n', "foo", Path("/s/foo"))
+        assert [r.target for r in refs] == [str(Path("/s/foo/run.sh"))]
+
+    def test_unbraced_claude_skill_dir_resolves_to_the_skill_dir(self) -> None:
+        refs = extract_bash_scripts("bash $CLAUDE_SKILL_DIR/scripts/x.sh\n", "foo", Path("/s/foo"))
+        assert [r.target for r in refs] == [str(Path("/s/foo/scripts/x.sh"))]
 
     def test_non_sh_command_ignored(self) -> None:
         assert extract_bash_scripts("bash -c 'echo hi'\n", "foo", Path("/s/foo")) == []

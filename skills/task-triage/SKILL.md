@@ -206,12 +206,12 @@ label; packet committed to `docs/plans/` on `main` and pushed before the worktre
 leaves the build to rebase), using the packet's *local* lines (build or
 measurement variant), with the review chain delegated to `implementation-chain` (the harness
 is present there). `spawn-session`:
-`bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus` →
-`herdr agent prompt "<agent-name>" "/effort <the packet's Effort>" --wait --timeout 60000` — the
-first prompt often returns `timeout` while landing fine; confirm the effort line with `herdr agent
-read` before the next prompt (an unsubmitted `/effort` would swallow the packet) →
-`herdr agent prompt "<agent-name>" "<packet text>" --wait --timeout 60000`. `agent_status: done`
-means the REPL is idle, **not** that the work is done. Hooks, the chain's skills and a direct
+`bash ~/.claude/skills/spawn-session/spawn.sh <worktree> "<repo>/s<n>-<slug>" --model opus
+--effort <the packet's Effort> --prompt-file <packet>` — the effort goes in as a launch flag and the
+packet as the first prompt, confirmed by skill: `agent-send` (`prompt: result=landed`; any other
+result is read off agent-send's table). Wait for the build with `agent-send.sh wait <pane>
+--done-if '<the task branch has a new commit>'` run in the background: an idle REPL is **not** the
+work being done. Hooks, the chain's skills and a direct
 `verify.sh` run behave inside an Agent-tool subagent as they do in the main session (measured
 2026-08-29, RFC-0016). Known cost: the worktree isolation guard hard-refuses shell `for` loops
 and heredocs — fold a loop into one command over several paths, or write the analysis to a file
@@ -250,13 +250,13 @@ The build session's report is a claim. Before merging:
   (Damping). A bounce pushes to the build's branch, so for a public repo it waits for the
   human's OK like the dispatch (§3 step 4). `ok: false` (archived, missing) → start a new session from a packet that names the
   branch to continue on, or let the human decide at the digest. Local path: the same message to
-  the same session — `herdr agent prompt "<agent-name>" "<message>"` for a `spawn-session` pane,
+  the same session — `agent-send.sh prompt <pane> --file <message>` for a `spawn-session` pane,
   `SendMessage` to the Agent for an Agent-tool build; the branch stays.
 - **Classify every bounce in one word** — the word decides the effort of the retry:
   - **見落とし** (a missed edge case, a bug the build's tests missed) → first send
     `/effort <one level up>` to the same session, then the bounce message (cloud:
     `claude -p "/effort <level>" --cloud <session-id> --output-format json`; `spawn-session`:
-    `herdr agent prompt "<agent-name>" "/effort <level>"`). One level up stops at `xhigh`; `max`
+    `agent-send.sh prompt <pane> --text "/effort <level>"`, which answers `accepted via=command`). One level up stops at `xhigh`; `max`
     only on the author's word. An `Agent` build cannot be raised: bounce at the same effort and
     write `not raised (Agent)` in its §5 line.
   - **読み違い** (a misread requirement, the wrong approach) → keep the effort; the bounce message
@@ -351,7 +351,7 @@ digest can be answered from the phone. It holds no timer of its own: launchd run
 06:30 (stocktake → triage); CA Wed 17:07 (triage) and Sat 14:07 (stocktake → triage, after
 the Saturday pipeline's 13:30 packet deadline and before the human gate). The tick finds the
 live triage agent by its fixed Herdr name (`triage-harness` / `triage-ca`), spawns one via
-`spawn-session` if none exists, and submits the cycle prompt with `herdr agent prompt`. The
+`spawn-session` if none exists, and submits the cycle prompt with skill: `agent-send`. The
 tick never reads the ledger; it only reports its own anomalies to Slack (spawned a new
 session because none was alive, spawn failed, prompt stalled twice, session `blocked`,
 previous cycle still `working` → skipped). The human starts nothing: that is the point of the loop.

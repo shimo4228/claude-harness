@@ -192,6 +192,8 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 判定器は fresh context の別 agent process で起動し、執筆セッションの文脈を渡さない（自己批評は
 検出率が落ち、書き手の文脈は未定義語を補完して判定を甘くする）。
 
+> 以下のパスは `${CLAUDE_SKILL_DIR}`（この SKILL.md のあるディレクトリ）から始まる。変数を置換しないエージェントでは、そのディレクトリと読み替える。
+
 ```
 1. 入口の設計                                                            ⏸ 著者確認
    - 情報の割り振り: 見える本文（何をするものか・摩擦の解消・開示の 1 行）/ 末尾の畳んだ節（フロア 5 要素）/
@@ -213,8 +215,8 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
    規則（JA のですます・日本語の段落を 1 行に・概要図の和文版 `assets/overview.ja.svg`・英語だけの
    docs へのリンクに（英語））はこの skill が持つ。同じフロア・見出し階層・アンカー・例で揃える
 4. 草稿判定 — 各言語版に証拠 JSON と描画証拠を作る:
-     uv run --quiet --directory ~/.claude/skills/readme-writer python -m scripts.readme_evidence <README の絶対パス> > <out>.json
-     uv run --quiet --directory ~/.claude/skills/readme-writer python -m scripts.readme_render <README の絶対パス> --out <scratch>/render-r0 --surface repo|profile
+     uv run --quiet --directory "${CLAUDE_SKILL_DIR}" python -m scripts.readme_evidence <README の絶対パス> > <out>.json
+     uv run --quiet --directory "${CLAUDE_SKILL_DIR}" python -m scripts.readme_render <README の絶対パス> --out <scratch>/render-r0 --surface repo|profile
    （profile README は `--surface profile`。`render-r0` は改稿前の描画として最終判定まで残す。recheck と
    final の前には、直した版を新しい dir（`render-r1` …）に描き直して渡す — 古い描画のままでは §V の
    答えが変わらない。見た目の Fix は markup・順序・構造だけで、本文を言い換えない）
@@ -259,7 +261,7 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 ## Verification
 
 ```bash
-cd ~/.claude/skills/readme-writer
+cd "${CLAUDE_SKILL_DIR}"
 uv sync --dev
 uv run pytest tests/ --cov=scripts --cov-report=term-missing
 uv run python -m scripts.readme_evidence fixtures/sample_issues.md --text

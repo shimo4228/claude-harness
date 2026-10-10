@@ -96,3 +96,12 @@ emit_advisory_stream() {
 emit_advisory() {
   printf '%s' "${2:-}" | emit_advisory_stream "${1:-}" "${3:-}"
 }
+
+# emit_permission_decision <allow|deny|ask> <reason> — PreToolUse の許可判定の封筒。
+# additionalContext とは別のチャネル（hookSpecificOutput.permissionDecision）で、"ask" は auto mode と
+# allow rule の上からでも確認画面を出す（hooks reference、2.1.211 以降）。封筒の手書きを lint が止めるので、
+# 判定もこの部品から出す（先例: validate-bash.sh の verify 承認台帳、ADR-0093）
+emit_permission_decision() {
+  jq -nc --arg d "${1:-ask}" --arg r "${2:-}" \
+    '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: $d, permissionDecisionReason: $r}}'
+}

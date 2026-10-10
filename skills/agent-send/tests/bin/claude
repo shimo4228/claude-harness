@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# 偽の claude。`claude agents --json` だけを受け、$FAKE_STATE/claude_agents.json を返す。
+S="${FAKE_STATE:?FAKE_STATE is not set}"
+printf 'claude %s\n' "$*" >> "$S/calls.log"
+if [[ "$1 ${2:-}" == "agents --json" ]]; then
+  if [[ -f "$S/claude_agents.json" ]]; then cat "$S/claude_agents.json"; else echo '[]'; fi
+  exit 0
+fi
+echo "fake claude: unhandled: $*" >&2
+exit 2

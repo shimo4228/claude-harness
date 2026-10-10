@@ -174,10 +174,12 @@ Verify that documentation claims match the current codebase.
 
 **Step 0 — run the evidence script; do not count by eye.**
 
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
 ```bash
 EV=$(mktemp -t context-evidence)   # per-run file: a fixed /tmp path lets two
                                    # concurrent runs read each other's JSON
-python3 ~/.claude/skills/context-sync/scripts/context_evidence.py --root . > "$EV"
+python3 "${CLAUDE_SKILL_DIR}/scripts/context_evidence.py" --root . > "$EV"
 ```
 
 It emits JSON and always exits 0 — evidence, not a verdict. Read the JSON, transcribe

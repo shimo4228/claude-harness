@@ -13,6 +13,16 @@ Assume a skill is reused in more than one context. Follow these points when crea
   - Personal project references, origin stories, canonical implementations → `inspiration.md`,
     ADR Notes, memory, or a "Related Projects" file in the same repo
   - User-specific settings → skill parameters / environment variables, not hard-coded in the body
+- **Point at the skill's own files with `${CLAUDE_SKILL_DIR}`**: Claude Code substitutes it with the
+  directory holding the SKILL.md, wherever the skill was installed (user, project or plugin). A fixed
+  `~/.claude/skills/<name>` breaks in any other location, and silently runs a stale copy left there.
+  A bundled sibling is `"${CLAUDE_SKILL_DIR}/../<sibling>"` (say "when it is installed next to this
+  one"); another skill's docs are named by skill name. Put one line before the first command saying
+  that other agents read the variable as this SKILL.md's directory, worded so it still reads right
+  after substitution ("Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this
+  SKILL.md; …"). A sentence *about* the variable cannot name it in a SKILL.md body — Claude Code
+  substitutes it there too — so such rules live in a reference file like this one. Paths the skill *reads as input*
+  (a user's `~/.claude/skills` library being audited) stay as they are
 - **Links within your own project are allowed**: relative links to the README / docs / config
   templates in the same repo as the skill are context the skill needs to work, so they may go in
   the body

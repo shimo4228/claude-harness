@@ -1,0 +1,19 @@
+[project]
+name = "harness-sync"
+version = "0.1.0"
+description = "Pre-publish link checks for the harness-sync skill (stdlib only)"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

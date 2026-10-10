@@ -29,15 +29,22 @@ plugin packaging の先例は akc-cycle (rule + plugin、固定 allowlist sync s
 1. payload は herdr-delegate + spawn-session の 2 skills のみとする。sync は akc-cycle
    variant から rules/agents 収集ブロックを除いた固定 allowlist 方式の
    `scripts/sync-from-local.sh` を用いる。
+   > **注記（2026-10-10, commit「feat(skills): agent-send を新設し、spawn-session を起動と最初の指示の 1 回渡しに広げる」）**
+   > payload は spawn-session + agent-send の 2 skills（herdr-delegate は v2.0.0 で退役）。spawn.sh は兄弟の
+   > agent-send を呼ぶので一緒に publish する。根拠は herdr-toolkit の docs/plans/herdr-toolkit-2-1.html。
 2. `.claude-plugin/plugin.json` / `marketplace.json` (self-owned marketplace) は
    repo root 資産とし、sync 対象から外す。version は plugin.json を手動 bump する。
 3. 外部 origin の herdr 本体スキルは同梱しない。README で「Herdr 側の integration から
    入る」と案内する。
+   > **注記（2026-10-10, 同 commit）** 案内は「`herdr --skill` で出力される」に改めた。brew パッケージに
+   > skill のファイルは無く、symlink にできない。コピーのずれは `agent-send preflight` が警告する。
 4. 委譲ゲート rule (`HERDR_ENV=1` + 明示指示) は plugin payload に入らないため、README
    で copy-install 案内を行い、スキル本文内のゲート記述で代替する。
 5. 正本側を修正する。`spawn-session` の SKILL.md が持つ spawn.sh 実行手順を、絶対パス
    固定から「本 SKILL.md と同じディレクトリ」参照に変更する。plugin install 先ではパスが
    変わるため。
+   > **注記（2026-10-10, 同 commit）** 参照は `${CLAUDE_SKILL_DIR}/spawn.sh` に改めた。直置きと plugin の
+   > 両方で SKILL.md のディレクトリに置換される唯一の変数で、Claude に path を推測させない。
 
 ## Alternatives Considered
 

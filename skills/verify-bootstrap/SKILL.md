@@ -183,7 +183,7 @@ a content hash. A file that merely exists — for example in an external repo th
 In the author's harness, a pre-commit hook (`verify-precommit.sh`) enforces this with
 `python3 ~/.claude/scripts/hooks/verify_allow.py approve <repo>`, and passes PASS-time output to the model as advisory.
 
-Because approval is bound to the content hash, after editing `verify.sh` read the new text before approving it again. This is the trust boundary for repo-local code that runs without a permission prompt.
+Because approval is bound to the content hash, a changed `verify.sh` needs approval again. In the author's harness, show the human `verify_allow.py diff <repo>` (the change since the approved version), then run `approve` through Bash; a hook asks the human to pass it at a permission prompt that carries the same diff. This is the trust boundary for repo-local code that runs without a permission prompt.
 
 **Run the generated `verify.sh` once on the spot to confirm it works.** Then
 **inject a violation temporarily and prove each category fires** (broken formatting, an unused import,

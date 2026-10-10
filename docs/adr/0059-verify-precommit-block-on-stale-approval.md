@@ -43,6 +43,10 @@ stderr に再承認の案内が出続けたまま誰も行動せず、その間�
    `verify_allow.py approve` する」「緊急時は `VERIFY_BYPASS=1`」を明記する。JSON は
    FAIL 経路と同じく python3 の json.dumps で全体を組み立てる（path 中の引用符での
    fail-open 防止、2026-07-31 code-reviewer MEDIUM と同根）
+   > **注記（2026-10-09, ADR-0093 / ADR-0094）**: 71 の block は残す。修復は、Claude が verify.sh の diff を見せて `approve` を
+   > Bash で実行し、人間が許可の確認画面で通す（validate-bash.sh が ask を返す、ADR-0093）。「緊急時は `VERIFY_BYPASS=1`」は
+   > バイパスの廃止で外した（ADR-0094）。
+
 3. 回帰テスト 4 本を `tests/verify-precommit.bats` に追加（71 が block する / 案内文に
    approve が載る / ゲートは実行されない / 再承認で unblock されゲートが走る）
 
@@ -80,6 +84,9 @@ stderr に再承認の案内が出続けたまま誰も行動せず、その間�
 
 却下: 承認機構の意味の破壊。agent が verify.sh を書き換えて自動承認できるなら、hash pin は
 「人間が読んだ版だけ走る」という信頼境界でなくなる。
+
+> **注記（2026-10-09, ADR-0093）**: この案を手元の編集に限って試したが、作業ツリーと HEAD の差では merge の途中などで
+> 外から入った版を取り違えるため取り下げた。却下はそのまま立つ。
 
 ## Consequences
 

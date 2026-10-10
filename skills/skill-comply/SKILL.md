@@ -24,28 +24,31 @@ check is skill `skill-health`, and a with/without ablation of a skill's effect i
 
 - **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first
 - **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, debugging.md
-- **Agent definitions** (`agents/*.md`): Whether an agent gets invoked when expected (internal workflow verification is not measured)
+- **Agent definitions** (`agents/*.md`): accepted as a target, but invocation is **not observable** today — every child
+  runs with `Agent` denied (`scripts/child_settings.py` `DENIED_TOOLS`), so a step that expects an agent call cannot be seen
 
 ## Usage
 
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
 ```bash
 # Full run
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run ~/.claude/rules/common/testing.md
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run ~/.claude/rules/common/testing.md
 
-# Dry run (no cost, spec + scenarios only)
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
+# Dry run (spec + scenarios only: the two generation `claude -p` calls run, no agent runs)
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
 
 # Custom models
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
 
 # Back to serial (when you hit rate limits)
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --concurrency 1 <path>
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --concurrency 1 <path>
 
 # Only for specs that need Bash (off by default — read "Trust boundary" below first)
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --allow-bash <path>
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --allow-bash <path>
 
 # Reuse a saved spec to compare across runs (skips LLM regeneration)
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run --spec results/<skill-name>.spec.yaml <path>
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --spec results/<skill-name>.spec.yaml <path>
 ```
 
 **Pinning the spec and comparing across runs**: the spec is the "exam paper". Each LLM
@@ -72,10 +75,10 @@ the report is always assembled in supportive → neutral → competing order.
 
 ```bash
 # Progress is visible. Only stdout goes into tail; stderr reaches the terminal directly
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run <path> | tail -40
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run <path> | tail -40
 
 # Also keep progress in the log
-uv run --frozen --project ~/.claude/skills/skill-comply python -m scripts.run <path> 2>&1 | tee run.log
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run <path> 2>&1 | tee run.log
 ```
 
 **With `2>&1 | tail -40` you see nothing until the run ends** — `tail` without `-f` prints only at end of

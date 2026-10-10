@@ -120,7 +120,9 @@ candidate, one decision); skipped candidates go to the ledger with `status: skip
 **Never modify rules automatically. Always require user approval.** This is the one
 hard gate — rules load every session, so a bad rule has outsized blast radius.
 
-Then update the ledger `~/.claude/skills/rules-distill/results.json` inline (Read → merge → Write):
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
+Then update the ledger `${CLAUDE_SKILL_DIR}/results.json` inline (Read → merge → Write):
 
 ```json
 {

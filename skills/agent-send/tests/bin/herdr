@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# 偽の herdr。状態は $FAKE_STATE のファイルで決め、呼び出しを calls.log に残す。
+#   status        agent_status（既定 idle）。status_seq があればそちらを 1 つずつ消費する
+#   kind / sid    agent 種別（既定 claude）と agent_session の値
+#   seq           state_change_seq（既定 1）
+#   prompt_reply  ok | stalled | timeout | agent_blocked | agent_not_found（既定 ok）
+#   status_after / seq_after / claude_agents_after   prompt のあとに書き換える値
+#   wait_rc       agent wait の終了コード（既定 0）
+#   screen        agent read の出力
+#   status.json   status --json の出力（既定は互換・最新）
+#   agents.json / workspaces.json / tabs.json / panes.json   list 系の出力
+#   skill         --skill の出力
+S="${FAKE_STATE:?FAKE_STATE is not set}"
+printf '%s\n' "$*" >> "$S/calls.log"
+
+val() { if [[ -f "$S/$1" ]]; then cat "$S/$1"; else printf '%s' "$2"; fi; }
+
+next_status() {
+  if [[ -s "$S/status_seq" ]]; then
+    local first rest
+    first=$(head -1 "$S/status_seq")
+    rest=$(tail -n +2 "$S/status_seq")
+    printf '%s\n' "$rest" | sed '/^$/d' > "$S/status_seq"
+    printf '%s' "$first" > "$S/status"
+  fi
+  val status idle
+}
+
+err() { printf '{"error":{"code":"%s","message":"fake"},"id":"cli:%s"}\n' "$1" "$2" >&2; exit 1; }
+
+case "$1 ${2:-}" in
+  "status --json")
+    val status.json '{"client":{"version":"0.9.3"},"server":{"running":true,"version":"0.9.3","compatible":true,"endpoint_compatible":true},"update":{"restart_needed":false,"server_binary_stale":false}}'
+    ;;
+  "--skill "*) printf '%s\n' "$(val skill '')" ;;
+  "agent get")
+    [[ -f "$S/gone" ]] && err agent_not_found agent:get
+    st=$(next_status)
+    jq -n --arg st "$st" --arg kind "$(val kind claude)" --arg sid "$(val sid sid-1)" \
+      --arg pane "$3" --argjson seq "$(val seq 1)" \
+      '{result:{agent:{agent:$kind,agent_status:$st,pane_id:$pane,state_change_seq:$seq,
+        agent_session:{agent:$kind,kind:"id",value:$sid}}}}'
+    ;;
+  "agent list")
+    val agents.json '{"result":{"agents":[{"name":"worker","pane_id":"w1:p1","agent":"claude"}]}}'
+    ;;
+  "agent prompt")
+    reply=$(val prompt_reply ok)
+    # prompt_reply_seq: 1 回目以降の応答を 1 行ずつ消費する（再送の試験用）
+    if [[ -s "$S/prompt_reply_seq" ]]; then
+      reply=$(head -1 "$S/prompt_reply_seq"); tail -n +2 "$S/prompt_reply_seq" > "$S/prs.tmp"; mv "$S/prs.tmp" "$S/prompt_reply_seq"
+    fi
+    [[ -f "$S/status_after" ]] && cp "$S/status_after" "$S/status"
+    [[ -f "$S/seq_after" ]] && cp "$S/seq_after" "$S/seq"
+    [[ -f "$S/claude_agents_after" ]] && cp "$S/claude_agents_after" "$S/claude_agents.json"
+    # transcript_append: 送信で transcript に追記する行。追記先は transcript_file
+    [[ -f "$S/transcript_append" ]] && cat "$S/transcript_append" >> "$(cat "$S/transcript_file")"
+    case "$reply" in
+      ok) echo '{"id":"cli:agent:prompt","result":{"type":"agent_prompted"}}' ;;
+      stalled) err agent_prompt_stalled agent:prompt ;;
+      *) err "$reply" agent:prompt ;;
+    esac
+    ;;
+  "agent wait") exit "$(val wait_rc 0)" ;;
+  "agent read") val screen '' ;;
+  "agent send-keys") echo '{"result":{"type":"ok"}}' ;;
+  "workspace create") echo '{"result":{"workspace":{"workspace_id":"w9","tab":{"tab_id":"w9:t1","pane":{"pane_id":"w9:p1"}}}}}' ;;
+  "tab create") echo '{"result":{"tab":{"tab_id":"w9:t2","pane":{"pane_id":"w9:p2"}}}}' ;;
+  "tab rename") echo '{"result":{"type":"ok"}}' ;;
+  "agent start")   # start_reply: ok（既定）| エラーコード
+    reply=$(val start_reply ok)
+    [[ "$reply" == ok ]] || err "$reply" agent:start
+    ;;
+  "pane read") val screen '' ;;
+  "workspace list") val workspaces.json '{"result":{"workspaces":[]}}' ;;
+  "tab list") val tabs.json '{"result":{"tabs":[]}}' ;;
+  "pane list") val panes.json '{"result":{"panes":[]}}' ;;
+  *) echo "fake herdr: unhandled: $*" >&2; exit 2 ;;
+esac

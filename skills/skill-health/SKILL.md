@@ -65,8 +65,10 @@ reference from each SKILL.md (`python -m scripts.X`, `bash …/x.sh`,
 `~/.claude/agents/X.md`, and Markdown links to local files / sibling skills) and
 reports those whose target does not exist:
 
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
 ```bash
-uv run --frozen --project ~/.claude/skills/skill-health \
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" \
   python -m scripts.scan_refs ~/.claude/skills --json
 ```
 
@@ -91,8 +93,8 @@ Present each dangling reference with: skill, ref type, the raw reference, the
 resolved path, and the line. Do not auto-fix — a dangling reference may mean the
 artifact was deleted (remove the reference) **or** renamed (repoint it) **or**,
 for a `../`-escaping link, that the skill was authored in a repo and vendored
-into the harness (a portability issue per
-`~/.claude/skills/skill-creator/references/portability.md`). The
+into the harness (a portability issue per the `skill-creator` skill's
+`references/portability.md`). The
 repair is a human judgment; surface the fact, let the user decide.
 
 ## Phase 3 — Federate the other three dimensions (read, don't re-implement)
@@ -102,10 +104,11 @@ health view — **labelling each value's source**:
 
 - **Utility** — do not read `~/.claude/metrics/skill-usage.jsonl` by hand. The corrections
   that decide whether its numbers mean anything
-  live in `usage_stats`; run the script once per window:
+  live in `usage_stats` (in the sibling `skill-stocktake` skill, when it is installed
+  next to this one); run the script once per window:
 
   ```bash
-  uv run --frozen --project ~/.claude/skills/skill-stocktake python -m scripts.usage_stats --days 90
+  uv run --frozen --project "${CLAUDE_SKILL_DIR}/../skill-stocktake" python -m scripts.usage_stats --days 90
   ```
 
   Where a skill is rarely or never triggered, judge **[LLM]** whether the cause is
@@ -153,7 +156,7 @@ Validation`, where Compatibility shows the dangling-reference count (the only
 hard number), the others show the federated signal or `unmeasured`. List each
 dangling reference with its repair options (remove / repoint / portability).
 
-Persist the scan to `~/.claude/skills/skill-health/results.json` (the `--json`
+Persist the scan to `${CLAUDE_SKILL_DIR}/results.json` (the `--json`
 output) with a real UTC `scanned_at` (`date -u +%Y-%m-%dT%H:%M:%SZ`), so the
 next run can diff. Update it inline with Read/Write.
 

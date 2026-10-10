@@ -162,7 +162,7 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   local reason
   reason=$(printf '%s' "$output" | jq -r '.reason')
   [[ "$reason" == *"revoke"* ]] || return 1
-  [[ "$reason" == *"VERIFY_BYPASS=1"* ]]
+  [[ "$reason" != *"VERIFY_BYPASS"* ]]
 }
 
 # exit 72 (gate unreadable, or a symlink to a file outside the repo) is the same
@@ -199,12 +199,12 @@ approve() { python3 "$ALLOW" approve "$REPO" > /dev/null; }
   [[ "$(hook_stderr)" == *"verify-precommit"* ]]
 }
 
-@test "a deleted gate in an approved repo passes with the bypass prefix" {
+@test "a deleted gate in an approved repo still blocks with the old bypass prefix" {
   write_gate 0
   approve
   rm "$REPO/.claude/verify.sh"
   run_hook "VERIFY_BYPASS=1 git -C $REPO commit -m 'chore: x'"
-  [ -z "$output" ]
+  blocked
 }
 
 @test "a repo with no gate is still allowed when the ledger lists other repos" {
@@ -514,6 +514,17 @@ add_worktree() { # add_worktree <path>
   [ "$(printf '%s' "$output" | jq -r 'has("decision")')" = "false" ]
 }
 
+@test "the stale-approval block tells Claude to show the diff and run approve" {
+  write_gate 0
+  approve
+  write_gate 1
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  local reason
+  reason=$(printf '%s' "$output" | jq -r '.reason')
+  [[ "$reason" == *"verify_allow.py diff"* ]] || return 1
+  [[ "$reason" == *"approve"* ]]
+}
+
 @test "a gate symlinked outside the repo is refused" {
   printf '#!/bin/sh\nprintf x > "%s/gate-ran"\nexit 0\n' "$TMP" > "$TMP/outside.sh"
   chmod +x "$TMP/outside.sh"
@@ -697,13 +708,35 @@ add_worktree() { # add_worktree <path>
   [ "$(cat "$TMP/gate-root")" = "$(cd "$REPO" && pwd -P)" ]
 }
 
-# --- bypass -------------------------------------------------------------------
+# --- no bypass (ADR-0094) -------------------------------------------------------
+# VERIFY_BYPASS=1 was removed: a FAIL is fixed at its cause, and a false positive is
+# fixed in the gate itself (a local edit re-approves on its own, ADR-0093). The hook
+# only fires on Claude's Bash calls, so the author's own terminal is not affected.
 
-@test "the bypass prefix skips the gate" {
+@test "the old bypass prefix no longer skips the gate" {
   write_gate 1
   approve
   run_hook "VERIFY_BYPASS=1 git -C $REPO commit -m 'chore: x'"
-  [ -z "$output" ]
+  gate_ran || return 1
+  blocked
+}
+
+@test "the FAIL reason points at fixing the cause or the gate, not at a bypass" {
+  write_gate 1
+  approve
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  local reason
+  reason=$(printf '%s' "$output" | jq -r '.reason')
+  [[ "$reason" == *"verify.sh"* ]] || return 1
+  [[ "$reason" != *"BYPASS"* ]]
+}
+
+@test "the stale-approval reason does not offer a bypass" {
+  write_gate 0
+  approve
+  write_gate 1
+  run_hook "git -C $REPO commit -m 'chore: x'"
+  [[ "$(printf '%s' "$output" | jq -r '.reason')" != *"BYPASS"* ]]
 }
 
 @test "the bypass token inside a commit message does not disable the gate" {

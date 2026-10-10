@@ -96,13 +96,15 @@ Two pitfalls in judgment:
   working even after deletion, because the suppression framing remains. For findings that must be rewritten in the opposite direction, write
   "Inversion: old direction → new direction" in the ledger
 
+> Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
 **Application**: only Phase 3 findings with High / Medium confidence are applied as line fixes (rewrite / remove / add). When the
 author's request includes application ("fix it", "finish it"), apply directly; when it does not, show a diff per group and
 apply after approval. Lines in the resident layer (rules / CLAUDE.md / output style) are shown one diff at a time in either case
 (the same discipline as rules-stocktake). When you fix a rule, update its `rationale:` / `review-when:` too (ADR-0021).
 Writing style follows skill `skill-creator` §3 (version-drift markers are blocked by `scripts/hooks/harness_lint.py`). Low and `flag`
-findings go only in the ledger. Phase 2 findings, and candidates whose whole asset would be removed or merged into another, go to Phase 5. After applying, pass `harness_lint.py` and
-`uv run --frozen --directory ~/.claude/skills/skill-health python -m scripts.scan_refs ~/.claude/skills --json`
+findings go only in the ledger. Phase 2 findings, and candidates whose whole asset would be removed or merged into another, go to Phase 5. After applying, pass `harness_lint.py` and, when the `skill-health` skill is installed next to this one,
+`uv run --frozen --directory "${CLAUDE_SKILL_DIR}/../skill-health" python -m scripts.scan_refs ~/.claude/skills --json`
 (dangling 0).
 
 ## Phase 5 — Delegation and recording

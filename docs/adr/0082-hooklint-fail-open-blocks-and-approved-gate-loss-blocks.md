@@ -87,6 +87,9 @@ accepted — [ADR-0063](./0063-rfc-0020-rust-pilot-hooklint.md) Decision 1 の�
    コマンド文字列**全体**の先頭に並ぶ env 代入の中にあるときだけ効く（bash の `=~` で判定する。grep の
    行単位の `^` は使わない）。
 
+   > **注記（2026-10-09, ADR-0094）**: `VERIFY_BYPASS` は廃止した。残る 2 つ（`SECRET_SCAN_BYPASS` / `HARNESS_LINT_BYPASS`）の
+   > 判定はこのまま。
+
 ## Review-when
 
 - `hooks/*.sh` の `# hooklint: fail-open` waiver が、理由の使い回しや中身の無い理由で増える（本 ADR 時点で

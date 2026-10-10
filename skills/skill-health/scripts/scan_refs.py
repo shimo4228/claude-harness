@@ -48,6 +48,7 @@ _AGENT_RE = re.compile(r"~/\.claude/agents/([\w-]+)\.md")
 # reference is reported dangling against the calling skill's own scripts/ — a false
 # positive on a real, resolvable artifact.
 _UV_PROJECT_RE = re.compile(r"--project\s+(\S+)")
+_UV_DIRECTORY_RE = re.compile(r"--directory\s+(\S+)")
 
 # Markdown link parsing, mirrored from readme-writer/scripts/readme_evidence.py (ex readme_lint.py) so
 # the harness has one consistent treatment of fences and local links.
@@ -120,10 +121,11 @@ _KNOWN_NON_FILE_SKILLS = frozenset(
 )
 
 _DELEGATION_NOTE = (
-    "Structural 'missing artifacts' check only — the semantic debt patterns "
-    "(over-specialized, trigger↔body drift), the risk dimension, and the "
-    "validation dimension are delegated to skill-stocktake / the claude-security plugin / "
-    "skill-comply, never reduced to a number."
+    "Structural 'missing artifacts' check only. Over-specialized scope and "
+    "trigger↔body drift are judged by the skill's own procedure (LLM), not by "
+    "this scanner; the risk dimension is delegated to the claude-security plugin "
+    "and the validation dimension to skill-comply / skill-creator. "
+    "Nothing here is reduced to a number."
 )
 
 
@@ -211,12 +213,25 @@ def _content_lines(markdown: str) -> list[tuple[int, str]]:
     return out
 
 
+def _expand_skill_vars(line: str, skill_dir: Path) -> str:
+    """Resolve the path variables Claude Code substitutes in skill Markdown.
+
+    `${CLAUDE_SKILL_DIR}` is the directory holding the SKILL.md (a plugin skill's
+    own subdirectory, not the plugin root), so it is decidable from the text and
+    must not fall into the "shell variable → skip" branch below.
+    """
+    for var in ("${CLAUDE_SKILL_DIR}", "$CLAUDE_SKILL_DIR"):
+        line = line.replace(var, str(skill_dir))
+    return line.replace("${CLAUDE_PLUGIN_ROOT}/skills/", f"{skill_dir.parent}/")
+
+
 def extract_run_modules(markdown: str, skill: str, skill_dir: Path) -> list[Reference]:
     """Find `python -m scripts.X` references → `<skill_dir>/scripts/X.py`.
 
-    Lines carrying a `--directory` override are skipped: the override changes the
-    working directory, so `scripts.X` no longer resolves to the skill dir and a
-    naive check would be a false positive.
+    A `--directory D` override changes the working directory, so `scripts.X`
+    resolves under D. A relative D cannot be placed from the text and the line is
+    skipped; an absolute one (`${CLAUDE_SKILL_DIR}` after expansion, or `~/...`)
+    names a skill and is resolved the same way as `--project` below.
 
     A `--project <dir>` on the line names a *sibling skill* to resolve against
     instead (uv's project root). Its last path segment is used against the skills
@@ -226,12 +241,14 @@ def extract_run_modules(markdown: str, skill: str, skill_dir: Path) -> list[Refe
     """
     refs: list[Reference] = []
     for line_no, line in enumerate(markdown.splitlines(), start=1):
-        if "--directory" in line:
-            continue
+        line = _expand_skill_vars(line, skill_dir)
         base = skill_dir
-        project = _UV_PROJECT_RE.search(line)
+        directory = _UV_DIRECTORY_RE.search(line)
+        if directory and not directory.group(1).strip("\"'").startswith(("/", "~")):
+            continue
+        project = directory or _UV_PROJECT_RE.search(line)
         if project:
-            raw_project = project.group(1)
+            raw_project = project.group(1).strip("\"'")
             sibling = Path(raw_project.rstrip("/")).name
             # A shell variable cannot be resolved from the text, so the reference is
             # genuinely undecidable and is skipped. A *named* sibling is not: resolving
@@ -258,8 +275,8 @@ def extract_bash_scripts(markdown: str, skill: str, skill_dir: Path) -> list[Ref
     """Find `bash <path>.sh` references and resolve the script path."""
     refs: list[Reference] = []
     for line_no, line in enumerate(markdown.splitlines(), start=1):
-        for m in _BASH_RE.finditer(line):
-            raw = m.group(1)
+        for m in _BASH_RE.finditer(_expand_skill_vars(line, skill_dir)):
+            raw = m.group(1).strip("\"'")
             if _has_template_placeholder(raw):
                 continue
             if raw.startswith("~"):

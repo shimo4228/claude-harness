@@ -77,6 +77,10 @@ outward-facing, confirm first" / "Stop only for destructive actions or genuine s
 
 4. **人間に残る取り込み**: 無人時に rules / hooks / permissions / scheduled task / `.claude/verify.sh`
    を含む diff。`verify_allow.py approve` は人間のまま。
+
+   > **注記（2026-10-09, ADR-0093）**: 人間の操作の形は、コマンドの手打ちから許可の確認画面に替わった。Claude が diff を
+   > 見せて `approve` を Bash で実行し、validate-bash.sh が ask を返して人間が通す。承認するのが人間であることは変わらない。
+
 5. build の Report に `Risk: <とったリスク / 戻し方>` 1 行を足す（packet-template）。
 
 ## Review-when

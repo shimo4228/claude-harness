@@ -72,9 +72,11 @@ description: "Description in 130 characters or less"
    from Step 4 is still in the conversation, not on disk, so **write it to a file
    in this session's scratchpad directory with the Write tool** and pass that path:
 
+   > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
+
    ```bash
-   uv run --frozen --project ~/.claude/skills/learn-eval \
-          --directory ~/.claude/skills/learn-eval \
+   uv run --frozen --project "${CLAUDE_SKILL_DIR}" \
+          --directory "${CLAUDE_SKILL_DIR}" \
           python scripts/overlap_candidates.py \
           --draft /path/to/scratch/learn-eval-draft.md --project "$PWD"
    ```
@@ -234,6 +236,7 @@ description: "Description in 130 characters or less"
 - [x] Candidates judged one by one: (verdict per candidate, quoting shared terms)
 - [x] Append-to-existing considered: new file appropriate (or should append to [X])
 - [x] Reusability: confirmed (or one-off → Drop)
+- [x] Grounding: (the tool output, error or user correction it rests on — a No leans Drop)
 
 ### Draft-specific questions
 - [Yes] Q1: ... — one-line evidence

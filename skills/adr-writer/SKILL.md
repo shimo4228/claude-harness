@@ -138,7 +138,7 @@ exist and say what is cited, where surviving scope is placed, provenance of coin
 judging full vs partial supersede, references to gitignored paths, sources and denominators of numbers,
 what is held fixed in count conditions. This is write-time prevention; semantic review is Step 4.6.
 
-**Assemble and approve the decision packet before writing.** Settle the actual content here: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. Confirm this packet with the user (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4 — Step 4 expresses the packet and adds nothing, so a fuzzy decision is resolved here.
+**Assemble and approve the decision packet before writing.** Settle the actual content here: the real Context, the decision as decided, the Review-when triggers, why each Alternative was rejected (or under what condition it is revisited), which Consequences genuinely follow. When your harness's boundary rule hands ADRs to the user, confirm this packet with them (especially the Review-when, the rejection reasons and both sides of Consequences) *before* Step 4; otherwise write it and show the packet in the report (the author's harness writes ADRs without confirmation — `rules/common/boundary.md`). Step 4 expresses the packet and adds nothing, so a fuzzy decision is resolved here.
 
 ### Step 4: Write the file (main loop)
 
@@ -247,7 +247,7 @@ Index:   updated (+1 row)
 ## Boundaries
 
 - The files this skill writes are the new ADR, the index, and the old ADR's Status or Note from the Edge cases table.
-- Leave the commit to the user — they own the commit step.
+- The commit follows the repo's commit rule (the author's harness: `rules/common/boundary.md`).
 
 ## Reference Files
 

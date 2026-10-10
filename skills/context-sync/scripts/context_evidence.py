@@ -15,6 +15,9 @@ Contract, identical to `readme_evidence.py` / `adr_lint.py`:
               Gate scope is deliberately narrow (see GATE_SCOPE below); the
               boundary was measured against real repos before being chosen so
               the gate is not red on day one.
+    --gate-paths / --gate-readme
+              opt-in additions to the gate: unresolved context-file paths, and
+              broken relative links in README*.md / CHANGELOG.md.
 
 Two deliberate non-capabilities:
 
@@ -75,6 +78,7 @@ check_graph_jsonld = _c.check_graph_jsonld
 check_llms_txt = _c.check_llms_txt
 check_numeric_claims = _c.check_numeric_claims
 check_package_metadata = _c.check_package_metadata
+check_readme_links = _c.check_readme_links
 check_stale_docs = _c.check_stale_docs
 check_todo_markers = _c.check_todo_markers
 check_tree_blocks = _c.check_tree_blocks
@@ -134,6 +138,7 @@ def collect_evidence(
         "package_metadata": check_package_metadata(cx, docs, context_files),
         "graph_jsonld": check_graph_jsonld(cx),
         "llms_txt": check_llms_txt(cx),
+        "readme_links": check_readme_links(cx),
         "url_liveness": check_url_liveness(cx),
     }
     return {
@@ -170,6 +175,10 @@ def collect_evidence(
 # advisory by construction: an input to a judgment, not a violation.
 GATE_SCOPE = ("adr_index", "graph_jsonld", "llms_txt")
 GATE_SCOPE_OPT_IN = ("context_paths",)
+# README links are opt-in for the same reason context paths are: a repo that
+# documents retired paths in its README would be red on day one. harness-sync's
+# pre-publish check (4b) opts in, because a public README is what visitors click.
+GATE_SCOPE_README = ("readme_links",)
 _GATE_RAN_STATUSES = {"checked", "present", "absent", "listed", "single_file", "no_manifest"}
 
 # `gate_violations` is one aggregator over one helper per gated check. It was a
@@ -252,12 +261,33 @@ def _gate_llms_txt(checks: dict) -> list[str]:
     return out
 
 
-def gate_violations(evidence: dict, gate_paths: bool = False) -> list[str]:
+def _gate_readme_links(checks: dict) -> list[str]:
+    links = checks["readme_links"]
+    out = [f"{u['file']}: could not be read: {u['reason']}" for u in links["unreadable"]]
+    out += [
+        f"{b['file']}:{b['line']}: link does not resolve: {b['token']}"
+        for b in links["broken_links"]
+    ]
+    return out
+
+
+def _gate_scope(gate_paths: bool, gate_readme: bool) -> tuple[str, ...]:
+    return (
+        GATE_SCOPE
+        + (GATE_SCOPE_OPT_IN if gate_paths else ())
+        + (GATE_SCOPE_README if gate_readme else ())
+    )
+
+
+def gate_violations(
+    evidence: dict, gate_paths: bool = False, gate_readme: bool = False
+) -> list[str]:
     checks = evidence["checks"]
-    scope = GATE_SCOPE + (GATE_SCOPE_OPT_IN if gate_paths else ())
-    v = _gate_unran(checks, scope)
+    v = _gate_unran(checks, _gate_scope(gate_paths, gate_readme))
     if gate_paths:
         v += _gate_context_paths(checks)
+    if gate_readme:
+        v += _gate_readme_links(checks)
     v += _gate_adr_index(checks)
     v += _gate_graph_jsonld(checks)
     v += _gate_llms_txt(checks)
@@ -275,6 +305,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="also gate on unresolved context-file paths (opt-in; see GATE_SCOPE)",
     )
+    parser.add_argument(
+        "--gate-readme",
+        action="store_true",
+        help="also gate on broken relative links in README*.md / CHANGELOG.md (opt-in)",
+    )
     args = parser.parse_args(argv)
 
     root = Path(args.root).expanduser()
@@ -288,13 +323,13 @@ def main(argv: list[str] | None = None) -> int:
         print()
         return 0
 
-    violations = gate_violations(evidence, gate_paths=args.gate_paths)
+    violations = gate_violations(evidence, gate_paths=args.gate_paths, gate_readme=args.gate_readme)
     if violations:
         for line in violations:
             print(f"[context-evidence] {line}")
         print(f"[context-evidence] {len(violations)} violation(s)", file=sys.stderr)
         return 3
-    scope = GATE_SCOPE + (GATE_SCOPE_OPT_IN if args.gate_paths else ())
+    scope = _gate_scope(args.gate_paths, args.gate_readme)
     # Exit 0 says how many checks ran, so a clean gate is not an empty void.
     print(f"[context-evidence] {len(scope)} gated check(s) ran, 0 violations")
     return 0

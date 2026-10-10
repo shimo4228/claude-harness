@@ -6,12 +6,15 @@
 **人間に渡す**（このハーネスで不可逆・対外に当たるもの。substrate の「confirm first」の対象）:
 公開（投稿・第三者 repo への PR・release / DOI・評判に関わる公開物の更新）/ 課金 /
 Slack digest 以外の外部送信 / 台帳の起票・drop（判断役は提案まで）/ permissions・hooks・scheduled task・
-`.claude/verify.sh`（承認 hash）・rules・ADR・skills の無人変更（その diff を含む取り込みも）/
+`.claude/verify.sh`（承認 hash）・rules・skills の無人変更（その diff を含む取り込みも）/
 自分が spawn していない pane・session / Herdr 委譲（`HERDR_ENV=1` と明示指示の両方。例外は
 create-only の skill: `spawn-session` — 新規 workspace/tab と自分が作った pane にしか触れないので
-server 稼働だけを前提に実行してよい。明示指示は要る — 著者が起動を含む cycle（task-triage）を呼ぶことが明示指示に当たり、無人の tick は当たらない）。
+server 稼働だけを前提に実行してよい。spawn-session で自分（この session かその script）が起こした pane への
+skill: `agent-send` も同じ扱いで、`HERDR_ENV=1` は要らない。明示指示は要る — 著者が起動を含む cycle
+（task-triage）を呼ぶことが明示指示に当たる。launchd の triage tick が自分の triage session へ送るのは、
+著者が tick を設定したことが明示指示に当たる。それ以外の無人の送信は当たらない）。
 
-**とる**（確認を待たない）: 検収を通した task branch の main への ff-only 取り込みと push
+**とる**（確認を待たない）: ADR の起票・改訂・旧 ADR への注記と commit（記録する決定そのものが上の列挙に当たるときは、その操作の側で止まる）/ 検収を通した task branch の main への ff-only 取り込みと push
 （force は hook が止める）/ worktree と task branch の中の破壊・方針転換・粗い代替案 1 本・
 赤テストのまま次の仮説へ（記録する。commit には verify を通す）/ scratchpad・下書き・`.notes/`
 `.growth/` への記録・task branch への commit / 作業中に見つけた依頼範囲外の軽微な修正 —

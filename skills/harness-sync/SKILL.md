@@ -62,8 +62,9 @@ script は commit しない。LLM 側で diff と secret scan の結果を確認
 
 構成が変わったら、公開 repo の以下を確認する:
 
-- `README.md` / `README.ja.md` の skill/agent/rule テーブルは **GENERATED マーカー間で
-  apply 時に script 自動再生成**される（`skills-table` / `agents-table` / `rules-table`。
+- `docs/components.md` / `docs/components.ja.md` の skill/agent/rule テーブルは **GENERATED マーカー間で
+  apply 時に script 自動再生成**される（README は表を持たず、このページを指すだけ。表が README の約 16k 字を
+  占め、LLM の取得が初回で切れたため — ADR-0091）（`skills-table` / `agents-table` / `rules-table`。
   membership は origin filter が正、Purpose 列は既存キュレーションを保持し新規のみ seed）。
   手で直すのは **Purpose 文面と周辺 prose のみ**。**集約カウント（"N skills" 等）はどこにも
   書かない**（No-volatile-state。churning count は焼き込むと drift する）
@@ -72,35 +73,39 @@ script は commit しない。LLM 側で diff と secret scan の結果を確認
 - `docs/hooks.md` — **script 生成ではない手書き doc**。hook の発火条件・bypass 変数・
   `settings.json` 断片・bats 被覆を持つので、公開 hook を足す / 挙動を変えたら手で追随する
 - `llms.txt` / `llms-full.txt` — **退役した component の行を消すのは機械検査で確認する**
-  （下の「AI 向け導線のリンク切れ」）。文面の質は `llms-txt-writer` に defer
-- 集約 repo README の「Upstream components」節も **script 生成**（marker 間を apply 時に
+  （下の 4b）。文面の質は `llms-txt-writer` に defer
+- 集約 repo の `docs/components.md` の「Upstream components」節も **script 生成**（marker 間を apply 時に
   自動再生成、外部 origin の名前のみ・ECC トップリンクのみ）— 手で編集しない
 
-### 4b. AI 向け導線のリンク切れ検査（機械、blocking）
+### 4b. 公開前リンク検査（機械、blocking、全モード）
 
-apply の後・commit の**前**に、公開 repo に対して必ず走らせる:
+apply の後・commit の**前**に、対象の公開 repo ごとに走らせる。集約・skill repo・rule repo・
+plugin variant のどのモードでも同じ。どれかが非 0 なら直すまで commit しない:
 
 ```bash
-python3 ~/.claude/skills/context-sync/scripts/context_evidence.py \
-  --root <公開repo> --gate      # exit 3 = 違反あり。直すまで commit しない
+python3 ~/.claude/skills/context-sync/scripts/context_evidence.py --root <公開repo> --gate --gate-readme
+python3 ~/.claude/skills/harness-sync/scripts/public_links.py --root <公開repo> --owner shimo4228 --clones ~/MyAI_Lab
+[ -f <公開repo>/.claude-plugin/marketplace.json ] && claude plugin validate <公開repo>
 ```
 
-exit 3 は**リンク切れ専用ではない** — gate scope は `adr_index` / `graph_jsonld` /
-`llms_txt` の 3 つ（集約 repo は `docs/adr/` を丸ごと持つので ADR index drift でも鳴る）。
-出力行がどの検査かを名指しするので、そこを読む。
+| 検査 | 見るもの |
+|---|---|
+| `context_evidence.py --gate` | `adr_index` / `graph_jsonld` / `llms_txt`（llms.txt と llms-full.txt の repo 内相対リンク）。集約 repo は `docs/adr/` を丸ごと持つので ADR index drift でも鳴る |
+| `--gate-readme` | README.md・README.*.md・CHANGELOG.md の repo 内相対リンク（suffix でなく root からの完全一致） |
+| `public_links.py` | root docs の `github.com/shimo4228/<repo>[/(blob\|tree)/<ref>/<path>]` と raw リンク: repo が public の現名か、path がその ref に在るか（clone が無い・古いときは `gh api`。確かめられなかった path も違反） |
+| `claude plugin validate` | marketplace manifest の形（`name`・`owner`・`plugins` 必須） |
 
-**この検査が要る理由は削除の非対称にある。** subtree の丸ごと置換は退役した skill を
-公開側から消すが、`llms.txt` / `llms-full.txt` は root files として不可侵で、手で保守する
-文書のまま残る。つまり skill を 1 つ退役させるたび、AI 向け導線だけが消えた path を
-指し続ける — 人間の README と違い、この故障は読んで気づく人がいない。
+exit 3 = 違反（2 = 実行不能）。出力行がどの検査かを名指しするので、そこを読む。
 
-**この step は暫定（interim）**。不変条件は「publish されない component を AI 向け doc が
-指さない」で、その roster を機械で知っているのは harness ではなく公開 repo の
-`scripts/sync-from-local.sh`（origin filter から README の表を GENERATED marker 間へ
-再生成し、secret / frontmatter / allowlist の 4 箇所で abort する）。**正しい置き場所は
-その abort 連鎖の 5 番目**か、より深くは llms.txt の component 行自体を GENERATED marker
-にすること — 後者は検出でなくクラスごと消える（RFC-0012）。**agent を経由しない
-sync はこの検査を通らない。**
+**この検査が要る理由は削除と変更の非対称にある。** subtree の丸ごと置換は退役した skill を
+公開側から消すが、README・llms.txt・CHANGELOG は root files として不可侵で、手で保守する
+文書のまま残る。repo 間リンクは相手の repo の変更で切れる。どちらも sync 自身は気づかない。
+
+**agent を経由しない sync はこの検査を通らない。** sync 自身が作る壊れ方（root files が
+payload に無い `skills/` パスを指す）は vendored の `scripts/sync-from-local.sh` が apply 前に
+abort する。repo 間リンクは相手側の変更でも切れるので、`public_links.py` を全公開 repo に
+ときどき走らせる（repo-asset-stocktake の棚卸しのついでなど）。凍結済みで sync が abort する
+repo はこの経路を通らないので、その棚卸しが唯一の検査になる。
 
 ### 5. コミット
 
@@ -130,10 +135,13 @@ repo 側で明示的に削除する。
 ## Skill repo sync モード
 
 単独 skill repo (1 repo = 1 skill) も同じ workflow (dry-run → scope 確認 → apply →
-docs 整合 → commit) で同期する。違いは script だけ:
+docs 整合 → 4b → commit) で同期する。違いは script だけ:
 
 - 対象 skill は **repo 自身の `skills/` 配下ディレクトリ名から導出**(これにより script は
   全 skill repo で byte-identical に vendor できる)
+- script の正本は `templates/skill-repo-sync-from-local.sh`（この skill の中）。直すときはそこを直し、
+  全 skill repo の `scripts/sync-from-local.sh` へ copy する。正本は apply 前に、root files が payload に
+  無い `skills/` パスを指していないかを検査して abort する（4b の「sync 自身が作る壊れ方」）
 - 置換対象は `skills/<name>/` のみ。agents/ rules/ は扱わない
 - root files (README / llms.txt / CHANGELOG / LICENSE) 不可侵、commit しない、は共通
 
@@ -167,7 +175,8 @@ plugin.json を repo 側で手動 bump する。plugin は rules を運べない
 仕様) ため、rule file は plugin payload 外の copy-install 経路のまま。
 
 `herdr-toolkit` は同型の **skills-only plugin variant**: 固定 allowlist は
-1 skill (spawn-session) のみで rule / agent 収集ブロックを持たない。
+2 skills (spawn-session, agent-send) で rule / agent 収集ブロックを持たない。spawn.sh は兄弟 skill の
+agent-send を呼ぶので、2 つは一緒に publish する。
 外部 origin の `herdr` skill 本体は Herdr 自身の integration が配るため対象外
 (ADR-0036)。
 
@@ -193,6 +202,13 @@ skill repo を GitHub 公開する際の規約（正本）:
 - **SkillsMP caveat**: `/skills add <owner/repo>` は `skills/` のみ install し `agents/`
   は入れない。agent 同梱 repo の README に必ず注記する（`cp agents/*.md
   ~/.claude/agents/` または `install.sh` を実行）。
+- **自分のファイルは skill ディレクトリの変数で指す**: `~/.claude/skills/<name>` を SKILL.md に書かない
+  （install 先が違うと壊れる）。変数名・兄弟と他 skill の書き方・その場で読み替えを書く 1 行は skill-creator の
+  `references/portability.md` が正本（SKILL.md 本文に変数名を書くと読み込み時に置換されるので、ここには書かない）。
+  dangling 検査は skill-health の `scan_refs.py` が変数を展開して行う。
+- **単独 skill repo は `.claude-plugin/` を持たない**: plugin の経路は plugin repo（akc-cycle など）に寄せる。
+  単独 repo にも置くと同じ skill を別の名前空間で二重に配り、version を保守するファイルも増える。
+  置くなら `claude plugin validate` が通ること（4b）
 - **公開用 packaging metadata は local 正本に持たせる**: `compatibility:` 等の公開向け
   frontmatter を repo 側で足すと、丸ごと置換のたびに消える（= 恒常的な偽 drift 源）。
   local SKILL.md の frontmatter に持たせる — Claude Code は未知キーを無視するので無害。
@@ -213,7 +229,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (固定 allowlist) + repo 所有 rule (自己完結版、sync 対象外) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、agents なし) | 対象 skills のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
-| `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (1 skill) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/spawn-session` |
+| `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/spawn-session`, `~/.claude/skills/agent-send` |
 | `~/MyAI_Lab/jev-skill-router` ([repo](https://github.com/shimo4228/jev-skill-router)) | plugin (hook + skill) | `tools/sync-from-local.sh` (plugin 版、固定 allowlist。`.claude-plugin/`・`hooks/`・README は repo root 資産) | `~/.claude/skills/jev-skill-router` |
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |

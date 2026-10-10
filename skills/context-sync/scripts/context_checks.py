@@ -12,10 +12,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import tomllib
 from pathlib import Path
 from types import ModuleType
+from urllib.parse import unquote
 
 if __package__:
     from . import context_parsing as _p
@@ -642,6 +644,58 @@ def check_graph_jsonld(cx: Corpus) -> dict:
 
 def _freshness_dates(text: str) -> list[str]:
     return _ISO_DATE_RE.findall(text)
+
+
+# README links are clicked by people, so every local target counts — images
+# (badges), HTML attributes (the LLM-read floor is a `<details>` block), and
+# extensionless files such as LICENSE, which `md_link_paths` leaves out.
+_README_LINK_RE = re.compile(r"\[[^\]]{0,200}\]\(\s*<?([^)\s>]+)|(?:href|src)=[\"']([^\"']+)[\"']")
+_INLINE_CODE_RE = re.compile(r"`[^`]*`")
+_NON_LOCAL_PREFIXES = ("#", "/", "~", "mailto:", "data:", "tel:")
+
+
+def _readme_link_tokens(text: str) -> list[Token]:
+    out: list[Token] = []
+    for lineno, line in _p._content_lines(text):
+        for m in _README_LINK_RE.finditer(_INLINE_CODE_RE.sub("", line)):
+            token = (m.group(1) or m.group(2)).split("#", 1)[0].split("?", 1)[0].strip()
+            if not token or "://" in token or token.startswith(_NON_LOCAL_PREFIXES):
+                continue
+            if any(ch in _p._METAVARIABLE_CHARS for ch in token) or _p._PLACEHOLDER_RE.search(
+                token
+            ):
+                continue
+            out.append(Token(lineno, token))
+    return out
+
+
+def check_readme_links(cx: Corpus) -> dict:
+    """Relative links in the root docs a visitor reads first (README*, CHANGELOG).
+
+    Resolved exactly against the root, not by `cx.resolves`' suffix index: a
+    suffix match lets `skills/gone/README.md` resolve against any README.md, and
+    these links are clicked by people, so "some file with that tail" is not enough.
+    """
+    files = sorted(cx.root.glob("README*.md")) + [
+        p for p in (cx.root / "CHANGELOG.md",) if p.is_file()
+    ]
+    broken: list[dict] = []
+    unreadable: list[dict] = []
+    for path in files:
+        text, reason = _read_why(cx.root, path)
+        if text is None:
+            cx.degrade("readme_links", f"{path.name}: {reason}", "its links are UNVERIFIED")
+            unreadable.append({"file": path.name, "reason": reason})
+            continue
+        for t in _readme_link_tokens(text):
+            if not (cx.root / unquote(t.token)).exists():
+                broken.append({"file": path.name, "line": t.line, "token": t.token})
+    return {
+        "status": "checked" if files else "absent",
+        "files": [p.name for p in files],
+        "broken_links": broken,
+        "unreadable": unreadable,
+    }
 
 
 def check_llms_txt(cx: Corpus) -> dict:

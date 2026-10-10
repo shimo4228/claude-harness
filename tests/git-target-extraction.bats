@@ -22,6 +22,31 @@ load_extractor() {
   [ "$output" = "/tmp/repo" ]
 }
 
+@test "an env assignment before git -C ... commit still resolves to that repo" {
+  # 取りこぼすとカレント repo を検査し、代入を 1 つ前に付けるだけで -C 先のゲートを避けられた (ADR-0094)
+  load_extractor
+  run git_target_dir 'SECRET_SCAN_BYPASS=1 FOO=bar git -C /tmp/repo commit -m ok'
+  [ "$output" = "/tmp/repo" ]
+}
+
+@test "env, command, time, a full git path and global options before git -C still resolve" {
+  load_extractor
+  local c
+  for c in 'env FOO=1 git -C /tmp/repo commit -m ok' 'command git -C /tmp/repo commit -m ok' \
+           'time git -C /tmp/repo commit -m ok' '/usr/bin/git -C /tmp/repo commit -m ok' \
+           'git -c user.name=x -C /tmp/repo commit -m ok' 'git --no-pager -C /tmp/repo commit -m ok'; do
+    run git_target_dir "$c"
+    [ "$output" = "/tmp/repo" ] || { echo "missed: $c"; return 1; }
+  done
+}
+
+@test "a GIT_DIR assignment does not let git -C point at a decoy" {
+  # GIT_DIR / GIT_WORK_TREE は commit 先そのものを変える — -C の囮を信じない (ADR-0094)
+  load_extractor
+  run git_target_dir 'GIT_DIR=/victim/.git GIT_WORK_TREE=/victim git -C /decoy commit -m x'
+  [ "$output" != "/decoy" ]
+}
+
 @test "git -C add && git -C commit resolves (the git-workflow spelling)" {
   load_extractor
   run git_target_dir 'git -C /tmp/repo add -A && git -C /tmp/repo commit -m ok'

@@ -51,7 +51,7 @@ graph にコードのノード（file path・module・LOC）を置かない。�
 - ファイルパスが変わった → graph.jsonld の `@id` が blob URL ならそこだけ追従。他に更新する文書は無い
 - 概念の semantics が変わった → graph.jsonld の description 更新
 
-context-sync skill（Maintain phase 担当）がこの drift を audit する。詳細は `~/.claude/skills/context-sync/SKILL.md` 参照。
+context-sync skill（Maintain phase 担当）がこの drift を audit する。詳細は `context-sync` skill の SKILL.md 参照。
 
 ## Required Design Moves
 
@@ -145,7 +145,7 @@ schema.org `Dataset` は Google AI Overviews / Perplexity が structured data �
 
 ### 9. Reverse-link で hub-and-spoke 経路双方向化
 
-hub-and-spoke topology の場合、各 line repo の README に **hub graph への逆リンク**を置く。README 側の置き方の正本は [`readme-writer`](../readme-writer/SKILL.md)（末尾に平文 1–2 行）。LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
+hub-and-spoke topology の場合、各 line repo の README に **hub graph への逆リンク**を置く。README 側の置き方の正本は [`readme-writer`](../readme-writer/SKILL.md)（LLM-read フロアの link-map、ADR-0091）。LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
 
 **散文リンクだけでは不十分** — README 逆リンクは人間/プレーンテキスト向け。グラフ層でも各 spoke の **self-node に機械可読な上向き edge** を張る:
 
@@ -217,17 +217,19 @@ graph.jsonld を作っただけでは crawler に見つからない。`llms.txt`
 |---|---|
 | `llms.txt` | (1) 冒頭に Graph-first reading order blockquote と numbered section、(2) Core documentation navigator の最上位に graph.jsonld entry |
 | `llms-full.txt` | 末尾に question-form H2（"How do X and Y relate as a graph?"）+ graph.jsonld への link + 3 つ程度の load-bearing design choice 説明 |
-| `README.md` と維持している language mirror | 末尾に平文 1–2 行で graph.jsonld / llms.txt への導線（hub-and-spoke の line README はこの行に hub graph への reverse-link も含める）。置き方の正本は [`readme-writer`](../readme-writer/SKILL.md) |
+| `README.md` と維持している language mirror | 末尾の `<details>`（readme-writer の LLM-read フロア）の link-map に graph.jsonld / llms.txt への導線（hub-and-spoke の line README は hub graph への reverse-link も含める）。置き方の正本は [`readme-writer`](../readme-writer/SKILL.md) |
 
-詳細な wording は `~/.claude/skills/llms-txt-writer/SKILL.md` の Companion JSON-LD Graph セクション参照。
+詳細な wording は `llms-txt-writer` skill の SKILL.md の Companion JSON-LD Graph セクション参照。
 
 ## Verification Workflow
 
 graph.jsonld を作成・編集したら、同梱の lint script を走らせる。JSON validity / expansion / DROPPED-KEY / URL-LITERAL / VOLATILE を一括で決定論的に検査する:
 
+> 以下のパスは `${CLAUDE_SKILL_DIR}`（この SKILL.md のあるディレクトリ）から始まる。変数を置換しないエージェントでは、そのディレクトリと読み替える。
+
 ```bash
 # exit 0 = clean, 1 = findings, 2 = fatal。複数ファイル可
-uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph_lint.py graph.jsonld
+uv run --with pyld python3 "${CLAUDE_SKILL_DIR}/scripts/graph_lint.py" graph.jsonld
 
 # locator 系 property（url / license / contentUrl）は literal URL を許容。変更する場合:
 #   --allow-literal-url url,license,contentUrl,codeRepository
@@ -235,7 +237,7 @@ uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph
 # 複数 graph を渡すと cross-file の NAME-DRIFT も検査する
 # （同一 IRI に複数の異なる en name → 検出は構造的・決定論的。どれを正とするかの
 #   解決だけが judgment なので、lint は報告のみ。表記揺れの正解は alternateName に置く）
-uv run --with pyld python3 ~/.claude/skills/jsonld-knowledge-graph/scripts/graph_lint.py hub/graph.jsonld line1/graph.jsonld line2/graph.jsonld
+uv run --with pyld python3 "${CLAUDE_SKILL_DIR}/scripts/graph_lint.py" hub/graph.jsonld line1/graph.jsonld line2/graph.jsonld
 #   --skip-name-drift で省略可
 ```
 

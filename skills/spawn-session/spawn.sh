@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 # spawn.sh — 新しい Claude Code (Remote Control) セッションを Herdr 内に detached 起動する。
 #
-# Usage: spawn.sh <project-dir> [display-name] [--model <model>]
+# Usage: spawn.sh <project-dir> [display-name] [--model <model>] [--effort <level>]
+#                 [--permission-mode <mode>] [--prompt-file <path>]
 #   --model: 新 session の model（例: opus）。省略時は settings.json の既定（判断層 = fable）。
 #   build 層の worker session を立てるときに opus を渡す（三役: harness ADR-0043 / ADR-0064）。
+#   --effort / --permission-mode: claude の同名 flag へ渡す。bypassPermissions は受けない
+#   （phone から起こす session の権限を広げないため）。
+#   --prompt-file: 起動後、兄弟 skill の agent-send でこのファイルを最初の指示として送り、
+#   結果を `prompt:` 行に出す。届かなければ agent-send の exit code で終わる（session は残る）。
 #   起動後、Claude モバイルアプリのセッション一覧に [display-name] が出る。
 #   Herdr の persistent session (server) が pty を保持するので、Ghostty/SSH の
 #   切断や起動元セッションの終了後も生き残る。
@@ -18,6 +23,10 @@
 # repo の workspace に合流し、worktree 名の workspace が増殖しない。
 # tab の cwd は渡された dir（worktree）のまま。
 set -euo pipefail
+
+# 兄弟 skill の agent-send（~/bin/cc-spawn の symlink 経由でも実体の位置から引く）
+SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || printf '%s' "${BASH_SOURCE[0]}")"
+AGENT_SEND="$(cd "$(dirname "$SELF")/.." && pwd)/agent-send/agent-send.sh"
 
 PROJECT="${1:?usage: spawn.sh <project-dir> [display-name] [--model <model>]}"
 PROJECT="${PROJECT/#\~/$HOME}"                       # 先頭 ~ を展開
@@ -41,6 +50,7 @@ command -v jq >/dev/null || { printf 'spawn.sh: jq not found (install: brew inst
 
 NAME="$(basename "$PROJECT")"                        # 表示名の既定はディレクトリ名
 MODEL=""
+EFFORT="" PMODE="" PROMPT_FILE=""
 shift
 while [[ $# -gt 0 ]]; do                             # 2 つ目の位置引数 = 表示名、--model は任意
   case "$1" in
@@ -48,6 +58,14 @@ while [[ $# -gt 0 ]]; do                             # 2 つ目の位置引数 =
       [[ -n "${2:-}" ]] || { printf 'spawn.sh: --model needs a value\n' >&2; exit 64; }
       MODEL="$2"; shift ;;
     --model=*) MODEL="${1#--model=}" ;;
+    --effort | --permission-mode | --prompt-file)
+      [[ -n "${2:-}" ]] || { printf 'spawn.sh: %s needs a value\n' "$1" >&2; exit 64; }
+      case "$1" in
+        --effort) EFFORT="$2" ;;
+        --permission-mode) PMODE="$2" ;;
+        *) PROMPT_FILE="$2" ;;
+      esac
+      shift ;;
     --*) printf 'spawn.sh: unknown option %s\n' "$1" >&2; exit 64 ;;
     *) NAME="$1" ;;
   esac
@@ -55,8 +73,18 @@ while [[ $# -gt 0 ]]; do                             # 2 つ目の位置引数 =
 done
 NAME="${NAME//[\"\']/}"                              # 後段で pane のシェルへ打鍵するためクォート文字は除去
 [[ "$MODEL" =~ ^[A-Za-z0-9._-]*$ ]] || { printf 'spawn.sh: bad --model value\n' >&2; exit 64; }
+[[ -z "$EFFORT" || "$EFFORT" =~ ^(low|medium|high|xhigh|max)$ ]] ||
+  { printf 'spawn.sh: bad --effort value\n' >&2; exit 64; }
+[[ -z "$PMODE" || "$PMODE" =~ ^(manual|acceptEdits|auto|dontAsk|plan)$ ]] ||
+  { printf 'spawn.sh: bad --permission-mode value (bypassPermissions is refused)\n' >&2; exit 64; }
+[[ -z "$PROMPT_FILE" || -f "$PROMPT_FILE" ]] ||
+  { printf 'spawn.sh: no such file: %s\n' "$PROMPT_FILE" >&2; exit 64; }
+[[ -z "$PROMPT_FILE" || -x "$AGENT_SEND" ]] ||
+  { printf 'spawn.sh: --prompt-file needs the agent-send skill: %s\n' "$AGENT_SEND" >&2; exit 64; }
 CLAUDE_ARGS=(--remote-control "$NAME")
 [[ -n "$MODEL" ]] && CLAUDE_ARGS+=(--model "$MODEL")
+[[ -n "$EFFORT" ]] && CLAUDE_ARGS+=(--effort "$EFFORT")
+[[ -n "$PMODE" ]] && CLAUDE_ARGS+=(--permission-mode "$PMODE")
 
 # --- server 確保 -------------------------------------------------------------
 # socket 越しの read-only コマンドで生存確認。不在なら headless server を起動
@@ -70,6 +98,14 @@ if ! "$HERDR_BIN" workspace list >/dev/null 2>&1; then
     if "$HERDR_BIN" workspace list >/dev/null 2>&1; then server_up=1; break; fi
   done
   [[ "$server_up" = 1 ]] || { printf 'spawn.sh: herdr server を起動できませんでした\n' >&2; exit 1; }
+fi
+
+# client と server の互換・版を確かめる（警告は stderr にそのまま出す）
+if [[ -x "$AGENT_SEND" ]]; then
+  if ! pf=$("$AGENT_SEND" preflight); then
+    printf 'spawn.sh: herdr の preflight に失敗しました: %s\n' "$pf" >&2
+    exit 1
+  fi
 fi
 
 # --- 表示名の重複解消 --------------------------------------------------------
@@ -162,11 +198,21 @@ if [[ "$start_ok" = 1 ]]; then
   printf '   → Claude モバイルアプリのセッション一覧に "%s" が出ます\n' "$NAME"
   printf '   agent: %s   ← herdr agent prompt/get/read に渡す名前 (表示名ではない)\n' "$AGENT_NAME"
   printf '   (claude idle 到達 ✓)\n'
+  if [[ -n "$PROMPT_FILE" ]]; then
+    rc=0
+    res=$(AGENT_SEND_PREFLIGHT_DONE=1 "$AGENT_SEND" prompt "$PANE_ID" --file "$PROMPT_FILE" --retry-unseen) || rc=$?
+    printf '   prompt: %s\n' "$res"
+    exit "$rc"
+  fi
 else
   printf '   ⚠️  claude が起動 or idle に到達しませんでした。\n' >&2
   [[ -n "${err:-}" ]] && printf '   herdr error: %s\n' "$err" >&2
-  printf '   pane の直近出力:\n' >&2
-  "$HERDR_BIN" pane read "$PANE_ID" --source recent-unwrapped --lines 40 >&2 || true
+  printf '   agent: %s   pane: %s   ← agent read / send-keys / pane close に使える\n' "$AGENT_NAME" "$PANE_ID" >&2
+  screen=$("$HERDR_BIN" pane read "$PANE_ID" --source recent-unwrapped --lines 40 2>/dev/null || true)
+  if grep -q 'trust' <<<"$screen"; then
+    printf '   原因: workspace trust の確認で停止。Mac でこの repo を一度開くと通る\n' >&2
+  fi
+  printf '   pane の直近出力:\n%s\n' "$screen" >&2
   printf '   (典型原因: auth 切れ → Mac 側で要再ログイン / claude が PATH に無い)\n' >&2
   exit 1
 fi

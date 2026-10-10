@@ -82,6 +82,9 @@ Decision 2 / 3 の適用範囲を linked worktree に広げ、Decision 4 の理�
    branch の verify.sh を main と同じ内容で戻す・verify.sh 導入前の commit から作った worktree なら
    `VERIFY_BYPASS=1`、を先に示し、revoke は「merge 後に main で。main と全 worktree の承認が外れる」と
    書く。
+
+   > **注記（2026-10-09, ADR-0094）**: `VERIFY_BYPASS=1` は廃止した。verify.sh 導入前の commit から作った worktree は、
+   > branch を main に rebase して verify.sh を取り込むよう案内する。
 6. `approve` / `revoke` と台帳の形式は変えない。
 7. `hooks/bandit-precommit.sh` と `hooks/ruff-format-precommit.sh` の「repo がゲートを持つか」を
    `-x` から `-f` にする（ADR-0082 Follow-ups の残り。verify-precommit と同じ定義にする）。
@@ -109,6 +112,8 @@ Decision 2 / 3 の適用範囲を linked worktree に広げ、Decision 4 の理�
 - 判断役の検収で、worktree のゲート消失の block（verify.sh 導入前の commit から作った worktree を
   含む）を `VERIFY_BYPASS` で通した commit が 30 日で 2 件を超える → worktree では消失を block でなく
   通知にする（ADR-0082 の「ゲート廃止が revoke 前に block され続ける」と一緒に見直す）
+  > **注記（2026-10-09, ADR-0094）**: `VERIFY_BYPASS` は廃止したので、この条件は数えられない。代わりに、rebase で
+  > 取り込めずに止まった報告を数える。
 
 ## Alternatives Considered
 
