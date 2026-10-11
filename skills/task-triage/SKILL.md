@@ -18,7 +18,7 @@ Roles (ADR-0043):
 
 | Role | Who | Does | Never does |
 |---|---|---|---|
-| **Judge** (this skill) | the triage session (Fable-tier) | premise check, worth check, better-solution check, condition check → verdict; writes kickoff packets; independently verifies build output; merges what passed §4 ff-only and pushes; keeps the books | confirms a drop alone; files tasks on its own |
+| **Judge** (this skill) | the triage session (Opus 5.5 at its settings effort, `high`; a contested build-or-not goes to the `architect` agent, which runs on Fable) | premise check, worth check, better-solution check, condition check → verdict; writes kickoff packets; independently verifies build output; merges what passed §4 ff-only and pushes; keeps the books | confirms a drop alone; files tasks on its own |
 | **Build** | a fresh session per task (Opus-tier) — by default a Claude Code **cloud session** on a `claude/` branch cloned from GitHub, running without the harness (the packet is its whole contract); a local worktree session (Agent tool / Herdr) only for the cases §3 names | Phase 0 premise re-check → implement → run the one review the packet names → commit on the task branch with the evidence in the commit body → push (cloud) | changes acceptance conditions, merges its own branch, edits the ledger, touches the gate (`.claude/verify.sh`, `.github/`, `.claude/settings.json`) |
 | **Human** | the owner | direction for tasks that need it, batch answers to the digest, the merge of a diff that touches rules / hooks / permissions / gate scripts while unattended | watches individual sessions (attention is the scarce resource) |
 
@@ -387,10 +387,15 @@ exits — the next tick spawns a fresh one. No in-session cron, no successor han
 cycles the memory is the ledger (verdicts and reasons are written into the tasks), so
 auto-compaction of the standing session costs nothing the next cycle needs, and a fresh
 session resumes from the ledger alone. Cross-repo effects travel only through the ledgers
-(a task moved as `draft`, an ADR link), never through a session's memory. The judge and
-the builds may be different model tiers on purpose: judgment errors are the expensive ones
-(a missed refuted premise wastes the whole build), so the orchestrator is the strongest tier
-available and the builds are the fast tier.
+(a task moved as `draft`, an ADR link), never through a session's memory. The judge runs on
+Opus 5.5 at `high` (the tick spawns it with `--model opus`): most of a cycle is mechanical —
+dead-band checks, counts, branch hygiene, the deterministic half of §4 — and the semantic half of
+§4 (a silent deviation, a forbidden change) is a missed-case kind of error, the kind effort
+reduces most. Independence from the build comes from the fresh context, not from a different
+model. The one judgment routed to Fable is a contested build-or-not, through the `architect`
+agent; when Fable is out of quota, the session judges it itself and writes "Fable 不在、Opus が判定"
+next to the verdict. Routing per task on the build side is the packet's `Effort:` line and the
+見落とし retry rule (§3, §4).
 
 ## Cadence
 

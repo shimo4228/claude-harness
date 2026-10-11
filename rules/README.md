@@ -21,7 +21,7 @@
 | `debugging.md` | rate limit の実証済み policy signal |
 | `evals.md` | eval の問い → 行き先（`/claude-api build-eval` / hillclimb ほか）と `claude -p` の罠 |
 | `knowledge-staleness.md` | LLM 界隈 1 週間陳腐化 worldview — 検索時点照合と失効条件の既定 |
-| `llm-first-code.md` | LLM 可読性を最優先する worldview — 読者は次セッションの LLM、執行者は機械ゲート |
+| `llm-first-code.md` | LLM 可読性を最優先する worldview — 読者は次セッションの LLM、執行者は機械ゲート、指示文は肯定形 |
 | `planning.md` | search / chain / verify の入口 |
 | `practitioner-identity.md` | 著者の自己定義（verbatim）— DOI は手段、研究者ではない |
 | `security.md` | commit hook と trust boundary |

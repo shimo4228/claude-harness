@@ -102,8 +102,12 @@ rule. Record answers internally; **surface only the No answers**:
 - [ ] Dense enough to deserve residency? (does each section change behavior often enough
   to justify being read every session? rarely-needed reference material, long procedures,
   single-project content → Demote or Improve-by-shortening candidate)
+- [ ] Written in the affirmative? (each prohibition targets a grep-able concrete action, the
+  default behavior was observed to go the other way, no machine gate covers it, and a
+  one-clause reason is attached — any other "don't", especially on style or internal process,
+  is an Improve candidate: reword it as the default to follow)
 
-Six questions and no more — the two static questions (absorption, density) replace the
+Seven questions and no more — the two static questions (absorption, density) replace the
 lost usage signal; further decomposition degrades holistic judgment.
 
 **Stage 2 — verdict pressure-test (non-Keep candidates only).** When Stage 1 plus the

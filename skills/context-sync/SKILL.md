@@ -231,6 +231,12 @@ duplicating the rule:
 
 - [ ] No generic advice that is not specific to this project (template copy-paste
       without customization)
+- [ ] Directives in context files (CLAUDE.md / AGENTS.md / guideline docs) and in ADR
+      Decision / Review-when / Consequences say what to do by default. A prohibition stays
+      only when it targets a grep-able concrete action, the default behavior was observed to
+      go the other way, no machine gate covers it, and a one-clause reason is attached;
+      reword the rest in the affirmative (a named "don't" is recalled as an option). ADR
+      Context / Alternatives are records and stay as written
 - [ ] `ResearchLine` `@id` uses the concept DOI (parent record), not the latest
       versioned DOI — the script lists every DOI in `graph_jsonld.dois`; which one is
       the concept record is not decidable from the string

@@ -120,6 +120,8 @@ skill の 3 原則との対応:
 照合先:   `grep -rlE 'api\.typesafe\.ai|jev_client' skills/*/scripts hooks scripts` の結果が 2026-09-28 時点の集合（jev-skill-router・review-when-watch の実装）から増えたか、または `metrics/review-when-watch.jsonl` が 30 run に届き当たり（`hit`）を RFC の実際の state 遷移と照合できるか
 成立時:   draft に戻し、その judge をパイロットに選び直す
 
+triage 2026-10-11: grep の集合は 2026-09-28 と同じ（jev-skill-router 3 本・review-when-watch 2 本）、review-when-watch は 13 / 30 run。未成立。
+
 ## Next action
 
 上の再開条件を triage で照合する。成立したらパイロットを選び直す。

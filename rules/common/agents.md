@@ -9,5 +9,5 @@ agent process で走らせる。必要な chain は skill: `implementation-chain
 Claude Code 外との rules 共有は [ADR-0015](../../docs/adr/0015-cross-agent-rules-sharing-reference-first.md)。
 Herdr の pane / agent の操作は skill: `herdr`、agent への指示の送信と完了待ちは skill: `agent-send`
 （vendor の `agent prompt --wait` は turn の完了まで待つので、着弾確認に使わない）、新規 session の
-作成は skill: `spawn-session`。Codex への実装委譲は
-plugin `codex:rescue`。委譲と pane 操作の境界は `boundary.md`。
+作成は skill: `spawn-session`。Codex への依頼（実装の委譲、plan や設計への意見）は
+plugin `codex:rescue` から行う。委譲と pane 操作の境界は `boundary.md`。

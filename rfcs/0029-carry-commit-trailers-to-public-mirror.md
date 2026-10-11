@@ -28,6 +28,8 @@ trailer に私的なパスや機微が混ざりうる（同期の secret scan �
 照合先:   `rfcs/0028-correction-commit-trailers.md` の state と Status
 成立時:   accepted（claude-harness の同期 script に、公開対象を触った source commit の trailer を同期 commit の本文へ写す処理を足す）
 
+triage 2026-10-11: RFC-0028 は in_progress のまま（試行の読みは 2026-10-12）。未成立。
+
 ## Next action
 
 上の照合先を 10-12 以降の triage で確かめる。

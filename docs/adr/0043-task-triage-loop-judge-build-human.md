@@ -144,3 +144,13 @@ accepted
 > 上記の導線は宣言のみで発火機構が無く不足だった。ADR-0057 が「実行者の決定」の既定を
 > dispatch へ反転し、plan 承認境界（ExitPlanMode PostToolUse）の advisory hook を足した。
 > 三役と dispatch 条件の正本は引き続き本 ADR と `task-triage`。
+
+> **注記（2026-10-11, commit「feat(task-triage): 判断役を Opus 5.5 high にし、Fable は architect だけにする」）**:
+> 三役のうち judge の tier を Fable から Opus 5.5（effort は settings.json の `modelSettings` で `high`）へ
+> 替えた。triage-tick.sh は spawn に `--model opus` を渡す。Fable に残すのは、作るかどうかで揉めた判定を
+> 受ける `architect` agent（frontmatter `model: fable`）だけ。理由: 2026-10-11 朝の harness tick が Fable の
+> 週次制限で cycle ごと止まり（liveness の脆さ）、手動で回した cycle の中身はほぼ機械的な照合だった。
+> §4 の意味判定は見落とし系で、effort で減る種類（ADR-0081 Context の数値）。build との独立は fresh context が
+> 担い、model の違いは要らない。Fable と Opus high で §4 の精度に差が出るかは未測定 —
+> 見直す条件: merge 後に見つかった不具合が `logs/effort-outcomes.jsonl` の行と突き合わせて判断役の見逃しと
+> 読めたら、§4 だけを Fable の subagent に戻すかを判断する。

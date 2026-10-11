@@ -100,6 +100,8 @@ triage 2026-09-28（続き）: 著者が plist を登録（`launchctl print` で
 
 triage 2026-09-28（著者判断）: jev-skill-router と jev-belay をローカルで無効化（`enabledPlugins` を false）。router の 7 日の shadow 読み値: 1,242 prompt、提案率 43%、提案が 30 分以内に実際に使われたのは 28 / 539、実際の invoke 122 回のうち直前の提案と一致 23、入力 約 18.5k tokens/回。router log（無効化時点で 1,242 行。無効化は新しい session から効くので、既に動いていた session の hook は終わるまで追記を続ける（同日 1,267 行まで観測）— 固定集合として使うときは先頭 1,242 行で切る）は registry の最小形の実例として残し、再開条件から外した。belay は 180 stop・block 7（全件 `checks: []`、うち 1 件は本文に verify.sh exit 0 — この harness の verify を実行として認識しない）。
 
+triage 2026-10-11: `metrics/review-when-watch.jsonl` = canary 13 run / pair 3,653 行（2026-09-29〜10-11、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。
+
 ## Next action
 
 RFC-0024 / RFC-0026 と同時に採否を決める。**採用するなら実装順はこちらが先** — RFC-0026 の閾値がこの registry のデータに依存する。

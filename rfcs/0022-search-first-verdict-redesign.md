@@ -69,6 +69,8 @@ triage 2026-09-28: `date` = 2026-09-28 < 2026-11-01、未成立（dead-band）�
 
 （旧 Status: accepted 2026-09-14 — skill 改修・scout 退役・消費者 6 ファイルの書き換えを実施。fresh-context 草稿ゲートと行動 gate の結果は ADR-0066 Decision 9 が持つ）
 
+triage 2026-10-11（手動実行。朝の launchd tick は Fable の週次制限で cycle が走らなかった）: `date` = 2026-10-11 < 2026-11-01、未成立（dead-band）。
+
 ## Next action
 
 影の比率の再測定（2026-11）。手順・述語・基準集合（分母 / 影のセッション一覧）は `.notes/search-first-shadow-baseline-2026-09-14.md` に固定してある — 同じ snippet を実行し、基準値と比べる。

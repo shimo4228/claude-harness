@@ -63,6 +63,14 @@ during codebase exploration」が同じ動作クラスへの対処として存�
    skill-creator §3 を正本とし、他の配線先は同じ語（「grep 可能な具体的動作」）で書く。
    ADR-0065 §Decision 第 4 項に日付つき注記を置く（partial weakening。第 1〜3 項は本 ADR の
    対象外）。
+
+   > **注記（2026-10-11, commit「docs(rules): 肯定形の規約を llm-first-code に移し、各 repo の CLAUDE.md と ADR へ広げる」）**:
+   > rule 側の配線先は `rules/common/skills.md` から `rules/common/llm-first-code.md` の bullet に
+   > 移った（skills.md はそこへのポインタ）。適用範囲は harness の自作文書から、LLM が従う文書
+   > すべて — 各 repo の CLAUDE.md・AGENTS.md・行動指針 doc、ADR の Decision / Review-when /
+   > Consequences — に広がった。ADR の Context / Alternatives は記録なので対象外。検査は
+   > skill `context-sync` Phase 4 と skill `rules-stocktake` Phase 2 Stage 1 に 1 問ずつ足した。
+   > 3 条件と正本（skill-creator §3）は変わらない。
 2. built-in subagent の override は verbatim 写しにする。目的が field の固定（model 等）だけの
    とき、本文は CLI bundle から取り出した built-in の system prompt を platform 分岐だけ展開
    して写し、description も原文どおりにし、`disallowedTools` と `omitClaudeMd` も built-in と

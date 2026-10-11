@@ -50,6 +50,8 @@ ADR-0085 で新しい plan は repo の `docs/plans/` に残るようになっ�
 照合先:   著者への確認（申請の状態は repo から機械で読めない）と zenn-content の `published: true` の記事
 成立時:   accepted（akc-cycle は `570e788` を main へ cherry-pick して push、zenn は該当 plan を `docs/plans/` へ移す）
 
+triage 2026-10-11: 著者からの申請終了の告知なし。zenn の該当 11 本は今 cycle では未照合（著者確認と同時に見る）。未成立。
+
 ## Next action
 
 上の再開条件のどちらかが成立したら、成立した側だけを片付ける。両方終わったら done。
