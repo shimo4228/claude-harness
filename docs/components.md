@@ -87,6 +87,7 @@ Rules under `rules/common/` load every session: mostly environment-specific fact
 | [llm-first-code](../rules/common/llm-first-code.md) | Optimizes code for its actual reader — the next LLM session, not humans: preserve verifiability (types, tests, goldens) over readability, enforce quality through machine gates, and spend human-readability budget only on READMEs and output text |
 | [boundary](../rules/common/boundary.md) | The single home of the harness's boundaries — which operations are handed to the human (publication, billing, external sends, ledger filing, unattended changes to permissions / hooks / rules / ADRs), which risks the agent takes without asking, and when to stop and report |
 | [evals](../rules/common/evals.md) | Eval wiring — routes each eval question to its owner: `/claude-api build-eval` → `hillclimb` for building and improving against an eval, with search-first before grading is fixed in unfamiliar domains; the `claude -p` runner trap for harness targets |
+| [public-records](../rules/common/public-records.md) | What public records (rfcs, act logs, plans, reports) name, what stays in private notes, and the check before publishing |
 <!-- END GENERATED: rules-table -->
 
 <!-- BEGIN GENERATED: upstream-components -->

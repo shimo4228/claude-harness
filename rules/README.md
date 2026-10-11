@@ -24,6 +24,7 @@
 | `llm-first-code.md` | LLM 可読性を最優先する worldview — 読者は次セッションの LLM、執行者は機械ゲート、指示文は肯定形 |
 | `planning.md` | search / chain / verify の入口 |
 | `practitioner-identity.md` | 著者の自己定義（verbatim）— DOI は手段、研究者ではない |
+| `public-records.md` | 公開 repo の記録で名指すもの・伏せるもの・公開前の検査 |
 | `security.md` | commit hook と trust boundary |
 | `skills.md` | origin schema と skill path、skill-creator への命令形配線 |
 | `task-tracking.md` | repo ごとの task ledger path |

@@ -64,8 +64,8 @@ rfcs/ は**提案と作業項目の公開台帳**。この skill はそこへ 1 
    - plan（skill: `html-plan` の `.html`、または plan mode の `.md`）を通った作業は `## Status` に `**YYYY-MM-DD plan** — [docs/plans/<file>](../docs/plans/<file>)`
      を 1 行置く（plan から RFC へ辿れるように）。本文の最初の行には置かない（`claims.py ready` の要約になるため）
    - 見出しは EN、本文の言語は自由
-4. **公開規約**: 公開が既定 — 本文は公開可能な書き方をし、機微（内部事情・非公開 repo
-   のパス等）はリンク先へ逃がす。公開は撤回不能なので、迷ったら書かない側に倒す
+4. **公開規約**: 公開が既定。何を名指し何を `.notes/` へ逃がすかの境界は rule
+   `public-records.md` が正本。rfc には機微でない理由を書いてよい。公開は撤回不能なので、迷ったら書かない側に倒す
 5. **接続**: `python3 ~/.claude/scripts/claims.py spawn RFC-NNNN --origin <origin>`
    （review 由来は `--producer PATH:LINE` 必須）。着手時は `claim`
 6. **index**: `rfcs/README.md` の表に 1 行 — `| [NNNN](<NNNN-slug>.md) | <title> |` の形
