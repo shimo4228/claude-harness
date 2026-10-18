@@ -122,6 +122,8 @@ skill の 3 原則との対応:
 
 triage 2026-10-11: grep の集合は 2026-09-28 と同じ（jev-skill-router 3 本・review-when-watch 2 本）、review-when-watch は 13 / 30 run。未成立。
 
+triage 2026-10-18: grep の集合は 2026-09-28 と同じ（jev-skill-router 3 本・review-when-watch 2 本）、review-when-watch は 20 / 30 run（予定 2026-10-28 頃）。未成立。
+
 ## Next action
 
 上の再開条件を triage で照合する。成立したらパイロットを選び直す。

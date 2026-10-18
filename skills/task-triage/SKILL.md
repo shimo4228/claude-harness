@@ -380,10 +380,15 @@ repo's cloud dispatch is listed as ready, not started — §3 step 4), verificat
 builds — then closes with the digest (§2); consults and merges wait for the human in the
 session.
 
-The session is long-lived but **not eternal, and it does not renew itself**: the last step
-of a cycle compares `claude --version` with the version it started under and checks its own
-age; if the CLI has updated or the session is older than ~7 days, it finishes the cycle and
-exits — the next tick spawns a fresh one. No in-session cron, no successor handoff. Between
+The session is long-lived but **not eternal, and the tick renews it**: before prompting, the
+tick reads the session's own transcript (the first `version` line of
+`~/.claude/projects/*/<session id>.jsonl`) and, when `claude --version` differs or the session is
+`TRIAGE_MAX_AGE_DAYS` (7) days old, closes its pane and spawns a fresh one — only when the
+status is not working / blocked and the last user / assistant line of the transcript is
+`TRIAGE_QUIET_MIN` (60) minutes old, so a conversation paused between replies is left alone. The
+clock is that line, not the file's mtime: bookkeeping lines without a turn (an artifact watch's
+ledger) keep the file fresh while nobody speaks (`scripts/transcript-last-turn.sh`). The session cannot end itself: a `/exit`
+written in a reply executes nothing. No in-session cron, no successor handoff. Between
 cycles the memory is the ledger (verdicts and reasons are written into the tasks), so
 auto-compaction of the standing session costs nothing the next cycle needs, and a fresh
 session resumes from the ledger alone. Cross-repo effects travel only through the ledgers

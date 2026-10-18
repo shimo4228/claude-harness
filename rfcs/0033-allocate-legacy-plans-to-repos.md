@@ -1,5 +1,5 @@
 ---
-state: blocked 2026-09-28
+state: blocked 2026-10-18
 review-when: 振り分けが終わったとき。または ADR-0085 の 2026-10-11 の計測で plan の記録層そのものが見直されたとき
 ---
 ## Summary
@@ -51,6 +51,14 @@ ADR-0085 で新しい plan は repo の `docs/plans/` に残るようになっ�
 成立時:   accepted（akc-cycle は `570e788` を main へ cherry-pick して push、zenn は該当 plan を `docs/plans/` へ移す）
 
 triage 2026-10-11: 著者からの申請終了の告知なし。zenn の該当 11 本は今 cycle では未照合（著者確認と同時に見る）。未成立。
+
+triage 2026-10-18: 再開条件の akc-cycle 側が成立 — 著者が 2026-10-06 に「プラグイン化済んだから同期していいよ」と凍結を解いた（同日の session の記録）。`570e788` は branch `claude/akc-plugin-submission-status-2cvvz2` にだけあり、origin/main に未到達（`git merge-base --is-ancestor` で確認）。成立時に従い accepted。akc-cycle は公開 repo なので、cherry-pick と push は著者の OK 待ち（ローカル main には別作業の未 push commit `63b1c56` が 1 本載っており、push するとそれも出る）。zenn 側（`planning/plans` 12 本）は未照合のまま。
+
+triage 2026-10-18（続き）: akc-cycle 側は完了 — 著者の OK（「もう申請終わったから PUSH していいよ」）で `570e788` を main へ cherry-pick して push した（akc-cycle `7bf7741`、同時に `63b1c56` も公開）。残りは zenn 側だけなので blocked に戻す。
+
+再開条件: zenn の該当記事が公開される
+照合先:   zenn-content の `planning/plans` の 12 本と、`published: true` の記事
+成立時:   accepted（該当 plan を `docs/plans/` へ移す）
 
 ## Next action
 

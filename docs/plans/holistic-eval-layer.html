@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>価値判断の評価層</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+
+<header>
+  <h1>harness に価値判断の評価層を足す</h1>
+  <doc-changes new="22" changed="4"></doc-changes>
+  <details class="thread"><summary>Why · 9 件</summary>
+    <doc-quote via="prompt" from="著者">評価を「点数で裁く装置」ではなく「人がホリスティックに判断するための材料を整える装置」にする。</doc-quote>
+    <doc-quote via="prompt" from="著者">一回の評価が妥当でも、それに向かって最適化し続けると評価は壊れていく。今回特に補強したいのは、この「時間とともに評価が壊れる」問題への対処。</doc-quote>
+    <doc-quote via="prompt" from="著者">あとAkc-cycleにすでに含まれているものもあるので、その辺りはちょっと気にしている</doc-quote>
+    <doc-quote via="prompt" from="著者">全部おすすめどおりで進めて</doc-quote>
+    <doc-quote via="prompt" from="著者">ごめん先にプランにして。それでAstraとFableにプランを見てもらって</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: external）" href="research/2026-10-13-holistic-eval-layer.md">「不一致を統合せず残す + 帰属ログ + rubric 隠し」を揃えた plugin は見つからなかった（検索 1 本の範囲）。</doc-quote>
+    <doc-quote via="doc" from="Fable（plan v1 のレビュー）">lens-reader の出力は主ループ（＝書き手）に戻り、主ループが `ledger.py append` を呼ぶ。帰属（原則 5）が書き手の自己申告になり…</doc-quote>
+    <doc-quote via="doc" from="Astra（plan v1 のレビュー）">候補8本は生成側から読め、選択も使用時刻と固定順で予測できるため、毎回の選択を知らなくても候補群全体に合わせて書ける。</doc-quote>
+    <doc-quote via="prompt" from="著者（レビュー後の 4 問）">外す / ~/.claude/state/ に置く / 著者が書く / うっかり防止</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>著者は /eval-panel で、点数のない評価を受け取る。</p>
+  <doc-mock frame="terminal" title="/eval-panel drafts/intro.md" w="480" caption="合否・点数・書き換え案は出ない。最後は著者への問いで終わる。"><template><span class="dim">① 事前確認</span>
+この文章は評価 3 回目 · 見た版 3 つ
+<span class="dim">② 観点</span>  論証のつながり · 読者の実務 · <span class="y">「全て」という約束</span>
+<span class="dim">④ 割れた箇所（全件）</span>  「全ての出力を自分で読む」
+  読者の実務 → 誇張なので弱点
+  「全て」   → 立場の表明なので強み
+  <span class="dim">理由: 事実の主張か宣言か。記事の目的で決まる</span>
+<span class="dim">④ 全員が一致</span>  2 文目は根拠が 1 つだけ
+<span class="g">⑤ 読んでほしい箇所</span>  1. 2 文目→3 文目  2. 「全て」
+<span class="g">⑤ 決めてほしいこと</span>  この冒頭は主張か、宣言か
+<span class="m">隠した観点 1 件</span>  結果は著者だけが開く場所にある
+<span class="dim">元の記録: ~/.claude/state/eval-ledger.jsonl run 2026-10-13T1402-3f2a</span></template></doc-mock>
+
+  <doc-claim>
+    <p>観点は毎回スクリプトが入れ替える。</p>
+    <doc-code title="skills/eval-panel/scripts/ledger.py · sketch" lang="py">
+<script type="text/plain">
+def pick(artifact: str, k: int, pool: list[str], ledger: list[dict]) -> list[str]:
+    """この成果物で一番長く使っていない観点を k 本返す。同順は pool の並び順。"""
+    last_used = {lens: "" for lens in pool}
+    for row in ledger:
+        if row.get("artifact") == artifact and row.get("lens") in last_used:
+            last_used[row["lens"]] = max(last_used[row["lens"]], row["ts"])
+    return sorted(pool, key=lambda lens: last_used[lens])[:k]
+</script>
+    </doc-code>
+    <doc-note tone="warn"><strong>限界</strong> 見える観点群は書き手から読める。書き手は観点群全体に合わせて書ける。入れ替えが与えるのは多様性で、秘密は守らない。秘密は隠した観点（claim 2）だけが持つ。</doc-note>
+    <doc-ask id="pool">
+      <p>見える観点の候補群をどこから作りますか。</p>
+      <label><input type="radio" name="pool" value="existing" checked> 既存 reviewer の観点から 8 本 <small>title・theme・clarity・editor・essay の観点を移す</small></label>
+      <label><input type="radio" name="pool" value="new"> 新しく 8 本書く</label>
+      <label><input type="radio" name="pool" value="author"> 著者が書く <small>実装は空の候補群で始める</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>観点ごとに別の読み手が、観察から判断を書く。</p>
+    <doc-code title="agents/lens-reader.md · sketch" lang="md">
+<script type="text/plain">
+---
+name: lens-reader
+description: "eval-panel の読み手。観点 1 つと成果物を受け、観察（場所・引用）を先に書き、判断は観察の番号を引いて書く。点数・合否・書き換え案は書かない。mode: read / propose（成果物専用の観点を 1 つ作る）。NOT for — 1 回の gate で次の行動を決める判定（→ llm-as-judge）。"
+tools: ["Read", "Grep", "Glob"]
+model: opus
+omitClaudeMd: true    # 書き手側の規約を読み手に見せない
+origin: shimo4228
+---
+1 行目: eval-run: <run> | <artifact> | <sha> | <lens> | <slot>   ← hook がここを読む
+観察 O1..On  — 場所と引用だけ。良し悪しは書かない
+判断 ← O番号 — 観点に照らした評価。確信度（高・中・低）を付ける
+分からないこと — この観点では決められない点
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>割れた箇所は、選別せずに全件並べて返す。</p>
+    <doc-code title="agents/split-mapper.md · sketch" lang="md">
+<script type="text/plain">
+---
+name: split-mapper
+description: "eval-panel の地図係。読み手の記録を読み、判断が割れた箇所を全件と、全員が一致した点を並べる。どちらが正しいかは決めない。最後に著者が読む箇所 3 つまでと問い 3 つまでを書く。"
+tools: ["Read"]
+model: opus
+omitClaudeMd: true
+origin: shimo4228
+---
+割れた箇所（全件）— 場所 / 各読み手の判断 / 割れた理由の候補（1 つに絞らない）
+全員が一致した点 — 共通の盲点かもしれないので出す
+読んでほしい箇所 — 3 つまで。元の記録への run 番号を添える
+決めてほしいこと — 3 つまで。答えが著者の目的で決まる問いだけ
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>直ったかどうかは、著者の通読で確かめる。</p>
+    <doc-code src="skills/writing-ecosystem/SKILL.md" lines="154-156" hl="154-156" wrap caption="writing-ecosystem の既存の規律に揃える。v1 の --same-as 再判定は外した。"></doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>隠した観点の結果は、著者だけが開く場所に書かれる。</p>
+  <doc-flow caption="結果は主ループの文脈を通らない。主ループが受け取るのはファイルの場所だけ。">
+<script type="text/plain">
+main = 主ループ
++ hp = holdout.py
++ cp = claude -p
++ st = 隠し場所 [db]
++ hk = hook [green]
+| main | hp | cp |
+| hk   | st | .  |
+main -> hp : 起動
+hp -> st : 観点を読む
+hp -> cp : stdin
+cp -> hp : 判断
+hp -> st : 結果を書く
+hp -> main : 場所だけ
+hk -> st : 読取を拒否
+</script>
+  </doc-flow>
+  <doc-note tone="info"><strong>水準はうっかり防止</strong> 書き手が普段読む場所（会話・transcript・ledger・git）に本文を入れない。hook は誤って読んだときの tripwire。意図して探せば読める。観点は著者が 1 行ずつ書き、補充も著者が行う。</doc-note>
+
+  <doc-claim>
+    <p>claude -p は記録を残さず、設定を引き継がずに走る。</p>
+    <doc-code title="skills/eval-panel/scripts/holdout.py · sketch" lang="py">
+<script type="text/plain">
+def run_reader(lens: str, artifact_text: str) -> str:
+    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+    cmd = ["claude", "-p", "--model", "opus",
+           "--no-session-persistence",          # transcript を残さない
+           "--settings", str(ISOLATED_SETTINGS),  # hook・style を引き継がない
+           "--tools", ""]                       # 道具なし（flag 名は実装時に --help で確かめる）
+    prompt = READER_PROMPT.format(lens=lens, text=artifact_text)
+    done = subprocess.run(cmd, input=prompt, env=env, cwd=tempfile.gettempdir(),
+                          capture_output=True, text=True, check=True, timeout=600)
+    return done.stdout   # 呼び出し側が結果ファイルに書く。stdout には出さない
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>hook は隠し場所を指す読取を止める。</p>
+    <doc-code title="hooks/block-eval-holdout.sh · sketch" lang="bash" caption="置き場は ~/.claude の外の隠しディレクトリ。rg は隠しディレクトリを辿らないので、上の階層からの検索は止めない。">
+<script type="text/plain">
+HOLDOUT="$HOME/.local/share/eval-holdout"
+deny() { jq -nc --arg r "$1" '{hookSpecificOutput:{hookEventName:"PreToolUse",
+         permissionDecision:"deny", permissionDecisionReason:$r}}'; exit 0; }
+case "$TOOL" in
+  Read|Grep|Glob)
+    p=$(jq -r '.tool_input.file_path // .tool_input.path // empty' <<<"$INPUT")
+    [[ -n $p ]] && inside "$p" "$HOLDOUT" && deny "eval-holdout は著者だけが開く" ;;
+  Bash)   # tripwire。綴りを変えれば通る（意図した読取は防がない）
+    [[ $(jq -r '.tool_input.command' <<<"$INPUT") == *eval-holdout* ]] && deny "…" ;;
+esac
+exit 0   # 該当しないときは何も出さずに通す
+</script>
+    </doc-code>
+    <doc-claim>
+      <p><b>settings.json</b> · PreToolUse に matcher を 1 つ足す</p>
+      <doc-code title="settings.json · sketch" lang="json" caption="onFailure で、hook の失敗と timeout を拒否側に倒す（v2.1.295 以降）。">
+<script type="text/plain">
+{
+  "matcher": "Read|Grep|Glob|Bash",
+  "hooks": [{
+    "type": "command",
+    "command": "bash ~/.claude/hooks/block-eval-holdout.sh",
+    "onFailure": "block"
+  }]
+}
+</script>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>一度書き直しに使った観点は、使用済みになる。</p>
+    <doc-mock frame="terminal" title="holdout.py" w="460" caption="使用済みの観点は次から選ばれない。残りが 0 になったら、補充を著者に頼む。"><template><span class="dim">$</span> holdout.py run drafts/intro.md --purpose "ブログ冒頭"
+H-3 → ~/.local/share/eval-holdout/results/2026-10-13T1402-3f2a.md
+<span class="dim">$</span> holdout.py expose H-3
+H-3 は使用済み。残り 4 本</template></doc-mock>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>評価の前に、同じ成果物の評価回数が出る。</p>
+  <doc-mock frame="terminal" title="ledger.py preflight" w="460" caption="回数で止めない。閾値を決めるデータがまだ無いので、ledger から言える事実だけを出す。"><template><span class="dim">$</span> ledger.py preflight drafts/intro.md
+評価 3 回目 · 見た版 3 つ（3f2a · 91c0 · 0b7e）
+前回 2026-10-12 21:40 · 観点 初見の読者 · 論証のつながり</template></doc-mock>
+
+  <doc-claim>
+    <p>読み手の記録は、hook が主ループを通さずに書く。</p>
+    <doc-code title="hooks/record-lens-reader.sh · sketch" lang="bash" caption="SubagentStop の last_assistant_message をそのまま追記する。書き手の自己申告にならない。">
+<script type="text/plain">
+# SubagentStop, matcher: lens-reader|split-mapper
+msg=$(jq -r '.last_assistant_message' <<<"$INPUT")
+head=$(head -1 <<<"$msg")                       # eval-run: <run> | <artifact> | …
+[[ $head == eval-run:* ]] || exit 0             # eval-panel 以外の起動は記録しない
+jq -nc --arg msg "$msg" --arg who "$(jq -r '.agent_type' <<<"$INPUT")" \
+       --arg aid "$(jq -r '.agent_id' <<<"$INPUT")" '{who:$who, agent_id:$aid, record:$msg}' \
+  | python3 ~/.claude/skills/eval-panel/scripts/ledger.py append --from-hook
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>1 回の判定と、繰り返す評価は別の道具を使う。</p>
+  <doc-code diff file="skills/llm-as-judge/SKILL.md" start="168" wrap caption="線は「判定が機械で決まるか」でなく「同じ成果物に最適化圧がかかるか」に引く。akc-cycle にも同期される。">
+<script type="text/plain">
+@@ -168,2 +168,12 @@
+ `verdict` is an enum — downstream code dispatches on it directly; the No items
+ in `evidence` are the improvement list handed to the next stage.
++
++## Where the verdict stops
++
++A named verdict fits a gate: one judgment that routes to a next action (Keep or
++Retire, Publishable or Fix). Use it there, and let downstream code dispatch on it.
++
++When the same artifact goes through evaluate-and-revise again and again, the
++verdict becomes the target, and the text bends toward it. Run skill:
++`eval-panel` there. It returns observations, where readers split, and questions
++for the author, with no verdict, and it feeds no automatic fix loop.
+</script>
+  </doc-code>
+
+  <doc-claim>
+    <p>evals.md の行き先表に 1 行足す。</p>
+    <doc-code diff file="rules/common/evals.md" start="10" wrap>
+<script type="text/plain">
+@@ -10,2 +10,3 @@
+ | 文章の好み・読みやすさ | skill: `author-calibrated-eval`（judge の点数で登らない） |
++| 同じ成果物を評価と改稿で何度も回す | skill: `eval-panel`（点数・合否を出さない。観点を入れ替える） |
+ | judge prompt の形 | skill: `llm-as-judge` |
+</script>
+    </doc-code>
+    <doc-ask id="rule-row">
+      <p>常駐 rule の evals.md に 1 行足しますか。</p>
+      <label><input type="radio" name="rule-row" value="add" checked> 足す <small>評価の依頼が来たときの入口になる</small></label>
+      <label><input type="radio" name="rule-row" value="skip"> 足さない <small>著者が /eval-panel を呼ぶときだけ使う</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 5 ═════ -->
+<doc-claim>
+  <p>変更は harness の検査をすべて通ってから入る。</p>
+  <doc-tree caption="各ファイルの横に、それを確かめる検査を書いた。">
+<script type="text/plain">
+~/.claude/
+  + skills/eval-panel/SKILL.md          # skill-creator §4。disable-model-invocation: true
+  + skills/eval-panel/lenses/*.md       # 見える観点 8 本
+  + skills/eval-panel/scripts/ledger.py   # pytest。追記は fcntl のロック下
+  + skills/eval-panel/scripts/holdout.py  # pytest（claude -p は差し替えて試す）
+  + skills/eval-panel/tests/            # coverage 80% 以上
+  + skills/eval-panel/pyproject.toml uv.lock
+  + agents/lens-reader.md  split-mapper.md  # skill-creator §4
+  + hooks/block-eval-holdout.sh         # bats
+  + hooks/record-lens-reader.sh         # bats
+  + tests/eval-panel-hooks.bats
+  + docs/adr/0095-holistic-eval-layer.md  # adr-writer → adr-reviewer
+  ~ settings.json                       # /code-review medium + security-reviewer
+  ~ skills/llm-as-judge/SKILL.md        # 差分は claim 4。harness-sync で akc-cycle へ
+  ~ rules/common/evals.md               # 差分は claim 4.1
+  ~ docs/adr/README.md
+</script>
+  </doc-tree>
+  <doc-ask id="executor">
+    <p>実行者の決定：誰が実装しますか。</p>
+    <label><input type="radio" name="executor" value="self" checked> このセッション（Opus 5.5）<small>hook・settings・state/ を触るので cloud に出せない</small></label>
+    <label><input type="radio" name="executor" value="spawn"> 新しいローカル session に渡す <small>spawn-session。packet を書いて渡す</small></label>
+  </doc-ask>
+
+  <doc-claim>
+    <p>受け入れは、仕組みが動くことをサンプル文で確かめる。</p>
+    <doc-mock frame="terminal" title="受け入れ条件" w="480" caption="どれも出力か終了コードか grep で判定できる。"><template><span class="g">✓</span> 出力に点数・合否・書き換え案が無い
+<span class="g">✓</span> 隠した観点の本文が、主ループの出力・~/.claude/projects・
+  metrics/・ledger のどこにも無い（grep）
+<span class="g">✓</span> 隠し場所を指す Read・Grep・Glob が拒否される
+<span class="g">✓</span> ledger の who が hook の agent_type と一致する
+<span class="g">✓</span> 2 回目の実走で preflight の回数が 1 増え、観点が入れ替わる
+<span class="g">✓</span> .claude/verify.sh・harness_lint・scan_refs が緑</template></doc-mock>
+  </doc-claim>
+
+  <doc-claim>
+    <p>効果は使ってから、ledger を読み直して確かめる。</p>
+    <doc-code title="docs/adr/0095-holistic-eval-layer.md · Review-when の sketch" lang="md" caption="Goodhart を減らす効果は、受け入れ時には証明できない。直接の実証も調査で見つからなかった。">
+<script type="text/plain">
+## Review-when
+- eval-panel の run が 20 回に達した日（観測量で開く。measurement-discipline §2）。
+  著者が ledger を読み直し、同じ成果物で判断が観点群に寄っていく兆しを探す。
+  兆しがあれば観点群を入れ替えるか、この層を退役する
+- 14 日で 20 回に届かなければ、その日に続けるか退役するかを決める
+- Claude Code が sandbox で Bash の読取も止められるようになった時（隠し方を見直す）
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<doc-claim aux="shared">
+  <p>共有：ledger の 1 行（claim 1・2・3 が使う）。</p>
+  <doc-schema id="ledger-row" lang="json" title="~/.claude/state/eval-ledger.jsonl の 1 行">
+<script type="text/plain">
+{
+  "ts": "2026-10-13T14:02:11+09:00",
+  "run": "2026-10-13T140211-3f2a91",      // 1 回の評価で共通。秒と長い hash で区別する
+  "artifact": "/Users/…/drafts/intro.md", // 実パス。改名すると別の成果物として数える
+  "sha": "3f2a91c0…",                     // preflight が採る。読み手にも同じ値を渡す
+  "event": "read",                        // read / map / expose / human
+  "lens": "argument-chain",               // 隠した観点は H-3 のような番号だけ
+  "slot": "rotate",                       // rotate / specific / holdout
+  "who": "lens-reader",                   // hook の agent_type。human は "author"
+  "agent_id": "def456",
+  "record": "eval-run: …\n観察 O1 …"      // 読み手の最終出力のまま。holdout は空
+}
+</script>
+  </doc-schema>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの。</p>
+  <ul>
+    <li>akc-cycle と重なる 4 本（learn-eval・author-calibrated-eval・measurement-discipline・skill-comply）は触らない。llm-as-judge は 1 節の追加だけ。</li>
+    <li>執筆系・論文系の reviewer（editor・clarity-reviewer・paper-ecosystem の上限なしループ）は第 2 段階。</li>
+    <li>プラグインとしての公開と harness-sync での新しい層の公開は、何度か使ってから決める。</li>
+    <li>隠した観点の中身は、この plan にも git にも書かない。sandbox による強い隔離は今回は調べない。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

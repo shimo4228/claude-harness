@@ -67,6 +67,11 @@ CA は土曜 09:00 に `com.moltbook.weekly-pipeline` が走り、packet 締切�
 2. **session 内 `CronCreate` / `/loop`、自己更新、successor handoff は skill から外す。** 常駐
    セッションは「CLI が更新された、または前回起動から 7 日超なら cycle を終えて `/exit`。次の
    tick が spawn する」だけを持つ。機構は増やさず減らす。
+   > **注記（2026-10-12, commit「fix(triage-tick): 古い triage session を tick が作り直す」）**: session は自分を
+   > 終了できない — 返答の文中に書いた `/exit` は何も実行せず、2026-09-23 起動の triage-ca が 19 日・claude の版
+   > 3 世代を跨いで生き続けた。作り直しの判定は tick に移した: tick が session の transcript から起動時の版と時刻を
+   > 読み、版が変わったか 7 日（`TRIAGE_MAX_AGE_DAYS`）を超えていれば、session が idle のときだけ pane を閉じて
+   > spawn し直す。cycle prompt から「/exit で終える」を外した。
 3. **Slack は片方向の通知チャネル。** 既存 webhook（`~/.config/wiki-notify/slack-webhook`）を
    流用し、新しい secret は作らない。`scripts/lib/notify.sh`（`harness_notify`、Vault / aeon 版を
    vendor した source 専用ライブラリ）を tick が失敗アラートに使い、

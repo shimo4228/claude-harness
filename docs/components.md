@@ -53,6 +53,12 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 | [review-when-watch](../skills/review-when-watch/SKILL.md) | Daily launchd job: checks each new research note against the Review-when conditions in this repo's ADRs and RFCs via TypeSafe Jev, and posts the matches to Slack. Not model-invoked |
 | [mono-figure](../skills/mono-figure/SKILL.md) | Drawing static explanatory figures for articles and READMEs (lines, arrows, numbers, labels) in the mono-color look — paper, ink, type, whitespace. Claude draws SVG by default (rendered to PNG where a platform needs it) |
 | [agent-send](../skills/agent-send/SKILL.md) | Send a prompt to an agent running in a Herdr pane and confirm it landed, or wait until its work is done |
+| [persona-read-loop](../skills/persona-read-loop/SKILL.md) | Three isolated LLM readers read a draft (article, README) in rounds; revise only how it is shown, and count what each revision added. A cheap check, not user research |
+| [social-post](../skills/social-post/SKILL.md) | Write X, Bluesky and Substack Notes posts for a new article or a fragment, and save them as Buffer drafts (the author schedules and publishes) |
+| [widen-altitude](../skills/widen-altitude/SKILL.md) | Raise a request one level to the goal behind the goal, and rewrite a one-off task as a standing delegation |
+| [widen-depth](../skills/widen-depth/SKILL.md) | Rewrite a request as a deeper version, not a bigger one: what experts do, raw material, methods and tools, an outside judge |
+| [widen-range](../skills/widen-range/SKILL.md) | Restate a request as a verb, and bring in practices from fields whose main work is that verb |
+| [widen-the-ask](../skills/widen-the-ask/SKILL.md) | Before planning, widen a request with the human one question at a time, in three directions: altitude, range, depth |
 <!-- END GENERATED: skills-table -->
 
 ## Agents

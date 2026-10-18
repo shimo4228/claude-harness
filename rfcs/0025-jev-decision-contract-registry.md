@@ -102,6 +102,8 @@ triage 2026-09-28（著者判断）: jev-skill-router と jev-belay をローカ
 
 triage 2026-10-11: `metrics/review-when-watch.jsonl` = canary 13 run / pair 3,653 行（2026-09-29〜10-11、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。
 
+triage 2026-10-18: `metrics/review-when-watch.jsonl` = canary 20 run / pair 5,249 行（2026-09-29〜10-18、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。
+
 ## Next action
 
 RFC-0024 / RFC-0026 と同時に採否を決める。**採用するなら実装順はこちらが先** — RFC-0026 の閾値がこの registry のデータに依存する。

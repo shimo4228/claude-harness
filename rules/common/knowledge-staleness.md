@@ -1,13 +1,10 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: 2026-08-04 著者指示「LLM 界隈は 1 週間で陳腐化する世界観を global に持て」。daily-research 再設計 (ADR-0008) の外部照合で実証 — 2026-05〜07 の一次ソース群だけで直前世代の手法 (survey-per-run / LLM 裁定の鮮度解決 / GraphRAG 常用) が複数覆った -->
-<!-- review-when: LLM 分野の変化速度が明確に鈍化した時、または search-first / 一次 fetch が harness native の既定動作になった時 -->
-# Knowledge Staleness (LLM 界隈は 1 週間で陳腐化する)
+<!-- rationale: Author's instruction (2026-08-04): hold "LLM knowledge goes stale within a week" as a global worldview. Shown in the daily-research redesign: 2026-05..07 primary sources alone overturned several methods of the previous generation (survey per run, LLM-judged freshness, GraphRAG by default). Concept record: AKC ADR-0026, Expiry-Conditioned Knowledge -->
+<!-- review-when: the pace of change in the LLM field clearly slows, or checking primary sources at decision time becomes the native default of the agent runtime -->
+# Knowledge Staleness (the LLM field goes stale within a week)
 
-LLM / agent 分野の外部知識は 1 週間スケールで陳腐化する。この worldview を全作業の既定にする:
+External knowledge in the LLM and agent field goes stale on a one-week scale. Make this worldview the default for all work:
 
-- 外部の手法・ツール・仕様・相場観は**記憶から断言しない** — 検索時点照合
-  (skill: `search-first`、一次ソース fetch) を default にする。設計判断の根拠には
-  as-of 日付を付ける
-- 提案・推奨には**失効条件** (valid-until / 無効化イベント) を付けられるか自問する。
-  付けられない推奨は鮮度不明として弱く扱う
-- 数ヶ月前の「最新手法」を再利用する前に、置き換わっていないかを 1 回疑う
+- Treat what you remember about external methods, tools, specs and current practice as unverified. By default, check it against primary sources as they stand at the time you search (skill: `search-first`, fetching the primary source). Give the evidence behind a design decision an as-of date.
+- For each proposal or recommendation, ask whether you can attach an expiry condition (a valid-until date, or an event that would void it). Treat a recommendation that cannot carry one as freshness-unknown, and weight it low.
+- Before you reuse a "latest method" from months ago, question once whether something has replaced it.

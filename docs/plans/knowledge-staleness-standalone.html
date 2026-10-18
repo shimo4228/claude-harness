@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>knowledge-staleness の単独公開</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+
+<header>
+  <h1>knowledge-staleness を単独 rule repo にする</h1>
+  <doc-changes new="37" changed="2"></doc-changes>
+  <details class="thread"><summary>Why · 6 件</summary>
+    <doc-quote via="prompt" from="著者">knowledge-stalenessなんだけど、これ実はかなり単独で価値の高いRuleな気がするな</doc-quote>
+    <doc-quote via="prompt" from="著者">単独rule repoにして、各種Awsome listにPRして行った方がいいかもな。これは割とみんな盲点だと思うからな。単体でも機能するようにClaude Plugin Evalとか使ってよくしたりできるかな？</doc-quote>
+    <doc-quote via="prompt" from="著者">Eval結果もRepoに同封するか。できたらリポと私のハーネスは一緒にしたいんだけど、Search-firstのポインタを外したら、Search-first時に発動しないかな？</doc-quote>
+    <doc-quote via="prompt" from="著者">今のknowledge-stalenessの文面に過剰にガードレールを足して、長文にしないでね</doc-quote>
+    <doc-quote via="prompt" from="著者">過剰に項目を増やしたりするのはやめてね。表現をもっとコアを掴みにいく感じにするとかならいいけど</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: external）" href="research/2026-10-13-knowledge-staleness-standalone.md">the "search first" half is already well served … the expiry half is the open niche</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>誰でも 1 ファイルのコピーで rule を入れられる。</p>
+  <doc-code diff file="rules/common/knowledge-staleness.md" start="1" wrap caption="項目は 3 つのまま。前文で「一番古いのはモデル自身」と核を言い、2 項目目を保存した判断まで広げた。">
+<script type="text/plain">
+@@ -1,13 +1,10 @@
+ <!-- origin: shimo4228 -->
+-<!-- rationale: 2026-08-04 著者指示「LLM 界隈は 1 週間で陳腐化する世界観を global に持て」。daily-research 再設計 (ADR-0008) の外部照合で実証 — 2026-05〜07 の一次ソース群だけで直前世代の手法 (survey-per-run / LLM 裁定の鮮度解決 / GraphRAG 常用) が複数覆った -->
+-<!-- review-when: LLM 分野の変化速度が明確に鈍化した時、または search-first / 一次 fetch が harness native の既定動作になった時 -->
+-# Knowledge Staleness (LLM 界隈は 1 週間で陳腐化する)
++<!-- rationale: Author's instruction (2026-08-04): hold "LLM knowledge goes stale within a week" as a global worldview. Shown in the daily-research redesign: 2026-05..07 primary sources alone overturned several methods of the previous generation (survey per run, LLM-judged freshness, GraphRAG by default). Concept record: AKC ADR-0026, Expiry-Conditioned Knowledge -->
++<!-- review-when: the pace of change in the LLM field clearly slows, or checking primary sources at decision time becomes the native default of the agent runtime -->
++# Knowledge Staleness
+
+-LLM / agent 分野の外部知識は 1 週間スケールで陳腐化する。この worldview を全作業の既定にする:
++Knowledge about LLMs and agents goes stale on the scale of a week. The oldest source in any session is the model's own training data.
+
+-- 外部の手法・ツール・仕様・相場観は**記憶から断言しない** — 検索時点照合
+-  (skill: `search-first`、一次ソース fetch) を default にする。設計判断の根拠には
+-  as-of 日付を付ける
+-- 提案・推奨には**失効条件** (valid-until / 無効化イベント) を付けられるか自問する。
+-  付けられない推奨は鮮度不明として弱く扱う
+-- 数ヶ月前の「最新手法」を再利用する前に、置き換わっていないかを 1 回疑う
++- Check external methods, tools, specs and going rates against a primary source at the time you use them, and date what you rely on ("as of 2026-10-13").
++- Give every recommendation and recorded decision an expiry: a date, or the event that would void it. One that cannot name an expiry has unknown freshness; weight it low.
++- Before you reuse a "latest method" from months ago, check once whether something has replaced it.
+</script>
+    <doc-pin line="7" tone="info" title="核の言い直し">項目は増やさず、前文の 1 文で焦点を移す。</doc-pin>
+    <doc-pin line="10" tone="info" title="保存した判断へ広げた">差別化の軸。ADR-0026 の範囲に合わせた。</doc-pin>
+  </doc-code>
+  <doc-ask id="draft">
+    <p>rule の英語版はどちらにしますか。</p>
+    <label><input type="radio" name="draft" value="core" checked> 上のドラフト <small>前文で核を言い直し、2 項目目を記録した判断まで広げる</small></label>
+    <label><input type="radio" name="draft" value="literal"> 今の 3 項目の忠実な英訳 <small>前文の 2 文目を入れず、2 項目目は推奨だけ</small></label>
+  </doc-ask>
+  <doc-note tone="warn"><strong>置き換え（2026-10-13, commit 14227a2）</strong> 著者の指摘で、2 項目目（失効条件）と as-of の一節を外し、rule を「使う時点で照合する」1 役割に絞った。上のドラフトは記録として残す。</doc-note>
+  <doc-note tone="info"><strong>「1 週間」の扱い</strong> 一次データはない（report の Still unknown）。本文は著者の worldview として残し、README で経験則だと書く。</doc-note>
+
+  <doc-claim>
+    <p>harness と repo の rule は同じバイトになる。</p>
+    <doc-code title="tools/sync-from-local.sh · sketch" lang="bash" caption="jev-skill-router と同じ一方向コピー。正本は harness で、script は commit しない。">
+<script type="text/plain">
+SOURCE="${HARNESS_SYNC_SOURCE:-$HOME/.claude}/rules/common/knowledge-staleness.md"
+TARGET="$(cd "$(dirname "$0")/.." && pwd)/rules/knowledge-staleness.md"
+grep -q '^<!-- origin: shimo4228 -->' "$SOURCE" || { echo "origin mismatch" >&2; exit 1; }
+if [[ "${1:-}" == "--dry-run" ]]; then diff -u "$TARGET" "$SOURCE"; exit 0; fi
+cp "$SOURCE" "$TARGET"
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>search-first への配線は planning.md へ移る。</p>
+    <doc-code diff file="rules/common/planning.md" start="6" wrap caption="両方とも常駐 rule なので、harness の context に載る中身は変わらない。">
+<script type="text/plain">
+@@ -6,2 +6,4 @@
+ - 既存解がありうる新機能・依存追加・自作 adapter / client / utility の前は skill: `search-first`
+   を Library / tool choice の問いとして回す（叩く endpoint でなく、それを担う定評のある library を問う）。
++- 外部の手法・ツール・仕様を記憶から述べかけたときの照合も skill: `search-first`（rule
++  `knowledge-staleness` の 1 項目目の実行入口）
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>plugin を入れると同じ本文が毎セッション常駐する。</p>
+  <doc-mock frame="terminal" title="install" w="480" caption="ファイル版はコピー 1 行、plugin 版は marketplace 経由の 2 行。"><template><span class="dim"># ファイルで入れる（どの rules ディレクトリでも）</span>
+<span class="dim">$</span> cp knowledge-staleness/rules/knowledge-staleness.md ~/.claude/rules/
+<span class="dim"># plugin で入れる（Claude Code）</span>
+<span class="dim">$</span> claude plugin marketplace add shimo4228/knowledge-staleness
+<span class="dim">$</span> claude plugin install knowledge-staleness@knowledge-staleness
+<span class="g">✓</span> SessionStart で本文が system reminder として入る</template></doc-mock>
+
+  <doc-claim>
+    <p>SessionStart hook が本文を stdout で出す。</p>
+    <doc-schema id="hooks" lang="json" title="hooks/hooks.json · sketch" caption="出力形式は plain stdout だけにし、他の hook と形式を混ぜない。">
+<script type="text/plain">
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          { "type": "command",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/rules/knowledge-staleness.md\"" }
+        ]
+      }
+    ]
+  }
+}
+</script>
+    </doc-schema>
+    <doc-ask id="matcher">
+      <p>どの場面で本文を入れますか。</p>
+      <label><input type="radio" name="matcher" value="compact" checked> startup・clear・compact <small>superpowers と同じ。compact 後の注入は 2.1.296 で手元確認する</small></label>
+      <label><input type="radio" name="matcher" value="nocompact"> startup・clear だけ <small>compact 後は本文が消える</small></label>
+    </doc-ask>
+    <div data-if="matcher=compact"><doc-note tone="warn"><strong>#28305</strong> v2.1.51 で compact 時の注入が落ちる報告があり、not planned で閉じた。確認で落ちたら README に書き、matcher から外す。</doc-note></div>
+  </doc-claim>
+
+  <doc-claim>
+    <p>repo 自体が 1 本だけの marketplace を兼ねる。</p>
+    <doc-schema id="mkt" lang="json" title=".claude-plugin/marketplace.json · sketch" caption="jev-skill-router と同じ形。plugin.json は name・version・author・license を持つ。">
+<script type="text/plain">
+{
+  "name": "knowledge-staleness",
+  "owner": { "name": "shimo4228", "url": "https://github.com/shimo4228" },
+  "plugins": [
+    { "name": "knowledge-staleness", "source": "./",
+      "description": "Always-on rule: LLM knowledge goes stale within a week; date what you rely on and give recommendations an expiry." }
+  ]
+}
+</script>
+    </doc-schema>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>README の表が rule あり・なしの差を示す。</p>
+  <doc-mock frame="terminal" title="claude plugin eval . --runs 3 --judge-model sonnet" w="480" caption="数字は実測で埋める。8 case × 3 run × 2 arm で約 48 run。"><template>CASE                WITH  W/OUT Δ      RUNS
+<span class="dim">intake</span>
+current-version     <span class="dim">—     —     —      6</span>
+stale-premise       <span class="dim">—     —     —      6</span>
+<span class="dim">storage</span>
+record-decision     <span class="dim">—     —     —      6</span>
+note-for-later      <span class="dim">—     —     —      6</span>
+recommend-tool      <span class="dim">—     —     —      6</span>
+<span class="dim">control</span>
+stable-concept      <span class="dim">—     —     —      6</span>
+stable-decision     <span class="dim">—     —     —      6</span>
+<span class="dim">indicator (with-only)</span>
+rule-loaded         <span class="dim">—                  3</span></template></doc-mock>
+  <doc-ask id="nodelta">
+    <p>差が出ない項目があったらどうしますか。</p>
+    <label><input type="radio" name="nodelta" value="rewrite" checked> 1 回だけ書き直して測り直す。それでも差がなければ削る <small>harness 側も同じ文面なので一緒に削る</small></label>
+    <label><input type="radio" name="nodelta" value="keep"> 文面は残し、README に差がないと書く</label>
+  </doc-ask>
+  <doc-note tone="warn"><strong>置き換え（2026-10-13）</strong> rule を 1 役割に絞ったので、保存側 3 ケースを外し、古い前提を渡す型（old-method・adopted-method）を足した。下の 3.1 の表は当初案。</doc-note>
+  <doc-note tone="info"><strong>読み方</strong> 1 case 3 run では効果の有無までしか言えない。hillclimb はせず、回帰 gate として残す（rule <code>evals.md</code>）。</doc-note>
+
+  <doc-claim>
+    <p>case は取り込み・保存・対照の 3 群に分ける。</p>
+    <doc-tree caption="対照は、記憶で正しく答えられる問い。調べすぎや儀式的な hedge を捕まえる（FreshQA の教訓）。">
+<script type="text/plain">
+evals/
+  + current-version/    # 「今の最新版は？」 WebSearch を使い、as-of を付けるか
+  + stale-premise/      # 古い前提を含む依頼。前提を確かめてから動くか
+  + record-decision/    # decision.md を書く。失効条件が入るか
+  + note-for-later/     # 次セッション向けメモ。日付と見直し条件が入るか
+  + recommend-tool/     # 5 行の推奨。見直し条件を言うか
+  + stable-concept/     # mutex の説明。検索 0 回・as-of なしが正解
+  + stable-decision/    # UTF-8 採用の記録。失効条件の儀式を足さないか
+  + rule-loaded/        # with-only。本文が context にあるか
+</script>
+    </doc-tree>
+  </doc-claim>
+
+  <doc-claim>
+    <p>判定は regex と tool_used を主にする。</p>
+    <doc-code title="evals/record-decision/graders/expiry.md · sketch" lang="markdown" caption="結果に 1 つ、手順に 1 つ。llm judge は短い出力だけに使い、sonnet で回す。">
+<script type="text/plain">
+---
+type: regex
+target: { source: file, path: decision.md }
+pattern: "(valid[- ]until|expires?|revisit|review[- ]when|invalidat|as of \\d{4})"
+flags: i
+---
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>結果は path を消して repo に同封する。</p>
+    <doc-tree caption="report.html と JSON は自己完結。commit 前に $HOME の実値を grep で消す。">
+<script type="text/plain">
+evals/
+  results/                       # .gitignore（毎回の出力）
+  + published/
+    + 2026-10-XX/
+      + aggregate-result.json    # 絶対 path を ~/ に置換
+      + report.html
+      + README.md                # CLI 版・model・judge・grant・費用
+</script>
+    </doc-tree>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ shared ═════ -->
+<doc-claim aux="shared">
+  <p>共有：1 本の rule ファイルを 3 つの経路が読む。</p>
+  <doc-tree caption="~/MyAI_Lab/knowledge-staleness。最初に verify-bootstrap で .claude/verify.sh を作る。">
+<script type="text/plain">
+knowledge-staleness/
+  + rules/knowledge-staleness.md   # 正本は ~/.claude/rules/common/ 。sync でだけ変わる
+  + hooks/hooks.json               # claim 2.1 が cat する
+  + .claude-plugin/plugin.json
+  + .claude-plugin/marketplace.json
+  + evals/                         # claim 3 が読む
+  + tools/sync-from-local.sh
+  + .claude/verify.sh              # plugin validate --strict と sync drift
+  + README.md  LICENSE  .gitignore
+</script>
+  </doc-tree>
+  <doc-ask id="executor">
+    <p>実行者の決定：誰が作りますか。</p>
+    <label><input type="radio" name="executor" value="here" checked> この session <small>Opus 5.5。rule の散文編集を含み、implementation-chain の例外 (a)</small></label>
+    <label><input type="radio" name="executor" value="build"> 別の build セッションへ dispatch <small>repo は未公開なので cloud には出せない</small></label>
+  </doc-ask>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの：search-first・ADR-0026・list 掲載。</p>
+  <ul>
+    <li>skill <code>search-first</code> は変えない。逆向きの参照「(rule: knowledge-staleness)」は名前が同じなので有効。</li>
+    <li>AKC ADR-0026 は変えない。README から概念の記録として参照する。</li>
+    <li>GitHub への公開は著者の確認を取ってから行う。awesome list への掲載は personal-branding 側で扱い、この session では投稿しない（著者のコメント、2026-10-13）。</li>
+    <li>claude-harness の rule は、次の harness-sync で英語版に置き換わる。手順は変えない。</li>
+    <li>Anthropic の plugin directory への提出は、repo を push したあとに personal-branding 側が行う（著者の決定、2026-10-13。listing 欄とアイコンもそちらで足す）。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

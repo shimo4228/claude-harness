@@ -6,6 +6,8 @@
 - 既存解がありうる新機能・依存追加・自作 adapter / client / utility の前は skill: `search-first`
   を Library / tool choice の問いとして回す（叩く endpoint でなく、それを担う定評のある library を問う）。
   採用する依存は skill: `implementation-chain` の dependency intake を通す
+- 外部の手法・ツール・仕様を記憶から述べかけたときの照合も skill: `search-first`（rule
+  `knowledge-staleness` の 1 項目目の実行入口）
 - judge-tier セッションでの実装は build-tier への dispatch が既定 — 実行者の決定と例外は
   skill: `implementation-chain`（三役の正本: ADR-0043）
 - 実装 chain の種別と reviewer 条件は skill: `implementation-chain`

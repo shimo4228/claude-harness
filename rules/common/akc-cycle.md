@@ -10,7 +10,7 @@ AKC の全機構と所有者。手順・本文は所有者側が正本で、こ�
 | 6 phase 手順 | Research→skill: `search-first` / Extract→`learn-eval` / Curate→`skill-health`+`skill-stocktake`+`rules-stocktake`+`agent-stocktake` / Promote→`rules-distill` / Measure→`skill-comply` / Maintain→`context-sync`+`repo-asset-stocktake`（mutable snapshot — AKC ADR-0019） |
 | 三役ループ judge/build/human（AKC ADR-0024） | skill: `task-triage`、rule: `planning.md` |
 | LLM-first artifact readability（AKC ADR-0025） | rule: `llm-first-code.md` |
-| expiry-conditioned knowledge（AKC ADR-0026） | rule: `knowledge-staleness.md` + 本 rule の「ADR の扱い」節 |
+| expiry-conditioned knowledge（AKC ADR-0026） | rule: `knowledge-staleness.md` + 本 rule の「ADR の扱い」節 + skill: `adr-writer`（Review-when）|
 | mental model / instance の区別（AKC ADR-0027） | AKC repo の CLAUDE.md（harness rule の対象外） |
 | 自己完結版（skill 未導入環境向け） | akc-cycle repo `rules/common/akc-cycle.md`（本ファイルとは別内容） |
 

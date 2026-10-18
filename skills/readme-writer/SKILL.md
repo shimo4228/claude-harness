@@ -57,7 +57,7 @@ README には 2 種類の読者がいる。人間は上から 1 回読み、合�
 |---|---|---|
 | **証拠** | 第一画面の行数と新語、内部参照、造語候補、`<details>` の中身、図の前後の prose、切れたリンクと anchor、内部史・生数値の行、slop 語、日本語版の文末、節ごとの block 形 | **code** — `scripts/readme_evidence.py`（JSON。verdict も閾値も exit gate も持たない） |
 | **描画証拠** | GitHub と同じ HTML を github.com の README の列幅・文字サイズ（profile / repo、desktop / mobile。値の正本は `readme_render.py` の `SURFACES`）× light / dark で撮った PNG、squint 版、見出しと block の位置、fold、横にはみ出す要素 | **code** — `scripts/readme_render.py`（`gh api /markdown` + 同梱 github-markdown-css + Playwright。判定はしない） |
-| **訪問者役の読み**（任意） | repo ごとに選んだ初見の訪問者 3 人が、どこで読むのをやめ、試すか、何が止めたか（JSON） | **LLM** — 著者の設定を読み込まない隔離した `claude -p`（sonnet）の 3 人。Rewrite モードで、人に試してもらうことが目的の依頼のとき（`references/visitor-read.md`） |
+| **訪問者役の読み**（任意） | repo ごとに選んだ初見の訪問者 3 人が、どこで読むのをやめ、試すか、何が止めたか（JSON） | **LLM** — [skill: persona-read-loop] の readme preset（隔離した `claude -p` の 3 人、改稿ごとの drift 計測）。Rewrite モードで、人に試してもらうことが目的の依頼のとき |
 | **判定** | フロア、第一画面、段落の役割、造語、参照が導線か、日本語の文体と言語間の対応、継ぎ足しと論理、**主張とコードの照合** | **LLM** — `readme-judge` agent（fresh context、集計しない named verdict）。レビュー agent はこれ 1 つ |
 
 README に研究値ベースの数値スコアは作らない。「良い入口か」は意味的判断で、同等の決定論的知見がない。
@@ -203,14 +203,15 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
      as-of 日付付きで README）。持ち主の無い数値は README に置かない
    - tagline: 著者の入口の語（流入経路で探される語）を先に聞く。[skill: headline-craft] の候補をその語を含む形で
      作り、`references/tagline-eval.md` で測り、推奨と結果の表を添えて著者がここで選ぶ
-   - 訪問者役の読みを回すなら、選んだ 3 人と、既存の README があればその版（r0）の読みの結果（`references/visitor-read.md`）
+   - 訪問者役の読みを回すなら、選んだ 3 人と、既存の README があればその版（r0）の読みの結果（[skill: persona-read-loop] の
+     readme preset。人選の確認はここで受ける）
 2. 執筆（本体が直接書く）
    - 事実はコードと docs に照らしながら書く（version・コマンド・既定値・件数）
    - 概要図の SVG を描き、ラベルをコードと本文に照合し、PNG に描いて目で確かめる
      （`references/overview-diagram.md`）
    - 著者のほかの仕事への導線（「導線の置き方」）を置き、各リンクが開けることを確かめる
-   - 訪問者役の読みを回すとき: 草稿を凍結して同じ 3 人に読ませ、文面で直る理由を直す。事実の不足は
-     著者に渡す。止めどきまで繰り返してから Step 3 へ（`references/visitor-read.md`）
+   - 訪問者役の読みを回すとき: [skill: persona-read-loop] の readme preset で周回する（凍結・読ませる・文面で直る
+     理由だけを直す・drift を数える・事実の不足は著者へ）。止めどきまで回してから Step 3 へ
 3. 他言語版 — [skill: prose-translation] の term-lock と back-translation で訳す。README に固有の
    規則（JA のですます・日本語の段落を 1 行に・概要図の和文版 `assets/overview.ja.svg`・英語だけの
    docs へのリンクに（英語））はこの skill が持つ。同じフロア・見出し階層・アンカー・例で揃える
@@ -284,10 +285,11 @@ uv run python -m scripts.readme_render fixtures/sample_clean.md --out <scratch>/
 - [`prose-translation`](../prose-translation/SKILL.md) — 他言語版の翻訳（Step 3）
 - [`release-doi`](../release-doi/SKILL.md) — DOI repo の release と、それに伴う version・DOI・homepage の同期
 - [`context-sync`](../context-sync/SKILL.md) — 文書間の役割の重なりと移送（README の外まで直すとき）
+- [`persona-read-loop`](../persona-read-loop/SKILL.md) — 訪問者役の読みの周回（readme preset）
 - plugin `codex@openai-codex`（read-only の `/codex:rescue`）— 著者が求めたときの cross-model レビュー
 - [`llms-txt-writer`](../llms-txt-writer/SKILL.md) / [`jsonld-knowledge-graph`](../jsonld-knowledge-graph/SKILL.md) — 機械 surface
 - skill: `archify` — 詳しい構成図（HTML）。README には概要図を置き、構成図は docs/ からリンクする
 - `~/MyAI_Lab/zenn-content/.claude/skills/writing-ecosystem/references/style-diagnostics.md` — AI slop の診断表の正本。執筆の原則は背骨 `~/MyAI_Lab/zenn-content/.claude/rules/writing-principles.md`
-- `references/` — `readme-judge-checklist.md` / `visual.md` / `overview-diagram.md` / `ja-register.md` / `about.md` / `visitor-read.md` / `tagline-eval.md`
+- `references/` — `readme-judge-checklist.md` / `visual.md` / `overview-diagram.md` / `ja-register.md` / `about.md` / `tagline-eval.md`
 - `evals/read-through-log.md` — 通読指摘数の記録
 - `inspiration.md` — 設計の出自・外部エビデンスの出典

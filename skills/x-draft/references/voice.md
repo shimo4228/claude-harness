@@ -7,7 +7,7 @@
 
 ## 見本の場所
 
-- X ハンドル: **@sakamakiuzutaro** (claude-in-chrome でプロフィールを読める)
+- X ハンドル: **@shimo4228** (claude-in-chrome でプロフィールを読める。Buffer 接続後は Buffer MCP の `list_posts` でも読める)
 - voice が変わった気がしたら見本を読み直してこのファイルを更新する
 
 ## 観察した特徴 (2026-08-07 時点の実ポストから)

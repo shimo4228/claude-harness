@@ -9,8 +9,8 @@ Step 1 で著者が tagline を選ぶとき、候補だけでなく測った結�
 
 - [skill: headline-craft] に tagline の候補を 9 本前後頼む（headline-craft は現行の tagline を比較の基準として
   1 本に含める）
-- 著者の入口の語（Step 1 で聞いた、流入経路で探される語）は、すべての候補に含める。扱いは `visitor-read.md` の
-  「新しい機能の語」
+- 著者の入口の語（Step 1 で聞いた、流入経路で探される語）は、すべての候補に含める。扱いは [skill: persona-read-loop] の
+  readme preset「Feature names newer than the reader model」
 - 主張はコードと計測に照らしてから候補に入れる（headline-craft の「誠実さの照合」）。数字は計測の値と一致させる
 - 途中で候補を足してよいのは、段 1 で出た取り違えを直した案と、入口の語を入れ忘れた案を直した案だけ
 
@@ -18,13 +18,17 @@ Step 1 で著者が tagline を選ぶとき、候補だけでなく測った結�
 
 - 読み手は、著者の CLAUDE.md・rules・skill を読み込まない隔離した `claude -p` で走らせる。設定を読み込んだ
   読み手は著者の語彙を知っていて、初見の読者にならない
-- 人物は `visitor-read.md` の「訪問者を 3 人選ぶ」で選ぶ（訪問者役の読みを回さない回も同じ手順）。流入経路が
+- 人物は [skill: persona-read-loop] の readme preset「Readers」で選ぶ（訪問者役の読みを回さない回も同じ手順）。流入経路が
   新機能の一覧なら、その機能を探して回っている人を 4 人目に加える
 
 ```bash
-claude -p --setting-sources "" --strict-mcp-config --tools "" --model sonnet \
-  --system-prompt "You are <persona>. Answer as that person would, honestly." "<prompt>"
+cd "$(mktemp -d)" && CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
+  claude -p --setting-sources "" --strict-mcp-config --tools "" --model sonnet \
+  --system-prompt "You are <persona>. Answer as that person would, honestly." "<prompt>" < /dev/null
 ```
+
+空の一時ディレクトリから auto memory を切って起動する（`--setting-sources ""` だけでは cwd の project の auto memory が
+読み手に届く）。隔離は [skill: persona-read-loop] の `scripts/read.sh --probe` で確かめる。
 
 数十回を並列に呼ぶので、出力はファイルに書き、壊れた JSON は集計で読み飛ばす。
 

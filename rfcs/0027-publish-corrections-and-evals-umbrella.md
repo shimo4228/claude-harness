@@ -36,6 +36,12 @@ review-when: 子 RFC-0028〜0031 がすべて終端になったとき。また�
 
 **2026-09-28 in_progress** — 著者 OK。子の状態: RFC-0030（Eval カード）done — 5 枚を公開 / RFC-0028（commit に指摘を残す）in_progress — zenn-content で試行中（〜10-12）/ RFC-0031（読者役による照合）accepted — 基準の 0 回目を実施中 / RFC-0029（commit 本文を公開ミラーへ運ぶ）blocked — RFC-0028 の試行の結果待ち。
 
+triage 2026-10-18: RFC-0028 の試行の読みは数え終えた（著者の判断待ち）。RFC-0031 の 1 回目は対照の定義待ち。傘の見直しはその 2 つの後。
+
+triage 2026-10-18（続き）: 子の RFC-0031（読者役による照合）は著者判断で withdrawn。子の残りは RFC-0028 in_progress（続ける、writing-ecosystem へ移す）と RFC-0029 accepted。
+
+triage 2026-10-18（続き）: 2026-10-09 の project thread の session が、この傘の候補 ③（ルール単位の「その後」）と ⑧（事前コミット）の実装として、未マージの branch を残していた（公開 repo の Review-when / Expect を別 repo の追記台帳で週次に答え合わせする案、ADR-0095 草稿と週次 Routine の手順）。著者判断で破棄。branch `task/track-record`（`6a72cfd`）と重複の `claude/project-thread-qzui1v`（`49c7672`）を削除し、Routine `trig_01FkDzdN4KNzRLRFsgGBDWMv` は照会で既に存在しなかった（404）。
+
 ## Next action
 
 子の RFC が担う。この傘は、RFC-0028 の試行の読み（2026-10-12）と RFC-0031 の 1 回目の後に、方針（捕まえる場所は commit、数えるのは公開物だけで確認できた環）を続けるかを見直す。

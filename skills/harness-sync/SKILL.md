@@ -239,6 +239,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/context-sync` ([repo](https://github.com/shimo4228/context-sync)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/context-sync` |
 | `~/MyAI_Lab/llms-txt-writer` ([repo](https://github.com/shimo4228/llms-txt-writer)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/llms-txt-writer` |
 | `~/MyAI_Lab/readme-writer` ([repo](https://github.com/shimo4228/readme-writer)) | skill + agent 同梱 | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/readme-writer`（同梱 agent `agents/readme-judge.md` の正本は `~/.claude/agents/readme-judge.md`、script の対象外で手動 diff） |
+| `~/MyAI_Lab/persona-read-loop` ([repo](https://github.com/shimo4228/persona-read-loop)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/persona-read-loop` |
 | `~/MyAI_Lab/release-doi` ([repo](https://github.com/shimo4228/release-doi)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/release-doi` |
 | `~/MyAI_Lab/search-first` ([repo](https://github.com/shimo4228/search-first)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/search-first` |
 | `~/MyAI_Lab/jsonld-knowledge-graph` ([repo](https://github.com/shimo4228/jsonld-knowledge-graph)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/jsonld-knowledge-graph` |

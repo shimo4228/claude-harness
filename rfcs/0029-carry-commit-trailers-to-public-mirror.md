@@ -1,5 +1,5 @@
 ---
-state: blocked 2026-09-28
+state: accepted 2026-10-18
 review-when: harness-sync の同期方式が変わったとき
 ---
 ## Summary
@@ -29,6 +29,10 @@ trailer に私的なパスや機微が混ざりうる（同期の secret scan �
 成立時:   accepted（claude-harness の同期 script に、公開対象を触った source commit の trailer を同期 commit の本文へ写す処理を足す）
 
 triage 2026-10-11: RFC-0028 は in_progress のまま（試行の読みは 2026-10-12）。未成立。
+
+triage 2026-10-18: RFC-0028 は in_progress のまま。試行の読み（数えた値）は RFC-0028 の Status に記録したが、「続ける / 撤退」は著者の判断待ち。未成立。
+
+triage 2026-10-18（続き）: 再開条件が成立 — RFC-0028 の試行は著者が「続ける」と決めた（RFC-0028 Status 2026-10-18）。成立時どおり accepted。実装先は harness-sync の同期 script で、skill の変更なので merge は著者の diff。
 
 ## Next action
 

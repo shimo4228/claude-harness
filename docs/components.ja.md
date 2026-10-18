@@ -53,6 +53,12 @@
 | [review-when-watch](../skills/review-when-watch/SKILL.md) | 毎朝の launchd job。新しいリサーチノートを ADR と RFC の Review-when 条件に TypeSafe Jev で 1 組ずつ照合し、当たりを Slack に送る。model からは呼ばない |
 | [mono-figure](../skills/mono-figure/SKILL.md) | 記事や README の静的な説明図（線・矢印・数字・ラベル）を mono-color の見た目（紙・インク・書体・余白）で作る。既定は Claude が SVG で描き、必要な platform では PNG に撮る |
 | [agent-send](../skills/agent-send/SKILL.md) | Send a prompt to an agent running in a Herdr pane and confirm it landed, or wait until its work is done |
+| [persona-read-loop](../skills/persona-read-loop/SKILL.md) | 隔離した 3 人の LLM の読み手に稿（記事・README）を周回で読ませ、見せ方だけを直し、改稿ごとに足した主張を数える。ユーザーリサーチの代わりではない |
+| [social-post](../skills/social-post/SKILL.md) | 新しい記事の告知や断片を X・Bluesky・Substack Notes の投稿にし、Buffer の下書きに入れる（予約と公開は著者） |
+| [widen-altitude](../skills/widen-altitude/SKILL.md) | 依頼を「目的の目的」へ一段上げ、単発の作業を「状態を保つ」委任に書き直す |
+| [widen-depth](../skills/widen-depth/SKILL.md) | 依頼を大きな版でなく深い版に書き直す。一流がやること・生の素材・方法と道具・外部の判定を引き出す |
+| [widen-range](../skills/widen-range/SKILL.md) | 依頼を名詞から動詞に言い直し、その動詞を本業にする複数の分野の行為を持ち込む |
+| [widen-the-ask](../skills/widen-the-ask/SKILL.md) | プランに入る前に、依頼を高度・範囲・深度の 3 方向へ、人間との対話で一問ずつ広げる |
 <!-- END GENERATED: skills-table -->
 
 ## Agents

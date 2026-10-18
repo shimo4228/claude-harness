@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>persona-read-loop の切り出し</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+
+<header>
+  <h1>ペルソナ読みを単独 skill と repo にする</h1>
+  <doc-changes new="10" changed="4" deleted="3"></doc-changes>
+  <details class="thread"><summary>Why · 5 件</summary>
+    <doc-quote via="prompt" from="著者">ペルソナを立ててレビューループを回すスキルなんだけど、これって別立てでスキル化してあった？</doc-quote>
+    <doc-quote via="prompt" from="著者">じゃあこのレビューループを独立したスキルとして切り出して、Awsome-listとかにPRしていこう。プランして</doc-quote>
+    <doc-quote via="prompt" from="著者">PRの調査はいいや。ルーティーンにPR候補決めるやつあるからそこに任すわ。スキルの設計と単独リポの作成だけお願い</doc-quote>
+    <doc-quote via="doc" from="調査 report（kind: external）" href="research/2026-10-18-persona-read-skill.md">隔離は L1 の --setting-sources "" 構成が有効。--safe-mode は環境節が漏れる</doc-quote>
+    <doc-quote via="prompt" from="著者">こっちはEval-loopするという違いがあるんじゃないの？Persona-review-loopという名前にするのはどうだ？</doc-quote>
+    <doc-quote via="prompt" from="著者">じゃあ推奨で</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>記事も README も 1 つの skill で読ませられる。</p>
+  <doc-tree caption="共通の手順は SKILL.md に、対象ごとの問いは preset に置く。">
+<script type="text/plain">
+~/.claude/skills/persona-read-loop/
+  + SKILL.md              # 人選・凍結・起動・分類・止めどき
+  + presets/
+    + article.md          # 判断の言い直しを意図と照合する
+    + readme.md           # 試したくなるかを聞く
+  + scripts/
+    + read.sh             # 隔離した読み手 1 人を起動する
+    + drift_count.py      # 改稿で足した主張を数える
+    + test_drift_count.py
+</script>
+  </doc-tree>
+  <doc-ask id="name">
+    <p>skill の名前はどれにしますか。</p>
+    <label><input type="radio" name="name" value="persona-read-loop" checked> persona-read-loop <small>著者が選んだ。読んで言い直す周回を名前で示す</small></label>
+    <label><input type="radio" name="name" value="reader-loop"> reader-loop <small>短い。persona の語は落ちる</small></label>
+    <label><input type="radio" name="name" value="persona-review-loop"> persona-review-loop <small>先行の persona-review と名前が重なる</small></label>
+  </doc-ask>
+
+  <doc-claim>
+    <p>共通の骨組みは SKILL.md 1 本が持つ。</p>
+    <doc-machine name="round" caption="改稿は文面で直る理由があるときだけ回る。">
+<script type="text/plain">
+machine round initial pick
+state pick      # 違う理由で分かれる 3 人を選ぶ。
+state freeze    # r<N> を保存し、畳んだ節を消す。
+state read      # read.sh で 3 人を並列に読ませる。
+state sort      # 文面で直るものと事実の不足に分ける。
+state revise    # 見せ方だけを直す。drift を数える。
+state stop final # 著者の通読へ渡す。
+
+| pick | freeze | read |
+| stop | revise | sort |
+
+pick   -go->     freeze
+freeze -go->     read
+read   -json->   sort
+sort   -fix->    revise : 文面
+revise -next->   freeze : r+1
+sort   -done->   stop   : 理由なし / 3 周
+</script>
+    </doc-machine>
+    <doc-note tone="info">2 つの版で同じ部分だけを移す。読み手の評価を受け入れ条件にしない点も、ここに書く。</doc-note>
+  </doc-claim>
+
+  <doc-claim>
+    <p>preset は問いの JSON と照合の仕方だけを持つ。</p>
+    <doc-schema id="preset" lang="ts" title="preset の形 · sketch">
+<script type="text/plain">
+interface Preset {
+  target: "article" | "readme" | string  // 利用者が足せる
+  roles: [string, string, string]       // 3 人の役の型
+  promptFile: string                    // 読み手に渡す問い
+  answer: Record<string, string>        // 返させる JSON の欄
+  match: "restate-vs-intent" | "would-try"
+  stopWhen: string[]                    // 止めどきの追加条件
+}
+</script>
+    </doc-schema>
+    <doc-ask id="confirm">
+      <p>人選を著者に確かめるのはいつですか。</p>
+      <label><input type="radio" name="confirm" value="preset" checked> preset ごとに決める <small>記事は確かめない。README は Step 1 で確かめる</small></label>
+      <label><input type="radio" name="confirm" value="always"> いつも確かめる</label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>読み手は著者の設定を何も読まない。</p>
+  <doc-mock frame="terminal" title="read.sh --probe" w="470"><template><span class="dim">></span> scripts/read.sh --probe
+tools        <b>0</b>
+mcp_servers  <b>0</b>
+user skills  <b>0</b>   <span class="dim">(built-in 22)</span>
+context      <span class="g">NONE</span>
+<span class="g">✓</span> isolated · claude 2.1.302</template></doc-mock>
+  <doc-note tone="warn"><strong>実測</strong> <code>--safe-mode</code> では <code># userEmail</code> などの環境の節が読み手に見えた。<code>--setting-sources ""</code> を使い続ける。</doc-note>
+
+  <doc-claim>
+    <p>起動は read.sh 1 本に閉じる。</p>
+    <doc-code title="scripts/read.sh · sketch" lang="bash">
+<script type="text/plain">
+#!/usr/bin/env bash
+# usage: read.sh <persona.txt> <prompt.md> <draft.reader.md> > out.json
+set -euo pipefail
+: "${PERSONA_READ_CMD:=claude}"   # 他の CLI へ差し替える口
+"$PERSONA_READ_CMD" -p --setting-sources "" --strict-mcp-config \
+  --tools "" --model "${PERSONA_READ_MODEL:-sonnet}" \
+  --system-prompt "$(cat "$1")" \
+  "$(cat "$2" "$3")" < /dev/null
+</script>
+    </doc-code>
+    <doc-ask id="port">
+      <p>Claude Code 以外の CLI をどこまで扱いますか。</p>
+      <label><input type="radio" name="port" value="hook" checked> 差し替えの口だけ置く <small>動作の保証は Claude Code のみ</small></label>
+      <label><input type="radio" name="port" value="codex"> Codex 用の起動も書く <small>ツールを切るフラグが無く、隔離は未検証</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>起動前に probe で隔離を毎回確かめる。</p>
+    <doc-code title="SKILL.md の手順 · sketch" lang="md">
+<script type="text/plain">
+対象ごとの最初に `scripts/read.sh --probe` を回す。
+init event の tools と user skills が 0、
+文脈の問いへの答えが NONE なら読ませる。
+どれかが外れたら止めて著者に渡す（CLI の版で挙動が変わる）。
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>改稿が主張を足すと次の周の前に止まる。</p>
+  <doc-mock frame="terminal" title="drift_count.py" w="470"><template><span class="dim">></span> python3 scripts/drift_count.py r1.md r2.md
+{ "new_numbers": [<span class="y">"53%"</span>],
+  "added_superlatives": [],
+  "added_hedges": [<span class="y">"may"</span>, <span class="y">"かもしれ"</span>],
+  "new_latin_names": [] }
+<span class="r">exit 1</span> <span class="dim">— 著者の確認まで r3 に進まない</span></template></doc-mock>
+
+  <doc-claim>
+    <p>drift_count.py を skill に移し語彙を足す。</p>
+    <doc-code src="scripts/drift_count.py" lines="24-30" hl="24-25">
+      <doc-pin line="25" tone="warn" title="日本語の語だけ">公開版は英語の最上級と限定句も要る。</doc-pin>
+    </doc-code>
+    <doc-ask id="lexicon">
+      <p>英語の語彙はいつ足しますか。</p>
+      <label><input type="radio" name="lexicon" value="now" checked> 切り出しと同時に足す <small>may / might / arguably / the first など</small></label>
+      <label><input type="radio" name="lexicon" value="later"> 日本語のまま出す <small>README に制約として書く</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>README の preset にも drift 計測がかかる。</p>
+    <doc-code title="SKILL.md の revise 手順 · sketch" lang="md">
+<script type="text/plain">
+改稿したら preset にかかわらず前の周との差を数える:
+  python3 scripts/drift_count.py r<N-1>.md r<N>.md [--dossier <path>]
+exit 1 なら、著者の確認まで次の周へ渡さない。
+</script>
+    </doc-code>
+    <doc-note tone="idea">今の README 版は計測が無い。批判を受けた改稿は限定句が増える（Loop-Back、§4.2 で +53%）。</doc-note>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>既存の 2 skill は新しい skill を指すだけになる。</p>
+  <doc-calls title="呼び出し元" caption="手順の本文は persona-read-loop だけが持つ。">
+<script type="text/plain">
+~ writing-ecosystem §3.5 Persona read               @ .claude/skills/writing-ecosystem/SKILL.md:110
++   persona-read-loop preset=article                       -- 手順は新 skill
+~   references/persona-read.md                      @ .claude/skills/writing-ecosystem/references/persona-read.md:1   -- Zenn の比較読みだけ残す
+-   uv run scripts/drift_count.py                   @ scripts/drift_count.py:1   -- skill の scripts へ移る
+
+~ readme-writer 訪問者役の読み                       @ skills/readme-writer/SKILL.md:60
++   persona-read-loop preset=readme
+-   references/visitor-read.md                      @ skills/readme-writer/references/visitor-read.md:1   -- preset へ移って消える
+</script>
+  </doc-calls>
+  <doc-note tone="info">Zenn API で比較記事を選ぶ両順読みは Zenn 固有なので、writing-ecosystem 側に残す。</doc-note>
+</doc-claim>
+
+<!-- ═════ 5 ═════ -->
+<doc-claim>
+  <p>単独 repo を harness から一方向に同期して作る。</p>
+  <doc-tree caption="pure-skill repo なので prefix と .claude-plugin/ を持たない。">
+<script type="text/plain">
+~/MyAI_Lab/persona-read-loop/          # shimo4228/persona-read-loop
+  + README.md                     # readme-writer で書く
+  + LICENSE                       # MIT
+  + scripts/sync-from-local.sh    # 雛形を byte-identical に置く
+  + skills/persona-read-loop/          # 同期で入る。手で触らない
+</script>
+  </doc-tree>
+  <doc-ask id="publish">
+    <p>GitHub に public で出すのはどこまでですか。</p>
+    <label><input type="radio" name="publish" value="local" checked> ローカルの repo まで作る <small>gh repo create と push は著者が GO で</small></label>
+    <label><input type="radio" name="publish" value="push"> public で push まで進める</label>
+  </doc-ask>
+
+  <doc-claim>
+    <p>README は利用者調査の代わりでないと書く。</p>
+    <doc-code title="README の位置づけの段落 · sketch" lang="md" wrap>
+<script type="text/plain">
+persona-read-loop is a cheap pre-screen, not user research. Three LLM readers
+show where a draft stalls and whether your decision got across. They do
+not tell you what real readers think, and their scores never accept a draft.
+The loop closes itself (freeze, read, sort, revise, stop) but never climbs a score.
+Prior art: pvliesdonk/claude-plugins persona-review (teach-back, verifiers).
+This skill adds process isolation and a count of what each revision added.
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>harness-sync の対応表に 1 行足す。</p>
+    <doc-code src="skills/harness-sync/SKILL.md" lines="228-230" hl="230"></doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>公開前に機械ゲートと公開検査を通す。</p>
+    <doc-code title="公開前の検査 · sketch" lang="bash">
+<script type="text/plain">
+# 1. repo の機械ゲートを作る（skill: verify-bootstrap）
+bash .claude/verify.sh
+# 2. Agent Skills の 6 欄だけを使っているか
+skills-ref validate skills/persona-read-loop
+# 3. 機微の検査。著者が diff を読む
+~/.claude/scripts/verify-public-detail.sh
+</script>
+    </doc-code>
+    <doc-ask id="executor">
+      <p>実行者の決定：誰が作りますか。</p>
+      <label><input type="radio" name="executor" value="build" checked> build セッションへ dispatch <small>Opus 5.5。script と test の移設を含む</small></label>
+      <label><input type="radio" name="executor" value="here"> この session <small>調査の文脈をそのまま使える</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<doc-claim aux="shared">
+  <p>共有：読み手に返させる JSON の欄。</p>
+  <doc-schema id="answer" lang="json" title="article preset の答え（現行の欄）">
+<script type="text/plain">
+{
+  "stopped_reading_at": "止まった見出しか文",
+  "what_the_author_decided": "著者が決めたこと",
+  "what_the_author_left_open": "決めなかったこと",
+  "why_it_holds": "支えていた観察か数字",
+  "unclear_terms": ["分からなかった語"],
+  "pushed_away": ["読む気を削いだ文"]
+}
+</script>
+  </doc-schema>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないもの：PR・照合の基準・Zenn の比較読み。</p>
+  <ul>
+    <li>awesome-list への PR はしない。PR 候補を決めるルーティーンに任せる。</li>
+    <li>一致 / ずれ / 欠落の照合と、3 周の上限は今のまま移す。</li>
+    <li>Zenn の比較記事の両順読みは writing-ecosystem に残す。</li>
+    <li>読み手のモデルは sonnet のまま。書き手と別のモデルにする理由は変わらない。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>
