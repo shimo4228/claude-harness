@@ -59,6 +59,10 @@
 | [widen-depth](../skills/widen-depth/SKILL.md) | 依頼を大きな版でなく深い版に書き直す。一流がやること・生の素材・方法と道具・外部の判定を引き出す |
 | [widen-range](../skills/widen-range/SKILL.md) | 依頼を名詞から動詞に言い直し、その動詞を本業にする複数の分野の行為を持ち込む |
 | [widen-the-ask](../skills/widen-the-ask/SKILL.md) | プランに入る前に、依頼を高度・範囲・深度の 3 方向へ、人間との対話で一問ずつ広げる |
+| [detail-loop](../skills/detail-loop/SKILL.md) | 骨組みのできた製品を細部の単位ごとに仕上げ、直した細部を検査として凍結する。レビューで新しい指摘が出なくなるまで回す |
+| [detail-review](../skills/detail-review/SKILL.md) | 製品の仕上がっていない細部を探す。隔離した専門家役が実環境で実際の出力を読み、指摘を台帳に振り分ける |
+| [detail-units](../skills/detail-units/SKILL.md) | 製品の細部を作法 1 つごとの単位に分け、eval/units.yaml に記録する |
+| [unit-eval](../skills/unit-eval/SKILL.md) | 細部の単位 1 つを製品の出力への検査として凍結し、その検査が落ちうることを確かめる |
 <!-- END GENERATED: skills-table -->
 
 ## Agents

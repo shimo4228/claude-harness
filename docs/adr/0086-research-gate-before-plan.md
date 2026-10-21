@@ -79,6 +79,18 @@ Plan: [docs/plans/research-plan-mode.md](../plans/research-plan-mode.md)（承�
      cwd の外で、acceptEdits だけでは誰も答えられない確認が出るため。report は cwd の中なので Claude Code の判定に
      任せる。harness repo の report は `.claude` 配下の sensitive file として確認が出て、approve でもこれは飛ばない
      （Decision 6 の実機確認）ので、著者がその場で許可する
+
+     > **注記（2026-10-20, commit「fix(research-gate): worktree の session ではその worktree の report で gate を開く」）**:
+     > report の基準に、worktree の session ではその worktree を足した。Claude Desktop は worktree の session を
+     > `--project-config-root <main の checkout>` で起動し、hook の `$CLAUDE_PROJECT_DIR` は main を、payload の `cwd`
+     > だけが worktree を指す（2026-10-20 実測、CLI 2.1.299）。worktree のガードは main への書き込みを止めるので、
+     > report を置ける場所が無く gate が開かなかった（jrp の worktree session、同日）。足すのは payload の cwd を含む
+     > worktree の top で、その実 path が `<project>/.claude/worktrees/<name>`（Claude の worktree の置き場）にあり、
+     > `$CLAUDE_PROJECT_DIR` に登録された linked worktree だと `scripts/hooks/verify_allow.py` の `main_checkout_of` が
+     > 答えるときだけ（読めなければ足さない）。置き場を限るのは、commit された `.claude/worktrees` の symlink を通した
+     > worktree が、実体が `~/.claude/rules` の下でも正しい登録になるため（同日の security review で再現）。realpath・名前の形・
+     > 制御文字の照合と、main の checkout の session の基準は変えていない。Review-when の窓が固定する差し込む文面・
+     > 照合語・plan ファイルの path の集合も変えていない
    - researcher が 1 行目 `kind:` の report を書いたら、その session に印 ready を付ける。見るのは存在で、中身の質は
      lead と著者が見る。主ループが自分で report を書いても印は付かない
    - plan の依頼中、印が無ければ plan ファイル（`*/docs/plans/<name>.md`、`~/.claude/plans/<name>.md`）への

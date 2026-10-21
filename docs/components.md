@@ -59,6 +59,10 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 | [widen-depth](../skills/widen-depth/SKILL.md) | Rewrite a request as a deeper version, not a bigger one: what experts do, raw material, methods and tools, an outside judge |
 | [widen-range](../skills/widen-range/SKILL.md) | Restate a request as a verb, and bring in practices from fields whose main work is that verb |
 | [widen-the-ask](../skills/widen-the-ask/SKILL.md) | Before planning, widen a request with the human one question at a time, in three directions: altitude, range, depth |
+| [detail-loop](../skills/detail-loop/SKILL.md) | Refines a product whose skeleton is done, one detail unit at a time, freezing each fix as a check, until a review round finds nothing new |
+| [detail-review](../skills/detail-review/SKILL.md) | Finds a product's unfinished details: isolated expert reviewers read the real output in the real environment, and each finding goes to the ledger |
+| [detail-units](../skills/detail-units/SKILL.md) | Splits a product's details into units, one rule of the craft each, recorded in eval/units.yaml |
+| [unit-eval](../skills/unit-eval/SKILL.md) | Freezes one detail unit into a check on the product's output, and proves the check can fail |
 <!-- END GENERATED: skills-table -->
 
 ## Agents
