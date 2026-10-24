@@ -7,7 +7,7 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 <!-- BEGIN GENERATED: skills-table -->
 | Skill | Purpose |
 | --- | --- |
-| [search-first](../skills/search-first/SKILL.md) | Look outside before deciding — searches the live web, registries, and primary sources, and returns a report the caller picks from |
+| [search-first](../skills/search-first/SKILL.md) | Look outside before deciding — searches the live web, registries, and primary sources, and returns a report whose verdict adopts by default and makes building name why each candidate fails |
 | [learn-eval](../skills/learn-eval/SKILL.md) | Extracts reusable patterns from sessions, evaluates quality, and decides where to save |
 | [skill-stocktake](../skills/skill-stocktake/SKILL.md) | Skill quality audit — inline Glob inventory + single-context holistic evaluation, Keep/Improve/Update/Retire/Merge verdicts |
 | [skill-health](../skills/skill-health/SKILL.md) | Structural skill-library debt scan — flags "missing artifacts" (SKILL.md references to scripts / agents / sibling skills that don't resolve on disk). Deterministic; delegates quality / risk / validation to skill-stocktake / security-scan / skill-comply |

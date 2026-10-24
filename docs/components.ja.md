@@ -7,7 +7,7 @@
 <!-- BEGIN GENERATED: skills-table -->
 | Skill | Purpose |
 | --- | --- |
-| [search-first](../skills/search-first/SKILL.md) | 決める前に外を見る — ウェブ・レジストリ・一次ソースを判断時点で検索し、呼び出し側が選べる報告を返却 |
+| [search-first](../skills/search-first/SKILL.md) | 決める前に外を見る — ウェブ・レジストリ・一次ソースを判断時点で検索し、既製品の採用を既定とし、自作には候補ごとに外れた理由を書かせる報告を返却 |
 | [learn-eval](../skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
 | [skill-stocktake](../skills/skill-stocktake/SKILL.md) | Skill の品質監査 — Glob インベントリ + 単一コンテキストでの全体評価、Keep/Improve/Update/Retire/Merge 判定 |
 | [skill-health](../skills/skill-health/SKILL.md) | Skill ライブラリの構造的な不備のスキャン — "missing artifacts"（SKILL.md が参照する script / agent / sibling skill がディスク上に存在しない）を検出。決定論的で、品質・リスク・検証は skill-stocktake / security-scan / skill-comply に委譲 |

@@ -72,6 +72,11 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
    `## Scope searched`（検索語 / source / as-of、見つからなかった範囲）/ `## Found`（1 件ごとに
    何か・URL / 対象と前提 / 根拠の種別 / こちらとの相違 / 移せる部分）/ `## Still unknown`。判断
    （採る / 部分的に採る / 採らない）は呼び出し側が行い、plan 本文か RFC の Prior art に書く。
+
+   > **注記（2026-10-24, ADR-0095）**: 判断を呼び出し側に任せる部分は、まず commit「feat(skills): search-first が
+   > 採用を既定にし、依存追加に dependency intake を置く」（2026-09-26）が替えた — 既定 Adopt と report の Verdict
+   > （Build は gap を名指す）。ADR-0095 は Build の基準を、候補ごとの停止条件（4 つ）と抱える保守の記述に強め、
+   > plan の手段の部品ごとに既製品を問う。報告契約の 3 節と 6 種の問いは残る
 2. description の trigger surface を 6 種の問い（library 選定 / 先行実装 / 論文・post の主張 /
    仕様・公式挙動 / 状況の俯瞰 / 原典照合）の発話例 + 「外部に答えがありうる問い全般」の総称句に
    する。種類はゲートでなく探索の手掛かり。別入口への routing: repo 内・ローカル環境 → Explore
@@ -188,6 +193,9 @@ invoke 数でなく影の比率にする。(iii) 書き方の規則 3 つ（範�
 ### Negative
 
 - library 選定の 1 行の決定性（Adopt / Build が 1 行で読める）は失う。
+
+  > **注記（2026-10-24, ADR-0095）**: Verdict 行は commit「feat(skills): search-first が採用を既定にし、依存追加に
+  > dependency intake を置く」（2026-09-26）で戻り、ADR-0095 で Build の側に証明責任を置いた。
 - Quick Mode は報告 1 段落分重くなる。
 - 公開 repo `shimo4228/search-first` の README が同期まで verdict 前提のまま drift する。
 - 影の比率の走査は手動（snippet を `.notes/` に置き、`scripts/` には持たない）。60 日ローリング窓
