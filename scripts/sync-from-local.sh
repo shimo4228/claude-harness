@@ -35,6 +35,22 @@
 #   scripts/sync-from-local.sh --dry-run   # report differences only
 #   scripts/sync-from-local.sh             # apply to working tree
 #
+# Commit body draft (RFC-0029): the tree carries no commit history, so the
+# decision trailers of the source commits would otherwise stay private. Every
+# run lists the source commits that touched a synced path (staged now, or
+# tracked here under the managed subtrees, so deletions count) and copies their
+# Review / Context / Decision / Review-when / Plan / 指摘 / Trigger / Expect
+# trailers (scripts/sync_trailers.py). Apply writes the draft to
+# .git/SYNC_COMMIT_BODY (in a worktree, that worktree's git dir) and prints the
+# path; the sync commit's body starts from it. --dry-run prints only the
+# commit and trailer counts. The draft goes through the same secret and
+# home-directory scans as the payload, and a hit aborts the run.
+#
+# The draft ends with `Source: <full sha of the source HEAD>`. That line, once
+# committed here, is where the next sync starts listing source commits. When the
+# newest sync commit here has no such line (the first run, or a sync committed
+# without the draft), listing starts at that commit's date instead.
+#
 # Config (env overrides):
 #   HARNESS_SYNC_SOURCE  source harness dir   (default: ~/.claude)
 #   HARNESS_SYNC_ORIGIN  origin value to match (default: shimo4228)
@@ -104,6 +120,13 @@ HOOK_ALLOWLIST=(
 DRY_RUN=0
 [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]] && DRY_RUN=1
 
+# A draft left by an earlier run must not outlive a run that aborts below:
+# committing it would record a Source: line for a tree that was never applied.
+if (( ! DRY_RUN )); then
+  BODY_OUT="$(git -C "$TARGET_DIR" rev-parse --absolute-git-dir)/SYNC_COMMIT_BODY"
+  rm -f "$BODY_OUT"
+fi
+
 # --- guard: managed subtrees must be clean so the sync delta is reviewable ---
 if (( ! DRY_RUN )); then
   if ! git -C "$TARGET_DIR" diff --quiet -- "${SUBTREES[@]}" ||
@@ -116,7 +139,8 @@ fi
 
 # --- staging ---
 STAGING="$(mktemp -d)"
-trap 'rm -rf "$STAGING"' EXIT
+BODY_DRAFT="$(mktemp)"
+trap 'rm -rf "$STAGING" "$BODY_DRAFT"' EXIT
 mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/adr" \
   "$STAGING/rfcs" "$STAGING/hooks" "$STAGING/scripts/hooks" "$STAGING/tests"
 
@@ -242,15 +266,20 @@ else
   echo "WARN: python3 + PyYAML not available — skipping frontmatter YAML validation" >&2
 fi
 
-# --- secret scan (high-confidence patterns; abort on any hit) ---
-SECRET_RE='sk-ant-api[0-9A-Za-z_-]+|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{20,}|AKIA[0-9A-Z]{16}|xox[bporas]-[0-9A-Za-z-]{10,}|AIza[0-9A-Za-z_-]{35}|hf_[A-Za-z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY'  # pragma: allowlist secret
-if hits="$(grep -rEl "$SECRET_RE" "$STAGING" 2>/dev/null)"; then
-  echo "ABORT: potential secrets detected in staged payload:" >&2
-  echo "$hits" >&2
-  exit 1
-fi
+# --- commit body draft: trailers of the source commits this sync carries (RFC-0029) ---
+# Built here, before the scans, so the scans below cover it and a hit aborts
+# before anything is applied.
+TRAILER_SUMMARY="$(python3 -I "$TARGET_DIR/scripts/sync_trailers.py" --source "$SOURCE_DIR" \
+  --target "$TARGET_DIR" --staging "$STAGING" --out "$BODY_DRAFT" --subtrees "${SUBTREES[@]}")"
 
-# --- home-directory path scan (abort on any hit) ---
+# --- leak scans: run on the staged payload and on the commit body draft ---
+# scan_for_leaks <file or dir> <label for the ABORT line>
+#
+# Secret scan (high-confidence patterns; abort on any hit). Hits name the file
+# only, never the matched text.
+SECRET_RE='sk-ant-api[0-9A-Za-z_-]+|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{20,}|AKIA[0-9A-Z]{16}|xox[bporas]-[0-9A-Za-z-]{10,}|AIza[0-9A-Za-z_-]{35}|hf_[A-Za-z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY'  # pragma: allowlist secret
+#
+# Home-directory path scan (abort on any hit).
 # The secret scan above only knows credential shapes. It says nothing about
 # `$HOME/MyAI_Lab/...` expanded to a literal, which leaks this machine's
 # filesystem layout and the private project names sitting in it. Eleven such
@@ -264,13 +293,25 @@ fi
 # `/home/linuxbrew/` as a Homebrew constant), and a guard that cries wolf is a
 # guard that gets bypassed. What is actually at stake is this machine's paths.
 #
-# To publish such a path deliberately, mark the line with the pragma below.
-if hits="$(grep -rFn "$HOME/" "$STAGING" 2>/dev/null | grep -v 'pragma: allow-home-path')"; then
-  echo "ABORT: absolute home-directory paths in staged payload" >&2
-  echo "       (rewrite as \$HOME-relative, or mark the line 'pragma: allow-home-path'):" >&2
-  printf '%s\n' "$hits" | sed "s|^$STAGING/|  |" >&2
-  exit 1
-fi
+# To publish such a path deliberately, mark the line with the pragma
+# 'pragma: allow-home-path'.
+scan_for_leaks() {
+  local hits
+  if hits="$(grep -rEl "$SECRET_RE" "$1" 2>/dev/null)"; then
+    echo "ABORT: potential secrets detected in $2:" >&2
+    echo "$hits" >&2
+    exit 1
+  fi
+  if hits="$(grep -rFn "$HOME/" "$1" 2>/dev/null | grep -v 'pragma: allow-home-path')"; then
+    echo "ABORT: absolute home-directory paths in $2" >&2
+    echo "       (rewrite as \$HOME-relative, or mark the line 'pragma: allow-home-path'):" >&2
+    printf '%s\n' "$hits" | sed "s|^$STAGING/|  |" >&2
+    exit 1
+  fi
+}
+
+scan_for_leaks "$STAGING" "staged payload"
+scan_for_leaks "$BODY_DRAFT" "commit body draft"
 
 # --- hand-written files must not link into subtree paths the synced payload does not have ---
 # Subtrees are replaced wholesale; README / llms*.txt / CHANGELOG / docs/hooks.md and the
@@ -307,6 +348,7 @@ PYEOF
 # --- report / apply ---
 if (( DRY_RUN )); then
   echo "# DRY-RUN (origin: $ORIGIN) — differences staging vs $TARGET_DIR"
+  echo "$TRAILER_SUMMARY"
   for t in "${SUBTREES[@]}"; do
     if [[ -d "$TARGET_DIR/$t" ]]; then
       diff -rq "$STAGING/$t" "$TARGET_DIR/$t" 2>/dev/null || true
@@ -323,6 +365,7 @@ for t in "${SUBTREES[@]}"; do
   rm -rf "${TARGET_DIR:?}/$t"
 done
 cp -R "$STAGING"/. "$TARGET_DIR"/
+cp "$BODY_DRAFT" "$BODY_OUT"
 
 # --- regenerate the upstream-components manifest in docs/components.md ---
 # Names only, no content: external-origin components are credited, never
@@ -614,5 +657,7 @@ else
   echo "WARN: python3 not available — component tables not regenerated" >&2
 fi
 
+echo "$TRAILER_SUMMARY"
+echo "# commit body: $BODY_OUT"
 echo "# APPLIED (origin: $ORIGIN). Review before committing:"
 git -C "$TARGET_DIR" status --short
