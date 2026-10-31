@@ -12,7 +12,7 @@ wheels = [
 ]
 
 [[package]]
-name = "detail-units"
+name = "detail-loop"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

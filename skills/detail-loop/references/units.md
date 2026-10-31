@@ -1,28 +1,18 @@
----
-name: detail-units
-description: "Split a product's details into units, one rule of the craft each, and record them in eval/units.yaml (the canonical units format)."
-disable-model-invocation: true
-user-invocable: true
-origin: shimo4228
----
-
-# detail-units — split the details into units and record them
+# Units phase — split the details into units and record them
 
 A product's details are many instances of a few rules of the craft. An expert knows those rules,
-what each one does, how it shows in the output, and what to change to move it. This skill turns
+what each one does, how it shows in the output, and what to change to move it. This phase turns
 the findings and the field into that list: one unit per rule, recorded on four faces in the
-product repo's `eval/units.yaml`. The file is the shared record of the detail work — skill:
-`detail-review` finds instances, skill: `unit-eval` freezes a unit into a check, skill:
-`detail-loop` runs the cycle — and this skill holds its format.
-
-Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md.
+product repo's `eval/units.yaml`. The file is the shared record of the detail work — the review phase finds instances, the
+freeze phase freezes a unit into a check, the loop in SKILL.md runs the cycle — and this file
+holds its format.
 
 ## 1. Start from the current version
 
 Name the branch or commit the units describe, and confirm it is the one the product ships from
 (the live build, the latest working branch). Units written against a stale version describe
-details that may already have moved. Use skill: `repair-discipline` when the current version is
-unclear.
+details that may already have moved. When the current version is unclear, use
+skill: `repair-discipline` if it is installed.
 
 ## 2. Draft the fields and their rules ⏸ author approves
 
@@ -31,8 +21,9 @@ docs, naming and defaults, exit codes and output formats, edge inputs, performan
 web page: typesetting per script, layout, accessibility, motion, page metadata, copy. For writing:
 structure, terms and notation, numbers and sources, rhythm, platform rendering. For each
 field, draft the rules an expert of that field applies without being asked, using the four points
-of skill: `widen-depth` as the frame: what experts do, the raw material, the methods and tools, and
-what outside the model and the author shows the result is right. The model drafts; the author adds
+of depth as the frame: what an expert of the field does that the ask leaves out, the raw material
+to start from, the methods and tools, and what outside the model and the author shows the result
+is right (`/widen-the-ask depth` asks the same four, when installed). The model drafts; the author adds
 and removes. The approved list is the frame the findings fold into in step 3, and it can grow later.
 
 ## 3. Fold the findings into units
@@ -145,7 +136,7 @@ Start `how` with the kind, then one clause on the observation.
 ## 5. Validate
 
 ```bash
-uv run --project "${CLAUDE_SKILL_DIR}" python "${CLAUDE_SKILL_DIR}/scripts/validate_units.py" \
+uv run --project "<skill dir>" python "<skill dir>/scripts/validate_units.py" \
   eval/units.yaml [--runner <the file that runs the frozen checks>]
 ```
 
@@ -157,7 +148,8 @@ the sets above, an `author` unit with a check or a status other than `author-eye
 or `retired`, `author-eye` on a unit that is not `author`, a frozen unit without a check, a check
 that differs from the id or (with `--runner`) is absent from the runner, a frozen `hybrid` unit without
 `decided_by`, a relation that is not exactly `unit` and `how`, points at a unit that does not
-exist, or points at its own unit. Exit 2: an unreadable file or bad arguments.
+exist, points at its own unit, or has a `how` that does not start with `co-arising` or `support`.
+Exit 2: an unreadable file or bad arguments.
 
 ## 6. Hand to the author
 

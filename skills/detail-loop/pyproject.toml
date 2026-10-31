@@ -1,7 +1,7 @@
 [project]
-name = "detail-units"
+name = "detail-loop"
 version = "0.1.0"
-description = "Schema check for the detail-units skill's eval/units.yaml. PyYAML only; pytest is a dev dependency."
+description = "Schema check for the detail-loop skill's eval/units.yaml. PyYAML only; pytest is a dev dependency."
 requires-python = ">=3.11"
 dependencies = [
   "pyyaml>=6.0",

@@ -1,6 +1,6 @@
-"""Tests for validate_units.py — the shape the other detail skills rely on.
+"""Tests for validate_units.py — the shape the detail-loop phases rely on.
 
-Each test pins one rule of the schema in the detail-units SKILL.md: the four faces are present,
+Each test pins one rule of the schema in the detail-loop skill's references/units.md: the four faces are present,
 the judge and status come from fixed sets, author-eye belongs to author units and only to them,
 a check is named by its unit's id and exists in the runner once frozen, a frozen hybrid unit records
 the author's decision, and relations point at real units with a known kind.
@@ -84,7 +84,9 @@ def test_check_equals_the_id():
 
 
 def test_author_eye_unit_without_check_passes():
-    assert vu.validate([unit(status="author-eye", eval={"judge": "author", "expect": "the author's eye"})]) == []
+    assert (
+        vu.validate([unit(status="author-eye", eval={"judge": "author", "expect": "the author's eye"})]) == []
+    )
 
 
 def test_frozen_unit_needs_a_check():
@@ -106,7 +108,9 @@ def test_frozen_hybrid_needs_the_authors_decision():
 
 def test_relations_point_at_real_units_with_a_known_kind():
     hang_eval = {**UNIT["eval"], "check": "ja-quote-hang"}
-    other = unit(id="ja-quote-hang", eval=hang_eval, relations=[{"unit": "ja-kinsoku-start", "how": "support — edge"}])
+    other = unit(
+        id="ja-quote-hang", eval=hang_eval, relations=[{"unit": "ja-kinsoku-start", "how": "support — edge"}]
+    )
     assert vu.validate([unit(), other]) == []
     bad = unit(id="ja-quote-hang", eval=hang_eval, relations=[{"unit": "missing", "how": "causes it"}])
     errors = vu.validate([unit(), bad])

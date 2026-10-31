@@ -1,6 +1,6 @@
-"""Check a product's eval/units.yaml against the detail-units schema.
+"""Check a product's eval/units.yaml against the detail-loop units schema.
 
-The schema is defined in the detail-units SKILL.md; this script enforces it so everything that
+The schema is defined in the detail-loop skill's references/units.md; this script enforces it so everything that
 reads or writes the file can rely on its shape. It reports every
 problem it finds, not only the first.
 
@@ -128,13 +128,19 @@ def validate(units: object, runner_text: str | None = None) -> list[str]:
             if not isinstance(unit, dict) or unit.get("status") != "frozen":
                 continue
             check = (unit.get("eval") or {}).get("check")
-            if isinstance(check, str) and check.strip() and not re.search(rf"""['"`]{re.escape(check)}['"`]""", runner_text):
+            if (
+                isinstance(check, str)
+                and check.strip()
+                and not re.search(rf"""['"`]{re.escape(check)}['"`]""", runner_text)
+            ):
                 errors.append(f"{unit['id']}: check {check!r} does not appear in the runner")
     return errors
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Check eval/units.yaml against the detail-units schema.")
+    parser = argparse.ArgumentParser(
+        description="Check eval/units.yaml against the detail-loop units schema."
+    )
     parser.add_argument("units", type=Path)
     parser.add_argument("--runner", type=Path, help="file that runs the frozen checks")
     args = parser.parse_args(argv)

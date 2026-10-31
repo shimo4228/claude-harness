@@ -3,6 +3,7 @@ name: detail-loop
 description: "God is in the details: take a product whose skeleton is done and refine it unit by unit, freezing each fixed detail as a check, until a review round finds nothing new."
 disable-model-invocation: true
 user-invocable: true
+argument-hint: "[review | units | freeze <unit-id>]"
 origin: shimo4228
 ---
 
@@ -15,23 +16,33 @@ page, or writing (an article, a README, documentation). This skill spends it: th
 rounds continue until fresh reviewers find nothing new to adopt. The bar for every round is that
 the product holds up to an expert of each field, not that it works.
 
-It runs three skills in turn and owns the order, the interference between units, and when to stop.
-They are user-invoked, so read each one's SKILL.md and follow it:
+It runs three phases in turn and owns the order, the interference between units, and when to stop.
+Each phase has its steps in a reference. Read it when the phase starts:
 
-- `${CLAUDE_SKILL_DIR}/../detail-review/SKILL.md` — finds unfinished details and sorts them into the ledger
-- `${CLAUDE_SKILL_DIR}/../detail-units/SKILL.md` — folds findings into units in `eval/units.yaml` (the format's owner)
-- `${CLAUDE_SKILL_DIR}/../unit-eval/SKILL.md` — freezes one unit into a check and proves it can fail
+- `${CLAUDE_SKILL_DIR}/references/review.md` — finds unfinished details and sorts them into the ledger
+- `${CLAUDE_SKILL_DIR}/references/units.md` — folds findings into units in `eval/units.yaml` (the format's owner)
+- `${CLAUDE_SKILL_DIR}/references/freeze.md` — freezes one unit into a check and proves it can fail
+
+The references name other files by their path from `${CLAUDE_SKILL_DIR}`, the directory holding
+this SKILL.md (`references/units.md`, `scripts/validate_units.py`); `<skill dir>` in a command is
+that directory. `references/web.md` adds the setup for a web product.
+
+## Invocation
+
+- No argument: run the loop from step 0.
+- `review`, `units` or `freeze <unit-id>`: run only that phase's reference on the product in the
+  working directory, and end with that reference's hand-off or report.
 
 ## 0. Start
 
 - Start when the product's direction is decided and its skeleton builds without errors. Earlier,
   details get redone when the structure moves.
-- Confirm the version the product ships from (skill: `repair-discipline` when unclear), and work on
+- Confirm the version the product ships from (skill: `repair-discipline`, when installed and unclear), and work on
   a branch of it.
 - When `eval/units.yaml` exists, run its frozen checks first. Red checks are the first work.
 - Find out whether the author delegates the calls (「任せる」「全部あなたの推奨で」). Delegated, the
   author's touchpoints are the start and the finished product; follow Delegation below.
-- For writing, whether the text gets across to a reader is skill: `persona-read-loop`'s job; this loop
+- For writing, whether the text gets across to a reader is skill: `persona-read-loop`'s job when it is installed; this loop
   works the craft details.
 
 ## Delegation
@@ -54,8 +65,8 @@ itself and keeps going, so the author meets one finished product instead of a qu
 
 ## 1. Round
 
-1. Run skill: `detail-review` on the current build.
-2. Run skill: `detail-units` with the adopted findings. On the first round the author approves the
+1. Run the review phase (`references/review.md`) on the current build.
+2. Run the units phase (`references/units.md`) with the adopted findings. On the first round the author approves the
    field list (⏸); later rounds add to it.
 3. Work the units one at a time (step 2).
 4. Start the next round. Without delegation, hand the author the round (step 5) first; the next
@@ -70,11 +81,11 @@ itself and keeps going, so the author meets one finished product instead of a qu
    names (its language, platform, command, page): a rule written for English titles reached Japanese
    lines, and a tie chosen for one font drew a double space in another; the next round found both as
    regressions.
-3. Freeze an `open` unit with skill: `unit-eval`. Change a frozen unit's expectation only through
-   skill: `detail-units`, Changing an expectation. `author` units are listed for the author.
+3. Freeze an `open` unit with the freeze phase (`references/freeze.md`). Change a frozen unit's
+   expectation only through `references/units.md`, Changing an expectation. `author` units are listed for the author.
 4. Run every frozen check. A unit that moved without being touched has a relation: record it in
-   `relations` (skill: `detail-units`).
-5. Record the ledger lines and commits unit-eval writes (the fix, then the freeze).
+   `relations` (`references/units.md`).
+5. Record the ledger lines and commits the freeze phase writes (the fix, then the freeze).
 
 ## 3. Interference
 
