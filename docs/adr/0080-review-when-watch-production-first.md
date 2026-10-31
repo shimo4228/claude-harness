@@ -5,6 +5,8 @@
 accepted — [ADR-0074](./0074-jev-skill-router-prompt-to-external-judge-shadow-first.md) の「shadow から入る」型を
 この job には適用しない（ADR-0074 自体は skill ルーターの判断で、変えない）
 
+> **注記（2026-11-01, commit「chore(stocktake): skills の棚卸しを適用」）** harness-stocktake 2026-10-31 の著者判断で review-when-watch を退役した（日次の Slack 通知を読まずに流していたため）。skill・plist は削除し、導入済みの launchd job は取り込み後に外す。
+
 ## Date
 
 2026-09-25
@@ -16,6 +18,12 @@ accepted — [ADR-0074](./0074-jev-skill-router-prompt-to-external-judge-shadow-
   `## Review-when` 節に持っている。多くは外の世界の出来事を待つ — 例: RFC-0017「substrate が skill listing の
   注入方式を変えた時」、RFC-0004「Zenodo が legacy deposition API を廃止・変更した時」。条件とニュースを
   照合する仕組みは無く、誰かが気づかない限り発火しない。
+
+  > **注記（2026-10-31, commit「feat(review-when-watch): rules の review-when も照合する」）**: 照合対象に
+  > `rules/**/*.md` の先頭 10 行の `<!-- review-when: ... -->` を足した（plan `docs/plans/sunny-splashing-scroll.md`
+  > 手順 3）。skill rules-stocktake は各 rule の review-when を判定の最初の問いに使うが、条件の成立に気づく役が
+  > いなかった。条件 ID は repo からのパス（`rules/common/debugging.md`）で、Slack とログで出所が分かる。
+  > 「著者の明示判断のみ」の条件は照合しない。2026-10-31 時点で 15 本が対象
 - 案の出所: 2026-09-25 のセッションで prompt-perturb の候補（TRIZ 発明原理 27「安価で短命なオブジェクトへの
   置換」）を文脈を遮断した agent に実行させ、出た 10 案のうち「すき間時間の『いまできる』リスト」を
   この harness に着地させたもの。daily-research が毎日集める外部ニュース × 条件を、Jev の安い判定で総当たりする。

@@ -3,6 +3,8 @@
 ## Status
 accepted
 
+> **注記（2026-11-01, commit「chore(stocktake): skills の棚卸しを適用」）** Decision が正本とした `rules/common/skills.md` の「Knowledge Placement / Global vs Project」節は rules の縮減で消えている。置き場の規則（2 つ以上の repo で使う → global、1 つに固有 → project overlay）はこの ADR の Decision 本文を正本とし、skill `learn-eval` の Step 3 がここを指す。
+
 ## Date
 2026-07-27
 

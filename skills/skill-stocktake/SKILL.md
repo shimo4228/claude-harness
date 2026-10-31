@@ -94,7 +94,7 @@ Two readings the script hands you but cannot make for you:
 
 **Reference-URL evidence** (parent-owned for the same reason, plus one of its own: Phase 2
 runs batch agents *in parallel*, and `fetch named URLs` inside each of them is a burst
-against the same hosts — the shape `rules/common/debugging.md` forbids). Check every URL
+against the same hosts — the shape `rules/common/boundary.md`「止まって報告する」 names). Check every URL
 the library names once, serially, here (the scripts live in the sibling `skill-health` skill, when it is
 installed next to this one):
 
@@ -343,22 +343,30 @@ Render a table: `Skill | ctx | 14d | last used | Verdict | Reason`, where `ctx` 
 use only** (`slash + invoke`). If the log is younger than 14 days, replace `14d` with
 its real span.
 
-## Phase 5 — Consolidation
+## Phase 5 — Report and apply
 
-**Confirm one by one**: walk the non-Keep candidates
-sequentially — for each, show the evidence first, then ask `[y/n/skip]`. Never batch the
-approval. The user can stop at any point; `skip` records the verdict in the ledger
-unactioned.
+Turn every verdict into items (source `skills`) of the report contract in skill:
+`harness-stocktake` and hand them to it: one report, one approval from the author, application
+on a task branch, a completion report, an ff-only merge. Called alone, this skill runs that
+contract's Phases 2–5 with its own items. Each item carries, by verdict:
 
-- **Retire / Merge**: per file, present (1) the specific defect found, (2) what covers
-  the same need instead, (3) the impact of removal (dependent skills, rule pointers,
-  MEMORY references) → ask `[y/n/skip]`. **Act only after the user confirms that file.**
-- **Improve / Update**: **offer** per skill — "Hand `<skill>` to skill-creator?
-  `[y/n/skip]`" — and on approval invoke `skill-creator` with the target skill and the
-  No-answer list. Stocktake never does the improvement work itself.
-- **Update the ledger**: Read `results.json` → merge this run's verdicts → Write it back
-  (`evaluated_at` = real UTC from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode,
-  preserve the prior verdicts of skills you did not re-evaluate.
+- **Retire / Merge / Retire-and-absorb**: `reason` = the specific defect and what covers the
+  same need instead; `change` = the deletion, or the residue to move and its target; `impact` =
+  dependent skills, rule pointers, MEMORY references
+- **Improve / Update**: `change` = the skill-creator intent packet (target skill, sections to
+  change, the No-answer list). Application runs skill-creator's report path; stocktake does not
+  do the improvement work itself
+- **Keep / Out of scope**: `reason` only
+
+Where skill `harness-stocktake` is not installed, show the same items as one table ordered
+Retire → Merge → Improve / Update → Keep, take one approval with the author's overrides, then
+apply.
+
+**Update the ledger** on the apply branch, in the same commit as the changes: Read
+`results.json` → merge this run's verdicts (an item the author skipped keeps its verdict with
+`"skipped": true`) → Write it back (`evaluated_at` = real UTC from
+`date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode, preserve the prior verdicts of skills you did
+not re-evaluate.
 
 ## Reason quality (required)
 

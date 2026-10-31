@@ -4,6 +4,8 @@
 
 accepted
 
+> **注記（2026-11-01, commit「chore(stocktake): skills の棚卸しを適用」）** harness-stocktake 2026-10-31 の著者判断で skill `jev-skill-router` を harness から退役した（review-when-watch の退役に合わせて）。公開 repo `shimo4228/jev-skill-router` は同期元を失い、その扱いは著者が決める。
+
 ## Date
 
 2026-09-21

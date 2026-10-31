@@ -3,8 +3,8 @@
 #
 # Usage: spawn.sh <project-dir> [display-name] [--model <model>] [--effort <level>]
 #                 [--permission-mode <mode>] [--prompt-file <path>]
-#   --model: 新 session の model（例: opus）。省略時は settings.json の既定（判断層 = fable）。
-#   build 層の worker session を立てるときに opus を渡す（三役: harness ADR-0043 / ADR-0064）。
+#   --model: 新 session の model（例: opus）。省略時は CLI の既定 model。
+#   triage の判断役も build 層の worker session も opus で立てる（各役の model は task-triage の Roles 表が正本）。
 #   --effort / --permission-mode: claude の同名 flag へ渡す。bypassPermissions は受けない
 #   （phone から起こす session の権限を広げないため）。
 #   --prompt-file: 起動後、兄弟 skill の agent-send でこのファイルを最初の指示として送り、

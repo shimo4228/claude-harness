@@ -61,7 +61,7 @@ rfcs/ は**提案と作業項目の公開台帳**。この skill はそこへ 1 
      `claims.py ready` の 90 字要約になる。frontmatter で機械が読むのは `state:` のみ
    - `## Status` = state 語 + 現在地の要約 + 日付（IETF「Status of This Memo」型。
      state 遷移のたびに更新）。`## Next action` = 何があれば動くか（blocked の 3 行の家）
-   - plan（skill: `html-plan` の `.html`、または plan mode の `.md`）を通った作業は `## Status` に `**YYYY-MM-DD plan** — [docs/plans/<file>](../docs/plans/<file>)`
+   - plan（plan mode の `.md`。過去の html plan は `.html`）を通った作業は `## Status` に `**YYYY-MM-DD plan** — [docs/plans/<file>](../docs/plans/<file>)`
      を 1 行置く（plan から RFC へ辿れるように）。本文の最初の行には置かない（`claims.py ready` の要約になるため）
    - 見出しは EN、本文の言語は自由
 4. **公開規約**: 公開が既定。何を名指し何を `.notes/` へ逃がすかの境界は rule

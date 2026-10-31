@@ -398,8 +398,8 @@ def test_mcp_config_provenance_is_deduplicated(tmp_path: Path) -> None:
 
 
 def test_always_never_ignores_the_description(agents_dir: Path) -> None:
-    # agents/swift-reviewer.md:3 says "MUST BE USED for Swift projects" in its
-    # description. That is a delegation trigger, not an instruction to the
+    # A description like "MUST BE USED for Swift projects" (the shape
+    # measured in agents/ on 2026-08-26). That is a delegation trigger, not an instruction to the
     # agent, so the body-only scan must not surface it.
     write_agent(agents_dir, "a", description="Reviewer. MUST BE USED for X.", body="# B\n\nok\n")
     assert (

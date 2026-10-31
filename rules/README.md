@@ -15,12 +15,11 @@
 |---|---|
 | `agents.md` | agent catalog と Herdr skill の入口 |
 | `akc-cycle.md` | Scaffold Dissolution / ADR の扱い（経緯記録・supersede・注記） |
-| `boundary.md` | 人間に渡す操作 / とってよいリスク / 止まって報告する条件（境界の正本） |
+| `boundary.md` | 人間に渡す操作 / とってよいリスク / 止まって報告する条件（rate limit の policy signal を含む。境界の正本） |
 | `coding-style.md` | global harness の変更対象 |
 | `contemplative-axioms.md` | identity / values（verbatim） |
-| `debugging.md` | rate limit の実証済み policy signal |
 | `evals.md` | eval の問い → 行き先（`/claude-api build-eval` / hillclimb ほか）と `claude -p` の罠 |
-| `knowledge-staleness.md` | LLM 界隈 1 週間陳腐化 worldview — 検索時点照合と失効条件の既定 |
+| `knowledge-staleness.md` | 書かれた知識は snapshot — 外部知識の検索時点照合と失効条件、記述と実物が食い違ったら実物に従い最終応答で全件挙げる |
 | `llm-first-code.md` | LLM 可読性を最優先する worldview — 読者は次セッションの LLM、執行者は機械ゲート、指示文は肯定形 |
 | `planning.md` | search / chain / verify の入口 |
 | `practitioner-identity.md` | 著者の自己定義（verbatim）— DOI は手段、研究者ではない |

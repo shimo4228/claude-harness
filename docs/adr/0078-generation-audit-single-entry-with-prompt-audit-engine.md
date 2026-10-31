@@ -49,6 +49,10 @@ skill に統合する」の却下を覆し、[ADR-0022](./0022-generation-audit-
 2. **適用の同意**: `/generation-audit` の起動に加え、著者の依頼が適用まで含むとき（「直して」「仕上げて」）は
    Phase 3 の High / Medium を適用し、含まないときは group ごとに diff を示して承認後に適用する。常駐層
    （rules / CLAUDE.md / output style）の行はどちらの場合も 1 件ずつ diff を示す。
+
+   > **注記（2026-10-31, ADR-0097）**: 依頼が適用を含まないときの承認は、group ごと・1 件ずつの提示から、
+   > skill `harness-stocktake` の report 1 枚の承認に替えた。常駐層の行は、どちらの場合も diff つきで report を通す。
+   > 依頼が適用まで含むときに High / Medium をそのまま適用する点は変わらない。
 3. pattern 表と対象モデルの挙動は、実行のたびに prompt-audit の手順書と移行ガイドから読む（path は `/claude-api`
    の base directory から引く）。
 4. rules-stocktake / skill-stocktake / agent-stocktake の Related を runtime 照合 + prompt-audit の所見に合わせ、

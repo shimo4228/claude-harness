@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-09-28
+state: done 2026-10-25
 review-when: 試行 2 週間が終わったとき
 ---
 ## Summary
@@ -30,6 +30,10 @@ triage 2026-10-18（試行の読み — 判断役が数えた。体感は著者�
 - 体感: 未回答（digest で著者に聞く）
 
 **2026-10-18 著者判断: 続ける**（triage digest への回答「1a」）。出所不明の 1 件は確かめずに進める。次は試行 rule の手順を writing-ecosystem の処分規律へ移し、zenn-content の `.claude/rules/correction-trailers.md` を消す（skill の変更なので diff は著者が見る）。
+
+triage 2026-10-25: 試行後の次の一手（試行 rule の手順を writing-ecosystem の処分規律へ移し、zenn-content の `.claude/rules/correction-trailers.md` を消す）は未着手 — rule ファイルは zenn-content に残っている。zenn-content は公開 repo、変更は skill なので、dispatch は著者の OK 待ち・merge は著者の diff。試行の claim（`7d4c1a00`、2026-09-28）は lease 切れのため handoff で release した。
+
+**2026-10-25 done** — 著者の OK（triage digest「全部推奨で」）で build（Agent worktree、packet `zenn-content/docs/plans/rfc-0028-s1-correction-trailers-to-skill.md`）が試行 rule を writing-ecosystem の「指摘の処分規律」（積む・撤回・commit へ写す）と `references/author-corrections.md` へ移し、rule を消した（zenn-content `3551879`、main の CI success）。merge は著者が判断した。観察 2 件: (1) rule は常駐だったが、移設先は writing-ecosystem を読んだときだけ届く — detail-loop 経由で書く記事にはこの手順が届かない（detail-loop の SKILL.md に指摘の記録への言及なし）。(2) ADR-0014 Review-when の「細則 20 行」の勘定に今回の 10 行が入りうる。harness 側の「変更 commit に直接書く」は採否を決めていない（要るなら起票し直す）。
 
 ## Next action
 

@@ -59,7 +59,7 @@ routing を自発的に行うようになったら、この段落を外す。）
 
 | ステップ | feat | fix | refactor | chore | prototype |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Plan（メインループ / skill: `html-plan`（著者が入れたときは plan mode）。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
+| Plan（メインループ / plan mode。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
 | TDD（メインループ。RED → GREEN → REFACTOR） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
@@ -126,7 +126,7 @@ adversarial review 1 段」。多段構成はレビュー起点のオーバー�
 
 | 順 | category | 起動先 |
 |:-:|---|---|
-| 1 | Code Review | built-in `/code-review`（judge-tier セッションでは「Review の実行モデル pin」経由。effort は `medium` を明示。quality 軸（Reuse / Simplification / Efficiency / Altitude）は built-in が内蔵）。Swift は `swift-reviewer` も追加 |
+| 1 | Code Review | built-in `/code-review`（judge-tier セッションでは「Review の実行モデル pin」経由。effort は `medium` を明示。reuse / simplification / efficiency の cleanup は built-in が recipe の範囲で拾い、Altitude を含む quality 軸の適用は built-in `/simplify`） |
 | 1 | Security Review | `security-reviewer`（**脅威面を動かす diff のみ** — 発火は Matrix の Security Review 行が正本。agent 側は自発起動しない） |
 
 2 行とも発火する diff では並列起動する（同じ diff を見るため）。
@@ -156,8 +156,7 @@ opt-in の受け皿）のため有効のまま — 発火の正本はこの Revi
 description ではない。
 
 adr-reviewer は opt-in ではなく skill: `adr-writer` の内部ステップ（ADR 執筆時は
-省略しない — 配線は同 skill のみ、この chain は持たない）。swift-reviewer は Swift diff で
-Review 表の Code Review 行に従い併用（ADR-0042 が去就を保留した項目）。
+省略しない — 配線は同 skill のみ、この chain は持たない）。
 
 **Review の実行モデル pin**: judge-tier のセッション（Fable）で chain を回すとき、
 built-in `/simplify` と `/code-review` を主ループで直接呼ばない — セッションのモデルを継いで
@@ -166,7 +165,7 @@ judge-tier トークンを消費する。代わりに `Agent(subagent_type: "gen
 `/simplify` の working-tree への fix 適用はサブエージェントでも同じに機能する）。自作 reviewer
 agent は frontmatter の `model:` が正本。build-tier のセッションでは直接呼んでよい。
 
-Refactor Clean では built-in `/simplify` の後に `refactor-cleaner` agent を起動する（refactor 種別専用のステップ）。
+Refactor Clean では built-in `/simplify` の後に、skill `refactor-clean` の手順を主ループで回す（refactor 種別専用のステップ）。
 TDD は発火する場合 Plan の後に置く。Verify は全レビュー後（順序として逐次必須なのは Verify のみ）。
 
 ## Writing Chain（`writing` 種別のルーティング）

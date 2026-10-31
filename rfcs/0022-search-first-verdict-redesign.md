@@ -73,6 +73,8 @@ triage 2026-10-11（手動実行。朝の launchd tick は Fable の週次制限
 
 triage 2026-10-18: `date` = 2026-10-18 < 2026-11-01、未成立（dead-band）。
 
+triage 2026-10-25: `date` = 2026-10-25 < 2026-11-01、未成立（dead-band）。次の cycle（2026-11-01）で成立する。
+
 ## Next action
 
 影の比率の再測定（2026-11）。手順・述語・基準集合（分母 / 影のセッション一覧）は `.notes/search-first-shadow-baseline-2026-09-14.md` に固定してある — 同じ snippet を実行し、基準値と比べる。

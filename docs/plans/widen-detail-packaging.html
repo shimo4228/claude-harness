@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>Widen Detail 配布</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+<header>
+  <h1>widen と detail を 1 フォルダずつに畳む</h1>
+  <doc-changes new="11" changed="4" deleted="15"></doc-changes>
+  <details class="thread"><summary>Why · 2 requests</summary>
+    <doc-quote via="prompt" from="著者" at="2026-10-24">Widen-the-askとDetail-loopだけど、今はそれぞれ部分と全体スキルに分かれているから、うまいことパッケージ化できない？プランして</doc-quote>
+    <doc-quote via="prompt" from="著者" at="2026-10-24">というより、Widen-the-askとDetail-loopの関連スキルを Referenceとかにして必要なフェーズで読みに行く方が良くない？</doc-quote>
+    <doc-note tone="info"><strong>調査</strong> <a href="research/2026-10-24-widen-detail-packaging.md">2026-10-24-widen-detail-packaging.md</a>。末尾の追記で推奨を A（plugin）から B（references へ畳む）に変えた。B は plugin の兄弟読みという未確認の前提を持たない。</doc-note>
+  </details>
+</header>
+<main>
+<doc-plan>
+
+  <doc-claim>
+    <p>widen-the-ask は軸に入るときだけ、その軸の reference を読む。</p>
+    <doc-tree caption="部分 skill 3 本が 1 フォルダの references/ になる。">
+<script type="text/plain">
+skills/widen-the-ask/
+  ~ SKILL.md            # 流れ + 原則（1 回だけ書く）
+  + references/
+    + altitude.md       # 旧 widen-altitude の流れと出力
+    + range.md          # 旧 widen-range
+    + depth.md          # 旧 widen-depth
+  ~ MAINTENANCE.md      # 軸ごとの経緯をここに寄せる
+- skills/widen-altitude/  widen-range/  widen-depth/
+</script>
+    </doc-tree>
+    <doc-claim>
+      <p>流れの節が軸ごとの reference の path を指す。</p>
+      <doc-code wrap diff file="skills/widen-the-ask/SKILL.md" lang="md">
+<script type="text/plain">
+@@ -19,5 +19,5 @@
+-各軸の SKILL.md を読み、その流れに従う。高度で決まった目的に沿って範囲の動詞と深度の素材を選べるよう、この順で回す。
++軸に入るときに、その軸の reference を読んで流れに従う。高度で決まった目的に沿って範囲の動詞と深度の素材を選べるよう、この順で回す。
+ 
+-1. 高度：[widen-altitude](../widen-altitude/SKILL.md)
+-2. 範囲：[widen-range](../widen-range/SKILL.md)
+-3. 深度：[widen-depth](../widen-depth/SKILL.md)
++1. 高度：`${CLAUDE_SKILL_DIR}/references/altitude.md`
++2. 範囲：`${CLAUDE_SKILL_DIR}/references/range.md`
++3. 深度：`${CLAUDE_SKILL_DIR}/references/depth.md`
+</script>
+      </doc-code>
+    </doc-claim>
+    <doc-claim>
+      <p>3 本に複製した原則が SKILL.md の 1 箇所になる。</p>
+      <doc-code src="skills/widen-altitude/SKILL.md" lines="14-17" hl="15-17">
+        <doc-pin line="15" tone="info" title="3 本とも同じ文">単独で呼べるように複製していた。</doc-pin>
+      </doc-code>
+      <doc-note tone="info">軸ごとに違う原則（range の「役名でなく行為」、depth の「口調でなく方法と道具」）は、その reference に残す。</doc-note>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>detail-loop は各フェーズで、要る reference だけを読む。</p>
+    <doc-tree caption="形式の正本は references/units.md の 1 つのまま。">
+<script type="text/plain">
+skills/detail-loop/
+  ~ SKILL.md            # 順序・干渉・done と stuck・委任
+  + references/
+    + review.md         # 旧 detail-review。Round 1 で読む
+    + units.md          # 旧 detail-units。units.yaml 形式の正本
+    + freeze.md         # 旧 unit-eval。One unit 3 で読む
+    + web.md            # 測定の設定（2 本を統合）
+  + scripts/validate_units.py
+  + tests/test_validate_units.py
+  + pyproject.toml  uv.lock
+  ~ MAINTENANCE.md      # 4 本の経緯をここに寄せる
+- skills/detail-review/  detail-units/  unit-eval/
+</script>
+    </doc-tree>
+    <doc-claim>
+      <p>読む時点を、各フェーズの手順の中に書く。</p>
+      <doc-code wrap diff file="skills/detail-loop/SKILL.md" lang="md">
+<script type="text/plain">
+@@ -18,6 +18,6 @@
+-It runs three skills in turn and owns the order, the interference between units, and when to stop.
+-They are user-invoked, so read each one's SKILL.md and follow it:
++It runs three phases in turn and owns the order, the interference between units, and when to stop.
++Each phase has its steps in a reference. Read it when the phase starts:
+ 
+-- `${CLAUDE_SKILL_DIR}/../detail-review/SKILL.md` — finds unfinished details and sorts them into the ledger
+-- `${CLAUDE_SKILL_DIR}/../detail-units/SKILL.md` — folds findings into units in `eval/units.yaml` (the format's owner)
+-- `${CLAUDE_SKILL_DIR}/../unit-eval/SKILL.md` — freezes one unit into a check and proves it can fail
++- `${CLAUDE_SKILL_DIR}/references/review.md` — finds unfinished details and sorts them into the ledger
++- `${CLAUDE_SKILL_DIR}/references/units.md` — folds findings into units in `eval/units.yaml` (the format's owner)
++- `${CLAUDE_SKILL_DIR}/references/freeze.md` — freezes one unit into a check and proves it can fail
+</script>
+      </doc-code>
+      <doc-note tone="info">本文の「skill: <code>detail-units</code>」12 箇所は「<code>references/units.md</code>」に置き換える。</doc-note>
+    </doc-claim>
+    <doc-claim>
+      <p>validator を移しても gate は pytest を回す。</p>
+      <doc-code src=".claude/verify.sh" lines="418-426" hl="425-426">
+        <doc-pin line="426" tone="ok" title="glob で拾う">skills/*/pyproject.toml なので移動先も対象。</doc-pin>
+      </doc-code>
+    </doc-claim>
+    <doc-claim>
+      <p>web の測定設定を 1 本の reference にする。</p>
+      <doc-code src="skills/unit-eval/references/web.md" lines="25">
+        <doc-pin line="25" tone="warn" title="2 本は互いを指す">review 側の Measuring 節を freeze 側が読む。</doc-pin>
+      </doc-code>
+      <doc-ask id="web">
+        <p>web の測定設定を 1 本にするか。</p>
+        <label><input type="radio" name="web" value="one" checked> web.md 1 本に統合 <small>合計約 55 行。相互参照が消える</small></label>
+        <label><input type="radio" name="web" value="two"> web-review.md と web-freeze.md の 2 本 <small>今の分け方のまま</small></label>
+      </doc-ask>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>部分のフェーズは引数で単独に呼べる。</p>
+    <doc-mock frame="terminal" title="claude" w="470" caption="slash 名は 2 つになる。部分は引数で選ぶ。"><template><span class="dim">&gt;</span> /widen-the-ask depth
+  <span class="dim">深度だけ回します。四点の 1 つ目、この分野の一流が…</span>
+<span class="dim">&gt;</span> /detail-loop freeze ja-kinsoku-start
+  <span class="dim">references/freeze.md の手順で unit を 1 つ凍結します…</span>
+<span class="dim">&gt;</span> /detail-loop
+  <span class="dim">round を最初から回します…</span></template></doc-mock>
+    <doc-ask id="args">
+      <p>部分の単独起動を引数で残すか。</p>
+      <label><input type="radio" name="args" value="keep" checked> 残す <small>widen: altitude/range/depth、detail: review/units/freeze</small></label>
+      <label><input type="radio" name="args" value="drop"> 残さない <small>いつも流れ全体を回す。claim 3 が消える</small></label>
+    </doc-ask>
+    <doc-claim>
+      <p>引数が無いときは流れの全体を回す。</p>
+      <doc-code title="SKILL.md 冒頭 · sketch" lang="md">
+<script type="text/plain">
+## 呼び方
+引数が `altitude` / `range` / `depth` のどれかなら、その軸の reference だけを回して出力を返す。
+引数が無ければ、下の流れを高度から回す。
+</script>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>2 つの skill は 1 フォルダずつ claude.ai に上がる。</p>
+    <doc-mock frame="none" w="440" caption="zip 1 つが skill 1 つ。兄弟フォルダを運ぶ必要が無くなる。"><template>
+<div style="font:14px system-ui;border:1px solid #ccc;border-radius:10px;padding:14px;background:#fff;color:#222">
+  <div style="font-weight:600;margin-bottom:8px">Skills</div>
+  <div data-ref="w" style="display:flex;justify-content:space-between;padding:8px;border:1px solid #9c9;border-radius:6px;margin-bottom:6px"><span>widen-the-ask <span style="color:#888">· SKILL.md + 3 references</span></span><span style="color:#393">On</span></div>
+  <div style="display:flex;justify-content:space-between;padding:8px;border:1px solid #9c9;border-radius:6px;margin-bottom:10px"><span>detail-loop <span style="color:#888">· SKILL.md + 4 references</span></span><span style="color:#393">On</span></div>
+  <div data-ref="old" style="padding:8px;border:1px dashed #c66;border-radius:6px;color:#a33;text-decoration:line-through">widen-the-ask（分割前の 1 ファイル版）</div>
+</div></template>
+      <doc-pin ref="w" anchor="r" title="著者が上げる">account への導入は人間の操作。</doc-pin>
+      <doc-pin ref="old" anchor="r" title="置き換える">drift した旧版を新しい zip で上書きする。</doc-pin>
+    </doc-mock>
+    <doc-ask id="plugin">
+      <p>plugin としても配るか。</p>
+      <label><input type="radio" name="plugin" value="no" checked> 今は配らない <small>claude-harness と zip で足りる。後で足せる</small></label>
+      <label><input type="radio" name="plugin" value="yes"> 2 skill を 1 plugin にもする <small>marketplace と sync script が増える</small></label>
+    </doc-ask>
+    <doc-claim>
+      <p>detail は widen が無くても深度の四点を使える。</p>
+      <doc-code wrap diff file="skills/detail-units/SKILL.md" lang="md">
+<script type="text/plain">
+@@ -33,3 +33,4 @@
+ field, draft the rules an expert of that field applies without being asked, using the four points
+-of skill: `widen-depth` as the frame: what experts do, the raw material, the methods and tools, and
+-what outside the model and the author shows the result is right. The model drafts; the author adds
++of depth as the frame: what an expert of the field does that the ask leaves out, the raw material
++to start from, the methods and tools, and what outside the model and the author shows the result
++is right (`/widen-the-ask depth` asks the same four, when installed). The model drafts; the author adds
+</script>
+      </doc-code>
+      <doc-ask id="cross">
+        <p>家族をまたぐ参照をどう外すか。</p>
+        <label><input type="radio" name="cross" value="inline" checked> 四点を inline し、名前は補足に残す <small>4 行。widen が無くても読める</small></label>
+        <label><input type="radio" name="cross" value="cond"> 「widen-the-ask があれば使う」だけにする <small>無い環境では枠が消える</small></label>
+      </doc-ask>
+    </doc-claim>
+    <doc-claim>
+      <p>家族の外の skill は「入っていれば使う」になる。</p>
+      <doc-code wrap diff file="skills/detail-loop/SKILL.md" lang="md">
+<script type="text/plain">
+@@ -29,1 +29,1 @@
+-- Confirm the version the product ships from (skill: `repair-discipline` when unclear), and work on
++- Confirm the version the product ships from (skill: `repair-discipline`, when installed and unclear), and work on
+</script>
+      </doc-code>
+      <doc-note tone="info">同じ直しを <code>persona-read-loop</code> の 2 箇所（detail-loop:34、detail-review:17）にも入れる。</doc-note>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>公開 copy からも旧 6 skill が消える。</p>
+    <doc-calls title="同期" caption="集約 repo の sync が、消えた skill を公開側でも消すかを確かめる。">
+<script type="text/plain">
+~ harness-sync（claude-harness 集約）          @ skills/harness-sync/SKILL.md:231
+    origin: shimo4228 の skill を収集
+?   公開側にだけ残る旧 6 フォルダを消す        @ skills/harness-sync/SKILL.md:231  -- 消さない作りなら手で消す
+    git diff を著者が読む
+</script>
+    </doc-calls>
+    <doc-note tone="warn">公開 repo への push は著者が行う。実装は working tree の差分までにする。</doc-note>
+  </doc-claim>
+
+  <doc-claim aux="shared">
+    <p>共有: 書き直しは skill-creator の草稿 gate を通す。</p>
+    <ul>
+      <li>2 本とも大幅改修に当たるので、書く前に skill: <code>skill-creator</code> を読み、fresh context の草稿 gate を回す。</li>
+      <li>判断の記録は skill: <code>adr-writer</code> の When to Use で ADR か commit 本文かを決める（widen の分割は commit e93dbda の本文に残っている）。</li>
+      <li>validator の pytest と <code>validate_units.py</code> の path を、移動後に gate で回す。</li>
+    </ul>
+    <doc-ask id="executor">
+      <p>実行者の決定: 誰が実装するか。</p>
+      <label><input type="radio" name="executor" value="build"> build-tier の新 session に dispatch <small>judge-tier の session の既定</small></label>
+      <label><input type="radio" name="executor" value="here" checked> この session で実装する <small>例外 (a)。著者が 2026-10-24 に決定</small></label>
+    </doc-ask>
+    <doc-note tone="info"><strong>実行者</strong> この session で実装する。理由は implementation-chain の例外 (a)：skill の散文の編集と移動で、この session は Opus（build 側）。cloud への無人 dispatch は skills の無人変更（boundary.md）に当たる。review は別 agent で回す。</doc-note>
+  </doc-claim>
+
+  <doc-claim aux="scope">
+    <p>変えないもの</p>
+    <ul>
+      <li>各フェーズの手順と問い方。移すのは置き場と参照の書き方だけ。</li>
+      <li><code>eval/units.yaml</code> の形式と validator の検査内容。</li>
+      <li>s7 eval の記録（<code>docs/evals/s7-widen-depth-native-ablation-2026-10-14.md</code>）。日付つきの記録なので旧名のまま残す。</li>
+      <li>widen-the-ask は model から起動でき、detail-loop は手動起動だけ、の区別。</li>
+    </ul>
+  </doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

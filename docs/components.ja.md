@@ -47,16 +47,16 @@
 | [repair-discipline](../skills/repair-discipline/SKILL.md) | 修正の前に、今なにが本当かを一次証拠で確かめる規律。バグ、古いタスク、止まる・不安定な処理、他のコードが読む schema や保存形式の変更に使う |
 | [rfc-writer](../skills/rfc-writer/SKILL.md) | 公開 `rfcs/` 台帳へ 1 エントリを起票する手順（足切り・採番・様式・公開規約・index 行） |
 | [review-to-lint](../skills/review-to-lint/SKILL.md) | reviewer のチェックリストのうち機械で判定できる項目を決定論 script に移し、reviewer（agent / review skill）には判断の要るチェックだけを残す |
-| [jev-skill-router](../skills/jev-skill-router/SKILL.md) | prompt に合う skill を TypeSafe Jev に選ばせる UserPromptSubmit hook。shadow 計測が先、inject は精度が出てから |
 | [jev-judgment-design](../skills/jev-judgment-design/SKILL.md) | LLM の閉じた判定（関係あるか・新しいか・証拠の強さ）を TypeSafe Jev に移す設計。比べる相手を state に入れ、採否は Jev の確率からコードが決め、canary で落としすぎを見る |
 | [author-calibrated-eval](../skills/author-calibrated-eval/SKILL.md) | LLM が書く読み物を著者の読みを正解にして磨くループ。材料の固定、難所セット、強いモデルの参照稿を混ぜた blind 読み比べ、LLM 判定役は忠実さの足切り専任 |
-| [review-when-watch](../skills/review-when-watch/SKILL.md) | 毎朝の launchd job。新しいリサーチノートを ADR と RFC の Review-when 条件に TypeSafe Jev で 1 組ずつ照合し、当たりを Slack に送る。model からは呼ばない |
 | [mono-figure](../skills/mono-figure/SKILL.md) | 記事や README の静的な説明図（線・矢印・数字・ラベル）を mono-color の見た目（紙・インク・書体・余白）で作る。既定は Claude が SVG で描き、必要な platform では PNG に撮る |
 | [agent-send](../skills/agent-send/SKILL.md) | Send a prompt to an agent running in a Herdr pane and confirm it landed, or wait until its work is done |
 | [persona-read-loop](../skills/persona-read-loop/SKILL.md) | 隔離した 3 人の LLM の読み手に稿（記事・README）を周回で読ませ、見せ方だけを直し、改稿ごとに足した主張を数える。ユーザーリサーチの代わりではない |
 | [social-post](../skills/social-post/SKILL.md) | 新しい記事の告知や断片を X・Bluesky・Substack Notes の投稿にし、Buffer の下書きに入れる（予約と公開は著者） |
 | [widen-the-ask](../skills/widen-the-ask/SKILL.md) | プランに入る前に、依頼を高度・範囲・深度の 3 方向へ、人間との対話で一問ずつ広げる |
 | [detail-loop](../skills/detail-loop/SKILL.md) | 骨組みのできた製品を細部の単位ごとに仕上げ、直した細部を検査として凍結する。レビューで新しい指摘が出なくなるまで回す |
+| [harness-stocktake](../skills/harness-stocktake/SKILL.md) | Take stock of the whole harness in one report and one approval, then apply on a branch (ハーネスの棚卸し) |
+| [hook-stocktake](../skills/hook-stocktake/SKILL.md) | Audit the harness hooks (hooks/*.sh, scripts/hooks/*) and their settings.json wiring, and give each a verdict (hook の棚卸し) |
 <!-- END GENERATED: skills-table -->
 
 ## Agents
@@ -64,10 +64,8 @@
 <!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
 | --- | --- |
-| [prompt-writer](../agents/prompt-writer.md) | 軽量モデルで簡潔な prompt を生成。LLM prompt template の作成・書き換え |
 | [adr-reviewer](../agents/adr-reviewer.md) | ADR の「決定」ではなく「記録」を検査する — Context が検証可能な根拠を持つか、`Review-when` が観測可能な失効条件か、Alternatives が藁人形でないか（「未決 — 再訪条件」付きの対抗案は可）、Consequences が両面あるか、先行 ADR との関係（部分弱化は日付つき注記）が明示されているか |
 | [prompt-forager](../agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
-| [swift-reviewer](../agents/swift-reviewer.md) | Swift / SwiftUI レビュー — Swift 6 strict concurrency、値セマンティクス、SwiftUI の状態所有、retain cycle、HIG 準拠 |
 | [readme-judge](../agents/readme-judge.md) | README の fresh-context 判定器。証拠 JSON と README を 1 回読み、固定チェックリストに引用付きで答えて named verdict（Publishable / Fix / Rewrite）を返す |
 | [researcher](../agents/researcher.md) | search-first の並列 Full で 1 角度を担う調査 worker。web・registry・一次資料を調べ、日付付きの notes 1 本か、plan の research gate を開ける統合 report 1 本を書く |
 <!-- END GENERATED: agents-table -->
@@ -81,7 +79,6 @@
 | --- | --- |
 | [agents](../rules/common/agents.md) | agent catalog へのポインタ（正本は `agents/*.md` の frontmatter）、Review は実装者と別の agent process で走らせる規則、Herdr 委譲 skill への入口 |
 | [akc-cycle](../rules/common/akc-cycle.md) | Agent Knowledge Cycle のポインタ版 — 各機構と所有する skill・rule の対応表、足場をいつ外してよいか（Scaffold Dissolution）の判定基準、ADR の扱い（日付つき経緯記録・supersede と日付つき注記・起票の 2 条件） |
-| [debugging](../rules/common/debugging.md) | Rate limit signal — 外部 platform への大量書き込み中の rate limit 連発は一時的なエラーでなく方針の合図。backoff で押し切らず、書き込みの連続を止めて人間へ報告 |
 | [planning](../rules/common/planning.md) | Planning の配線 — 既存解がありうるものの前は search-first、実装は判定役のセッションから別の build セッションへ渡すのが既定、chain 種別と reviewer 条件は implementation-chain、Verify の正本は repo の `.claude/verify.sh` |
 | [skills](../rules/common/skills.md) | skill / agent / rule の origin 語彙（正本の表）、系譜を残す `replaces:` field、skill を書く・大改修する前に skill-creator を読む命令形の配線、文書の書き方（既定は肯定形、禁止は 3 条件を満たすときだけ） |
 | [contemplative-axioms](../rules/common/contemplative-axioms.md) | Laukkonen et al. (2025) の Contemplative Constitutional AI 原則 (verbatim) |

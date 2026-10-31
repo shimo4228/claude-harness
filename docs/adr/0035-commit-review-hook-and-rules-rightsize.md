@@ -4,6 +4,8 @@
 
 accepted
 
+> **注記（2026-11-01, commit「chore(stocktake): rules の棚卸しを適用」）** この rightsize で残した `rules/common/debugging.md`（rate limit 連発を policy signal と扱う 1 項）は `rules/common/boundary.md` の「止まって報告する」へ統合した。規則の中身（burst を止めて人間へ報告する、2026-07-16 の実例）はそのまま残る。
+
 ## Date
 
 2026-08-02

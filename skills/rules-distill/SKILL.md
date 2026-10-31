@@ -92,7 +92,7 @@ line numbers shift every time the referenced file grows):
 
 ```
 # Good
-New Section in rules/common/debugging.md:
+New entry under 「止まって報告する」 in rules/common/boundary.md:
 "If rate limits fire repeatedly during bulk writes to an external platform, treat them as a
 policy signal, not a transient error, and stop the burst. Do not push through with backoff; report to a human."
 
@@ -108,17 +108,23 @@ Recurrence: 1 skill (evidence, not a gate)
 
 Note that it **passes even with a Recurrence of 1**.
 
-## Phase 3 — User Review & Execution
+## Phase 3 — Report and apply
 
-Present a summary table (`# | Principle | Verdict | Target | Confidence`) as the
-overview, then **confirm one by one**: walk the
-candidates sequentially — for each, show its evidence, violation risk, and draft text,
-then ask `[y/n/skip]`. The user can modify the draft before approving, and can stop at
-any point. Never batch the approval ("apply all 5? [y/n]" defeats the design — one
-candidate, one decision); skipped candidates go to the ledger with `status: skipped`.
+Turn every candidate into an item (source `distill`) of the report contract in skill:
+`harness-stocktake` and hand them to it: one report, one approval from the author, application
+on a task branch, a completion report, an ff-only merge. Called alone, this skill runs that
+contract's Phases 2–5 with its own items. Each item carries the principle and confidence in
+`reason`, the evidence and violation risk in `evidence`, and the exact draft text with its target
+location in `change`; the author can rewrite the draft in the item's note.
 
-**Never modify rules automatically. Always require user approval.** This is the one
-hard gate — rules load every session, so a bad rule has outsized blast radius.
+**A rule changes only through an item the author approved in the report.** This is the one hard
+gate — rules load every session, so a bad rule has outsized blast radius. An item whose note
+leaves the wording open goes to the completion report as pending, not into the rule.
+
+Where skill `harness-stocktake` is not installed, show the same items as one table
+(`# | Principle | Verdict | Target | Confidence`, each with its draft text), take one approval with
+the author's overrides and edits, then apply. Skipped candidates go to the ledger with
+`status: skipped`.
 
 > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
 

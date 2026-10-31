@@ -86,6 +86,9 @@ accepted — [ADR-0055](./0055-review-chain-single-pass-regression.md) Decision 
    file にも無ければ、判断役が既定値を packet に入れ、起動前に 1 メッセージで枝の形で見せて著者の OK の後に
    起動する。無人 cycle ではその task を digest に OK 待ちとして載せ、起動しない（task-triage の「Where the
    loop lives」にも書く）。
+
+   > **注記（2026-11-01, ADR-0098）**: 逆提案は起動前の 1 メッセージでなく、digest report の「開始の OK」群の項目（`question` に開いた項目、`change` に既定値と枝）になった。起動は report の承認の後。
+
 6. 記事の出典・読んだ日を packet テンプレートの末尾の note にも置く（packet を書く判断役が本文の出どころを
    引けるように）。根拠と失効条件の正本は本 ADR。cloud dispatch の `--model` / `--effort` の固定は決めない
    （Alternatives）。

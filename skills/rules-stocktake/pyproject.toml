@@ -1,0 +1,42 @@
+[project]
+name = "rules-stocktake"
+version = "0.1.0"
+description = "Held-out transfer probe for rules-stocktake Dissolve candidates: runs the same scenes in fresh claude -p children with and without one rule and returns both outputs. Evidence only; the verdict stays with the rules-stocktake skill."
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Pin the same explicit select as the root ruff.toml. Without it, ruff's defaults (413 rules in 0.16)
+# apply and the gate's verdicts shift with upstream version bumps — the harness owns the check
+# thresholds (rationale in the header comment of root ruff.toml; citation-sync introduced the same pin first, 2026-08).
+# The C901 threshold is 15, same as root. The budget is **trimmed, never raised** (ADR-0056; canonical in .claude/verify.md).
+# The ANN rules enforce explicit types at boundaries (2026-08-31; rationale and design constraints in ~/.claude/.claude/verify.md).
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "C901", "ANN001", "ANN002", "ANN003", "ANN201", "ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test functions are not consumed boundaries. Type enforcement applies to production code only
+"tests/**" = ["ANN"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]

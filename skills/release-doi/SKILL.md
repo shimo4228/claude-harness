@@ -16,11 +16,11 @@ Zenodo に DOI 登録された research repo のリリース手順。`/release-d
 - 直近の refactor / 新機能 / sunset ADR を Zenodo に新 version DOI として記録したい
 - pyproject.toml / CITATION.cff / 多言語 README の version drift を解消したい
 - glossary / llms.txt が code 実態とズレているのを release ゲートで揃えたい
+- version 番号は変更の大きさで決める: bug fix だけなら patch、major refactor なら minor、breaking なら major
 
 **Skip when**:
 - DOI 登録のない repo (Zenodo 連携していない) — `CITATION.cff` の有無で判定
 - バージョン bump の必要なし (typo fix 等の小修正で release を切らない)
-- bug fix だけなら patch version で `/release-doi` を起動、major refactor なら minor / breaking なら major
 
 ## Pre-flight: 前提確認
 
@@ -28,8 +28,9 @@ Zenodo に DOI 登録された research repo のリリース手順。`/release-d
 # CITATION.cff があるか (= Zenodo 連携している repo か)
 test -f CITATION.cff && echo "DOI repo" || echo "skip /release-doi"
 
-# 直近 tag 以降の commit が空でないか (新規 repo なら tag なしで OK)
-git log "$(git describe --tags --abbrev=0 2>/dev/null)..HEAD" --oneline | head
+# 直近 tag 以降の commit が空でないか (tag が無い repo は初回 release — 全履歴を見る)
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+if [ -n "$LAST_TAG" ]; then git log "${LAST_TAG}..HEAD" --oneline | head; else echo "first release (no tag)"; git log --oneline | head; fi
 
 # Zenodo webhook が GitHub repo に登録されているか
 gh api repos/<owner>/<repo>/hooks --jq '[.[] | select(.config.url | contains("zenodo"))] | length'
@@ -38,7 +39,7 @@ gh api repos/<owner>/<repo>/hooks --jq '[.[] | select(.config.url | contains("ze
 gh api repos/<owner>/<repo>/hooks --jq '.[] | select(.config.url | contains("zenodo")) | {active, url: .config.url[:50]}'
 ```
 
-空なら release 不要。webhook 未登録なら opt-in 依頼後に再開。
+tag があって範囲が空なら release 不要 (初回 release は空判定をしない)。webhook 未登録なら opt-in 依頼後に再開。
 
 ### Zenodo opt-in (新規 DOI repo の最初の release で必須)
 
@@ -58,10 +59,11 @@ Zenodo は GitHub repo ごとに **opt-in 連携** が必要。toggle ON 前に�
 判断材料を ground truth として固定。**実コマンド出力**だけを信頼する (既存 doc の数値は drift しているので使わない)。
 
 ```bash
-# 対象 commit 範囲
-LAST_TAG=$(git describe --tags --abbrev=0)
-git log ${LAST_TAG}..HEAD --oneline
-git diff ${LAST_TAG}..HEAD --stat | tail -3
+# 対象 commit 範囲 (tag が無い初回 release は全履歴。4b825dc… は git の空 tree)
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+BASE=${LAST_TAG:-4b825dc642cb6eb9a060e54bf8d69288fbee4904}
+if [ -n "$LAST_TAG" ]; then git log "${LAST_TAG}..HEAD" --oneline; else git log --oneline; fi
+git diff "$BASE" HEAD --stat | tail -3
 
 # Python repo なら
 find src -name '*.py' | wc -l                          # init 含む
@@ -87,10 +89,10 @@ git tag --sort=-creatordate | head -5
 | `CHANGELOG.md` | `## vX.Y.Z — <title> (YYYY-MM-DD)` を Unreleased セクションから繰り出す。**3 カテゴリ最低限**: Sunset (削除/withdraw)、Added (新規 ADR / module / feature)、Changed (動作/設定の変化)。Notes に migration 影響を記述 |
 | `pyproject.toml` | `version = "X.Y.Z"` |
 | `CITATION.cff` | `version: "X.Y.Z"`、`date-released: "YYYY-MM-DD"`。**DOI 欄は前 release の値を据え置き** (Post-release で新 version DOI に差し替え) |
-| `codemeta.json` (存在する repo のみ) | **CITATION.cff の派生物、手編集しない**。`version` / `datePublished` / `identifier` を CITATION.cff から引くので、CITATION.cff を更新したら `uvx cffconvert -f codemeta -o codemeta.json` で**再生成**する (Phase 4 / Post-release の git add 直前で実行)。SWH の metadata indexer が直接読む層で、`CITATION.cff` は読まない (ADR-0013 の intrinsic identifier 層の補完) |
+| `codemeta.json` (存在する repo のみ) | **CITATION.cff の派生物、手編集しない**。`version` / `datePublished` / `identifier` を CITATION.cff から引くので、CITATION.cff を更新したら `uvx cffconvert -f codemeta -o codemeta.json` で**再生成**する (Phase 4 / Post-release の git add 直前で実行)。SWH の metadata indexer が直接読む層で、`CITATION.cff` は読まない |
 | `.zenodo.json` | **citation surface 同期**: 前回 release 以降に repo docs (policy-mapping / glossary / papers 等) が新たに引用した外部文献 (arXiv / DOI 付き論文) を `related_identifiers` に追加 — `{"identifier": "10.48550/arXiv.<id>", "relation": "references", "resource_type": "publication-article", "scheme": "doi"}` (arXiv は DataCite DOI 形式 `10.48550/arXiv.NNNN.NNNNN`)。既存 entry との重複を排除。description 内の framework 列挙等も実態に揃える |
 | `.zenodo.json` description (AI 開示) | 対象 repo (contemplative-agent-data / doctrine-corpus / working paper 3 本 / agent-knowledge-cycle / contemplative-agent / existence-proof) は、その release で description に human-conducted signal を同梱する — 生成主体・素材の出所と as-of・観察と判断の著者帰属・著者レビューを経た公開。working paper は「AI-assisted」を明記する。文言案の正本は `~/MyAI_Lab/authorship-strategy/.notes/zenodo-ai-policy-metadata-audit-20260804.md` (著者ローカル)。同梱したら、そのファイルの該当 repo の行に release 日を書く |
-| `README.md` + 多言語版 | BibTeX `version = {X.Y.Z}`、badge tests 数、prompts/module count、sunset 文 sentence-level の削除。glossary 規約準拠。**BibTeX `doi` / `url` および "How to cite" 引用文の DOI は Post-release で新 version DOI に差し替え。DOI badge は concept DOI で固定済みなので触らない** |
+| `README.md` + 多言語版 | BibTeX `version = {X.Y.Z}`、badge tests 数、prompts/module count、sunset 文 sentence-level の削除。glossary 規約準拠。DOI の扱いは "Concept DOI vs Version DOI — 役割分離 policy" 表に従う |
 | `llms.txt` | header version、ADR 一覧の追加、prompts count |
 | `llms-full.txt` | Project Facts (Version / Tests / ADRs)、Q&A の数値、新 ADR の Q&A 追加 |
 | `docs/glossary.md` | 新出語 (ADR slogan / 唯名 / 新 module 名) を多言語で追加。sunset 用語 (BM25 のような) を削除 |
@@ -152,7 +154,7 @@ git status --short
 
 対象 repo の **`docs/runbooks/sibling-backend-conformance.md`**（`./scripts/check-sibling-backends.sh` を実行し、出力の読み方に従う）
 
-リリースは契約を publish する行為なので、契約変更が sibling に伝わったかを確認する最後の地点がここ（ADR-0088）。
+リリースは契約を publish する行為なので、契約変更が sibling に伝わったかを確認する最後の地点がここ。
 
 ## Phase 4: Release execution
 
@@ -170,9 +172,10 @@ git add CHANGELOG.md CITATION.cff pyproject.toml \
 test -f codemeta.json && git add codemeta.json
 # Phase 2 で /context-sync が自動適用したファイルもここに足す (git status --short で確認)
 
-# commit message はファイル経由（`$( )` は harness の PreToolUse hook `hooks/validate-bash.sh` が block する）
-MSG_DIR=$(mktemp -d)
-cat > "$MSG_DIR/release-msg.txt" <<'EOF'
+# commit message は固定パスのファイル経由（git commit と同じコマンドに `$(` があると
+# harness の PreToolUse hook `hooks/validate-bash.sh` が block する）
+MSG_FILE="${TMPDIR:-/tmp}/release-msg.txt"
+cat > "$MSG_FILE" <<'EOF'
 release: vX.Y.Z — <one-line title>
 
 - ADR-XXXX <主要変更 1>
@@ -182,7 +185,7 @@ release: vX.Y.Z — <one-line title>
 
 <diff stats>: N files changed, +M / -K since vA.B.C. P tests across Q files.
 EOF
-git commit -F "$MSG_DIR/release-msg.txt"
+git commit -F "$MSG_FILE"
 
 git tag -a vX.Y.Z -m "vX.Y.Z — <one-line title>"
 
@@ -205,7 +208,7 @@ gh release create vX.Y.Z \
 
 **HF dataset sync** (`graph.jsonld` を持つ repo のみ): `gh release create` の後、project root で `/hf-sync <Owner/dataset>` を起動して HF mirror を反映する。Local の `hf auth login` token を使うので CI / token secret 管理は不要。反映確認・失敗時対応の正本は skill: `hf-sync`。
 
-**Software Heritage archive request** (全 DOI repo、authorship-strategy ADR-0013): tag push / release 作成後、Save Code Now API に明示的な archival request を投げる。periodic crawl 任せでは snapshot が release 状態をカバーする保証がないため、release ごとに明示 request する:
+**Software Heritage archive request** (全 DOI repo): tag push / release 作成後、Save Code Now API に明示的な archival request を投げる。periodic crawl 任せでは snapshot が release 状態をカバーする保証がないため、release ごとに明示 request する:
 
 ```bash
 curl -s -X POST "https://archive.softwareheritage.org/api/1/origin/save/git/url/https://github.com/<owner>/<repo>/" \
@@ -214,9 +217,9 @@ curl -s -X POST "https://archive.softwareheritage.org/api/1/origin/save/git/url/
 ```
 
 - 匿名 rate limit は **save request 10 件/時** (`X-Ratelimit-Limit: 10`)。429 `Throttled` が返ったら `reason` 内の秒数だけ待って再試行するか、Post-release に回す
-- この step は **非同期** (ADR-0013)。archive 完了を release の block 要因にしない。SWHID の取得・記録は Post-release で行う
+- この step は **非同期**。archive 完了を release の block 要因にしない。SWHID の取得・記録は Post-release で行う
 
-**Wayback Machine snapshot** (全 DOI repo): SWH は git object (blob/tree/commit) を archive するが、GitHub の **rendered README ページ** (badge / TOC / DOI link 込みの見た目) は対象外。Wayback は rendered-HTML 層を補完する (Google C4 等の LLM 訓練 corpus に web.archive.org が実証的に含まれる)。release した repo の README ページを 1 URL 保存する:
+**Wayback Machine snapshot** (全 DOI repo): SWH は git object (blob/tree/commit) を archive するが、GitHub の **rendered README ページ** (badge / TOC / DOI link 込みの見た目) は対象外。Wayback は rendered-HTML 層を補完する。release した repo の README ページを 1 URL 保存する:
 
 ```bash
 curl -sI "https://web.archive.org/save/https://github.com/<owner>/<repo>" | grep -iE "^HTTP|^location:"
@@ -228,7 +231,7 @@ curl -sI "https://web.archive.org/save/https://github.com/<owner>/<repo>" | grep
 
 ## Post-release: DOI 反映
 
-Zenodo は **GitHub Release object** に対して webhook が発火する。tag push 単体では trigger されない — Phase 4 末尾の `gh release create` がないと Zenodo は何も知らない。Release object 作成 → GitHub webhook → Zenodo が repo snapshot を archive → 数分以内に新 version DOI を採番、の連鎖。
+採番の起点は Phase 4 の `gh release create` (発火源はそこを参照)。数分以内に新 version DOI が採番される。
 
 ```bash
 # 採番確認 (Zenodo の repo ページ or DOI badge URL を fetch)
@@ -245,7 +248,7 @@ git commit -m "chore: update DOI to vX.Y.Z"
 git push origin main
 ```
 
-**SWHID 取得・記録** (authorship-strategy ADR-0013 の intrinsic identifier 層): Phase 4 で投げた Save Code Now request の完了を確認し、snapshot SWHID を CITATION.cff に記録する。DOI 反映 commit と同じ commit にまとめてよい (ただし snapshot は DOI 反映 push **前** の状態を指す点は許容 — SWHID は release tag 時点の content 証明が目的):
+**SWHID 取得・記録** (intrinsic identifier 層): Phase 4 で投げた Save Code Now request の完了を確認し、snapshot SWHID を CITATION.cff に記録する。DOI 反映 commit と同じ commit にまとめてよい (ただし snapshot は DOI 反映 push **前** の状態を指す点は許容 — SWHID は release tag 時点の content 証明が目的):
 
 ```bash
 # archive 完了確認 + snapshot SWHID 取得 (visit endpoint は save とは別の rate limit)
@@ -265,15 +268,15 @@ identifiers:
 ```
 
 - 既存の swh entry があれば **置き換えず追記** (各 release の snapshot が独立した priority claim)
-- SWHID は content の存在証明であって authorship 証明ではない (ADR-0013 Consequences)。authorship は DOI / ORCID 層が担う — README 等で SWHID を authorship の根拠として書かない
+- SWHID は content の存在証明であって authorship 証明ではない。authorship は DOI / ORCID 層が担う — README 等で SWHID を authorship の根拠として書かない
 - Archive 内の閲覧 URL: `https://archive.softwareheritage.org/swh:1:snp:<hash>;origin=https://github.com/<owner>/<repo>`
 - **Review-when — SWHID の DataCite 投影** (as-of 2026-08-25): DataCite schema 4.7 (2026-03) は `SWHID` を relatedIdentifierType として正式追加したが、Zenodo の deposit 語彙 (`zenodo.org/api/vocabularies/relationtypes`, 34 種 ≒ 4.5 相当) は未対応で swhid scheme が無い。**Zenodo が 4.6/4.7 語彙に追随したら**、release 時に `.zenodo.json` へ version DOI → `swh:1:snp:` の relation を追加し、SWHID 層を CITATION.cff だけでなく DataCite registry にも投影する (URL 押し込みは意味が濁るので追随前はやらない)
 
 **Zenodo community 収載** (新規 repo / 新規 paper の初回 release 時のみ): 採番された record を著者の community (`shimo4228-research-program`) に収載する。収載は parent record 単位なので 2 回目以降の release では作業不要 (新 version は自動的に community に残る)。API: `POST /api/records/<id>/communities` で inclusion request → `POST /api/requests/<request_id>/actions/accept` で self-accept (token は著者ローカルの credentials file、例: `~/.config/zenodo/credentials.env`)。
 
-**community-authority-record への self-registration はしない**（Wikidata 等。authorship-strategy ADR-0021: アカウント無期限ブロック + 全 item 削除の実測。別アカウント・代理依頼も同じ）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
+**community-authority-record への self-registration はしない**（Wikidata 等。アカウント無期限ブロック + 全 item 削除の実測がある。別アカウント・代理依頼も同じ）。entity grounding は self-sovereign 層（DOI / ORCID / SWHID / 自 repo graph）のみで行う。
 
-**AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (DeepWiki は as-of 2026-06-28 で "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく (authorship-strategy framework の Layer 4 tactic: derivation 型 diffusion 面 + regurgitation-test 診断面)。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
+**AI 派生 wiki 面の onboarding** (optional、新規 public idea/research repo の初回公開時のみ): third-party の AI 生成 wiki + query 面 (現行: DeepWiki) に repo を載せる。public repo の wiki ページ (`https://deepwiki.com/<owner>/<repo>`) で index 生成を起動する (DeepWiki は as-of 2026-06-28 で "Repository Not Indexed" 画面で通知用 email + Index ボタンのフォーム送信が必要 = 訪問だけでは起動しない、生成 2-10 分。email 送信は著者本人が行う personal-data 判断)。起動後は repo 更新に自動追随する (badge 無しで ~5 日 lag、README の DeepWiki badge ありで ~weekly の優先 refresh)。badge は README badge 行に追加しておく。既存 repo は index 済みなら自動追随するので 2 回目以降の release では作業不要。派生 wiki は gate せず祝福する — signature drift への防御は repo 側の dense anchoring (vocabulary discipline) であって派生面の修正ではない。
 
 **Concept DOI vs Version DOI — 役割分離 policy**:
 
@@ -308,12 +311,12 @@ curl -s https://zenodo.org/api/records/<any_version_id> \
 4. README DOI badge を concept DOI に設定 — badge SVG URL と click target の両方
 5. 全言語 README の DOI badge も同じ concept DOI に揃える
 
-以降、release のたびに badge / homepage は **触らない**。Citation 系のみ Post-release で version DOI に差し替える。badge が version DOI を指している repo は、次の release 時に concept DOI へ差し替える。
+以降、release のたびに badge / homepage は **触らない**。Citation 系のみ Post-release で version DOI に差し替える。version DOI を指す badge は次の release で concept DOI に切り替える。
 
 ### Published record の metadata edit (retrofit — release を待たない例外経路)
 
 **正常系は release 同梱** (`.zenodo.json` を直して次の release に載せる)。この節は
-`authorship-strategy` ADR-0002 が定める retrofit — 相互宣言の欠落を見つけた、
+retrofit の手順 — 相互宣言の欠落を見つけた、
 新しい sibling を足した、といった場面で **release cadence を待たずに published record の
 metadata だけを直す**ときの手順。新しい version は増えない。
 
@@ -346,18 +349,18 @@ curl -s -X POST -H "Authorization: Bearer $ZENODO_TOKEN" \
 - **伝播確認**: publish 後数十秒で DataCite の `relatedIdentifiers` に反映される。
   concept record 側の metadata も latest version に追随する
 - **rate limit**: 逐次実行 + sleep。連発したら transient error でなく policy signal と扱って
-  止める (`rules/common/debugging.md`)
+  止める (`rules/common/boundary.md`「止まって報告する」)
 
-script 化はしない判断 (2026-08-29、RFC-0004)。頻度が年数回で、常設の書き込み道具は
-「registry を気軽に触る」誘因になり ADR-0002 の主従 (release 同梱が正常系) を逆転させる。
+この手順は script にせず手で回す。頻度が年数回で、常設の書き込み道具は「registry を気軽に
+触る」誘因になり、release 同梱が正常系という主従を逆転させる。
 
 ## Early stop conditions
 
 - **Pre-flight で Zenodo webhook 未登録** → user に opt-in 依頼で停止 (上の "Zenodo opt-in" 参照)
-- Phase 1 で `LAST_TAG..HEAD` の commit が空 → release 不要、user に報告
+- Phase 1 で tag があり `LAST_TAG..HEAD` の commit が空 → release 不要、user に報告 (tag が無い初回 release はこの停止に当たらない)
 - Phase 3 で test FAIL / secret detection HIT / lint error → 停止して報告
 - Phase 4 で `git status` に意図しない modified file → user 承認待ち
-- Phase 4 で `gh release create` を忘れて tag だけ push してしまった → 後追いで `gh release create vX.Y.Z --notes-file ... --latest` を実行 (tag が既にあれば release object のみ追加される)
+- Phase 4 で `gh release create` を忘れて tag だけ push してしまった → 後追いで `gh release create vX.Y.Z --notes-file ... --latest` を実行
 - **Post-release で webhook delivery が 4xx** (`gh api repos/<owner>/<repo>/hooks/<hook_id>/deliveries` で `status_code: 403` 等) → opt-in 漏れの可能性が高い。webhook event 自体は届いているが Zenodo が受理していない。下の "復旧手順" 参照
 - Post-release で `gh release create` 実行後 30 分以内に Zenodo が DOI 採番しない → Zenodo dashboard の webhook delivery ログを user に確認依頼 (GitHub-Zenodo 連携が外れている / 認証切れの可能性)
 
@@ -386,20 +389,19 @@ git push origin vX.Y.Z
 gh release create vX.Y.Z --title "..." --notes-file <(awk ... CHANGELOG.md) --latest --repo <owner>/<repo>
 
 # 6. webhook delivery の status_code を確認 (今度は 202 OK が出るはず)
-HOOK_ID=$(gh api repos/<owner>/<repo>/hooks --jq '.[0].id')
+HOOK_ID=$(gh api repos/<owner>/<repo>/hooks --jq '[.[] | select(.config.url | contains("zenodo"))][0].id')
 gh api "repos/<owner>/<repo>/hooks/$HOOK_ID/deliveries" --jq '.[0:3] | .[] | {event, action, status_code}'
 ```
 
 GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/release のみ作り直すので blast radius は小さい。
 
-## Notes — 設計判断の根拠
+## Release 時の規則
 
-- **`.zenodo.json` references = 被引用研究者への passive シグナル**: repo markdown 内の引用は Google Scholar / arXiv "cited by" の citation graph に一切入らない (被引用側から不可視)。`.zenodo.json` の `references` 辺は release 時に DataCite metadata として propagate し、OpenAIRE / Scholix の citation graph に機械可読な辺を張る。引用した文献の著者周辺に届く数少ない受動経路なので、新規引用が増えた release では必ず同期する (authorship-strategy の citation-graph federation tactic)。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
-- **DOI 欄は Phase 4 で据え置き**: tag push 前に新 DOI を埋めると Zenodo 採番前なので必ず壊れる。Post-release で 1 commit 増やす方が安全
+- **`.zenodo.json` の references は新規引用が増えた release で必ず同期する**: citation graph (OpenAIRE / Scholix) に機械可読な辺を張る経路はここだけ。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
 - **数値キャップを quality filter にしない** — 正本は skill: `measurement-discipline` 原則 4
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う
 - **schema / storage を変えた release は全消費者を棚卸す** — 正本は skill: `repair-discipline` 原則 2
-- **SWHID は DOI の補完であって代替ではない** (authorship-strategy ADR-0013): DOI は extrinsic (registry 依存、metadata record を指す)、SWHID は intrinsic (content hash 由来、registry なしで検証可能)。各層が他方の failure mode をカバーする。DOI 登録が impractical な genre (blog 等) では SWHID が substitute priority-claim mechanism。Software Heritage は code 系 LLM training corpus (The Stack v2 系) の直接 ingest source でもあり、archive は parametric channel への第二の ingest surface を兼ねる
+- **SWHID は DOI に追記する層**: DOI は extrinsic (registry 依存)、SWHID は intrinsic (content hash 由来) で、各層が他方の failure mode を補う。DOI を置き換えない
 
 ## Worked example (abstracted)
 

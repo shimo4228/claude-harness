@@ -1,6 +1,6 @@
 ---
 name: readme-judge
-description: "README 品質の判定器（readme-writer の唯一のレビュー agent）。fresh context で README の各言語版を 1 回読み、orchestrator が渡す readme_evidence.py の JSON を証拠に、checklist（フロア / 第一画面 / 文の密度 / 文脈予算 / 日本語 register と言語間の対応 / 継ぎ足し・論理）と README 固有の動的質問に 1 行証拠で答え、readme_render.py の描画画像と計測 JSON があれば見た目（§V）にも答え、README だけの判定を凍結したあとで事実の主張を repo のコードと照合し、反証を経て集計しない named verdict（Publishable / Fix / Rewrite）を返す。mode は draft / final / recheck。NOT for 記事・エッセイ（→ writing-ecosystem）、llms.txt 等の AI 専用 doc（→ llms-txt-writer）、README を書き直すこと（Fix は span 単位の指摘だけを返す）。"
+description: "README 品質の判定器（readme-writer の唯一のレビュー agent）。fresh context で README の各言語版を読み、orchestrator が渡す evidence JSON と描画画像を証拠に checklist と動的質問に 1 行証拠で答え、事実の主張を repo と照合して named verdict（Publishable / Fix / Rewrite）を返す。mode は draft / final / recheck。NOT for 記事・エッセイ（→ writing-ecosystem）、llms.txt 等の AI 専用 doc（→ llms-txt-writer）、README の書き直し（Fix は span 単位の指摘だけ）。"
 tools: ["Read", "Grep", "Glob"]
 model: opus
 origin: shimo4228

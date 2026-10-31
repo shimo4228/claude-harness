@@ -91,6 +91,9 @@ CA は土曜 09:00 に `com.moltbook.weekly-pipeline` が走り、packet 締切�
    > 宛先が Slack からセッション応答になった。片方向性と anti-spoofing 規則は不変。
    > 判断待ちのファイル永続化は行わない（別セッションで判断しない — 著者確認 2026-08-30。
    > 退出時も transcript が `claude --resume` で辿れるので fallback を置かない）。
+   >
+   > **注記（2026-11-01, ADR-0098）**: digest の置き場は応答本文から 1 cycle 1 枚の Artifact report（`db` の store）へ移り、1 判断 1 メッセージは廃した。判断待ちは report の store に残る（上の「ファイル永続化は行わない」を置き換える）。Slack は cycle ごとに 1 通のままで、件数・report の URL・1 行タイトルを送る。片方向性と anti-spoofing 規則は不変。
+
 4. **CLI wrapper を持つのは Vault / aeon からの意図的逸脱。** 理由: ここでは LLM が作成した
    digest そのものが送る内容であって目的に合致する、sink は著者本人のチャンネルであり外部への
    exfiltration 面ではない、body は `jq --arg` で JSON 化するのみで shell 評価が入らない、Slack は
@@ -99,6 +102,9 @@ CA は土曜 09:00 に `com.moltbook.weekly-pipeline` が走り、packet 締切�
    土曜午前の LLM ジョブ集中を避けて**日曜 06:30** へ移設、plist に `--stocktake` を明示。
    下記の「実行される正本は plist」に従う）。CA = 水曜 17:07 に
    triage、土曜 14:07 に stocktake → triage（pipeline packet 締切 13:30 の後、人間の gate の前）。
+   > **注記（2026-10-31, commit「chore(triage): triage-ca の土曜 tick を外し、CA の土曜 cycle を weekly-gate セッションの Step 8 に移す」）**:
+   > CA の土曜 cycle は tick を持たず、`weekly-gate-ca` セッションが Step 7 の後に同じ着席で回す
+   > （triage はゲートの commit と決定を読むのでゲートの後）。`triage-ca` の tick は水 17:07 だけ。
    stocktake の要否は tick が曜日（土）で決める。plist は repo ごとに 1 本
    （`scripts/launchd/com.shimomoto.triage-{harness,ca}.plist` を正本として
    `~/Library/LaunchAgents/` へ copy、`launchctl bootstrap`）。分は :00 を避ける。**実行される正本は

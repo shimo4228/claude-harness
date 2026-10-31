@@ -78,21 +78,17 @@ Each skill defines a workflow that Claude can invoke via slash command (`/<skill
 - [x-draft](skills/x-draft/SKILL.md): turns a research report into one long-form social post — pull-only, rechecks the primary source, strips AI tells, stops at the draft
 - [prose-translation](skills/prose-translation/SKILL.md): translates human-facing prose (essays, articles, READMEs, ADRs) between Japanese and English, keeping the author's voice and the target channel's register
 - [rfc-writer](skills/rfc-writer/SKILL.md): files one entry in the public `rfcs/` ledger — filing bar, numbering, template, publication rules, index line
-- [jev-skill-router](skills/jev-skill-router/SKILL.md): operating manual for a UserPromptSubmit hook that asks TypeSafe Jev which installed skill fits the prompt; shadow-first, injects only after measured accuracy (needs a `TYPESAFE_API_KEY`)
 - [jev-judgment-design](skills/jev-judgment-design/SKILL.md): moving closed LLM judgments (relevance, novelty, evidence strength) to TypeSafe Jev — code decides from Jev's probabilities, canaries catch over-filtering
 - [author-calibrated-eval](skills/author-calibrated-eval/SKILL.md): tuning LLM-written prose against the author's own reading — frozen inputs, a hard-case set, blind side-by-side reads, an LLM judge that only gates faithfulness
-- [review-when-watch](skills/review-when-watch/SKILL.md): operating manual for a daily launchd job that checks new research notes against the Review-when conditions in this repo's ADRs and RFCs via TypeSafe Jev and posts matches to Slack; not model-invoked
 - [mono-figure](skills/mono-figure/SKILL.md): draws static explanatory figures for articles and READMEs in the mono-color look, as SVG by default
 
 ## Agents
 
 Specialized agents in `agents/`, each with its own tool allowlist.
 
-- [prompt-writer](agents/prompt-writer.md): generates concise, focused prompts using a lightweight model (Haiku)
 - [adr-reviewer](agents/adr-reviewer.md): checks an ADR's record, not its decision — verifiable Context, an observable `Review-when` trigger, real Alternatives, two-sided Consequences, stated override relations with prior ADRs
 - [prompt-forager](agents/prompt-forager.md): the context-starved half of prompt-perturb — receives one line of purpose and nothing else
 - [researcher](agents/researcher.md): one research angle per run for search-first's parallel Full mode and the plan research gate; writes one dated notes file or the merged report
-- [swift-reviewer](agents/swift-reviewer.md): Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance
 - [readme-judge](agents/readme-judge.md): the single README judge for readme-writer — answers a fixed checklist from the README alone, freezes that verdict, then checks factual claims against the repo (file:line) and returns Publishable / Fix / Rewrite
 
 ## Rules
@@ -101,7 +97,6 @@ Rules auto-loaded every session from `rules/common/`: mostly environment-specifi
 
 - [agents](rules/common/agents.md): pointer to the agent catalog (the frontmatter of `agents/*.md` is canonical), the rule that review runs in a different agent process from the implementer, and the entry points to the Herdr delegation skills
 - [akc-cycle](rules/common/akc-cycle.md): pointer edition of the Agent Knowledge Cycle — maps each mechanism (six phases, judge / build / human loop, LLM-first readability, expiry-conditioned knowledge) to the skill or rule that owns it, states the Scaffold Dissolution criteria, and says how ADRs are treated (dated records, supersede with dated annotations, a two-condition filing bar)
-- [debugging](rules/common/debugging.md): rate-limit signal — repeated rate limits during bulk writes to an external platform are a policy signal, not a transient error: stop the burst and report to the human instead of backing off through it
 - [planning](rules/common/planning.md): planning wiring — search-first before anything that may already exist, build-tier dispatch as the default for implementing from a judge-tier session, implementation-chain for chain type and reviewer conditions, and the repo's `.claude/verify.sh` as the canonical Verify
 - [skills](rules/common/skills.md): origin vocabulary for skills / agents / rules (the canonical table), the `replaces:` lineage field, the imperative wiring to skill-creator before writing or overhauling a skill, and the writing rule — positive form by default, prohibitions only under three stated conditions
 - [contemplative-axioms](rules/common/contemplative-axioms.md): Contemplative Constitutional AI clauses from Laukkonen et al. (2025) Appendix C, verbatim — Emptiness, Non-Duality, Mindfulness, Boundless Care

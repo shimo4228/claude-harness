@@ -45,12 +45,14 @@ origin: shimo4228
    ${CLAUDE_SKILL_DIR}/spawn.sh <解決した絶対パスの project-dir> "<表示名>" \
      [--model <model>] [--effort <level>] [--permission-mode <mode>] [--prompt-file <path>]
    ```
-   - `--model` は省略時 settings.json の既定（判断層 = fable）。build 層の worker session
-     （task-triage の dispatch）は `--model opus` で立てる（判断は fable、実装は opus の三役分担のため）
+   - `--model` は省略時 CLI の既定 model。triage の判断役も build 層の worker session
+     （task-triage の dispatch）も `--model opus` で立てる（各役の model と effort は task-triage の
+     Roles 表が正本）
    - `--effort`（low / medium / high / xhigh / max）と `--permission-mode`（manual / acceptEdits /
      auto / dontAsk / plan）は claude の同名 flag に渡る。`bypassPermissions` は受けない
-     （phone から起こす session の権限を広げないため）。`/effort` を後から prompt で送らない —
-     slash command は turn を起こさず、着弾を確かめられない
+     （phone から起こす session の権限を広げないため）。effort は起動時の `--effort` で渡すのが既定
+     （最初の turn の前に効く）。起動後に変えるときは skill: `agent-send` で `prompt --text "/effort <level>"`
+     を送り、`accepted via=command` の行で受理を確かめる
    - `--prompt-file` は起動後に skill: `agent-send` でファイルを最初の指示として送り、結果を
      `prompt: result=…` 行に出す。届かなければ agent-send の exit code（2 / 3 / 4）で終わる。
      session は残っているので、`result=` を見て次の手を決める（agent-send の表）

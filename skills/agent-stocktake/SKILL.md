@@ -26,7 +26,7 @@ this skill exists as a third sibling next to skill-stocktake and rules-stocktake
 > description is audited on residency density and the body on invocation quality, with
 > different questions for each layer.
 
-> Design note 2 — edits are applied in-session. Same reasoning as rules-stocktake: no
+> Design note 2 — approved edits are applied by this skill itself, on the apply branch. Same reasoning as rules-stocktake: no
 > improvement engine exists for agent definitions, and the corpus is small enough to
 > read in one context — delegation would be overengineering. The handoff exception is Demote to skill
 > (creating a skill is skill-creator's job).
@@ -120,7 +120,7 @@ never trust figures written in docs, including this one.
 
 Evidence input, never a verdict trigger. Read `~/.claude/metrics/agent-usage.jsonl`
 inline (the hook `log-agent-usage.sh` appends one `invoke` event per Agent-tool launch,
-keyed by `subagent_type`) and count per-agent events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-liner.
+keyed by its `agent` field, whose value is the `subagent_type`) and count per-agent events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-liner.
 
 - If the log is **missing or its first event is younger than 90 days**, render usage as
   `—` (unmeasured). **Never render it as 0** — unmeasured and unused are different facts.
@@ -177,9 +177,9 @@ rest the **body layer** (invocation):
   loop itself counts as an absorber. Two auxiliary rationales legitimately override
   the rich-context pull (ADR-0024): a **frozen-input render contract** — the caller
   freezes a self-contained packet before invocation, so conversation context is not
-  needed by design (prompt-writer) —
+  needed by design (prompt-forager, which gets one line on purpose) —
   and **bulk context isolation** — the work reads or produces volume that would
-  pollute the main context (refactor-cleaner)
+  pollute the main context (researcher, one web-research angle per run)
 - [ ] *Technical references current?* — **unconditionally verify** every artifact the
   body names: `ls` each referenced path, run `--help` / version checks for named
   commands, flags, model names and tool lists. "Verify if it looks stale" is banned
@@ -235,24 +235,32 @@ Render a table: `Agent | Desc words | Body lines | Usage 90d | Verdict | Reason`
 line reporting total description words and the delta since the previous audit —
 input to the aggregate-residency judgment next run.
 
-## Phase 4 — Consolidation
+## Phase 4 — Report and apply
 
-**Confirm one by one**: walk the non-Keep candidates
-sequentially — evidence first, then `[y/n/skip]`. Never batch the approval; one agent,
-one decision. `skip` records the verdict unactioned.
+Turn every verdict into items (source `agents`) of the report contract in skill:
+`harness-stocktake` and hand them to it: one report, one approval from the author, application
+on a task branch, a completion report, an ff-only merge. Called alone, this skill runs that
+contract's Phases 2–5 with its own items. Each item carries, by verdict:
 
-- **Improve / Update / Merge**: present the concrete edit → on approval, **apply it
-  directly in this session** (Design note 2). Inversion edits show old and new
-  direction side by side.
-- **Demote to skill**: hand skill creation to `skill-creator`, then delete or reduce
-  the agent file per the user's call.
-- **Dissolve / Retire**: per file, present (1) the absorption evidence or defect,
-  (2) what covers the need instead, (3) removal impact — **skills and rules that name
-  this agent** (grep the harness) and the public repo copy. Act only after the user
-  confirms. For Dissolve, offer to record the why via `adr-writer`.
-- **Update the ledger**: Read `results.json` → merge verdicts → Write back
-  (`evaluated_at` = real UTC from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode,
-  preserve prior verdicts of files not re-evaluated.
+- **Improve / Update / Merge**: `change` = the concrete edit as a diff; inversion edits show old
+  and new direction side by side. Application edits the agent file directly on the branch
+  (Design note 2)
+- **Demote to skill**: `change` = the skill-creator intent packet and whether the agent file is
+  deleted or reduced. Application creates the skill through skill-creator's report path
+- **Dissolve / Retire**: `reason` = the absorption evidence or defect and what covers the need
+  instead; `impact` = skills and rules that name this agent (grep the harness) and the public
+  repo copy. Application records a Dissolve's why via `adr-writer`
+- **Keep**: `reason` only
+
+Where skill `harness-stocktake` is not installed, show the same items as one table ordered
+Dissolve / Retire → Merge / Demote → Improve / Update → Keep, take one approval with the author's
+overrides, then apply.
+
+- **Update the ledger** on the apply branch, in the same commit as the changes: Read
+  `results.json` → merge verdicts (an item the author skipped keeps its verdict with
+  `"skipped": true`) → Write back (`evaluated_at` = real UTC from
+  `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode, preserve prior verdicts of files not
+  re-evaluated.
 - **Public-repo note**: editing or retiring an `origin: shimo4228` agent leaves the
   public repo stale — point the user at their publish step (the author's harness uses `harness-sync`).
 

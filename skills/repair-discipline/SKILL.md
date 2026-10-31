@@ -1,6 +1,6 @@
 ---
 name: repair-discipline
-description: "Establish what is true now from primary evidence before a fix. Use when fixing a bug (このバグ直して), picking up a stale task, diagnosing something stuck or flaky, or changing a schema or storage format that anything else reads."
+description: "Establish what is true now from primary evidence before a fix. Use when fixing a bug (このバグ直して), picking up a stale task, diagnosing something stuck or flaky, or changing a schema or storage format that anything else reads. Also holds the format of the internal research report written before a plan."
 user-invocable: true
 origin: shimo4228
 replaces: contemplative-agent の feedback memory 5 本（verify-before-work / substrate-migration-sweep / verify-bypass-hides-all-gates / io-bound-process-diagnosis / no-background-retry-loop、2026-08-25 昇格）
@@ -27,9 +27,9 @@ PR で追随させる**。書き手だけ直した変更は、読み手が静か
 
 ## 3. bypass は単一ゲートでなく全ゲートを短絡すると知って使う
 
-`SECRET_SCAN_BYPASS=1` 型の逃げ道は、既知の 1 件を通すためのつもりでも **hook が束ねる
-全検査（format / lint / security）を一緒に飛ばす**。使う前に「この bypass が黙らせる
-検査の全リスト」を言えるか確認し、言えないなら個別の除外手段を探す。
+1 つの hook が複数の検査（例: format / lint / security）を束ねているとき、その hook の bypass は
+既知の 1 件を通すためのつもりでも**束ねた検査を全部一緒に飛ばす**。使う前にその hook を読み、
+bypass が黙らせる検査を全部挙げる。挙げきれないなら個別の除外手段を探す。
 
 ## 4. プロセスの CPU が低い ≠ stuck
 
@@ -57,6 +57,22 @@ hibernate の空白をコードの遅さと誤診する。
 修理・変更の着手時と、原因の診断中に該当原則を 1 つ名指しして通す（「原則 1 — この課題、
 git log で既済照合した？」「原則 4 — kill する前に一次ログを見た？」）。機構を**足す**
 修理はこの skill の外 — implementation-chain の機構ゲート（agent: architect）が正本。
+
+## plan の前の内部調査 report
+
+plan の依頼で調査の種別が内部（repo 内で答えが出るバグ・refactor）のとき、主ループが再現と原因の確認を
+自分で行い、そのまま `<repo>/docs/plans/research/YYYY-MM-DD-<slug>.md` に書く。plan はこの report にリンクする。
+
+```
+kind: internal
+# <問い>
+## 再現       手順と観測した結果（実行したコマンドと出力の要点）
+## 原因       file:line と、その行が原因だと言える根拠
+## 確認       原因を確かめた方法（Read した箇所、テスト結果）
+## Still unknown
+```
+
+外部調査の report は skill: search-first の Full で researcher が統合する（形は agents/researcher.md）。
 
 ## 失効条件
 

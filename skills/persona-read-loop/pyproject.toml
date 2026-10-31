@@ -29,3 +29,9 @@ select = ["E4", "E7", "E9", "F", "I", "B", "UP", "C901", "ANN001", "ANN002", "AN
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
+
+[tool.ty.environment]
+# The tests import the scripts as top-level modules through pytest's `pythonpath = ["scripts"]`. ty does
+# not read pytest settings, so it gets the same entry point here — the path really exists, so this is a
+# declaration of where imports resolve, not a suppression.
+root = [".", "scripts"]

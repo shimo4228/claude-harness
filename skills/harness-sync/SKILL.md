@@ -112,12 +112,25 @@ repo はこの経路を通らないので、その棚卸しが唯一の検査に
 commit の前に `find <公開repo> -name MAINTENANCE.md` が空であることを確かめる — skill の `MAINTENANCE.md` は
 保守者向けで公開しない（script の除去が漏れたら commit せず script を直す）。
 
+claude-harness では、適用の出力の `# commit body:` 行が commit 本文の下書き（`.git/SYNC_COMMIT_BODY`）を指す。
+下書きは source commit の trailer の写しで、末尾の `Source:` 行が次の同期の起点になる（RFC-0029）。script の scan が
+止めるのは secret と `$HOME/` の実値だけなので、commit の前に下書きを意味の検査に通す:
+
 ```bash
-git -C <公開repo> add -A
-git -C <公開repo> commit
+bash ~/.claude/scripts/verify-public-detail.sh --root <公開repo> --base origin/main \
+  --target .git/SYNC_COMMIT_BODY --no-terms --llm
 ```
 
-メッセージ例: `chore: sync from local harness (origin: shimo4228)` + 主な増減を body に。
+exit 1 の HIT（非公開 repo の名前・`~/` 形式の私的パスなど）は下書きを直接編集して伏せ、exit 0 になるまで回す。
+exit 2 は未検査なので commit しない。下書きには subject が無いので、先頭に subject・空行・主な増減を書き足す。
+`Source:` 行は残す。
+
+```bash
+git -C <公開repo> add -A
+git -C <公開repo> commit -F <公開repo>/.git/SYNC_COMMIT_BODY   # claude-harness。下書きの無い repo は commit だけ
+```
+
+メッセージ例: subject は `chore: sync from local harness (origin: shimo4228)`、body は主な増減と下書き。
 default branch へ直接 commit するのは意図的（sync = mirror 更新であり branch-first 規約の対象外）。
 task request が push まで含む場合は追加確認せず push する。
 
@@ -230,7 +243,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (固定 allowlist) + repo 所有 rule (自己完結版、sync 対象外) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、agents なし) | 対象 skills のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
 | `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/spawn-session`, `~/.claude/skills/agent-send` |
-| `~/MyAI_Lab/jev-skill-router` ([repo](https://github.com/shimo4228/jev-skill-router)) | plugin (hook + skill) | `tools/sync-from-local.sh` (plugin 版、固定 allowlist。`.claude-plugin/`・`hooks/`・README は repo root 資産) | `~/.claude/skills/jev-skill-router` |
+| `~/MyAI_Lab/jev-skill-router` ([repo](https://github.com/shimo4228/jev-skill-router)) | plugin (hook + skill) | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/when-code-when-llm` ([repo](https://github.com/shimo4228/when-code-when-llm)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/wikidata-federation`（GitHub 上の repo は無い） | 単独 skill（local のみ） | sync abort（local 正本を退役済み） | なし（push 先が無いので同期しない） |

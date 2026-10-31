@@ -37,7 +37,7 @@ failure but the moment to delete. Delete / Simplify count as success.
 | Values / Policies / responsibility boundaries | what to prioritize / what not to do / operations that need human approval / scope of delegation / source of truth / priorities on failure | `rules/common/` (identity / values layer, ADR-0018 D7), permissions in `settings.json`, authority in the task request | "environment-specific facts, wiring, traps" (ADR-0035) |
 | Evals | acceptance criteria / tests / rubric / benchmark / regression / quality gate | `.claude/verify.sh`, `tests/`, `skill-comply`, `llm-as-judge`, dedicated judge agents | Verify, binding judgment |
 | Data / Memory | deliverables / decision history / domain knowledge / preferences / provenance / historical state | `docs/adr/`, auto-memory, `.notes/`, `metrics/*.jsonl`, wiki | ADR = dated hypothesis |
-| Runtime | tool calling / shell & fs / permission implementation / sandbox / connector / retry / logging / state / routing / agent loop | Claude Code itself, `hooks/*.sh`, MCP servers, the Workflow / Agent tools, launchd tick | control plane (ADR-0019), hooks are timing (ADR-0035) |
+| Runtime | tool calling / shell & fs / permission implementation / sandbox / connector / retry / logging / state / routing / agent loop | Claude Code itself, `hooks/*.sh`, MCP servers, the Workflow / Agent tools, launchd tick | control plane, hooks are timing (ADR-0035) |
 
 Hooks sit in the runtime layer, but they **easily encode policy silently** (e.g., the conditions of an approval gate,
 what to block). When looking at a hook, separate "the timing wiring" from "the policy embedded in it," and

@@ -18,14 +18,13 @@ origin: shimo4228
 ## When NOT to use
 
 - `graph.jsonld` を持たない repo（HF mirror が存在しない）
-- HF dataset 自体がまだ作成されていない project（先に `hf repo create <Owner/dataset> --repo-type dataset` で repo を作る）
-- HF clone dir (`$HF_CLONE_BASE/<dataset>/`) が存在しない（先に `mkdir -p ~/MyAI_Lab/hf-datasets/<dataset>` で staging dir を作る。HF 側の README.md と過去 snapshot がここに置かれる)
-- `hf auth login` していない / token が write scope を持たない（先に `hf auth login` で token を入れ直す）
 
 ## Execution
 
+script のパスは `${CLAUDE_SKILL_DIR}`（この SKILL.md のあるディレクトリ）から始まる:
+
 ```
-bash ~/.claude/skills/hf-sync/sync.sh $ARGUMENTS
+bash "${CLAUDE_SKILL_DIR}/sync.sh" $ARGUMENTS
 ```
 
 `$ARGUMENTS` は HF dataset の repo ID（例: `Shimo4228/agent-knowledge-cycle`）。
@@ -41,9 +40,9 @@ cwd 制約: `graph.jsonld` が存在する project root で実行する。
 5. `hf upload <Owner/dataset> <hf-clone>/graph.jsonl graph.jsonl --repo-type dataset`
 6. Success log + HF URL を表示
 
-**Source repo は汚さない**: `graph.jsonl` は HF clone 側でだけ生成・存在し、source の git tree には残らない。
+Source repo は汚さない: `graph.jsonl` は HF clone 側でだけ生成・存在し、source の git tree には残らない。
 
-HF 側の `README.md`（dataset card）はこの sync の対象外。HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えるときは手動で `hf upload <Owner/dataset> README.md --repo-type dataset`。
+HF 側の `README.md`（dataset card）はこの sync の対象外。HF 用に customize されている（sibling dataset への link、mirror notice 等）ので、文面を変えるときは手動で `hf upload <Owner/dataset> <hf-clone>/README.md README.md --repo-type dataset`。
 
 Auth は `~/.cache/huggingface/token`（`hf auth login` で保存されたもの）を `hf` CLI が自動で読む。
 
@@ -70,7 +69,7 @@ shimo4228 系の現行 mapping は `~/MyAI_Lab/shimo4228/CLAUDE.md` の "HF Data
 ## Failure modes
 
 - **`graph.jsonld` not found in cwd** → project root に移動してから起動
-- **HF clone dir not found** → `mkdir -p $HF_CLONE_BASE/<dataset>/` で staging dir を作成 (もし HF 側に既存ファイルがあれば手動で取得して置く、または `hf download <Owner/dataset> --local-dir <hf-clone>` で初期 sync)
+- **HF clone dir not found** → staging dir（`$HF_CLONE_BASE/<dataset>/`、HF 側の README.md と過去 snapshot の置き場）を作る。HF 側が空なら `mkdir -p $HF_CLONE_BASE/<dataset>/`、既存ファイルがあれば `hf download <Owner/dataset> --repo-type dataset --local-dir <hf-clone>` で初期 sync
 - **`@graph` not array / empty** → `graph.jsonld` の構造を見直す（`jsonld-knowledge-graph` skill 参照）
-- **`hf upload` 401 / 403** → `hf auth whoami` で token 確認。write scope を持っていなければ HF settings で新規発行 → `hf auth login`
-- **HF dataset repo が存在しない (404)** → 先に `hf repo create <Owner/dataset> --repo-type dataset` で repo を作る
+- **`hf upload` 401 / 403**（未 login、または token が write scope を持たない）→ `hf auth whoami` で token 確認。write scope を持つ token を HF settings で発行し `hf auth login` で入れ直す
+- **HF dataset repo が存在しない (404)**（dataset 未作成の project）→ 先に `hf repo create <Owner/dataset> --repo-type dataset` で repo を作る

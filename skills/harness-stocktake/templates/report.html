@@ -1,0 +1,215 @@
+<title>Harness 棚卸し</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 上に判定の集計と承認バー、下に影響の大きい順の項目リスト。1 段組、項目は左端の帯で判定を示す */
+:root {
+  --bg: #f6f7f5; --surface: #ffffff; --fg: #1d2421; --muted: #5d6963; --line: #d9dfdb;
+  --accent: #2f6b5a; --accent-fg: #ffffff;
+  --retire: #b3412e; --merge: #a8661b; --improve: #3c62a3; --keep: #6f7a74; --pending: #7a4fa3;
+  --font-body: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141917; --surface: #1c2320; --fg: #e3e9e5; --muted: #9aa7a0; --line: #2f3a35;
+  --accent: #6fbfa5; --accent-fg: #0f1513;
+  --retire: #e57a64; --merge: #d9a35a; --improve: #86a8e6; --keep: #8d9993; --pending: #b996dc; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141917; --surface: #1c2320; --fg: #e3e9e5; --muted: #9aa7a0; --line: #2f3a35;
+  --accent: #6fbfa5; --accent-fg: #0f1513;
+  --retire: #e57a64; --merge: #d9a35a; --improve: #86a8e6; --keep: #8d9993; --pending: #b996dc; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 20px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px; }
+h1 { font-size: 1.5rem; margin: 0; text-wrap: balance; }
+h2 { font-size: 1rem; margin: 0; color: var(--muted); font-weight: 600; letter-spacing: .04em; }
+.sub { color: var(--muted); font-size: .85rem; font-family: var(--font-mono); }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  border-bottom: 1px solid var(--line); padding-block: 10px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.counts { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
+.chip { font-family: var(--font-mono); font-size: .78rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button { font: inherit; font-size: .8rem; background: none; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+.filters button[aria-pressed="true"] { color: var(--fg); border-color: var(--fg); }
+.approve { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+.approve:disabled { opacity: .5; cursor: default; }
+button:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.state { font-size: .9rem; color: var(--muted); }
+.group { display: grid; gap: 10px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--v, var(--keep)); border-radius: 4px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.item.overridden { box-shadow: inset 0 0 0 1px var(--accent); }
+.head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.verdict { font-family: var(--font-mono); font-weight: 500; color: var(--v); }
+.target { font-family: var(--font-mono); font-size: .85rem; overflow-wrap: anywhere; }
+.src { font-size: .75rem; color: var(--muted); letter-spacing: .04em; }
+.reason { margin: 0; }
+.ev { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: .88rem; }
+.change { margin: 0; font-family: var(--font-mono); font-size: .8rem; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px; overflow-x: auto; white-space: pre-wrap; }
+.meta { font-size: .82rem; color: var(--muted); }
+.decide { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 8px; align-items: start; }
+@media (max-width: 560px) { .decide { grid-template-columns: 1fr; } }
+select, textarea { font: inherit; font-size: .88rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; width: 100%; box-sizing: border-box; }
+textarea { min-height: 2.2em; resize: vertical; }
+.outcome { font-family: var(--font-mono); font-size: .8rem; color: var(--v); }
+details summary { cursor: pointer; color: var(--muted); }
+.empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 4px; padding: 24px; text-align: center; }
+@media (prefers-reduced-motion: no-preference) { .item { transition: box-shadow .15s; } }
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <h1 id="title">Harness 棚卸し</h1>
+    <div class="sub" id="subtitle">report を読み込んでいます</div>
+  </header>
+  <div class="bar">
+    <div class="counts" id="counts"></div>
+    <div class="filters" id="filters"></div>
+    <button class="approve" id="approve" type="button" disabled>この内容で承認</button>
+  </div>
+  <div class="state" id="state">判定を変えたい項目だけ選び直してください。変えなかった項目は推奨どおりに適用します。</div>
+  <main id="list" style="display:grid;gap:24px">
+    <div class="empty">ここに棚卸しの項目が並びます。Claude が report を書き込むまでお待ちください。</div>
+  </main>
+</div>
+
+<script>
+const ORDER = [
+  ["retire", "退役", ["Retire", "Dissolve", "Retire-and-absorb"]],
+  ["merge", "統合・降格", ["Merge", "Demote"]],
+  ["improve", "改善・更新", ["Improve", "Update", "Append", "Revise", "Create"]],
+  ["keep", "維持", ["Keep", "Out of scope", "Already Covered", "Too Specific"]],
+];
+const COLOR = { retire: "--retire", merge: "--merge", improve: "--improve", keep: "--keep" };
+const groupOf = v => (ORDER.find(([, , vs]) => vs.some(x => String(v).startsWith(x))) || ORDER[2])[0];
+const OUTCOME = { applied: "適用済み", pending: "未決", skipped: "見送り", reevaluated: "評価し直して適用" };
+
+let db = null, items = [], decisions = {}, run = {}, approval = null, filter = "all";
+const pendingNotes = new Map();
+const $ = id => document.getElementById(id);
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "text") e.textContent = v; else if (k === "style") e.style.cssText = v; else e.setAttribute(k, v);
+  }
+  kids.flat().forEach(k => k && e.append(k));
+  return e;
+}
+
+function isOverride(id) { const d = decisions[id]; return d && (d.decision !== "accept" || (d.note || "").trim()); }
+
+const editing = () => $("list").contains(document.activeElement);
+
+let stale = false, loadError = "";
+function refresh() {
+  if (!editing()) { stale = false; return render(); }
+  stale = true;
+  renderBar();
+  for (const i of items) { const c = $("item-" + i.id); if (c) c.classList.toggle("overridden", !!isOverride(i.id)); }
+}
+
+function render() {
+  renderBar();
+  renderList();
+}
+
+function renderBar() {
+  const locked = !!approval || (run.phase && run.phase !== "proposed");
+  $("title").textContent = run.title || "Harness 棚卸し";
+  $("subtitle").textContent = [run.created_at, run.scope, run.branch && ("branch " + run.branch)].filter(Boolean).join(" · ") || "report を読み込んでいます";
+  const sources = [...new Set(items.map(i => i.source))];
+  const counts = $("counts"); counts.replaceChildren();
+  for (const [g, label] of ORDER) {
+    const n = items.filter(i => groupOf(i.verdict) === g).length;
+    if (n) counts.append(el("span", { class: "chip", style: `color:var(${COLOR[g]})`, text: `${label} ${n}` }));
+  }
+  const ov = items.filter(i => isOverride(i.id)).length;
+  if (items.length) counts.append(el("span", { class: "chip", text: `書き換え ${ov}` }));
+  const f = $("filters"); f.replaceChildren();
+  for (const s of ["all", ...sources]) {
+    const b = el("button", { type: "button", "aria-pressed": String(filter === s), text: s === "all" ? "すべて" : s });
+    b.onclick = () => { filter = s; render(); };
+    f.append(b);
+  }
+  const ap = $("approve");
+  ap.disabled = locked || !items.length || !db;
+  ap.textContent = approval ? "承認済み" : "この内容で承認";
+  $("state").textContent = loadError ? loadError : approval
+    ? (run.phase === "applied" ? "適用が終わりました。各項目の結果と未決を確かめ、問題なければ branch を取り込んでください。" : "承認を受け取りました。Claude が適用します。")
+    : "判定を変えたい項目だけ選び直してください。変えなかった項目は推奨どおりに適用します。";
+}
+
+function renderList() {
+  const locked = !!approval || (run.phase && run.phase !== "proposed");
+  const list = $("list"); list.replaceChildren();
+  if (!items.length) { list.append(el("div", { class: "empty", text: "ここに棚卸しの項目が並びます。Claude が report を書き込むまでお待ちください。" })); return; }
+  for (const [g, label] of ORDER) {
+    const its = items.filter(i => groupOf(i.verdict) === g && (filter === "all" || i.source === filter));
+    if (!its.length) continue;
+    const box = el("section", { class: "group" }, el("h2", { text: `${label}（${its.length}）` }));
+    const cards = its.map(i => card(i, g, locked));
+    if (g === "keep") box.append(el("details", {}, el("summary", { text: "維持する項目を表示" }), el("div", { class: "group", style: "margin-top:10px" }, cards)));
+    else box.append(...cards);
+    list.append(box);
+  }
+}
+
+function card(i, g, locked) {
+  const d = decisions[i.id] || { decision: "accept", note: "" };
+  const c = el("article", { class: "item" + (isOverride(i.id) ? " overridden" : ""), style: `--v:var(${COLOR[g]})`, id: "item-" + i.id });
+  c.append(el("div", { class: "head" },
+    el("span", { class: "verdict", text: i.verdict }),
+    el("span", { class: "target", text: i.target }),
+    el("span", { class: "src", text: i.source })));
+  c.append(el("p", { class: "reason", text: i.reason || "" }));
+  if (i.evidence && i.evidence.length) c.append(el("ul", { class: "ev" }, i.evidence.map(e => el("li", { text: e }))));
+  if (i.change) c.append(el("pre", { class: "change", text: i.change }));
+  const meta = [i.impact && ("影響: " + i.impact), i.conflicts && i.conflicts.length && ("衝突: " + i.conflicts.join(", "))].filter(Boolean).join(" ／ ");
+  if (meta) c.append(el("div", { class: "meta", text: meta }));
+  if (i.outcome) c.append(el("div", { class: "outcome", text: (OUTCOME[i.outcome] || i.outcome) + (i.outcome_note ? " — " + i.outcome_note : "") + (i.commit ? " (" + i.commit + ")" : "") }));
+  if (i.applied_diff) c.append(el("div", { class: "meta", text: "承認した内容から変わった適用 diff:" }), el("pre", { class: "change", text: i.applied_diff }));
+  const sel = el("select", { id: "d-" + i.id, "aria-label": i.target + " の判定" });
+  const opts = [["accept", "推奨どおり（" + i.verdict + "）"], ["Keep", "Keep にする"], ["skip", "今回は見送る"], ...(i.alternatives || []).map(a => [a, a + " にする"])];
+  for (const [v, t] of opts) { const o = el("option", { value: v, text: t }); if (d.decision === v) o.selected = true; sel.append(o); }
+  const note = el("textarea", { id: "n-" + i.id, placeholder: "直してほしい点があれば（任意）", "aria-label": i.target + " へのコメント" });
+  note.value = d.note || "";
+  sel.disabled = note.disabled = locked;
+  sel.onchange = () => save(i.id, { decision: sel.value, note: note.value });
+  note.oninput = () => {
+    clearTimeout(pendingNotes.get(i.id)?.t);
+    const flush = () => { pendingNotes.delete(i.id); return save(i.id, { decision: sel.value, note: note.value }); };
+    pendingNotes.set(i.id, { t: setTimeout(flush, 800), flush });
+  };
+  c.append(el("div", { class: "decide" }, sel, note));
+  return c;
+}
+
+async function save(id, body) {
+  decisions[id] = body;
+  refresh();
+  try { await db.doc("decisions/" + id).set({ ...body, updated_at: new Date().toISOString() }); }
+  catch (e) { $("state").textContent = "保存できませんでした（" + (e && e.code) + "）。このページの編集権限を確かめてください。"; }
+}
+
+$("approve").onclick = async () => {
+  const ap = $("approve"); ap.disabled = true;
+  for (const p of [...pendingNotes.values()]) { clearTimeout(p.t); await p.flush(); }
+  const overrides = items.filter(i => isOverride(i.id)).map(i => i.id);
+  try { await db.doc("meta/approval").set({ approved: true, at: new Date().toISOString(), overrides }); }
+  catch (e) { ap.disabled = false; $("state").textContent = "承認を保存できませんでした（" + (e && e.code) + "）。"; }
+};
+
+(async () => {
+  const timer = setTimeout(() => { if (!items.length) $("subtitle").textContent = "report のデータにまだ届きません。少し待って開き直してください。"; }, 10000);
+  db = window.claude ? await window.claude.use("db") : null;
+  if (!db) { clearTimeout(timer); $("subtitle").textContent = "このビューでは report のデータを読めません。claude.ai でサインインして開いてください。"; return; }
+  const fail = e => { clearTimeout(timer); loadError = "report のデータを読めませんでした（" + ((e && e.code) || "error") + "）。開き直してください。"; renderBar(); };
+  $("list").addEventListener("focusout", () => setTimeout(() => { if (stale && !editing()) refresh(); }, 0));
+  db.collection("items").orderBy("order").onSnapshot(s => { clearTimeout(timer); items = s.docs.map(d => ({ id: d.id, ...d.data() })); refresh(); }, fail);
+  db.collection("decisions").onSnapshot(s => { decisions = Object.fromEntries(s.docs.map(d => [d.id, d.data()])); refresh(); }, fail);
+  db.doc("meta/run").onSnapshot(s => { run = s.exists ? s.data() : {}; refresh(); }, fail);
+  db.doc("meta/approval").onSnapshot(s => { approval = s.exists ? s.data() : null; refresh(); }, fail);
+})();
+</script>

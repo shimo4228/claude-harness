@@ -104,6 +104,8 @@ triage 2026-10-11: `metrics/review-when-watch.jsonl` = canary 13 run / pair 3,65
 
 triage 2026-10-18: `metrics/review-when-watch.jsonl` = canary 20 run / pair 5,249 行（2026-09-29〜10-18、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。
 
+triage 2026-10-25: `metrics/review-when-watch.jsonl` = canary 27 run / pair 6,772 行（2026-09-29〜10-25、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。次の cycle（2026-11-01）で成立する見込み。
+
 ## Next action
 
 RFC-0024 / RFC-0026 と同時に採否を決める。**採用するなら実装順はこちらが先** — RFC-0026 の閾値がこの registry のデータに依存する。

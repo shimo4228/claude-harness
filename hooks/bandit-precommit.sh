@@ -26,7 +26,14 @@ INPUT=$(cat)
 COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || COMMAND=""
 
 [[ -z "$COMMAND" ]] && exit 0
-printf '%s' "$COMMAND" | grep -qE '^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*BANDIT_SCAN_BYPASS=1([[:space:]]|$)' && exit 0
+# bash の =~ で文字列全体の先頭に固定する。grep は行単位で `^` が改行ごとに一致するので、複数行の
+# commit message の行頭に書いた文字列でも外れていた (2026-09-26 security review MEDIUM)。
+# 区切りは [[:blank:]] (空白とタブ) で改行を含めず、env の値は引用符を含めない — どちらかを許すと
+# `MSG="subj⏎BANDIT_SCAN_BYPASS=1 …"; git commit -m "$MSG"` のように引用符内の値の中で token が先頭扱いになる
+# (2026-10-31 security review LOW)。さらに env prefix の直後に同じ segment の `git … commit` を要求する
+_nl=$'\n'
+bypass_re="^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*BANDIT_SCAN_BYPASS=1[[:blank:]]+([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*git[[:blank:]]([^;&|${_nl}]*[[:blank:]])?commit([[:blank:]]|$)"
+[[ "$COMMAND" =~ $bypass_re ]] && exit 0
 
 # git commit を含むコマンドのみ対象 (secret-scan-precommit.sh と同一のマッチ規則)。
 # パイプ区切り (;|&) は跨がない — "git log | grep commit" 除外

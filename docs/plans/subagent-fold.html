@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>Subagent 畳み込み計画</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<body>
+
+<header>
+  <h1>harness の subagent を主ループへ畳む</h1>
+  <doc-changes new="6" changed="13" deleted="2"></doc-changes>
+  <details class="thread"><summary>Why · 3 発言</summary>
+    <doc-quote via="prompt" from="著者">このようにサブエージェントよりも単一エージェントにスキルとして実行する方が有効性が今のClaudeには高いという。この観点から、ハーネスの最適化をプランしたい</doc-quote>
+    <doc-quote via="prompt" from="著者">DはZenn-contentにセッション立ててGrill-meですすめといて</doc-quote>
+    <doc-quote via="prompt" from="著者">Paper-labはむししていい</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 · C ═════ -->
+<doc-claim>
+  <p>使われない agent 2 本が消え、仕事は主ループに移る。</p>
+  <doc-tree caption="残す 8 本は、記事が subagent を残す条件（独立検証・並列調査・context 隔離）に当たる。">
+<script type="text/plain">
+agents/
+  - prompt-writer.md       # 90 日で起動 0 回
+  - refactor-cleaner.md    # 90 日で 3 回。skill refactor-clean と重複
+    researcher.md          # 外部調査の並列（30 日で 141 回）
+    readme-judge.md        # 独立レビュー
+    security-reviewer.md   # 独立レビュー
+    adr-reviewer.md        # 独立レビュー
+    swift-reviewer.md      # 独立レビュー
+    architect.md           # fresh な build-or-not 判定
+    prompt-forager.md      # 意図して context を絶つ
+    Explore.md             # built-in の上書き
+</script>
+  </doc-tree>
+
+  <doc-claim>
+    <p>Refactor Clean の静的解析は、主ループで回す。</p>
+    <doc-calls title="Refactor Clean" caption="chain の手順は変えず、実行役だけを主ループに戻す。">
+<script type="text/plain">
+~ implementation-chain の Refactor Clean 行        @ skills/implementation-chain/SKILL.md:169
+-   refactor-cleaner agent                        @ agents/refactor-cleaner.md:1
++   skill refactor-clean の手順を主ループで回す     @ skills/refactor-clean/SKILL.md:68
+</script>
+    </doc-calls>
+    <doc-claim at="skills/refactor-clean/SKILL.md:68">
+      <p><b>refactor-clean/SKILL.md:68</b> · 実行役の行</p>
+      <doc-code src="skills/refactor-clean/SKILL.md" lines="66-70" hl="68-69">
+        <doc-pin line="68" tone="info" title="主ループに書き換える">agent への dispatch をやめる。</doc-pin>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>2 本を名指す設定と例は、同じ commit で直す。</p>
+    <doc-code src="harness-scope/profiles/zenn-writing.json" lines="44-57" hl="48,50">
+      <doc-pin line="48" tone="warn" title="消す">退役した agent の名前が残る。</doc-pin>
+    </doc-code>
+    <doc-note tone="info">あわせて <code>skills/agent-stocktake/SKILL.md:180-182</code> の例を差し替え、ADR-0024 に注記を残す。</doc-note>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 · A ═════ -->
+<doc-claim>
+  <p>内部調査の report は、主ループが自分で書く。</p>
+  <doc-mock frame="terminal" title="plan の依頼（内部調査）" w="470"><template><span class="dim">主ループ</span> 再現手順を実行し、原因の file:line を確かめる
+<span class="dim">主ループ</span> Write docs/plans/research/2026-11-02-x.md  <span class="y">← 新しい</span>
+         1 行目: <b>kind: internal</b>
+<span class="dim">（researcher に出力を渡して書き写させる手間が消える）</span>
+
+<span class="dim">外部調査は今までどおり:</span>
+<span class="dim">researcher ×N</span> → <span class="dim">researcher</span> が report を統合</template></doc-mock>
+  <doc-note tone="info">research gate は 2026-10-26 の ADR-0096（commit f43da7d）で plan を止めなくなった。残るのは、手順を差し込む notice と、researcher の書き込み先の制限だけ。</doc-note>
+
+  <doc-claim>
+    <p>gate の手順文は、内部の report を主ループに任せる。</p>
+    <doc-code diff file="hooks/research-gate.sh" start="182" title="research-gate.sh の PROTOCOL の 4">
+<script type="text/plain">
+@@ -182,1 +182,1 @@
+-4. どちらも report は researcher エージェントが <repo>/docs/plans/research/YYYY-MM-DD-<slug>.md に書く（形は agents/researcher.md）
++4. 外部の report は researcher エージェントが、内部の report は主ループが <repo>/docs/plans/research/YYYY-MM-DD-<slug>.md に書く（内部の形は skill: repair-discipline）
+</script>
+    </doc-code>
+    <doc-claim at="hooks/research-gate.sh:182">
+      <p><b>research-gate.sh:182</b> · 依頼時に差し込む手順</p>
+      <doc-code src="hooks/research-gate.sh" lines="178-184" hl="182">
+        <doc-pin line="182" tone="info" title="書き手の行">外部と内部で書き手を分ける。</doc-pin>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>常駐 rule の 1 行も、同じ向きに直す。</p>
+    <doc-code src="rules/common/planning.md" lines="18-20" hl="20" wrap>
+      <doc-pin line="20" tone="info" title="書き手の句">「report は researcher が」を外部に限る。</doc-pin>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>内部 report の書式は、skill repair-discipline に移す。</p>
+    <doc-code src="agents/researcher.md" lines="74-83" hl="77-82">
+      <doc-pin line="79" tone="info" title="書き写しだった節">lead が実行した出力を受け取って書く。</doc-pin>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 · B 再生 ═════ -->
+<doc-claim>
+  <p>過去タスクの再生で、judge 実装と dispatch を比べる。</p>
+  <doc-mock frame="terminal" title="scripts/replay/run.sh --summary" w="480"><template>task         旧形 r1 r2   新形 r1 r2
+RFC-0040-a      <span class="g">✓</span>  <span class="g">✓</span>        <span class="g">✓</span>  <span class="g">✓</span>
+RFC-0046-b      <span class="g">✓</span>  <span class="r">✗</span>        <span class="g">✓</span>  <span class="g">✓</span>   <span class="dim">旧形の中の揺れ</span>
+RFC-0052        <span class="g">✓</span>  <span class="g">✓</span>        <span class="r">✗</span>  <span class="g">✓</span>   <span class="y">原因を読む</span>
+…
+失敗 旧形 1 / 新形 1    失格 0
+<span class="dim">失格 = 実 repo か履歴系 git に触れた run</span></template></doc-mock>
+
+  <doc-claim>
+    <p>run ごとに、答えを持たない孤立した repo を作る。</p>
+    <doc-code title="scripts/replay/isolate.sh · sketch" lang="bash">
+<script type="text/plain">
+# isolate.sh <repo> <base-sha> <out> — base の tree だけを持ち、履歴・ref・tag を持たない
+set -euo pipefail
+repo=$1 base=$2 out=$3
+mkdir -p "$out"
+git -C "$repo" archive "$base" | tar -x -C "$out"
+git -C "$out" init -q -b main && git -C "$out" add -A
+git -C "$out" -c user.name=replay -c user.email=replay@localhost commit -qm "base $base"
+[ "$(git -C "$out" rev-list --all | wc -l)" -eq 1 ]   # 正解の commit に届かない
+</script>
+    </doc-code>
+    <doc-note tone="warn"><strong>漏れの経路</strong> worktree は refs を共有するので、base に checkout しても main の正解 commit に届く。完了した rfc ファイルにも結果が書かれている。実 repo と過去の transcript は、run の settings で読めなくする。</doc-note>
+  </doc-claim>
+
+  <doc-claim>
+    <p>合否は、作業の後に外から持ち込む検査で決める。</p>
+    <doc-calls title="grade" caption="機械の検査を先に置き、LLM は実装者と別系統にする。">
+<script type="text/plain">
++ **grade**(run)                                        @ scripts/replay/grade.sh:1
++   .claude/verify.sh を回す                              @ scripts/replay/grade.sh:10  -- 壊していないか
++   merge commit のテストを後から置いて回す                @ scripts/replay/grade.sh:20  -- 直したか
++   transcript で実 repo と履歴系 git を探す               @ scripts/replay/grade.sh:30  -- 当たれば失格
++   受け入れ条件と diff を codex が読む                   @ scripts/replay/grade.sh:40  -- 別系統の judge
+</script>
+    </doc-calls>
+  </doc-claim>
+
+  <doc-claim>
+    <p>新形の judge は、本番に近い大きさの context から実装する。</p>
+    <doc-mock frame="terminal" title="task-triage を読んだ session の context の最大値" w="470"><template>期間          model       n   中央値   最大
+10-11 以降    Opus 5.5    6   <b>240K</b>    887K
+10-11 より前  Fable 5.1  13   548K    877K
+<span class="dim">設定: Opus 5.5 は 400K で compact（settings.json）</span>
+<span class="dim">build は Phase 0 で前提を自分で確かめ直す（task-triage:22）</span></template></doc-mock>
+    <doc-ask id="seed">
+      <p>新形の judge は、どの状態から実装しますか？</p>
+      <label><input type="radio" name="seed" value="cycle" checked> 台帳を読み、開いたタスクを全部判定してから <small>本番に近い context。run は長くなる</small></label>
+      <label><input type="radio" name="seed" value="task"> 対象タスクだけを判定してから <small>安いが、新形に有利な偏りが入る</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>旧形は、当時の packet をそのまま使って再生する。</p>
+    <doc-tree caption="contemplative-agent の .notes/packets に 16 本が残る。追跡ファイルだけで閉じるタスクを選ぶ。">
+<script type="text/plain">
+.notes/packets/
+  rfc-0017-s1.md … rfc-0017-s4.md
+  rfc-0022-a.md  rfc-0022-a1.md
+  rfc-0040-a.md  rfc-0040-b.md  rfc-0040-c.md
+  rfc-0045-a.md
+  rfc-0046-a.md … rfc-0046-d.md
+  s-ci-1.md  s35.md
+</script>
+    </doc-tree>
+    <doc-ask id="count">
+      <p>再生するタスクは何件にしますか？</p>
+      <div class="opts-row">
+        <label><input type="radio" name="count" value="6"> 6 件 <small>24 session</small></label>
+        <label><input type="radio" name="count" value="8" checked> 8 件 <small>32 session</small></label>
+        <label><input type="radio" name="count" value="10"> 10 件 <small>40 session。kit の推奨</small></label>
+      </div>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 · B 切り替え ═════ -->
+<doc-claim>
+  <p>再生で悪化が無ければ、judge が自分で実装する。</p>
+  <doc-machine name="task" caption="緑の破線が新しい既定。dispatch は 4 つの条件のときだけ残る。">
+<script type="text/plain">
+machine task initial accepted
+state accepted          # 判定で採用されたタスク
+state judge_impl        # judge が前提を確かめた文脈で実装する
+state dispatched        # fresh な build session が packet で実装する
+state review            # 機械の検査と fresh な reviewer
+state bounced           # 直しに戻る
+state merged    final   # ff-only で main に入る
+
+| accepted | judge_impl | review  | merged |
+| .        | dispatched | bounced | .      |
+
++ accepted   -self->     judge_impl : 既定
+accepted     -dispatch-> dispatched : 4 条件
++ judge_impl -done->     review
+dispatched   -done->     review
+review       -pass->     merged
+review       -fail->     bounced
+bounced      -fix->      review
+</script>
+  </doc-machine>
+
+  <doc-claim>
+    <p>切り替えの規則は、再生の前に決めて固定する。</p>
+    <doc-code title="切り替えの規則 · sketch" lang="md">
+<script type="text/plain">
+1. 新形の失敗数が、旧形の失敗数を超えない（件数 × 2 run）
+2. 新形だけが落ちたタスクは、trace を読んで原因を書く
+3. 原因が judge の context の大きさなら、その種類のタスクは dispatch に残す
+4. 旧形の 2 run の間の揺れを、ノイズの幅として記録する
+</script>
+    </doc-code>
+    <doc-note tone="warn"><strong>統計の限界</strong> 8 件 × 2 run では非劣性を示せない。12 run が全部通っても、Wilson 下限は約 0.82 にとどまる。記事も、数より成否が変わったタスクを読むと書く。</doc-note>
+    <doc-ask id="rule">
+      <p>規則は、数と原因のどちらで決めますか？</p>
+      <label><input type="radio" name="rule" value="both" checked> 数と原因の両方 <small>上の 1〜4。新形だけの失敗は trace を読む</small></label>
+      <label><input type="radio" name="rule" value="count"> 数だけ <small>インタビューで決めた形のまま。1 だけを使う</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>dispatch は、並列・長時間・無人・ローカル環境に残る。</p>
+    <doc-code diff file="skills/task-triage/SKILL.md" start="128" title="task-triage §3 の既定 · sketch">
+<script type="text/plain">
+@@ -128,2 +128,4 @@
+-**Pick the executor by what the task needs.** The default is a cloud session; the other rows
+-are the exceptions, and a task that matches none of them goes to the cloud.
++**The judge implements an accepted task itself**, on a task branch, in the context that
++verified its premise. Dispatch only for parallel work, a long unattended run, a local
++environment, or private contents (rows below). A task that matches none of them stays
++with the judge.
+</script>
+    </doc-code>
+    <doc-claim at="skills/task-triage/SKILL.md:21">
+      <p><b>task-triage/SKILL.md:21</b> · 役割表の Judge と Build の行</p>
+      <doc-code src="skills/task-triage/SKILL.md" lines="21-22" wrap>
+        <doc-pin line="22" tone="info" title="Build の行">既定から例外の担い手に変える。</doc-pin>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>独立検証には、diff と受け入れ条件だけを渡す。</p>
+    <doc-calls title="judge が実装した後" caption="reviewer に judge の推論を渡すと、独立の利点が減る（CCR 実験、効果量は小さい）。">
+<script type="text/plain">
+~ judge が task branch で実装を終える              @ skills/task-triage/SKILL.md:228
++   .claude/verify.sh                             -- 機械の検査が先
++   /code-review medium task/name                 -- 背景の fork。judge の推論を見ない
+    ff-only merge                                 @ skills/task-triage/SKILL.md:298
+</script>
+    </doc-calls>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ shared · scope ═════ -->
+<doc-claim aux="shared">
+  <p>共有: 再生の記録を 1 本の jsonl に残す。</p>
+  <doc-schema id="replay" lang="ts" title="scripts/replay の 1 行" caption="調査: docs/plans/research/2026-10-26-subagent-fold.md。結果は docs/plans/research に report として残す。">
+<script type="text/plain">
+interface ReplayRun {
+  task: string                 // RFC-0046-b
+  form: "packet" | "judge"     // 旧形 / 新形
+  run: 1 | 2
+  base: string                 // タスク開始時点の commit
+  verify: "pass" | "fail"      // .claude/verify.sh
+  tests: "pass" | "fail" | "none"  // merge commit のテスト
+  leak: boolean                // 実 repo か履歴系 git に触れた
+  judge: "pass" | "fail"       // codex が受け入れ条件を読む
+  peakContext: number          // その run の context の最大値
+  note: string                 // 成否が変わったときの原因
+}
+</script>
+  </doc-schema>
+  <doc-ask id="executor">
+    <p>実行者は？</p>
+    <label><input type="radio" name="executor" value="here" checked> この session <small>harness の rule・hook は dispatch しない（task-triage §3）</small></label>
+    <label><input type="radio" name="executor" value="build"> Opus の新 session に渡す <small>この plan を brief にする</small></label>
+  </doc-ask>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>変えないこと: 独立レビューの agent、Fable の dispatch、他 repo。</p>
+  <ul>
+    <li>readme-judge・security-reviewer・adr-reviewer・swift-reviewer・architect・prompt-forager と、外部調査の researcher は残す。</li>
+    <li>Fable セッションからの dispatch（ADR-0057）と <code>hooks/plan-executor-notice.sh</code>。quota の理由がまだ効く。</li>
+    <li>組み込みの <code>/simplify</code> と <code>/code-review</code> の並列実行。</li>
+    <li>task-triage の §0〜§2（台帳の読み方・判定・digest）。</li>
+    <li>zenn-content の writing agents は別 session で扱う。paper-lab は扱わない。</li>
+    <li>research gate の機構（ADR-0096 で縮んだ形）。A が変えるのは手順の文面だけ。</li>
+    <li>順序は C → A → 再生 → 切り替え。1 回の変更で 1 つだけ変える。B の ADR は 0097 以降の番号で起こす。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body>
+</html>

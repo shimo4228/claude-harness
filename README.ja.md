@@ -8,7 +8,7 @@ shimo4228 が日常的に使っている Claude Code ハーネス (skills / agen
 
 ## 使い方
 
-Claude Code と `git` が必要です。Python 実装付きの skill には `uv` も要ります。導入に鍵は要りませんが、一部の skill は実行時に外部サービスを呼ぶので、そのサービスのアカウントか API キーが要ります（例: hf-sync は Hugging Face へアップロードし、review-when-watch は Slack へ投稿し、jev-skill-router と review-when-watch は `TYPESAFE_API_KEY` で TypeSafe Jev（閉じた問いに確率で答える判定専用のモデル）を呼びます）。著者自身の道具を前提にする skill もあります。spawn-session はターミナルマルチプレクサの Herdr を必要とし、wiki-query と wiki-harvest は Obsidian の wiki を読みます。必要なものは各 `SKILL.md` に書いてあります。
+Claude Code と `git` が必要です。Python 実装付きの skill には `uv` も要ります。導入に鍵は要りませんが、一部の skill は実行時に外部サービスを呼ぶので、そのサービスのアカウントか API キーが要ります（例: hf-sync は Hugging Face へアップロードします）。著者自身の道具を前提にする skill もあります。spawn-session はターミナルマルチプレクサの Herdr を必要とし、wiki-query と wiki-harvest は Obsidian の wiki を読みます。必要なものは各 `SKILL.md` に書いてあります。
 
 まず一度 clone し（下の最初のコマンド）、全部入りか、つまみ食いでその clone から `~/.claude/` へコピーします。`cp` は同じ名前のファイルを上書きしますが、既にある同名の skill フォルダのほかのファイルは残ります。先に `~/.claude/` をバックアップし、まっさらに入れ直すなら古いフォルダを消してください。
 

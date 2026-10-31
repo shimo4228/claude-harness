@@ -8,7 +8,7 @@ The component folders (`skills/`, `agents/`, `rules/`, `hooks/`) and the decisio
 
 ## Usage
 
-You need Claude Code and `git`; skills with Python code also need `uv`. Installing needs no key, but some skills call outside services when run and need that service's account or API key, for example: hf-sync (uploads to Hugging Face), review-when-watch (posts to Slack), and jev-skill-router and review-when-watch (TypeSafe Jev, a judgment-only model that answers closed questions with probabilities, via `TYPESAFE_API_KEY`). A few assume the author's own tools: spawn-session needs the Herdr terminal multiplexer, and wiki-query and wiki-harvest read an Obsidian wiki. Each `SKILL.md` says what it needs.
+You need Claude Code and `git`; skills with Python code also need `uv`. Installing needs no key, but some skills call outside services when run and need that service's account or API key, for example: hf-sync (uploads to Hugging Face). A few assume the author's own tools: spawn-session needs the Herdr terminal multiplexer, and wiki-query and wiki-harvest read an Obsidian wiki. Each `SKILL.md` says what it needs.
 
 Clone once (first command below), then copy the full set or cherry-pick from that clone into `~/.claude/`. `cp` overwrites same-named files already there but leaves other files in an existing same-named skill folder: back up `~/.claude/` first, and remove the old folder if you want a clean copy.
 

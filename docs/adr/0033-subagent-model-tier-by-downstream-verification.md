@@ -52,6 +52,10 @@ code reviewer が探す欠陥とは検査対象が直交する。
    > agent の検査は無く、著者通読は主張とコードの照合を読まないので、この軸の 1 に当たり opus。
 3. 構造的検査のみ（バイト列の形で答えが決まる）を行う agent は haiku —
    citation-formatter / prompt-writer
+
+   > **注記（2026-10-26, commit「chore(agents): prompt-writer と refactor-cleaner を退役する」）**:
+   > prompt-writer は退役し、citation-formatter は paper-lab に移った。`~/.claude/agents/` に haiku の
+   > agent は無い。この条項は新しい agent を置くときの基準として残る。
 4. **条項が競合したときは 3 が 1 に優先する**。citation-formatter は不可逆な deposit の
    直前に立つ最終 gate だが、行う検査が構造的（引用と参照の突合、format 一貫性）である
    以上、上位モデルを当てても精度が上がらない。1 の「誤りが不可逆」条項は、意味的判断の
@@ -64,6 +68,10 @@ code reviewer が探す欠陥とは検査対象が直交する。
 7. 指定には Claude Code のエイリアス（`opus` / `sonnet` / `haiku` / `fable`）を使い、
    世代を固定する完全 model ID と `inherit` は使わない。現時点で `fable` を使う agent は
    無いが、エイリアス集合としては許可する — 実際に置くなら階層 1 の再検討を伴う
+
+   > **注記（2026-10-26, commit「feat(gate): 実装入口の Build-or-not ゲートと発散/照合分離 …」1d4c4cf）**:
+   > `architect` は `model: fable` になった（判定は常に最強の判定者に置く）。「`fable` を使う agent は無い」は
+   > この commit 以降は成り立たない。階層 1 の他の agent は opus のまま。
 
 あわせて implementation-chain の routing 表に swift-reviewer を追加し、Swift を
 code-reviewer の担当から外す。

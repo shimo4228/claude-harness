@@ -19,7 +19,11 @@ COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/nul
 [[ -z "$COMMAND" ]] && exit 0
 # bash の =~ で文字列全体の先頭に固定する。grep は行単位で `^` が改行ごとに一致するので、複数行の
 # commit message の行頭に書いた文字列でも外れていた (2026-09-26 security review MEDIUM)
-bypass_re='^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*SECRET_SCAN_BYPASS=1([[:space:]]|$)'
+# 区切りは [[:blank:]] に限り、値に引用符を許さない — 改行を区切りに数えると
+# `MSG="subj⏎SECRET_SCAN_BYPASS=1 …"; git commit -m "$MSG"` のように引用符内の値の中で token が先頭扱いになる
+# (bandit-precommit.sh と同じ形、2026-10-31 security review LOW)。env prefix の直後に同じ segment の `git … commit` を要求する
+_nl=$'\n'
+bypass_re="^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*SECRET_SCAN_BYPASS=1[[:blank:]]+([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*git[[:blank:]]([^;&|${_nl}]*[[:blank:]])?commit([[:blank:]]|$)"
 [[ "$COMMAND" =~ $bypass_re ]] && exit 0
 
 # git commit を含むコマンドのみ対象。under-match (env prefix / 先頭空白で skip される)

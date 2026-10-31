@@ -89,6 +89,44 @@ stage_py() {  # stage_py <repo> <file> <content-fn>
   blocked
 }
 
+@test "the bypass token at the start of a commit message's second line does not disable the check" {
+  # grep の `^` は行ごとに一致するので、旧判定はこの形で外れていた (2026-09-26 security review)
+  stage_py "$REPO" bad.py unformatted
+  run_hook "git -C $REPO commit -m 'x
+RUFF_FORMAT_BYPASS=1 y'"
+  blocked
+}
+
+@test "the bypass token after a newline inside a quoted variable value does not disable the check" {
+  # `[[:space:]]` as the inter-assignment separator accepted the newline, so the token
+  # counted as an env prefix (2026-10-31 security review LOW)
+  stage_py "$REPO" bad.py unformatted
+  # The statements are newline-separated: with `;` the target extractor finds no repo
+  # in this shape and the case would pass for the wrong reason.
+  run_hook "MSG=\"subj
+RUFF_FORMAT_BYPASS=1 y\"
+git -C $REPO commit -m \"\$MSG\""
+  blocked
+}
+
+@test "the bypass token after a space inside a quoted variable value does not disable the check" {
+  stage_py "$REPO" bad.py unformatted
+  run_hook "MSG=\"subj RUFF_FORMAT_BYPASS=1 y\"; git -C $REPO commit -m \"\$MSG\""
+  blocked
+}
+
+@test "the bypass prefix on a different command than the commit does not disable the check" {
+  stage_py "$REPO" bad.py unformatted
+  run_hook "RUFF_FORMAT_BYPASS=1 true; git -C $REPO commit -m 'x'"
+  blocked
+}
+
+@test "the bypass prefix after another env assignment still skips the check" {
+  stage_py "$REPO" bad.py unformatted
+  run_hook "LC_ALL=C RUFF_FORMAT_BYPASS=1 git -C $REPO commit -m 'chore: fixture'"
+  [ -z "$output" ]
+}
+
 # --- detection ----------------------------------------------------------------
 
 @test "unformatted staged Python blocks the commit" {

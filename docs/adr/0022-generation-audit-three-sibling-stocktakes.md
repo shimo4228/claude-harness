@@ -28,6 +28,9 @@ accepted
    > **注記（2026-09-25, ADR-0078）**: 3 点を変えた — ドリフト分類は `/claude-api prompt-audit` に委ねた（Phase 3）、
    > その High / Medium の行修正は generation-audit が適用まで持つ、inline で直す常駐層に output style を加えた。
    > 資産単位の verdict と処分（Retire / Merge 等）は引き続き各 stocktake。
+
+   > **注記（2026-10-31, ADR-0097）**: CLAUDE.md の inline confirm-each をやめ、修正案は generation-audit の行修正と
+   > 同じ report（skill `harness-stocktake`）に載せる。各 stocktake が verdict を持つ分担は変わらない。
 2. **`agent-stocktake`**（第 3 の兄弟）— `~/.claude/agents/*.md` を監査する。cost model はハイブリッドとする: description 層は「Available agent types」一覧として毎セッション常駐（residency）、body 層は起動時ロード（invocation）。抑制指示の検出と Improve-by-inversion（方向転換した指示は削除でなく逆向きに書き直す — 削除では抑制フレームが残る）を Stage 1 に組み込む。
 
 付随決定として以下も定める。

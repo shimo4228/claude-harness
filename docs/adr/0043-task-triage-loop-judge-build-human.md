@@ -70,6 +70,8 @@ accepted
 5. **digest は 1 判断 1 メッセージ。** 語彙を当てるだけの記帳は一括 OK でよいが、規約変更・リスク
    受容・課金・drop は 1 件ずつ、背景 → 何が問題か → 選択肢 → 推奨の順で。他セッションの入力欄の
    文字（Claude Code の提案 prompt）は人間の言葉ではない。
+
+   > **注記（2026-11-01, ADR-0098）**: digest は 1 cycle 1 枚の Artifact report になり、著者は承認ボタン 1 回で全項目に答える（書き換えたい項目と問いだけ触る）。1 判断 1 メッセージは廃した。入力欄の文字と Slack の返信を答えにしない規則は残る。
 6. **harvest。** 実装セッションの commit body と最終報告から拾い、人間に判断を求めるのは
    task-tracking.md のとおり **HIGH の review 指摘（producer 付き起票の提案）** と、**測定・probe
    タスクの成果物としての起票要望**（review 指摘ではなくタスクの出力 — 実装役に起票の権限は無い）
@@ -82,6 +84,8 @@ accepted
    > （`scripts/triage-tick.sh` → `herdr agent prompt`）** に置き換え、digest は file でなく Slack 片方向
    > （1 判断 1 通 + cycle 末尾 1 行）にした。session 内 cron は 7 日で失効し session 死亡時に沈黙する
    > ため。三役・red line・「答えは triage セッションの中」は不変。
+
+   > **注記（2026-11-01, ADR-0098）**: 「1 判断 1 通」は、1 cycle 1 枚の Artifact report と Slack 1 通（件数・URL・タイトル）に置き換えた。
 8. **packet は仮説であり、規約の代替ではない。** packet は種別を名指しして review chain を
    `implementation-chain` に委ね、reviewer を手で列挙しない（列挙漏れが省略許可に読まれ、Simplify が
    飛んだ）。packet に無いことは harness の規約が既定。実装役の逸脱は「何を・なぜ」の名指し付き
@@ -154,3 +158,11 @@ accepted
 > 担い、model の違いは要らない。Fable と Opus high で §4 の精度に差が出るかは未測定 —
 > 見直す条件: merge 後に見つかった不具合が `logs/effort-outcomes.jsonl` の行と突き合わせて判断役の見逃しと
 > 読めたら、§4 だけを Fable の subagent に戻すかを判断する。
+
+> **注記（2026-10-27, commit「docs(research): 再生比較の結果 — judge が実装する形には切り替えない」）**:
+> 「judge が自分で実装し、例外だけ dispatch」を既定にする案を、contemplative-agent の過去タスク 8 件 × 2 形 × 2 run の
+> 再生で試した（事前登録した規則: 新形の失敗が旧形を超えない）。旧形（packet で fresh な build）0/16 失敗、新形（台帳を
+> 全部判定してから同じ session で実装）2/16 失敗で、規則を満たさず、build への dispatch を既定のまま残した。新形の 1 本は
+> 環境由来の verify 失敗を判定役が拾ったもの、もう 1 本は context 366K・compact の後に packet の「同文」指示を保てなかったもの。
+> 実装役を fresh context に分ける本 ADR の形は、記事の「subagent より単一 agent」の一般論に対して、この repo の実測で残る。
+> 結果と限界は `docs/plans/research/2026-10-27-replay-result.md`。

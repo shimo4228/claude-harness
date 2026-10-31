@@ -182,10 +182,12 @@ def test_absolute_path_inside_the_sandbox_is_accepted(tmp_path: Path) -> None:
 
 
 def test_arbitrary_command_is_refused(tmp_path: Path) -> None:
-    skipped = _apply_setup_commands(tmp_path, ("bash -c 'echo pwned > /tmp/x'",))
+    # 書き込み先はテスト専用の path — 共有の /tmp/x は無関係のファイルが既にあると落ちる
+    target = tmp_path / "pwned"
+    skipped = _apply_setup_commands(tmp_path, (f"bash -c 'echo pwned > {target}'",))
     assert len(skipped) == 1
     assert "bash" in skipped[0]
-    assert not Path("/tmp/x").exists()
+    assert not target.exists()
 
 
 def test_curl_pipe_shell_is_refused(tmp_path: Path) -> None:

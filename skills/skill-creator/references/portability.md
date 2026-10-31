@@ -51,7 +51,7 @@ When a skill is published as its own GitHub repo:
   a subagent (`agents/*.md`) is Claude Code only. A repo that bundles agents keeps the `claude-skill-` prefix and
   says so in the `compatibility` frontmatter; a pure-skill repo drops the prefix (`<owner>/<skill-name>`).
 - **Layout**: `skills/<name>/SKILL.md` plus flat `agents/<agent>.md`, and an idempotent `install.sh`
-  (skip when identical, back up to `*.bak-<ts>` otherwise; `--force` / `--dry-run`). A pure-skill repo may omit it.
+  (skip when identical, otherwise back up replaced files under `~/.claude/backups/install-<ts>/` — outside `skills/` and `agents/`, so a backup is never loaded; `--force` / `--dry-run`). A pure-skill repo may omit it.
 - **SkillsMP caveat**: `/skills add <owner/repo>` installs only `skills/`, not `agents/`. A repo that bundles
   agents says in its README to run `install.sh` or `cp agents/*.md ~/.claude/agents/`.
 

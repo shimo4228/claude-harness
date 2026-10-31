@@ -23,7 +23,7 @@ check is skill `skill-health`, and a with/without ablation of a skill's effect i
 ## Supported Targets
 
 - **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first
-- **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, debugging.md
+- **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, boundary.md
 - **Agent definitions** (`agents/*.md`): accepted as a target, but invocation is **not observable** today — every child
   runs with `Agent` denied (`scripts/child_settings.py` `DENIED_TOOLS`), so a step that expects an agent call cannot be seen
 

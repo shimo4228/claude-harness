@@ -151,6 +151,28 @@ SECRET_SCAN_BYPASS=1 was discussed'"
   blocked
 }
 
+@test "the bypass token after a newline inside a quoted variable value does not disable the scan" {
+  # `[[:space:]]` as the inter-assignment separator accepted the newline, so the token
+  # counted as an env prefix (2026-10-31 security review LOW, same shape as bandit)
+  plant_tracked_secret
+  run_hook "MSG=\"subj
+SECRET_SCAN_BYPASS=1 y\"
+git -C $REPO commit -am \"\$MSG\""
+  blocked
+}
+
+@test "the bypass prefix on a different command than the commit does not disable the scan" {
+  plant_tracked_secret
+  run_hook "SECRET_SCAN_BYPASS=1 true; git -C $REPO commit -am 'x'"
+  blocked
+}
+
+@test "the bypass prefix after another env assignment still skips the scan" {
+  plant_tracked_secret
+  run_hook "LC_ALL=C SECRET_SCAN_BYPASS=1 git -C $REPO commit -am 'chore: fixture'"
+  [ -z "$output" ]
+}
+
 # --- hostile .git/config must not run, and must not silence the scan ---------
 # ADR-0034 T-GIT-HOSTILE-CONFIG: a repo-local diff.external is arbitrary code
 # that git runs on `git diff`. The hook disarms it with --no-ext-diff. This test

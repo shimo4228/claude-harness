@@ -47,16 +47,16 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 | [repair-discipline](../skills/repair-discipline/SKILL.md) | Establishes what is true now from primary evidence before a fix: a bug, a stale task, something stuck or flaky, or a schema or storage change that other code reads |
 | [rfc-writer](../skills/rfc-writer/SKILL.md) | Files one entry in the public `rfcs/` ledger: the filing bar, numbering, template, publication rules and the index line |
 | [review-to-lint](../skills/review-to-lint/SKILL.md) | Moves the mechanical items of a reviewer's checklist into a deterministic script, leaving the reviewer agent or skill only the checks that need judgement |
-| [jev-skill-router](../skills/jev-skill-router/SKILL.md) | UserPromptSubmit hook that asks TypeSafe Jev which installed skill fits the prompt; shadow-first, injects only after measured accuracy |
 | [jev-judgment-design](../skills/jev-judgment-design/SKILL.md) | Moving closed LLM judgments (relevant? new? how strong?) to TypeSafe Jev: put what is judged against into the state, code decides from Jev's probabilities, canaries catch over-filtering |
 | [author-calibrated-eval](../skills/author-calibrated-eval/SKILL.md) | Tuning LLM-written prose against the author's own reading: frozen inputs, a hard-case set, blind side-by-side reads with a strong-model reference, and an LLM judge that only gates faithfulness |
-| [review-when-watch](../skills/review-when-watch/SKILL.md) | Daily launchd job: checks each new research note against the Review-when conditions in this repo's ADRs and RFCs via TypeSafe Jev, and posts the matches to Slack. Not model-invoked |
 | [mono-figure](../skills/mono-figure/SKILL.md) | Drawing static explanatory figures for articles and READMEs (lines, arrows, numbers, labels) in the mono-color look — paper, ink, type, whitespace. Claude draws SVG by default (rendered to PNG where a platform needs it) |
 | [agent-send](../skills/agent-send/SKILL.md) | Send a prompt to an agent running in a Herdr pane and confirm it landed, or wait until its work is done |
 | [persona-read-loop](../skills/persona-read-loop/SKILL.md) | Three isolated LLM readers read a draft (article, README) in rounds; revise only how it is shown, and count what each revision added. A cheap check, not user research |
 | [social-post](../skills/social-post/SKILL.md) | Write X, Bluesky and Substack Notes posts for a new article or a fragment, and save them as Buffer drafts (the author schedules and publishes) |
 | [widen-the-ask](../skills/widen-the-ask/SKILL.md) | Before planning, widen a request with the human one question at a time, in three directions: altitude, range, depth |
 | [detail-loop](../skills/detail-loop/SKILL.md) | Refines a product whose skeleton is done, one detail unit at a time, freezing each fix as a check, until a review round finds nothing new |
+| [harness-stocktake](../skills/harness-stocktake/SKILL.md) | Take stock of the whole harness in one report and one approval, then apply on a branch (ハーネスの棚卸し) |
+| [hook-stocktake](../skills/hook-stocktake/SKILL.md) | Audit the harness hooks (hooks/*.sh, scripts/hooks/*) and their settings.json wiring, and give each a verdict (hook の棚卸し) |
 <!-- END GENERATED: skills-table -->
 
 ## Agents
@@ -64,10 +64,8 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 <!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
 | --- | --- |
-| [prompt-writer](../agents/prompt-writer.md) | Generates concise prompts using a lightweight model. Creates and rewrites LLM prompt templates |
 | [adr-reviewer](../agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, `Review-when` names an observable expiry trigger, Alternatives are real rather than straw men (a live rival marked undecided, with conditions for revisiting it, is allowed), Consequences show both sides, and override relations with prior ADRs are stated (a dated note when a prior ADR is partly weakened) |
 | [prompt-forager](../agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
-| [swift-reviewer](../agents/swift-reviewer.md) | Swift / SwiftUI review — Swift 6 strict concurrency, value semantics, SwiftUI state ownership, retain cycles, HIG compliance |
 | [readme-judge](../agents/readme-judge.md) | Fresh-context README judge: reads evidence JSON + the README once, answers a fixed checklist with quoted evidence, returns a named verdict (Publishable / Fix / Rewrite) |
 | [researcher](../agents/researcher.md) | One research angle per run for search-first's parallel Full mode: searches the web, registries and primary sources, writes one dated notes file or the merged report that opens the plan research gate |
 <!-- END GENERATED: agents-table -->
@@ -81,7 +79,6 @@ Rules under `rules/common/` load every session: mostly environment-specific fact
 | --- | --- |
 | [agents](../rules/common/agents.md) | Pointer to the agent catalog (the frontmatter of `agents/*.md` is canonical), the rule that review runs in a different agent process from the implementer, and the entry points to the Herdr delegation skills |
 | [akc-cycle](../rules/common/akc-cycle.md) | Pointer edition of the Agent Knowledge Cycle — maps each of its mechanisms to the skill or rule that owns it, states when a piece of scaffolding can be removed (Scaffold Dissolution), and says how ADRs are treated (dated records, supersede with dated annotations, a two-condition filing bar) |
-| [debugging](../rules/common/debugging.md) | Rate-limit signal — repeated rate limits during bulk writes to an external platform are a policy signal, not a transient error: stop the burst and report to the human instead of backing off through it |
 | [planning](../rules/common/planning.md) | Planning wiring — search-first before anything that may already exist, handing implementation from the judging session to a separate build session by default, implementation-chain for chain type and reviewer conditions, and the repo's `.claude/verify.sh` as the canonical Verify |
 | [skills](../rules/common/skills.md) | Origin vocabulary for skills / agents / rules (the canonical table), the `replaces:` lineage field, the imperative wiring to skill-creator before writing or overhauling a skill, and the writing rule — positive form by default, prohibitions only under three stated conditions |
 | [contemplative-axioms](../rules/common/contemplative-axioms.md) | Contemplative Constitutional AI clauses from Laukkonen et al. (2025), verbatim |
@@ -101,11 +98,11 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | loop-design-check, refactor-clean | architect, refactor-cleaner, security-reviewer | common/coding-style, common/security, common/testing |
+| ECC + local modifications | loop-design-check, refactor-clean | architect, security-reviewer | common/coding-style, common/security, common/testing |
 | [anthropics/claude-code](https://github.com/anthropics/claude-code) | — | Explore | — |
 | [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) + local modifications | mondo | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |
-| [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me, wait-what | — | — |
+| [mattpocock/skills](https://github.com/mattpocock/skills) + local modifications | grill-me | — | — |
 | [modem-dev/hunk](https://github.com/modem-dev/hunk) | hunk-review | — | — |
 | [tt-a1i/archify](https://github.com/tt-a1i/archify) + local modifications | archify | — | — |
 <!-- END GENERATED: upstream-components -->

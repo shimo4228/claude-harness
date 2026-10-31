@@ -54,7 +54,7 @@ class ScenarioExecutionError(RuntimeError):
     fabricated.
 
     Rate limiting is the common cause and is NOT retried here — per
-    rules/common/debugging.md a burst of rate limits is a policy signal to
+    rules/common/boundary.md ("止まって報告する") a burst of rate limits is a policy signal to
     surface to a human, not something to back off through.
     """
 

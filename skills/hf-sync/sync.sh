@@ -10,7 +10,7 @@
 #
 # Source repo stays clean: graph.jsonl never lands in the source tree.
 #
-# See ~/.claude/skills/hf-sync/SKILL.md for full context.
+# See SKILL.md next to this script for full context.
 
 set -euo pipefail
 

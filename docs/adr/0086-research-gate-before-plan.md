@@ -61,9 +61,28 @@ Plan: [docs/plans/research-plan-mode.md](../plans/research-plan-mode.md)（承�
    入らない置き場）か、統合した report（`<project>/docs/plans/research/<YYYY-MM-DD-slug>.md`）を 1 本書く。report の
    1 行目は `kind: external` か `kind: internal`。report の形の正本は researcher.md で、各節の書き方は skill
    search-first §3 を参照する（Verdict は lead が plan に書く）
+
+   > **注記（2026-10-25, commit「feat(research): researcher と search-first Full の量の上限と呼び出し経路を緩める」）**:
+   > tools に context7（`mcp__context7__*`）と
+   > ToolSearch を足した。Bash を持たせない判断と、書き込み先の制限は変えていない。手元のデータや CLI の出力は lead が
+   > 実行して prompt で渡し、notes / report の `## Local evidence` に書く
+   > `model` は sonnet のまま — 著者の指摘は上限と経路のきつさで、判断は lead（Opus）が持つ。角度ごとに強くしたいときは
+   > 呼び出し側の `model` で上書きする
+
+   > **注記（2026-10-26, commit「feat(research): 内部調査の report は主ループが書く」）**:
+   > 内部調査の report は主ループが自分で書く。researcher は Bash を持たず、内部の report は lead が実行した
+   > 出力を書き写すだけだった。researcher が書く report は外部調査の統合だけになり、内部の形の正本は skill
+   > repair-discipline に移った。researcher の書き込み先の制限は変えていない。経緯は `docs/plans/subagent-fold.html` の claim 2。
+
 2. skill search-first の Full を並列多視点に置き換える: brief → 3〜5 角度（表の行ごとに 1 本 + 反証役 1 本）を
    researcher で並列 → lead が notes を全部読み、漏れ・食い違い・snippet だけの主張を洗う → 追加は 1 波まで（決定に
    効く主張の原典照合を含む）→ report。plan mode からの問いは常に Full
+
+   > **注記（2026-10-25, 同 commit）**: 角度の数（比較は 3〜5、広い問いは 6〜10）・1 角度の検索回数の目安（15〜25、
+   > 名指せる問いがあれば 2 倍まで）・追加の波（決定を変えうる穴を名指せる間、3 波まで）に広げた。researcher は Workflow
+   > の `agent(…, {agentType: 'researcher'})` でも起動してよい — 同日の実測で、Workflow の researcher の PreToolUse にも
+   > `agent_type: researcher` が載り、notes への書き込みは approve、scratchpad への書き込みは gate の理由で block された。
+   > gate を開ける統合 report は Agent tool の researcher が書く（Workflow 経路の PostToolUse の印付けは未実測）
 3. `hooks/research-gate.sh` を置き、UserPromptSubmit / PreToolUse（Write|Edit）/ PostToolUse
    （Write|EnterPlanMode|ExitPlanMode）に配線する:
    - plan の依頼を 2 通りで拾う: plan mode（`permission_mode == plan`、EnterPlanMode の直後を含む）と、plan を頼む
@@ -100,12 +119,18 @@ Plan: [docs/plans/research-plan-mode.md](../plans/research-plan-mode.md)（承�
    - ask / notice / block / pass / ready / skip / unguarded を計測ログ（既定 `~/.claude/metrics/research-gate.jsonl`、gitignore）に 1 行ずつ
      残す。回帰は `tests/research-gate.bats`（security review で再現した経路 — path の改行と 0x1f、末尾一致の偽装、
      指示ファイル名、symlink — を含む）
+
+   > **注記（2026-10-26, ADR-0096）**: plan ファイルへの書き込みの block、印 ready / skip、「調査不要」の照合、`unguarded` と計測ログを消した
+   > （[ADR-0096](./0096-retire-html-plan-and-shrink-research-gate.md) Decision 4）。researcher の書き込み先の制限と、plan の依頼で調査手順を 1 回差し込む notice は残る。
+   > PostToolUse の配線は EnterPlanMode / ExitPlanMode だけになった
 4. 調査は 2 種にする。外部調査（新機能・依存の追加・設計の選択）は search-first の Full、内部調査
    （repo 内で答えが出るバグ・refactor）は再現手順・原因の `file:line`・確認結果。種別は Claude が brief の
    1 行目に書き、著者がそこで止められる
 5. plan は report にリンクし、構造や流れは Mermaid で示す（`rules/common/planning.md` に 1 項目）
    > **注記（2026-10-06, ADR-0087）** 置き換えた。plan は skill html-plan で `docs/plans/<slug>.html` に書き、構造は claim の木と
    > その exhibit で示す（[ADR-0087](./0087-html-plan-as-default-plan-path.md) Decision 1）
+   > **注記（2026-10-26, ADR-0096）**: html-plan を退役し plan mode に戻した。plan は report にリンクし、Mermaid は必須にしない
+   > （[ADR-0096](./0096-retire-html-plan-and-shrink-research-gate.md) Decision 1）
 6. settings.json への配線は、次の 5 点を使い捨ての設定（`claude -p --settings`）で確かめてから行う:
    plan mode 中の plan ファイルへの Write を PreToolUse の block で止められる / plan mode の親の下で、harness 以外の
    repo から researcher が notes に、harness repo で report に書け、その PostToolUse の `session_id` が親と同じ /
@@ -142,6 +167,9 @@ plan ファイルの path の集合を変えない。notice のあった session
 > `block` / `pass` は md の plan だけを数える。`/html-plan` を直接打った session は ask も notice も付かず、notice を
 > 分母にする基準の外にある。html の gate の計器は ADR-0087 の Review-when が持つ。plan の既定が html になると md の
 > `block` は減るので、「block が 0 件」の基準は md の plan の依頼が 10 件以上あるときだけ読む
+
+> **注記（2026-10-26, ADR-0096）**: 計測ログと block を消したので、下の notice / block / skip / ask / `unguarded` を数える基準は判定できない。
+> 残る基準は Decision 6 と「浅い」指摘と plan mode の変化の 3 つで、block を戻すかの監視は [ADR-0096](./0096-retire-html-plan-and-shrink-research-gate.md) の Review-when が持つ
 
 - Decision 6 のどれかが通らなかった — その部品を Mod に置き換え、本 ADR に注記する
 - notice のあった session のうち、skip で開けた session が半分を超える — gate が重すぎる。種別の判定か gate の

@@ -219,6 +219,28 @@ def test_path_index_truncation_is_announced(repo: Path, monkeypatch):
     assert any("path index truncated" in d["reason"] for d in ev["degraded"])
 
 
+def test_path_index_in_a_git_work_tree_skips_gitignored_trees(repo: Path, monkeypatch):
+    def git(*args: str) -> None:
+        subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
+
+    git("init", "-q")
+    (repo / ".gitignore").write_text("plugins/\n", encoding="utf-8")
+    cache = repo / "plugins" / "cache"
+    cache.mkdir(parents=True)
+    for i in range(50):
+        (cache / f"blob{i}.txt").write_text("x\n", encoding="utf-8")
+    git("add", "CLAUDE.md", ".gitignore")  # tracked; README and docs stay untracked
+    monkeypatch.setattr(cc, "_MAX_INDEX_ENTRIES", 20)
+
+    ev = ce.collect_evidence(repo)
+
+    assert ev["inventory"]["path_index"]["truncated"] is False
+    assert not any("path index" in d["reason"] for d in ev["degraded"])
+    cx = cc.Corpus(repo)
+    assert "plugins/cache/blob0.txt" not in cx.index
+    assert {"CLAUDE.md", "docs/adr/README.md", "docs/adr/", "adr/README.md"} <= cx.index
+
+
 def test_git_failure_is_reported_rather_than_read_as_fresh(repo: Path, monkeypatch):
     monkeypatch.setattr(cc, "_git", lambda root, *args: (None, "git timed out after 20s"))
     ev = ce.collect_evidence(repo)

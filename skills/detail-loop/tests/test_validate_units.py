@@ -13,12 +13,13 @@ import json
 
 import validate_units as vu
 
+EVAL = {"judge": "machine", "check": "ja-kinsoku-start", "expect": "0 lines at every width"}
 UNIT = {
     "id": "ja-kinsoku-start",
     "field": "Japanese typesetting",
     "what": "No line starts with a small kana or closing bracket.",
     "why": "A word split at a line start breaks the reading.",
-    "eval": {"judge": "machine", "check": "ja-kinsoku-start", "expect": "0 lines at every width"},
+    "eval": EVAL,
     "cause": "site.css :lang(ja) { line-break: strict }",
     "origin": "r3-typography 1",
     "status": "frozen",
@@ -60,7 +61,7 @@ def test_id_must_be_kebab_case_and_unique():
 
 
 def test_judge_and_status_come_from_fixed_sets():
-    errors = vu.validate([unit(status="done", eval={**UNIT["eval"], "judge": "llm"})])
+    errors = vu.validate([unit(status="done", eval={**EVAL, "judge": "llm"})])
     assert any("status must be one of" in e for e in errors)
     assert any("eval.judge must be one of" in e for e in errors)
 
@@ -79,7 +80,7 @@ def test_author_eye_belongs_to_author_units_only():
 
 
 def test_check_equals_the_id():
-    errors = vu.validate([unit(eval={**UNIT["eval"], "check": "kinsoku"})])
+    errors = vu.validate([unit(eval={**EVAL, "check": "kinsoku"})])
     assert errors == ["ja-kinsoku-start: eval.check equals the id, got 'kinsoku'"]
 
 
@@ -99,7 +100,7 @@ def test_open_unit_without_check_passes():
 
 
 def test_frozen_hybrid_needs_the_authors_decision():
-    hybrid = {**UNIT["eval"], "judge": "hybrid"}
+    hybrid = {**EVAL, "judge": "hybrid"}
     assert vu.validate([unit(eval=hybrid)]) == [
         "ja-kinsoku-start: a frozen hybrid unit needs decided_by (the author set its range)"
     ]
@@ -107,7 +108,7 @@ def test_frozen_hybrid_needs_the_authors_decision():
 
 
 def test_relations_point_at_real_units_with_a_known_kind():
-    hang_eval = {**UNIT["eval"], "check": "ja-quote-hang"}
+    hang_eval = {**EVAL, "check": "ja-quote-hang"}
     other = unit(
         id="ja-quote-hang", eval=hang_eval, relations=[{"unit": "ja-kinsoku-start", "how": "support — edge"}]
     )

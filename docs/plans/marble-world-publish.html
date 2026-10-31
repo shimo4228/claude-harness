@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>Marble World Publish</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<style data-mock-shared>
+  .ui { font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; color: #1c1b19; background: #fff; border: 1px solid #ddd8cc; border-radius: 10px; overflow: hidden; }
+  .ui .hd { padding: 9px 14px; border-bottom: 1px solid #eee9dd; font-weight: 650; }
+  .ui .ln { padding: 8px 14px; border-bottom: 1px solid #f3efe6; color: #5f5a4f; }
+  .ui .ln b { color: #1c1b19; }
+  .ui .ft { display: flex; gap: 8px; padding: 10px 14px; background: #faf8f3; }
+  .ui .btn { font-weight: 600; font-size: 13px; padding: 7px 12px; border-radius: 7px; border: 1px solid #ddd8cc; background: #fff; }
+  .ui .btn.pri { background: #1c1b19; color: #fff; border-color: #1c1b19; }
+  .ui .scene { height: 150px; background: linear-gradient(#b9c9d6, #e8dcc4 60%, #8f7d62); position: relative; }
+  .ui .scene .vr { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); }
+  .ui .dim { color: #8a8578; font-size: 12.5px; }
+</style>
+<body>
+
+<header>
+  <h1>Marble ワールドを Web と Quest 2 で公開</h1>
+  <doc-changes new="6"></doc-changes>
+  <details class="thread"><summary>Why · 4 発言</summary>
+    <doc-quote via="prompt" from="著者">World Labs の Marbleで、3Dワールドを生成し、加工し、Web とVRで見られる形で公開するところまでやりたい。</doc-quote>
+    <doc-quote via="prompt" from="著者">まずはやってみてこれで何ができるのか、そしてどんな可能性があるのか、そして私はどう感じるのかを知りたい</doc-quote>
+    <doc-quote via="prompt" from="著者">AIコーディングでできることは大体わかったので、さらなるAI活用の可能性を知りたい。</doc-quote>
+    <doc-quote via="prompt" from="著者">まずは自分が興味を持ちそうなワールドを作りたい</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>著者は Free のまま、作ったワールドに Quest 2 で入る</p>
+  <doc-mock frame="none" w="420" caption="Marble 内蔵の共有だけで、コードなしに VR まで届く（FAQ 2026-10-25）。"><template>
+<div class="ui">
+  <div class="hd">My world <span class="dim">· 生成済み</span></div>
+  <div class="ln">Copy link <span class="dim">ブラウザ用</span></div>
+  <div class="ln" data-ref="vr"><b>Copy VR link</b> <span class="dim">ヘッドセット用</span></div>
+</div></template>
+    <doc-pin ref="vr" anchor="r" title="Quest 2 のブラウザで開く">Quest 2 での実測は公開情報に無い。ここで初めて分かる。</doc-pin>
+  </doc-mock>
+  <doc-ask id="theme">
+    <p>最初に作るワールドの題材は？</p>
+    <textarea name="theme" placeholder="例: 子どもの頃の部屋の写真 / 読んだ小説の一場面 / 行きたい場所"></textarea>
+  </doc-ask>
+  <doc-claim>
+    <p>この手の試しの結果で、claim 2〜4 の要否が決まる</p>
+    <doc-mock frame="terminal" title="30 分の試し" w="440" caption="3 の結果が出たら、claim 2〜4 を残すか決める。"><template><span class="dim">1</span> Free で文章か写真 1 枚から生成 <span class="dim">（月 4 回まで）</span>
+<span class="dim">2</span> pano edit と variations で加工
+<span class="dim">3</span> Copy VR link → Quest 2 のブラウザで開く
+<span class="dim">4</span> 感じたことを notes/ にその場で書く</template></doc-mock>
+    <doc-note tone="warn"><strong>Free の制約</strong> 生成物の権利は World Labs に残り、個人の非商用に限る。Gallery に公開で載る（ToS §3.3）。</doc-note>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>有料 1 か月で、ワールドを自分のファイルとして持てる</p>
+  <doc-mock frame="terminal" title="exports" w="460" caption="Standard で SPZ / PLY / collider を書き出せる。サイズは公式に未記載。"><template><span class="dim">~/MyAI_Lab/marble-world/worlds/</span>
+my-world.spz            <span class="dim">splat（全量）</span>
+my-world-500k.spz       <span class="dim">splat（軽量版）</span>
+my-world-collider.glb   <span class="dim">当たり判定</span>
+<span class="g">✓</span> 生成物は著者の所有、公開展示が可</template></doc-mock>
+  <doc-ask id="route">
+    <p>ワールドをどの経路で生成する？</p>
+    <label><input type="radio" name="route" value="standard" checked> Marble アプリ Standard（$20 / 月） <small>手で生成。1 か月で解約できる</small></label>
+    <label><input type="radio" name="route" value="api"> World API を従量で使う <small>1 ワールド約 $1.7、claim 5 が要る</small></label>
+    <label><input type="radio" name="route" value="free"> Free で止める <small>claim 2〜4 は消える</small></label>
+  </doc-ask>
+  <div data-if="route=api"><doc-note tone="risk">API 生成物の権利条項は未確認。公開前に API の利用規約を読む。</doc-note></div>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>公開ページを開いた人は、ブラウザでワールドを歩ける</p>
+  <doc-mock frame="browser" url="shimo4228.github.io/marble-world/" w="440"><template>
+<div class="ui"><div class="scene" data-ref="scene"><span class="btn vr">ENTER VR</span></div>
+<div class="ft"><span class="dim">ドラッグで見回す · WASD で歩く</span></div></div></template>
+    <doc-pin ref="scene" anchor="tl" title="Spark が splat を描く">three.js 上の viewer。</doc-pin>
+  </doc-mock>
+  <doc-claim>
+    <p>HTML 1 枚が Spark で splat を読み込む</p>
+    <doc-code title="index.html の module script · sketch" lang="js" caption="importmap で three@0.180.0 と spark 2.4.0 を CDN から読む（sparkjs.dev Quick Start）。">
+<script type="text/plain">
+import * as THREE from "three";
+import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
+const renderer = new THREE.WebGLRenderer({ antialias: false });
+const scene = new THREE.Scene();
+scene.add(new SparkRenderer({ renderer }));
+scene.add(new SplatMesh({ url: "worlds/my-world-500k.spz" }));
+</script>
+    </doc-code>
+  </doc-claim>
+  <doc-claim>
+    <p>splat ファイルは GitHub Pages に同じ origin で置く</p>
+    <doc-tree caption="1 ファイル 100 MiB 未満、サイト 1 GB 未満が Pages の上限。">
+<script type="text/plain">
+~/MyAI_Lab/marble-world/
+  + index.html
+  + worlds/my-world-500k.spz   # 100 MiB 未満であること
+  + README.md
+</script>
+    </doc-tree>
+    <doc-ask id="host">
+      <p>splat の置き場は？</p>
+      <label><input type="radio" name="host" value="pages" checked> GitHub Pages <small>100 MiB 未満なら設定が最少</small></label>
+      <label><input type="radio" name="host" value="r2"> Cloudflare R2 <small>大きいファイル向け。CORS 設定が要る</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>Quest 2 で同じページを開くと、VR で中に立てる</p>
+  <doc-code title="index.html · sketch（VR 部分）" lang="js">
+<script type="text/plain">
+import { VRButton } from "three/addons/webxr/VRButton.js";
+renderer.xr.enabled = true;
+document.body.appendChild(VRButton.createButton(renderer));
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
+// Spark docs: VR は maxStdDev = Math.sqrt(5) を推奨
+</script>
+    <doc-pin line="1" tone="warn" title="Spark の XR API は build 時に再照合">SparkXr の正確な使い方は未取得。</doc-pin>
+  </doc-code>
+  <doc-claim>
+    <p>Quest 2 向けに 500k 版の splat を使う</p>
+    <doc-mock frame="terminal" title="Quest 2 実機の確認" w="440" caption="Spark の目安は Quest 3 で 100 万 splat 以下。Quest 2 の数値は無い。"><template>my-world-500k.spz   <span class="y">fps を見る</span>
+<span class="dim">滑らかでなければ → Marble で軽量版を選び直す</span></template></doc-mock>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 5 ═════ -->
+<doc-claim>
+  <p>Claude は MCP 経由で World API から生成できる</p>
+  <doc-flow caption="公式 MCP は無い。コミュニティ製 2 本は World API の従量 credit を使う。">
+<script type="text/plain">
+cl  = Claude Code
+mcp = コミュニティ MCP [muted]
+api = World API
+| cl | mcp | api |
+cl -> mcp : tool call
+mcp -> api : API key
+</script>
+  </doc-flow>
+  <doc-ask id="mcp">
+    <p>生成を MCP で Claude に任せる？</p>
+    <label><input type="radio" name="mcp" value="later" checked> 初回は手で作り、2 作目で試す <small>手触りを先に得る</small></label>
+    <label><input type="radio" name="mcp" value="jkoets"> jkoets/Marble-WorldLabs-MCP-Server <small>生成 14 tool。保守状況は Inactive 表示</small></label>
+    <label><input type="radio" name="mcp" value="sandra"> sandraschi/worldlabs-mcp <small>Spark 表示と VR も含む。MIT、v0.5.0</small></label>
+  </doc-ask>
+  <div data-if="mcp!=later"><doc-note tone="risk">第三者コードに API key を渡す。導入前に dependency intake でコードを読む。key は著者が設定する。</doc-note></div>
+</doc-claim>
+
+<!-- ═════ shared ═════ -->
+<doc-claim aux="shared">
+  <p>共有: 新規 repo ~/MyAI_Lab/marble-world と調査 report</p>
+  <doc-tree caption="調査: docs/plans/research/2026-10-25-marble-world-publish.md（harness 側）。">
+<script type="text/plain">
+~/MyAI_Lab/marble-world/
+  + .claude/verify.sh   # verify-bootstrap で作る
+  + .gitignore          # *.ply など大きい原本を外す
+  + index.html
+  + worlds/
+  + notes/              # その場で感じたことのメモ
+  + README.md
+</script>
+  </doc-tree>
+  <doc-ask id="executor">
+    <p>実行者は？</p>
+    <label><input type="radio" name="executor" value="here" checked> この session <small>コードは HTML 1 枚で小さい</small></label>
+    <label><input type="radio" name="executor" value="build"> Opus の新 session に渡す <small>この plan を brief にする</small></label>
+  </doc-ask>
+</doc-claim>
+
+<!-- ═════ scope ═════ -->
+<doc-claim aux="scope">
+  <p>変えないこと: harness、商用利用、ネイティブ Quest アプリ</p>
+  <ul>
+    <li>課金・アカウント作成・API key の入力は著者が行う。</li>
+    <li>Unity / Quest ネイティブ app（AirVis 等）への書き出しはしない。</li>
+    <li>壊れ方の収集や図鑑は作らない。</li>
+    <li>GLB メッシュと商用権（Pro）は使わない。</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body></html>

@@ -20,7 +20,7 @@ Roles (ADR-0043):
 |---|---|---|---|
 | **Judge** (this skill) | the triage session (Opus 5.5 at its settings effort, `high`; a contested build-or-not goes to the `architect` agent, which runs on Fable) | premise check, worth check, better-solution check, condition check → verdict; writes kickoff packets; independently verifies build output; merges what passed §4 ff-only and pushes; keeps the books | confirms a drop alone; files tasks on its own |
 | **Build** | a fresh session per task (Opus-tier) — by default a Claude Code **cloud session** on a `claude/` branch cloned from GitHub, running without the harness (the packet is its whole contract); a local worktree session (Agent tool / Herdr) only for the cases §3 names | Phase 0 premise re-check → implement → run the one review the packet names → commit on the task branch with the evidence in the commit body → push (cloud) | changes acceptance conditions, merges its own branch, edits the ledger, touches the gate (`.claude/verify.sh`, `.github/`, `.claude/settings.json`) |
-| **Human** | the owner | direction for tasks that need it, batch answers to the digest, the merge of a diff that touches rules / hooks / permissions / gate scripts while unattended | watches individual sessions (attention is the scarce resource) |
+| **Human** | the owner | one approval per cycle on the digest report (overriding or answering only the items that need it), direction for tasks that need it, the merge of a diff that touches rules / hooks / permissions / gate scripts while unattended | watches individual sessions (attention is the scarce resource) |
 
 The shared boundary — what is handed to the human, what a session may risk without asking,
 when to stop and report — is rule `boundary.md`; the column above holds only what is specific
@@ -41,10 +41,10 @@ The verdicts of a triage are the states themselves:
 
 | Verdict | Meaning | Who decides |
 |---|---|---|
-| `draft` | adoption still undecided → **consult** the human (one question at a time, see Digest) | human |
+| `draft` | adoption still undecided → **consult** the human (an `adopt` item in the digest, §2) | human |
 | `accepted` → dispatch | premise verified `file:line`, condition met, acceptance decidable, reversible on a branch, no rule change, fits one session | judge (dispatch, merge after §4) |
 | `blocked` | adopted, and the three lines can be written; if the 照合先 can never fire (structurally unobservable), it is not `blocked` — re-ask | judge writes the lines |
-| terminal proposal | premise gone / substrate now native / value < complexity (`architect` lens) / event source deleted (`obsoleted`) | proposed by judge, **confirmed by human** |
+| terminal proposal | premise gone / substrate now native / value < complexity (`architect` lens) / event source deleted (`obsoleted`) | proposed by judge as a `drop` item, **confirmed by human** |
 | 台帳外 | 便乗 → a note at the code site, row closed | judge proposes |
 
 ## The cycle
@@ -86,36 +86,81 @@ For every task not in dead-band, in this order — stop at the first that decide
 Write the verdict and the one-line reason **into the task** (store: a dated section; table:
 the 着手条件 cell). The reader of the ledger must not need this conversation.
 
-### 2. Digest — one question per turn
+### 2. Digest — one report, one approval
 
-The digest is where the human's attention is spent, so budget it: **one decision per
-message**, in the order background → what is at stake → options → recommendation → cost /
-reversibility. A ten-item numbered list looks efficient and is not — the owner decides one
-item at a time. Bookkeeping that only applies the vocabulary (a satisfied
-condition → `accepted`, adding the three lines, a `resolved` whose decision is already recorded)
-can go as one blanket-OK list; anything that changes a rule, accepts a risk, spends money, or
-drops a task is its own question.
+Every decision the cycle needs from the human goes into **one Artifact report per cycle**, built
+from `${CLAUDE_SKILL_DIR}/templates/digest.html`. The human reads it once, overrides or answers only
+the items that need it, and presses 「この内容で承認」; the session then carries out every item as
+decided. The report is published at the **end** of the cycle, after §3–§5, so it holds §1's
+verdicts together with the dispatch, build and merge items. Attention is the scarce resource: one
+sitting per cycle, with every item self-contained so it can be decided without the conversation.
 
-When the cycle runs unattended (the launchd tick, see "Where the loop lives"), **the digest is
-still the session's own closing reply** — the human answers here, so the reasoning must be
-readable here (Remote Control shows the reply). Write every pending item into that reply, one
-at a time, in the same order. Keep the reasoning out of Slack: a `notify-slack.sh` argument is a
-Bash tool call, so its body is not part of the conversation the human returns to.
+**Items.** One JSON object per item, at `items/<id>` in the report's store:
 
-Slack gets **one message per cycle**, at the end, even when nothing needs the human:
-`bash ~/.claude/scripts/notify-slack.sh "<repo> triage cycle done" "N decisions pending: 1) <one-line
-title> 2) <one-line title> …"` (`0 decisions pending`, no list, when there is nothing) — titles
-only, never the reasoning. Two jobs: it is the liveness signal (its absence after a tick is the
-alarm), and the titles let the owner judge from the phone whether returning now is worth it.
-Slack is **one-way**.
+| Field | Content |
+|---|---|
+| `id` | `t-<nn>`, stable within the cycle |
+| `order` | integer, by group order below, then by task |
+| `group` | one of the group ids below |
+| `kind` | one word: `terminal` / `consult` / `dispatch` / `packet-default` / `bounce` / `merge` / `filing` / `bookkeeping` / `build` / `observation` |
+| `target` | the task id (`T-012`, `RFC-0035`) or the branch |
+| `verdict` | the recommendation in ledger vocabulary or as an action (`withdrawn`, `accepted`, `dispatch`, `merge`, `file`) |
+| `alternatives` | other verdict words the human may pick (optional) |
+| `reason` | background → what is at stake → recommendation → cost / reversibility, in one self-contained paragraph |
+| `question` | only when the answer is free text (an acceptance line, a metric, a ground truth); the item's `change` holds the proposed default |
+| `evidence` | array of "check — one-line evidence", `file:line` for premises |
+| `change` | exactly what the session runs on accept: the ledger edit, the `claims.py` / `cloud-dispatch.sh` / `git merge` command |
+| `impact` | what else moves with it (optional) |
 
-When the human next speaks, act first on whatever answers that message already contains (a batch
-reply like "T-002 は done、RFC-0005 も done" is normal and faster), then ask the remaining
-decisions one at a time with `AskUserQuestion`.
+| Group | Label | What goes in |
+|---|---|---|
+| `drop` | 終端の確認 | terminal proposals (§1) |
+| `adopt` | 採否 | `draft` consults |
+| `start` | 開始の OK | a public repo's dispatch or bounce (§3 step 4, §4), a packet whose author-only item got a proposed default (§3 step 3) |
+| `merge` | merge の OK | a branch whose diff touches rules / hooks / permissions / a gate script (`boundary.md`) |
+| `file` | 起票の判断 | harvest filing decisions (§4) |
+| `book` | 記帳 | vocabulary-only bookkeeping: a satisfied condition → `accepted`, adding the three lines, a `resolved` whose decision is already recorded. Shown folded; runs unless overridden |
+| `report` | 報告 | no decision: what merged, what was left and why, one line per build (§5), a `Model:` / `Effort:` mismatch, the out-of-diff findings count, observations. Shown folded, without a selector |
 
-Never treat text sitting in another session's input box as the human's answer — Claude Code
-pre-fills suggested prompts there — and never treat a Slack reply as the answer either. The
-answers come **in the triage session**, or through the human's own hands.
+Anything that changes a rule, accepts a risk, spends money, or drops a task is its own item outside
+`book`.
+
+**Publish** with the report contract of skill `harness-stocktake` (Phase 3 steps 1–3, read
+`~/.claude/skills/harness-stocktake/SKILL.md`), using this skill's template and these values:
+`meta/run` = `{title: "<repo> triage <date>", created_at, repo, open_before, open_after, closed,
+spawned, phase: "proposed"}`, and the pointer `~/.claude/.notes/triage/<repo dir name>.json` =
+`{url, date}` (outside the repo, so a repo that tracks `.notes/` gets no stray file). The
+fallback without the Artifact tool is the same contract's Markdown table, at
+`~/.claude/.notes/triage/<repo dir name>-<date>.md`.
+
+Close the cycle's reply with the link, the count per group, and one line: change the items that
+need it, then press 「この内容で承認」. Slack gets **one message per cycle**, even when nothing
+needs the human: `bash ~/.claude/scripts/notify-slack.sh "<repo> triage cycle done" "N decisions
+pending: <url> 1) <one-line title> 2) <one-line title> …"` (`0 decisions pending`, no link or list,
+when the report would hold only `report` items — then the reply carries those lines and nothing is
+published). Titles only; the reasoning lives in the report. The message is the liveness signal
+(its absence after a tick is the alarm), and the link opens the report on the phone. Slack is
+**one-way**.
+
+**Apply.** Starts when `meta/approval` exists with `at` later than `meta/run.created_at`, or when
+the human says in the triage session that the digest is approved. The session checks for the
+approval at cycle start and on any human message in the session; the button alone starts nothing. Each cycle also begins by
+reading that `.json`: an approved report whose items carry no `outcome` yet is applied before the
+new judging. A report still unapproved when the next cycle publishes is superseded: set its
+`meta/run.phase` to `"superseded"` and carry its open items into the new report, re-judged.
+
+Resolve each item with the contract's decision table (harness-stocktake Phase 4, "Resolve each
+item's action"), reading `skip` as "the task stays as it is and reappears next cycle" and running
+a `question` item's `change` with the proposed default unless the note answers it. A note that
+leaves more than one reasonable action makes the item `pending`, carried into the next report.
+Record each outcome on `items/<id>` (`outcome`: `applied` / `pending` / `skipped`,
+`outcome_note`, `commit` when one was made), then set `meta/run.phase` to `"applied"` and reply
+with what ran and what stays pending.
+
+The approval answers every item that was in the report when the human pressed the button; an item
+added later waits for the next report. The answers are the report's decisions and approval, or the
+human's own words in the triage session. A Slack reply and a suggested prompt that Claude Code
+pre-fills in another session's input box are not answers.
 
 ### 3. Dispatch — packet, branch, fresh session
 
@@ -132,7 +177,7 @@ are the exceptions, and a task that matches none of them goes to the cloud.
 |---|---|
 | Only the GitHub clone (tracked files), a Linux toolchain, and the repo's CI job that runs `verify.sh` | **Claude Code cloud session** — `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file> --effort <level>` |
 | Local data or a local model (`~/.config/moltbook`, `.notes/`, Ollama, an eval that reads them), a macOS-only toolchain (Swift / iOS, launchd, `security`), or a repo with no github.com remote or no CI running `verify.sh` | Local. *Measurement / read-only / docs-only* → `Agent(model: opus, isolation: worktree)`; three or more with one setup → the Workflow tool (`pipeline`, build and judge as separate `agent()` calls, `schema` for the reading). *Implementations that need hooks, skills and permission prompts* → `spawn-session` (Herdr, Remote Control) |
-| Private contents in the packet itself (`.notes/` contents, row logs that carry untrusted post bodies or decoded prompts) | Local. A cloud packet is the session's first message, and in a public repo the branch, commits and PR are public before acceptance — the packet is written like an `rfcs/` entry (ADR-0049): pointers, not private contents. Jev readings and aggregate numbers are publishable (the TypeSafe MCA revision of 2026-09-19 dropped the benchmark-publication clause) — only the row bodies stay private |
+| Private contents in the packet itself (`.notes/` contents, row logs that carry untrusted post bodies or decoded prompts) | Local. A cloud packet is the session's first message, and in a public repo the branch, commits and PR are public before acceptance — the packet is written like an `rfcs/` entry (ADR-0049): pointers, not private contents. Jev readings and aggregate numbers are publishable — only the row bodies stay private |
 | harness rules / hooks / permissions / a gate script (`.claude/verify.sh`, `.github/`) | Not dispatched — the human's diff (`boundary.md`) |
 
 Per task or bundle, cloud path:
@@ -167,10 +212,10 @@ Per task or bundle, cloud path:
    (what counts as correct — e.g. what "my domain" means) next to the enumerated differences
    between the candidate arm and production (measurement-discipline §8: one difference per arm,
    a ladder when there are more). When the author's request and the task
-   file leave one open, write a proposed default into the packet and show it before starting, as
-   branches in one message (「指示に無かったのでこう置いた: A なら…、B なら…。A で進める」—
-   ADR-0076); start after the author's OK. An unattended cycle lists such a task in the digest as
-   waiting for that OK and starts nothing, as with a public repo in step 4.
+   file leave one open, write a proposed default into the packet and make the task a `start` item
+   (§2): `question` names the open item, `change` holds the default with its branches
+   (「指示に無かったのでこう置いた: A なら…、B なら…。A で進める」). The task starts after the
+   approval that covers it, as with a public repo in step 4.
 4. Start: `bash ~/.claude/scripts/cloud-dispatch.sh <repo> <packet-file> --effort <the packet's
    Effort>` prints `session=<id> url=<url>` and appends it (with the effort) to
    `~/.claude/logs/cloud-dispatch.jsonl`. With `--effort` the session is created with
@@ -179,10 +224,9 @@ Per task or bundle, cloud path:
    the Bash tool (it supplies the pty `--cloud` needs), so an unattended cycle dispatches the
    same way — **for a private repo**. A public repo's branch and PR are public from the build's
    first push, and publication is the human's side (`boundary.md`; ADR-0043 red line 3 with its
-   ADR-0049 note): the digest names each such task on its own line, and the dispatch starts only
-   after the human's OK for that task (a reply that names several tasks answers each of them —
-   §2). Pass `--public-ok` then; the script refuses a public repo without it and logs the flag.
-   An unattended cycle lists such tasks in the digest as "ready to dispatch" and starts nothing.
+   ADR-0049 note): each such task is its own `start` item in the digest (§2), and the dispatch
+   starts only after the approval that covers it. Pass `--public-ok` then; the script refuses a
+   public repo without it and logs the flag.
    Put the session id in the claim label — it is the address for a bounce (§4).
 5. Watch for **artifacts**, not status: `git -C <repo> fetch origin` then
    `git branch -r --list 'origin/claude/*'` — the build's branch is `claude/<slug>-<hash>` (the
@@ -249,7 +293,7 @@ The build session's report is a claim. Before merging:
   on its branch; judge again from the new tip and its CI run. One retry per task per cycle
   (Damping). A bounce pushes to the build's branch, so for a public repo it waits for the
   human's OK like the dispatch (§3 step 4). `ok: false` (archived, missing) → start a new session from a packet that names the
-  branch to continue on, or let the human decide at the digest. Local path: the same message to
+  branch to continue on, or make it a `start` item in the digest. Local path: the same message to
   the same session — `agent-send.sh prompt <pane> --file <message>` for a `spawn-session` pane,
   `SendMessage` to the Agent for an Agent-tool build; the branch stays.
 - **Classify every bounce in one word** — the word decides the effort of the retry:
@@ -285,15 +329,15 @@ The build session's report is a claim. Before merging:
   command — refuse anything that reaches the network, credentials, `~/`, or deletes. A proposal
   that does not reproduce, or that you refuse to run, is dropped and counted. Everything else,
   **HIGH included**, stays in the commit body (producer 付き 1 行) and the digest reports only the
-  count ("diff 外 findings: 3 件、commit body 参照") — no list, no question. A `Model:` line that
-  differs from the `model=` in the claim label is its own digest line (a flagged message moves a
+  count as a `report` item ("diff 外 findings: 3 件、commit body 参照"). A `Model:` line that
+  differs from the `model=` in the claim label is its own `report` item (a flagged message moves a
   session to an older model); an `Effort:` that differs from the packet's goes into the build's
   §5 line as the effort that ran, and on a cloud build with no 見落とし retry it is also its own
-  digest line — the `/effort` first message did not apply (ADR-0081 Review-when 2). The filing itself (numbering, template, index row) follows skill
+  `report` item — the `/effort` first message did not apply (ADR-0081 Review-when 2). The filing itself (numbering, template, index row) follows skill
   `rfc-writer`; a proposal is spawned with `--origin review --producer <its file:line>`, and its
   RFC body carries the origin line from skill `rfc-writer` §2.
   Observations that are not tasks (a rate near a revert threshold, a measurement caveat) are
-  one line each.
+  one `report` item each.
 
 ### 5. Merge, then close the books
 
@@ -316,15 +360,14 @@ The build session's report is a claim. Before merging:
   what passed §4 and leaves the rest with a reason — bounced, stalled, or waiting on the
   human because the diff touches rules / hooks / permissions / a gate script while unattended
   (`boundary.md`).
-- **Cycle-end digest**: open before → after with the closed / spawned split, what was merged
-  and what was left (with the reason), the harvest list (file / drop / observe — the human's
-  call), and the questions still waiting. Each build gets one line with `effort / bounce yes-no /
-  classification`, where effort is the packet's `Effort:` → the Report's (e.g. `medium→high` after a
+- **Cycle-end items** go into the digest (§2): open before → after with the closed / spawned
+  split in `meta/run`, what was merged and what was left (with the reason)
+  as `report` items, the harvest list as `file` items. Each build gets one `report` item with
+  `effort / bounce yes-no / classification`, where effort is the packet's `Effort:` → the Report's (e.g. `medium→high` after a
   見落とし retry) — the reading ADR-0081's Review-when uses. Append the same line to
   `~/.claude/logs/effort-outcomes.jsonl` as
   `{"ts":…,"repo":…,"task":…,"session_id":…,"effort":"<packet>","effort_ran":"<Report>","bounce":true|false,"class":"見落とし|読み違い|gate・rebase|none"}`
-  — the reply is not kept, so this file is what ADR-0081's Review-when counts. All of it in the session's reply (§2); Slack gets
-  the one-line titles only.
+  — the report is not a log, so this file is what ADR-0081's Review-when counts.
 
 ## Damping and boundaries (what makes this a loop and not a runaway)
 
@@ -348,8 +391,9 @@ The build session's report is a claim. Before merging:
 One **standing triage session per repo, with that repo as cwd**, Remote Control on so the
 digest can be answered from the phone. It holds no timer of its own: launchd runs
 `scripts/triage-tick.sh <repo> <agent-name> "<display>"` at the repo's slots — harness Sun
-06:30 (stocktake → triage); CA Wed 17:07 (triage) and Sat 14:07 (stocktake → triage, after
-the Saturday pipeline's 13:30 packet deadline and before the human gate). The tick finds the
+06:30 (stocktake → triage); CA Wed 17:07 (triage). CA's Saturday cycle (stocktake → triage) has
+no tick: it runs inside the `weekly-gate-ca` session as the gate's Step 8, because it reads what
+the gate committed and decided, and the owner answers both in one sitting. The tick finds the
 live triage agent by its fixed Herdr name (`triage-harness` / `triage-ca`), spawns one via
 `spawn-session` if none exists, and submits the cycle prompt with skill: `agent-send`. The
 tick never reads the ledger; it only reports its own anomalies to Slack (spawned a new
@@ -375,10 +419,9 @@ with two slots keeps one plist — a repo with a single weekly slot must pass `-
 its plist, or moving that slot off Saturday silently kills the stocktake half. Keep the timer in launchd: in-session
 `CronCreate` and `/loop` are session-only, expire in 7 days, and go silent when the session
 dies. A cycle that fires while the human is away still does everything up to the digest —
-条件 checks, vocabulary-only bookkeeping, dispatch of `accepted` work within WIP (a public
+条件 checks, vocabulary-only bookkeeping proposed as `book` items, dispatch of `accepted` work within WIP (a public
 repo's cloud dispatch is listed as ready, not started — §3 step 4), verification of finished
-builds — then closes with the digest (§2); consults and merges wait for the human in the
-session.
+builds — then publishes the digest (§2); the decisions in it run once the human approves it.
 
 The session is long-lived but **not eternal, and the tick renews it**: before prompting, the
 tick reads the session's own transcript (the first `version` line of
@@ -388,7 +431,7 @@ status is not working / blocked and the last user / assistant line of the transc
 `TRIAGE_QUIET_MIN` (60) minutes old, so a conversation paused between replies is left alone. The
 clock is that line, not the file's mtime: bookkeeping lines without a turn (an artifact watch's
 ledger) keep the file fresh while nobody speaks (`scripts/transcript-last-turn.sh`). The session cannot end itself: a `/exit`
-written in a reply executes nothing. No in-session cron, no successor handoff. Between
+written in a reply executes nothing. Between
 cycles the memory is the ledger (verdicts and reasons are written into the tasks), so
 auto-compaction of the standing session costs nothing the next cycle needs, and a fresh
 session resumes from the ledger alone. Cross-repo effects travel only through the ledgers

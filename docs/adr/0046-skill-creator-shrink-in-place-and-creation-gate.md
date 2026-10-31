@@ -66,6 +66,10 @@ adr-reviewer の照合で誤りと判明した — `git log --diff-filter=A -- '
    されたら native に置き換える。§7 はゲート通過後に著者が見つけた指摘数を KPI として commit
    message に残す。§6 は配線（harness_lint / scan_refs / rule wiring / harness-sync）、末尾に
    「持たないもの」を列挙して再導入を止める。
+
+   > **注記（2026-10-31, ADR-0097）**: 承認済みの harness-stocktake report の項目から呼ばれたときに限り、§1 の
+   > 著者の確認は report の承認で、§7 の著者の通読は完了 report の ff 取り込みで代える（report 経路）。§2〜§6 と
+   > 草稿ゲートはそのまま回る。著者が直接頼んだときは §1 と §7 で止まる。
 3. 発火配線を 2 段にする。`rules/common/skills.md` に「新規作成・大幅改修は書く前に
    skill-creator を読む」という命令形を追加する（ADR-0018:83 の fallback 適用、rationale /
    review-when を更新）。0018 の fallback は「skill-comply で発火率を測り、立たなければ」と条件付き

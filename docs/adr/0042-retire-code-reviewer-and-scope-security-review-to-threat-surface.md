@@ -4,6 +4,8 @@
 
 accepted
 
+> **注記（2026-11-01, commit「chore(stocktake): agents の棚卸しを適用」）** 本 ADR が判断を先送りした `swift-reviewer` は、harness-stocktake 2026-10-31 の著者判断で退役した（Swift の project が無く、使用 0）。
+
 ## Date
 
 2026-08-16

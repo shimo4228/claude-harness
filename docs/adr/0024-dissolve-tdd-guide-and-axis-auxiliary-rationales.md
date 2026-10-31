@@ -32,6 +32,12 @@ fresh/rich context 軸を、ユーザーの提案（「この観点で他のエ�
   - **bulk context isolation** — 大量のファイル読み・出力をメイン context から隔離すること
     自体が価値。e2e-runner / refactor-cleaner が該当する。
     > **注記（2026-09-15, ADR-0068）**: e2e-runner は退役した。bulk context isolation の現存例は refactor-cleaner のみ。
+
+    > **注記（2026-10-26, commit「chore(agents): prompt-writer と refactor-cleaner を退役する」）**:
+    > prompt-writer（90 日で起動 0 回）と refactor-cleaner（同 3 回）は退役した。Refactor Clean は skill
+    > `refactor-clean` の手順を主ループで回す。両補助則は残り、現存例は frozen-input が prompt-forager
+    > （1 行だけを受け取る）、bulk context isolation が researcher（web 調査を角度ごとに隔離）。
+    > 経緯は `docs/plans/subagent-fold.html` の claim 1。
 - **(3) tdd-guide 1 件だけが planner と同型のミスマッチとして残った**。Write / Edit / Bash
   を持つ実装 agent であり、テストと最小実装を書く作業は会話中の仕様・制約という rich
   context が資産になる生成作業である。absorber は具体名で指せる — skill `tdd`

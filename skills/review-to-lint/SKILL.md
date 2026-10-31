@@ -112,4 +112,4 @@ canonical source — not by room for mechanization; a lint built ahead of demand
 Skip targets that are already done or need no script: the author's README skill and adr-writer already have evidence scripts;
 security-reviewer already delegates to existing gates; `scripts/hooks/harness_lint.py` covers rules-stocktake's mechanical
 checks; llm-as-judge and skill-health are the reference designs, not targets; a reviewer whose checks belong to an off-the-shelf
-linter (e.g. SwiftLint for swift-reviewer) is thinned by delegating to that tool, not by writing a script.
+linter (e.g. SwiftLint for Swift review checks) is thinned by delegating to that tool, not by writing a script.

@@ -10,18 +10,16 @@ origin: shimo4228
 現在のセッション + 関連する過去セッションログ + プロジェクト知識から、記事執筆に必要な
 **証拠**を一箇所に集約する。
 
-## 責務宣言（このスキルは何をしないか）
+## 責務
 
-**collect-context は証拠を集めるだけ。** テーマ・方向性・タイトル・構成・読者想定・
-差別化戦略は決めない。誰が正本かは**受け側 repo の rules のチャンネル表**を引く
-（執筆 orchestrator は `writing-ecosystem` — `~/MyAI_Lab/zenn-content` 常駐）。
-特定 project の skill 名をここに列挙しない。
+集めるのは**証拠**と、セッション中に**ユーザーが下した判断の記録**だけ。テーマ・方向性・
+タイトル・構成・読者想定・差別化は受け側 repo が決める（誰が正本かは受け側 repo の rules の
+チャンネル表を引く）。ユーザーの判断は「発生した事実」としてソース付きで**判断記録**に残し、
+受け側は再判断してよいと台帳側に明記する。収集元は Phase 1-3（本セッション・セッションログ・
+repo の一次ソース）で、`テーマ` 引数は記事のテーマでなく**収集スコープ**（何を集めるかの範囲）。
 
-- 出力に**収集者の推薦・提案・方向性メモを書かない**
-- **受け側 repo の既存記事を探索・目録化しない**
-- セッション中に**ユーザーが下した判断**は例外 — 「発生した事実」としてソース付きで
-  **判断記録**に残す（受け側は再判断してよい、と台帳側に明記する）
-- `テーマ` 引数は**収集スコープ**（何を集めるかの範囲指定）であって、記事のテーマではない
+執筆 repo 固有の skill・helper・agent（テーマ選定、ログ抽出、fact-check）は、受け側 repo の
+overlay が持つ。入っていれば使い、無ければ本 skill の手順だけで完結させる。
 
 ## Usage
 
@@ -31,8 +29,8 @@ origin: shimo4228
 
 - `収集スコープ`: 収集対象の範囲・キーワード（省略時はセッション内容から自動推定）
 - `--out <path>`: 出力先パス（省略時は**呼び出し元 repo の `drafts/`** に `article-context_<slug>_<date>.md` で自動命名。
-  置き場所の規約は各 project の overlay が持つ — global な本 skill が特定 repo の絶対パスを既定にしない）
-- 同じ会話で `session-theme-mining` の **Selected Theme Packet** が渡された場合、packet の
+  置き場所の規約は各 project の overlay が持つ）
+- 同じ会話で執筆 repo のテーマ選定 skill から **Selected Theme Packet** が渡された場合、packet の
   `collection_scope` を収集スコープ、`sources` を必須確認対象として受け取る。packet 自体は
   証拠にせず、著者がその問いを選んだ事実だけを本セッションの判断記録に残す
 
@@ -77,14 +75,20 @@ origin: shimo4228
 **セッションログが最重量の一次資料。** 会話の要約・記憶は drift するが、ログは生の記録。
 
 Selected Theme Packet がある場合は、そこに列挙された session source をすべて対象に含める。
-Claude / Codex JSONL の本文抽出は、形式差分と redaction の正本である
-`session-theme-mining` helper だけを使う。
 
-```bash
-uv run --directory ~/MyAI_Lab/zenn-content/.claude/skills/session-theme-mining \
-  python ~/MyAI_Lab/zenn-content/.claude/skills/session-theme-mining/scripts/session_catalog.py \
-  trace <raw-path> [<raw-path> ...]
-```
+Claude / Codex JSONL の本文抽出は、執筆 repo の `session-theme-mining` helper の有無で分ける:
+
+- **helper が入っている** — それで抽出する（形式差分と redaction の正本）。`MINING` は執筆 repo の
+  skill ディレクトリ（zenn-content なら `~/MyAI_Lab/zenn-content/.claude/skills/session-theme-mining`）:
+
+  ```bash
+  MINING=<執筆 repo>/.claude/skills/session-theme-mining
+  uv run --directory "$MINING" python "$MINING/scripts/session_catalog.py" \
+    trace <raw-path> [<raw-path> ...]
+  ```
+
+- **helper が無い** — raw JSONL を untrusted 入力として開き、クレームの根拠に要る行だけを
+  `grep` / `jq` で絞って最小抜粋する（下の Security 注記に従う）
 
 対象ディレクトリの導出:
 
@@ -104,8 +108,8 @@ find ~/.claude/projects/<slug>/ -name "*.jsonl" -newermt "<開始日>" \
   -exec grep -l "<スコープのキーワード>" {} \;
 ```
 
-**セッション索引の生成** — helper の trace header と raw JSONL のメタデータから作る。
-次の Python は Claude Code の version / model を追加診断するときだけ使い、本文抽出には使わない:
+**セッション索引の生成** — helper の trace header（helper が無ければ raw JSONL）のメタデータから作る。
+次の Python は Claude Code の version / model の診断用で、本文抽出は上の分岐に従う:
 
 ```bash
 python3 - <<'PY'
@@ -177,7 +181,7 @@ grep -rli "<スコープのキーワード>" .notes/ 2>/dev/null | head -10
 
 ## Claims Register（fact-checker 直行表）
 
-記事に使える検証可能クレームの一覧。fact-checker agent（`~/MyAI_Lab/zenn-content` 常駐）はこの表から検証を開始する。
+記事に使える検証可能クレームの一覧。受け側の検証者（執筆 repo の fact-checker agent など）はこの表から検証を始める。
 
 | # | クレーム | tier | 一次ソース | 検証方法 |
 |---|---------|------|-----------|---------|
@@ -252,8 +256,7 @@ grep -rli "<スコープのキーワード>" .notes/ 2>/dev/null | head -10
 - [ ] **セッションログ索引がある**（収集セッション自身を含む。パスが実在する）
 - [ ] Selected Theme Packet がある場合、その `sources` をすべて開き直して索引へ記録した
 - [ ] Selected Theme Packet 自体を一次ソースとして引用していない
-- [ ] **編集判断を出力していない**（タイトル・構成案・読者想定・差別化・emoji・topics が無い）
-- [ ] **収集者の推薦・提案が 1 件も無い**（判断記録にあるのはユーザー・外部レビューの判断のみ）
+- [ ] **出力が証拠と判断記録だけでできている**（タイトル・構成案・読者想定・差別化・emoji・topics・収集者の推薦は受け側の領分。判断記録にあるのはユーザー・外部レビューの判断）
 - [ ] `⚠ 未検証` の項目が一次 tier と混ざって「事実」の顔をしていない
 - [ ] Before/After データに具体的な数値 + 計測コマンド + 計測日がある
 - [ ] 数値をドキュメントから引き写していない（再計測 or セッションログ/コミット参照）
@@ -266,4 +269,4 @@ grep -rli "<スコープのキーワード>" .notes/ 2>/dev/null | head -10
 - スコープが広すぎる場合は AskUserQuestion で**収集範囲**を絞る（記事の方向性を聞くのではない）
 - 受け側 repo での執筆開始時は、この台帳 + セッションログ索引が入力のすべて。
   台帳に無い記憶に頼らせない設計にする
-- テーマ未選択なら先に `session-theme-mining`。本 skill は候補を発見・比較しない
+- テーマ未選択なら、先に執筆 repo のテーマ選定 skill（zenn-content では `session-theme-mining`）で候補を発見・比較する

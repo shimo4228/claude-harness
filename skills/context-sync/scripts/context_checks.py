@@ -15,6 +15,7 @@ import json
 import re
 import subprocess
 import tomllib
+from collections.abc import Iterator
 from pathlib import Path
 from types import ModuleType
 from urllib.parse import unquote
@@ -120,16 +121,34 @@ class Corpus:
 
     # -- path resolution ----------------------------------------------------- #
 
+    def _index_paths(self) -> Iterator[str]:
+        """Repo-relative paths to index (directories end in `/`).
+
+        A git work tree is listed by `git ls-files -co --exclude-standard`: rglob
+        ignores .gitignore and, on ~/.claude, hit the entry cap inside the ignored
+        `plugins/cache` on every run (harness-stocktake 2026-10-31).
+        """
+        inside, _ = _git(self.root, "rev-parse", "--is-inside-work-tree")
+        out, reason = _git(self.root, "ls-files", "-co", "--exclude-standard", "-z")
+        if inside == "true" and out is not None:
+            files = [f.rstrip("/") for f in out.split("\0") if f]  # nested repo: `dir/`
+            files = [f for f in files if not _excluded(self.root, self.root / f)]
+            parts = (f.split("/") for f in files)
+            yield from sorted({"/".join(p[:i]) + "/" for p in parts for i in range(1, len(p))})
+            yield from (f + "/" if (self.root / f).is_dir() else f for f in sorted(files))
+            return
+        if inside == "true":
+            self.degrade("*", f"git ls-files failed ({reason})", "ignored paths are indexed")
+        for path in self.root.rglob("*"):  # lazy, so the entry cap stops the walk
+            if not _excluded(self.root, path):
+                rel = path.relative_to(self.root).as_posix()
+                yield rel + "/" if path.is_dir() else rel
+
     def _build_index(self) -> tuple[set[str], bool, int]:
         index: set[str] = set()
         count = 0
         truncated = False
-        for path in self.root.rglob("*"):
-            if _excluded(self.root, path):
-                continue
-            rel = path.relative_to(self.root).as_posix()
-            if path.is_dir():
-                rel += "/"
+        for rel in self._index_paths():
             segments = rel.rstrip("/").split("/")
             trailing = "/" if rel.endswith("/") else ""
             for i in range(len(segments)):

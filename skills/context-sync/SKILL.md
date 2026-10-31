@@ -54,6 +54,8 @@ Run all five phases in order. **Confirmation policy: apply edits to existing fil
 
 The skill runs end-to-end; it pauses only for the Phase 3 creation batch and for ADR inputs it cannot find in the source. Phase 5 (Report) summarizes what was done.
 
+**Run as a harness-stocktake source** (source `docs`, from `/harness-stocktake` over `~/.claude`): run Phases 1, 2 and 4 to find the edits and creations, and emit each one as an item of the report contract in skill `harness-stocktake` (`change` = the edit as a diff, or the new file's path and content) instead of applying it. The report's one approval replaces the Phase 3 creation batch, and the edits apply on the stocktake's task branch. A missing ADR input becomes a pending item.
+
 ### Phase 1: Discover
 
 Scan the project for documentation files and classify them into the four roles.

@@ -29,7 +29,7 @@ user-invocable: true
 - `llms-full.txt` の prose Q&A で関係問題が既に十分答えられる
 - 「LLM citation 向上を狙いたい」だけで具体的な entity 関係問題がない（GEO 目的なら llms-txt-writer の方が direct）
 
-`graph.jsonld` は prose の代替ではなく **補完**。prose で表現しきれない構造があるとき、その構造をやっと拾える。
+`graph.jsonld` は prose の代替ではなく、prose で暗黙な関係を triple として明示する **補完層**。
 
 ## file-level 構造との関係（正本）
 
@@ -135,17 +135,13 @@ silence is signal: 「Quadrant 1, 2 (Script, Algorithmic Search) は AAP 適用�
 
 schema.org `Dataset` は Google AI Overviews / Perplexity が structured data として認識する。graph の **目的と entry points** を crawler に明示する役割。
 
-### 8. Reading-order block で AI 入口導線を明示
+### 8. llms.txt・README からの入口導線
 
-`llms.txt` 冒頭に Graph-first reading order block を置く。詳細手順は llms-txt-writer skill 参照。要点:
-
-- タイトル直下に `> AI agents should read graph.jsonld first` blockquote
-- 直後に numbered "Recommended reading order" section
-- Core documentation navigator の最上位に graph.jsonld
+graph.jsonld は `llms.txt` / `llms-full.txt` / README のどれから入っても辿れる位置に置く。`llms.txt` / `llms-full.txt` に置く Graph-first reading order と navigator の wiring は `llms-txt-writer` の Companion JSON-LD Graph 節、README 側の置き方は [`readme-writer`](../readme-writer/SKILL.md)（LLM-read フロアの link-map、ADR-0091）が正本。
 
 ### 9. Reverse-link で hub-and-spoke 経路双方向化
 
-hub-and-spoke topology の場合、各 line repo の README に **hub graph への逆リンク**を置く。README 側の置き方の正本は [`readme-writer`](../readme-writer/SKILL.md)（LLM-read フロアの link-map、ADR-0091）。LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
+hub-and-spoke topology の場合、各 line repo の README に **hub graph への逆リンク**を置く（置き方は Design Move 8 の readme-writer）。LLM が個別 line repo から入ってきた場合でも hub graph へ戻れる。1 段目の探索後に broader context へ広げる経路。
 
 **散文リンクだけでは不十分** — README 逆リンクは人間/プレーンテキスト向け。グラフ層でも各 spoke の **self-node に機械可読な上向き edge** を張る:
 
@@ -208,18 +204,6 @@ jq -r '.["@graph"][] | select(.["@type"][] | contains("ResearchLine")) | .["@id"
 # 各 line graph でも同じ @id が登場することを確認
 grep -h "doi.org/10.5281/zenodo" */graph.jsonld | sort -u
 ```
-
-## Companion File Wiring
-
-graph.jsonld を作っただけでは crawler に見つからない。`llms.txt` / `llms-full.txt` / README に wiring が必要:
-
-| ファイル | 何を追加 |
-|---|---|
-| `llms.txt` | (1) 冒頭に Graph-first reading order blockquote と numbered section、(2) Core documentation navigator の最上位に graph.jsonld entry |
-| `llms-full.txt` | 末尾に question-form H2（"How do X and Y relate as a graph?"）+ graph.jsonld への link + 3 つ程度の load-bearing design choice 説明 |
-| `README.md` と維持している language mirror | 末尾の `<details>`（readme-writer の LLM-read フロア）の link-map に graph.jsonld / llms.txt への導線（hub-and-spoke の line README は hub graph への reverse-link も含める）。置き方の正本は [`readme-writer`](../readme-writer/SKILL.md) |
-
-詳細な wording は `llms-txt-writer` skill の SKILL.md の Companion JSON-LD Graph セクション参照。
 
 ## Verification Workflow
 
@@ -300,14 +284,8 @@ schema に version / count / churning field を持たせていない限り、こ
 
 単一 repo（hub なし）でも matrix / hierarchy 構造があれば適用可能。その場合 hub-related の sibling/derivesFrom 系 edge は不要。
 
-## What This Skill Does NOT Do
-
-- llms.txt / llms-full.txt の文章設計 — use `llms-txt-writer`
-- Project doc role の overlap 検出 / 整理 — use `context-sync`
-- file-level の module map の生成 — 作らない（LSP tool / grimp で都度導出。上の「file-level 構造との関係」）
-- Articles / blog post の文体 設計 — use `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）
-
 ## Related
 
 - `llms-txt-writer` — llms.txt / llms-full.txt 本体の書き方、navigator 設計、GEO/AEO 最適化
-- `context-sync` — graph.jsonld と prose docs の drift audit（Maintain phase）
+- `context-sync` — graph.jsonld と prose docs の drift audit、project doc role の overlap 整理（Maintain phase）
+- `writing-ecosystem`（`~/MyAI_Lab/zenn-content` 常駐）— 記事・blog post の文体設計

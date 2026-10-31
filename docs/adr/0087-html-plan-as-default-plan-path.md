@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted — [ADR-0086](./0086-research-gate-before-plan.md) の Decision 5（Mermaid）と、Alternatives の「純正 plan mode を
+superseded by [ADR-0096](./0096-retire-html-plan-and-shrink-research-gate.md)（2026-10-26。plan の既定は plan mode に戻し、html の gate は消した）— 元の Status: accepted — [ADR-0086](./0086-research-gate-before-plan.md) の Decision 5（Mermaid）と、Alternatives の「純正 plan mode を
 使わない独自 workflow」の却下を置き換える。ADR-0086 の「依頼の検出なしに plan ファイルの書き込みをすべて gate する」の
 却下は、html plan に限って採る。[ADR-0085](./0085-plans-as-records-in-docs-plans.md) と
 [ADR-0057](./0057-judge-tier-default-dispatch-and-plan-boundary-advisory.md) に注記する

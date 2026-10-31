@@ -46,6 +46,7 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
    > 持つ packet だけは `.notes/packets/` に残す（skill task-triage §3 step 3）
    > **注記（2026-10-06, ADR-0087）** html plan の承認は Respond の貼り戻しで確定し、source の `docs/plans/<slug>.html` を
    > 単独で commit する（[ADR-0087](./0087-html-plan-as-default-plan-path.md) Decision 2）
+   > **注記（2026-10-26, ADR-0096）** plan の既定を plan mode に戻した。承認は再び ExitPlanMode で、既存の html plan は記録として残る（[ADR-0096](./0096-retire-html-plan-and-shrink-research-gate.md)）
 4. plan は公開可能な書き方を既定にし、機微はリンク先へ、パスは `~/` で書く
 5. `docs/plans/` を claude-harness への同期対象に加える。同期は git が追跡している plan だけを集め、docs/plans に
    untracked・未 commit の変更があれば abort する（未承認の plan を出さないため）。script の変更と公開は著者の GO の後で、
@@ -64,6 +65,7 @@ Plan: [docs/plans/composed-enchanting-wand.md](../plans/composed-enchanting-wand
   `ExitPlanMode` の PostToolUse で commit を促す advisory を足す
   > **注記（2026-10-06, ADR-0087）** plan の既定が html-plan になり `ExitPlanMode` は減る。分母は、会話ログで
   > `docs/plans/` に新しく Write された plan ファイル（md と html。kickoff packet を除く）の数にする（ADR-0087 Decision 6）
+  > **注記（2026-10-26, ADR-0096）** plan の既定が plan mode に戻ったので、分母は再び `ExitPlanMode` の数で読める（[ADR-0096](./0096-retire-html-plan-and-shrink-research-gate.md)）
 - plan mode が mod 化・廃止される、または `plansDirectory` の挙動が変わる（CHANGELOG）→ 設定と規約を見直す
 - 公開した plan で機微情報の事故が 1 件でも出る → 公開の既定を見直す
 - 同期の `$HOME` abort が続く → 同期側で `~/` への置換を足す

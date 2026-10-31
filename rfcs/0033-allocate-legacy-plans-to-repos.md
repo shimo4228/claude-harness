@@ -1,5 +1,5 @@
 ---
-state: blocked 2026-10-18
+state: blocked 2026-10-25
 review-when: 振り分けが終わったとき。または ADR-0085 の 2026-10-11 の計測で plan の記録層そのものが見直されたとき
 ---
 ## Summary
@@ -58,6 +58,14 @@ triage 2026-10-18（続き）: akc-cycle 側は完了 — 著者の OK（「も�
 
 再開条件: zenn の該当記事が公開される
 照合先:   zenn-content の `planning/plans` の 12 本と、`published: true` の記事
+成立時:   accepted（該当 plan を `docs/plans/` へ移す）
+
+triage 2026-10-25: 再開条件が 1 本について成立 — zenn-content の `articles/claude-code-eval-concepts.md`（「Evalとレビューの違い、わかりますか？」）が 2026-10-12 に `published: true`（`fe1bb01`）。対応する plan は `planning/plans/quizzical-herding-squid.md`（「eval とレビューの分かれ目」）。成立時に従い accepted。zenn-content は公開 repo なので、`docs/plans/` への移設と push は著者の OK 待ち。残り 11 本は未成立のまま。うち 3 本（`scalable-mixing-backus` → `jev-vs-opus-skill-selection` 2026-09-21 公開、`title-emoji-atomic-hennessy` → `domain-knowledge-travelers-vocabulary` 2026-09-13 公開、`myai-lab-contem-graceful-moth` と重複の `users-…-graceful-moth` → 関連既刊の `small-llm-by-choice` は 2026-07-12 公開）は記事が 2026-09-27 の点検より前に公開済みで、記事待ち以外の理由で残った可能性がある（点検の判定は未照合）。
+
+triage 2026-10-25（続き）: 著者の OK で `quizzical-herding-squid.md` を zenn-content の `docs/plans/` へ移して push した（zenn-content `22e9491`、`verify-public-detail.sh --llm` clean、term list は無し）。記事待ち以外の理由で残った可能性を挙げた 3 本は点検の上で移さない — `title-emoji-atomic-hennessy` は本文に著者の身元に触れる記述があり非公開が妥当、`scalable-mixing-backus` と `myai-lab-contem-graceful-moth`（重複の `users-…` 版と本文同一）は 2026-09-27 の判定表が見つからず、非公開のまま残す。残る 11 本の状態は記事待ち / 非公開が混ざるので blocked に戻す。
+
+再開条件: zenn の該当記事が公開される（`cozy-pondering-hartmanis` → `log-readers-census`、`piped-conjuring-sunset` → `herdr-zed-review-surface`、`claude-code-claude-crystalline-pizza` → `embodiment-ai-feedback-loop` ほか）
+照合先:   zenn-content の `articles/<slug>.md` の `published: true`
 成立時:   accepted（該当 plan を `docs/plans/` へ移す）
 
 ## Next action

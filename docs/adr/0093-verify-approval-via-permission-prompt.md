@@ -54,6 +54,12 @@ PreToolUse hook が `permissionDecision: "ask"` を返すと、auto mode でも�
    - **確認画面の reason に、`verify_allow.py diff` の出力をそのまま載せる。** 人間は Claude の要約でなく、承認した版との
      差分を確認画面で読む。対象の repo をコマンドから読めなければ、diff を出せていないと書く
    - 判定を出す部品（`hooks/_advisory-common.sh` に足した `emit_permission_decision`）が読めない・失敗したときは block する
+
+> **注記（2026-10-31, commit「fix(hooks): verify 台帳の ask を、台帳か承認の仕組みを変える印があるコマンドに絞る」）**: 名前が入るだけで ask を出す判定は、
+> harness-stocktake の監査が読むだけのコマンド（`ls`・`--help`・ファイルを順に見る loop）で確認画面を出し続けた。ask は、名前に加えて
+> 変更の印（スクリプト名直後の approve / revoke、台帳 json と写しの置き場、python の `-m` / `-c`（前に option があっても）と stdin・heredoc、sed / perl / ruby / awk の `-i`・`tee`・`mv`・`cp`・`rm`・`patch`・`rsync` ほかの
+> 書き込み（`/bin/cp` の形も）、git で版を戻す操作、`2>&1` と `>/dev/null` を除くリダイレクト）があるときだけに絞った。上の照合のならし方、block より後ろに置くこと、
+> reason の diff、網であって壁ではないことは変えていない。
 3. **exit 71 の block の案内を書き換える。** Claude は `verify_allow.py diff <repo>` をユーザーに見せてから `approve` を
    Bash で実行する。確認画面に同じ diff が載る
 4. **手元の `settings.json` の permissions.deny に、台帳と写しへの Edit / Write を足す**（`Edit(~/.claude/verify-allow.json)`
