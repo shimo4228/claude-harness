@@ -34,16 +34,8 @@ bypass_re="^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*RUFF_FORMAT_BY
 # パイプ区切り (;|&) は跨がない — "git log | grep commit" 除外
 printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
 
-# 対象 repo の特定: `git -C <path> ... commit` > 先頭の `cd <path> &&` > カレント。
-# -C 抽出は **コマンド文字列の先頭** (env prefix 位置のみ許容) に固定する。旧実装は
-# 区切り (;&|) 直後も許していたが、bash は引用符を解釈しないため
-# `git commit -m "notes; git -C /tmp status commit x"` のようにコミットメッセージ内の
-# 文字列で対象 repo を乗っ取れた (2026-07-31 の code-reviewer が PoC 付きで実証。
-# 旧コメントの「引用符内の git -C で乗っ取られない」は誤りだった)。
-# 先頭固定でこの経路は塞がるが、regex による shell 解析には原理的限界があるので、
-# 実行を伴う経路 (verify-precommit.sh) は承認台帳を第 2 の防壁として持つ
-# 抽出は共有部品に集約 (5 hook で複製していた正規表現の drift 解消。エスケープと引用符 span を
-# 除去してからセグメント解析する — 詳細と限界は _git-target-common.sh のヘッダ)。
+# 対象 repo: 共有部品 _git-target-common.sh の候補（-C / cd の行き先と $PWD）。引用符を解釈せず余分に拾い、
+# 読み落とさない側に倒す — 方針と限界は同ファイルのヘッダ
 # **単一値でなく全一致を走査する** — 理由は secret-scan-precommit.sh と同じ (順序の入れ替えで
 # 検査されない側へ commit を寄せられる)。この hook も読み取りだけなので全 repo を走査する。
 # shellcheck source=hooks/_git-target-common.sh

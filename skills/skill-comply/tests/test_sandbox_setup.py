@@ -15,6 +15,7 @@ both halves — the verbs that still work, and everything else refusing to run.
 
 from __future__ import annotations
 
+import shlex
 from pathlib import Path
 
 from scripts.runner import MAX_FILE_BYTES, _apply_files, _apply_setup_commands
@@ -127,9 +128,11 @@ def test_setup_commands_share_the_case_folded_guard(tmp_path: Path) -> None:
 
 
 def test_files_refuses_escapes(tmp_path: Path) -> None:
-    refused = _apply_files(tmp_path, [("a/../../escaped.txt", "x"), ("/tmp/absolute.txt", "x")])
+    absolute = tmp_path.parent / "absolute.txt"
+    refused = _apply_files(tmp_path, [("a/../../escaped.txt", "x"), (str(absolute), "x")])
     assert len(refused) == 2
     assert not (tmp_path.parent / "escaped.txt").exists()
+    assert not absolute.exists()
 
 
 def test_files_refuses_oversized_content(tmp_path: Path) -> None:
@@ -182,7 +185,7 @@ def test_absolute_path_inside_the_sandbox_is_accepted(tmp_path: Path) -> None:
 
 
 def test_arbitrary_command_is_refused(tmp_path: Path) -> None:
-    # 書き込み先はテスト専用の path — 共有の /tmp/x は無関係のファイルが既にあると落ちる
+    # A test-only target path: a shared /tmp/x fails whenever an unrelated file already sits there
     target = tmp_path / "pwned"
     skipped = _apply_setup_commands(tmp_path, (f"bash -c 'echo pwned > {target}'",))
     assert len(skipped) == 1
@@ -249,9 +252,10 @@ def test_deep_traversal_to_filesystem_root_is_refused(tmp_path: Path) -> None:
 
 
 def test_absolute_path_outside_the_sandbox_is_refused(tmp_path: Path) -> None:
-    skipped = _apply_setup_commands(tmp_path, ("touch /tmp/skill-comply-escape-probe",))
+    probe = tmp_path.parent / "skill-comply-escape-probe"
+    skipped = _apply_setup_commands(tmp_path, (f"touch {shlex.quote(str(probe))}",))
     assert len(skipped) == 1
-    assert not Path("/tmp/skill-comply-escape-probe").exists()
+    assert not probe.exists()
 
 
 def test_symlink_escape_is_refused(tmp_path: Path) -> None:

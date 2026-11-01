@@ -90,7 +90,7 @@ def _install_fakes(
         return ScenarioRun(
             scenario=scenario,
             observations=(_event(scenario.level_name),),
-            sandbox_dir=Path("/tmp/unused"),
+            sandbox_dir=Path("unused-sandbox"),
         )
 
     def fake_grade(_spec: ComplianceSpec, trace: list[ObservationEvent], **_kw: object):

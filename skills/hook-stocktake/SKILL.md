@@ -14,16 +14,24 @@ matching event, it can block, and it reads repo-controlled data (paths, commit m
 input). So the questions are wiring, evidence that it still earns its place, test coverage, and
 its share of the harness threat surface (rule `security.md`).
 
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+
+The paths and conventions below are the author's harness layout. In another
+setup, map each target to where that setup keeps its hooks, and record a check whose input the
+setup does not have (`harness_lint.py`, `hooks/README.md`, `tests/*.bats`, the usage-logging hooks,
+rule `security.md`) as `—`, not as a No.
+
 ## Phase 1 — Inventory and wiring (deterministic)
 
 Build the inventory with throwaway `python3` / `jq` over the files, and state the counts up front:
 
-- **Targets**: `hooks/*.sh` and `scripts/hooks/*.py`. `hooks/_*-common.sh` are shared libraries:
+- **Targets**: `<harness>/hooks/*.sh` and `<harness>/scripts/hooks/*.py` (in a repository, every script the settings commands call). `hooks/_*-common.sh` are shared libraries:
   list which hooks source each one (`grep -l 'source.*_<name>' hooks/*.sh`)
-- **Wiring**: from `~/.claude/settings.json` `hooks`, one row per (event, matcher, command).
+- **Wiring**: from `<harness>/settings.json` `hooks`, one row per (event, matcher, command).
   Mark every target no command references (orphan) and every command that carries logic beyond
   invoking a script (CLAUDE.md: hook logic lives in scripts). Commands whose script is missing
-  (dangling) come from `python3 ~/.claude/scripts/hooks/harness_lint.py`, which checks them.
+  (dangling) come from `python3 ~/.claude/scripts/hooks/harness_lint.py`, which checks them
+  (in project mode, or without Bash, check that each called script exists with Glob).
   `scripts/hooks/*.py` are called from hooks or from other scripts; resolve their callers with grep
 - **Documentation**: `hooks/README.md` — the Active Hooks tables against the wiring rows, and its
   Shared list against `hooks/_*-common.sh` (missing and phantom rows)
@@ -72,8 +80,9 @@ verdict: a guard that never fires may be doing its job.
 | Dissolve | Claude Code does it natively now; name the feature |
 | Retire | Orphaned, its retirement condition fired, or broken beyond repair |
 
-A security No is Improve or Update at least, and its application runs `security-reviewer` on the
-diff (skill `implementation-chain`, Security Review row).
+A security No is Improve or Update at least, and its application gets a security review of the
+diff from a reviewer separate from the one who applied it (the author's harness runs agent
+`security-reviewer`, per skill `implementation-chain`'s Security Review row).
 
 ## Phase 3 — Summary
 

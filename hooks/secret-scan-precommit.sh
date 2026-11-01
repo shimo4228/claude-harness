@@ -32,14 +32,8 @@ bypass_re="^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*SECRET_SCAN_BY
 # "--grep=commit" は commit 直前が空白でないため除外。
 printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
 
-# 対象 repo の特定: `git -C <path> ... commit` > 先頭の `cd <path> &&` > カレント。
-# -C 抽出は **コマンド文字列の先頭** (env prefix 位置のみ許容) に固定する。旧実装は
-# 区切り (;&|) 直後も許していたが、bash は引用符を解釈しないため
-# `git commit -m "notes; git -C /tmp status commit x"` のようにコミットメッセージ内の
-# 文字列で対象 repo を乗っ取れた (2026-07-31 の code-reviewer が PoC 付きで実証。
-# 旧コメントの「引用符内の git -C で乗っ取られない」は誤りだった)。
-# 抽出は共有部品に集約 (5 hook で複製していた正規表現の drift 解消。エスケープと引用符 span を
-# 除去してからセグメント解析する — 詳細と限界は _git-target-common.sh のヘッダ)。
+# 対象 repo: 共有部品 _git-target-common.sh の候補（-C / cd の行き先と $PWD）。引用符を解釈せず余分に拾い、
+# 読み落とさない側に倒す — 方針と限界は同ファイルのヘッダ
 # **単一値でなく全一致を走査する**: 単一値だと複合コマンドの片方しか見ず、左端固定でも
 # 右端固定でも順序を入れ替えるだけで検査されない側へ commit を寄せられる (2026-08-08 の
 # 公開前レビューが両方向を実証)。この hook は読み取りだけなので、全 repo を走査して閉じる。
@@ -113,7 +107,15 @@ for repo_dir in "${repos[@]}"; do
   [[ $stages_in_call -eq 1 ]] || continue
 
   # 追跡ファイルの未 staged 変更 (`commit -a` / `git add` が取り込む)
-  unstaged=$("${git_cmd[@]}" diff "${DIFF_SAFE[@]}" -- . "${SCAN_EXCLUDE_PATHSPECS[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)
+  # worktree 側の diff は .gitattributes の filter=<x> で repo の config の clean / process を起動する。
+  # 候補には commit 先でない repo も入る (余分に拾う抽出方針) ので、repo が定義する filter driver を
+  # 全部空の値で上書きしてから diff する。config を読むだけなら何も実行されない
+  filter_off=()
+  while IFS= read -r key; do
+    key=${key%.*}
+    filter_off+=(-c "$key.clean=" -c "$key.process=" -c "$key.smudge=")
+  done < <("${git_cmd[@]}" config --name-only --get-regexp '^filter\..*\.(clean|process|smudge)$' 2>/dev/null || true)
+  unstaged=$("${git_cmd[@]}" ${filter_off[@]+"${filter_off[@]}"} diff "${DIFF_SAFE[@]}" -- . "${SCAN_EXCLUDE_PATHSPECS[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)
   [[ -n "$unstaged" ]] && added=$(printf '%s\n%s' "$added" "$unstaged")
 
   untracked_files=()

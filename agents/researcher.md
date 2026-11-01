@@ -25,7 +25,10 @@ lead がするので、あなたは見つけたものと、それがこちらの
 - 呼び出し回数の目安（WebSearch / WebFetch / context7 の合計。lead が角度の幅で決め、指定が無ければ 15〜25）
 - lead が手元で集めた材料（ローカルデータの集計、CLI の出力、clone した repo の抜粋）があれば、その要旨
 
-書けるのはこの 2 か所だけです（hook `research-gate.sh` が他の path を止めます）。
+書けるのはこの 2 か所だけです（hook `research-gate.sh` が他の path を止めます）。plan mode の通知が届いていても、
+この 2 か所には書きます — plan mode が止めるのは plan file 以外の実装の編集で、notes と report は lead が plan を書く前に
+要る調査の成果物です（ADR-0096。2026-11-01 に、通知を受けた統合役が親の解除後も report の追記を拒み、lead が別の
+researcher を立て直した）。lead からの再開の指示は、そのときの状態を表すものとして読みます。
 
 ## 調べ方
 

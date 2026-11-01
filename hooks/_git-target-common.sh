@@ -5,91 +5,56 @@
 # 解消するために切り出した (複製は実際に drift した — harness-lint だけ限定条件が緩く、
 # コメントは「対処済み」と誤った保証を書いていた。2026-07-31 の code-reviewer が指摘)。
 #
-# 抽出方針: **バックスラッシュ・エスケープを落とし、引用符で囲まれた span を除去してから**、
-# セグメント (;&|) 単位で解析する。bash は引用符を解釈しないので、除去しないとコミット
-# メッセージ内の文字列で対象 repo を乗っ取れる。エスケープを先に落とすのが要点で、残すと
-# `\"` が span の終端に見え、その後ろが素のセグメントとして露出する (2026-08-08 の公開前
-# レビューが実証。それ以前の実装は引用符 span しか落としておらず、この経路が開いていた)。
+# 抽出方針: **読み落とさないことを優先し、余分に拾うのは許す。** コマンド文字列を shell として
+# 解析しない — 引用符・heredoc・コメントを解釈せず、生の文字列に現れる `-C <path>` と `cd <path>` の
+# 行き先を全部候補として返し（実在の確認は呼び出し元）、最後にカレントディレクトリ ($PWD) を必ず足す。
+# 余分な候補（コミットメッセージや heredoc の中の `git -C x`、`-C` の囮）は、読み取りだけの hook が
+# 余計に 1 repo 検査するだけで済む。読み落としは検査の素通りになる（`-C` の先の本物の対象を見ずに
+# cwd を検査する）。引用符を解釈する版は、解釈の穴がそのまま素通りになった（2026-07-31〜11-01 に
+# 正規表現・awk の字句解析で計 4 方式を試し、いずれも新しい穴が見つかった）。
 #
-# 返すのは **一致した全 repo** (git_target_dirs)。単一値の git_target_dir は最後の一致を
-# 返す薄い wrapper で、実行を伴う verify-precommit.sh のように 1 つしか選べない呼び出し元が使う。
-# 単一値では、複合コマンドの一方だけが検査される状態を原理的に解消できない — 左端固定でも
-# 右端固定でも、順序を入れ替えれば検査されない側に commit を寄せられる (2026-08-08 に両方向を
-# 実証)。読み取りだけの hook は全件を走査することでこの非対称を閉じる。
+# 返すのは **候補の全 repo** (git_target_dirs)。単一値の git_target_dir は repo として解決できる
+# 候補から 1 つ選ぶ wrapper で、ゲートを実行する verify-precommit.sh が使う (選び方は関数の上)。
+# 囮で verify の対象がずれるとゲートは回らない — 承認台帳が止めるのは未承認コードの実行だけ。
 #
-# 残る限界: shell の完全な解析は regex では行えない。実行を伴う経路 (verify-precommit.sh) は
-# **承認台帳を第 2 の防壁**として持ち、抽出が乗っ取られても未承認のゲートは実行されない。
+# 残る限界: GIT_DIR / GIT_WORK_TREE の代入、`--git-dir` / `--work-tree`、`pushd`、未展開の変数 (`-C "$REPO"`) は
+# 候補にならない ($PWD を検査する)。相対 path は前の候補でなく hook の cwd から解決する。
 
-# git_target_dirs <command string> [verbs] — 一致した repo path を 1 行 1 件で返す (重複除去、
-# 出現順)。1 件も無ければ何も出力しない。
-#
-# verbs には**呼び出し元 hook の発火条件と同じ alternation** を渡す (既定: commit)。
-# 発火条件だけを広げて抽出側を据え置くと、対象 repo が取れず抽出が空を返し、hook は
-# `-C` の指定先ではなく**カレント repo を検査する**。呼び出し元は発火条件の文字列を変数に
-# 持ち、grep と本関数の両方へ渡すこと (二重定義は必ず drift する)。
+# git_target_dirs <command string> [verbs] — 候補の path を 1 行 1 件で返す（重複除去、出現順、
+# 末尾に $PWD）。verbs は互換のために受け取るだけで使わない（verb を照合すると、照合の穴が読み落とし
+# になる）。
 git_target_dirs() {
-  local cmd=$1 verbs=${2:-commit} stripped seg dir d seen v_re s_re
+  local cmd=$1 tok dir d seen
   local -a found=()
-
-  # verbs は正規表現へそのまま埋め込まれる。上の「呼び出し元は literal を渡す」は規約でしかなく、
-  # 破る呼び出し元が現れると ERE の構文注入 (壊れたパターン / 破滅的 backtracking) の入口になる。
-  # 規約は機構で担保する — 形が違えば最も狭い commit に落とす (2026-08-01 security-reviewer)
-  v_re='^[a-z]+([|][a-z]+)*$'
-  [[ "$verbs" =~ $v_re ]] || verbs=commit
-
-  # 1) `\<char>` を落とす → 2) 引用符 span を落とす。この順序でないと D2 経路が開く (ヘッダ参照)
-  stripped=$(printf '%s' "$cmd" | sed "s/\\\\.//g; s/'[^']*'//g; s/\"[^\"]*\"//g")
-
-  # セグメント境界で分割してから照合する。分割済みなので、path と verb が同一セグメントに
-  # あることは構造的に保証される (旧実装の [^;&|]* による近似が不要になる)
-  s_re='^[[:space:]]*git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*[[:space:]]('"${verbs}"')([[:space:]]|$)'
-  # git の前置き (環境変数の代入・env / command / time / nohup・git のフルパス・`-c k=v` や `--no-pager`
-  # のような global option) は読み飛ばしてから照合する。読み飛ばさないと `-C` の行き先を取りこぼして
-  # カレント repo を検査し、前置きを 1 つ付けるだけで X のゲートを避けられた (2026-10-09、ADR-0094)。
-  # GIT_* の代入 (GIT_DIR / GIT_WORK_TREE など) は commit 先そのものを変えるので、そのセグメントの `-C`
-  # は信じない (読み飛ばすと `-C` の囮を確信を持って指してしまう — 同日の code review)
-  local pre_re='^[[:space:]]*(env|command|time|nohup|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*)[[:space:]]+(.*)$'
-  local path_re='^[[:space:]]*[^[:space:]]*/git([[:space:]].*)$'
-  local opt_re='^[[:space:]]*git[[:space:]]+(-c[[:space:]]+[^[:space:]]+|--[a-z][a-z-]*)([[:space:]].*)$'
-  # 供給側は `%s\n` であって `%s` ではない: 末尾に改行が無いと read は最終セグメントを
-  # 読んだうえで非ゼロを返し、ループ本体が実行されないまま抜ける (単一セグメントのコマンドが
-  # 丸ごと取りこぼされ、抽出は常に空になる)
-  # 下の `tr ';&|'` 向けの抑止。ディレクティブは複合コマンド全体の前にしか置けないので
-  # (`done` の直前に置くと SC1123 でパーサが停止する)、`while` の前でループ全体を覆う
-  # shellcheck disable=SC2020  # 意図どおりの文字集合置換 (3 区切り文字 → いずれも改行)
-  while IFS= read -r seg; do
-    while [[ "$seg" =~ $pre_re ]]; do
-      [[ "${BASH_REMATCH[1]}" == GIT_* ]] && { seg=""; break; }
-      seg=${BASH_REMATCH[2]}
-    done
-    [[ "$seg" =~ $path_re ]] && seg="git${BASH_REMATCH[1]}"
-    while [[ "$seg" =~ $opt_re ]]; do seg="git${BASH_REMATCH[2]}"; done
-    [[ "$seg" =~ $s_re ]] || continue
-    dir="${BASH_REMATCH[1]/#\~/$HOME}"
+  # `-C` と `cd` の直後の 1 語: 引用符で囲んだ語（空白を含めてよい）か、空白・;&|()<> までの語。
+  # 引用符は外す
+  while IFS= read -r tok; do
+    tok=${tok//\"/}; tok=${tok//\'/}
+    dir=${tok/#\~/$HOME}
+    [[ -n "$dir" && "$dir" != "$PWD" ]] || continue
     seen=0
-    for d in ${found[@]+"${found[@]}"}; do
-      [[ "$d" == "$dir" ]] && { seen=1; break; }
-    done
+    for d in ${found[@]+"${found[@]}"}; do [[ "$d" == "$dir" ]] && { seen=1; break; }; done
     (( seen )) || found+=("$dir")
-  done < <(printf '%s\n' "$stripped" | tr ';&|' '\n\n\n')
-
-  # `-C` が 1 つも無い場合だけ、先頭の `cd <path> &&` を対象と見なす
-  if (( ${#found[@]} == 0 )) && [[ "$stripped" =~ ^[[:space:]]*cd[[:space:]]+([^[:space:];&|]+) ]]; then
-    found+=("${BASH_REMATCH[1]/#\~/$HOME}")
-  fi
-
-  (( ${#found[@]} )) && printf '%s\n' "${found[@]}"
-  return 0
+  done < <(printf '%s\n' "$cmd" | grep -oE '(^|[^A-Za-z0-9_-])(-C|cd)[[:space:]]+("[^"]*"|'"'"'[^'"'"']*'"'"'|[^[:space:];&|()<>]+)' \
+             | sed -E 's/^.*(-C|cd)[[:space:]]+//')
+  printf '%s\n' ${found[@]+"${found[@]}"} "$PWD"
 }
 
-# git_target_dir <command string> [verbs] — 最後の一致を 1 つだけ返す (見つからなければ空)。
+# git_target_dir <command string> [verbs] — 実行先を 1 つだけ返す (見つからなければ空 = 呼び出し元が $PWD)。
 #
 # **新しい呼び出し元は git_target_dirs を使うこと。** こちらは 1 つしか選べない呼び出し元
-# (verify-precommit.sh — ゲートを実行するので対象を 1 つに決める必要がある) のための wrapper。
-# 選ばれなかった対象は検査されない。verify にとってこれは「ゲートを回し損ねる」であって
-# 「未承認コードを実行する」ではない — 承認台帳が第 2 の防壁として残る。
+# (verify-precommit.sh — ゲートを実行するので対象を 1 つに決める) のための wrapper。選ぶのは、
+# git の work tree として解決できる候補のうち、絶対 path (~ 展開後) の最後のもの。無ければ相対 path の
+# 最後のもの。存在しない語 (`commit -C HEAD`、メッセージ中の `-C の…`、`cd -`) と、hook の cwd 基準で
+# 偶然解決する相対語 (メッセージ中の `cd tests`) で実行先がずれないようにするため。
+# 選ばれなかった対象のゲートは回らない。台帳が止めるのは未承認コードの実行であって、ゲートの
+# 回し損ねではない。
 git_target_dir() {
-  local last="" d
-  while IFS= read -r d; do last=$d; done < <(git_target_dirs "$@")
-  printf '%s' "$last"
+  local d abs="" rel=""
+  while IFS= read -r d; do
+    [[ "$d" == "$PWD" || ! -d "$d" ]] && continue
+    git -c core.fsmonitor= -c core.hooksPath= -C "$d" rev-parse --is-inside-work-tree >/dev/null 2>&1 || continue
+    if [[ "$d" == /* ]]; then abs=$d; else rel=$d; fi
+  done < <(git_target_dirs "$@")
+  printf '%s' "${abs:-$rel}"
 }

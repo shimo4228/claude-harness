@@ -3,184 +3,162 @@
 # extractor used by every precommit hook.
 # Run: bats ~/.claude/tests/git-target-extraction.bats
 #
-# 2026-07-31 の code-reviewer が PoC 付きで示した欠陥の回帰固定。7 hook が同じ正規表現を
-# 複製しており、`(^|[;&|])` 起点の抽出が bash の引用符を解釈しないため、コミットメッセージ
-# 内の文字列で対象 repo を乗っ取れた。逆に先頭固定だけにすると
-# `git -C <repo> add -A && git -C <repo> commit` という git-workflow 規約の推奨形を
-# 取りこぼす (実際に既存テスト 2 本が落ちて判明)。両立させるのが引用符 span の除去。
-#
-# ここが守るのは抽出そのもの。hook ごとの挙動は各 hook のテストが持つ。
+# 抽出は読み落とさないことを優先する（ヘッダの抽出方針）。ここが固定するのは「本物の `-C` の先と
+# $PWD が必ず候補に入る」こと。余分な候補（メッセージや heredoc の中の `git -C x`）は許す。
+# 再現例は 2026-07-31〜11-01 の review が、引用符を解釈する版で示した素通りの経路。
+# hook ごとの挙動は各 hook のテストが持つ。
 
 load_extractor() {
   # shellcheck source=hooks/_git-target-common.sh
   source "${BATS_TEST_DIRNAME}/../hooks/_git-target-common.sh"
 }
 
-@test "bare git -C ... commit resolves to that repo" {
-  load_extractor
-  run git_target_dir 'git -C /tmp/repo commit -m ok'
-  [ "$output" = "/tmp/repo" ]
+# has <command> <path> — git_target_dirs の出力に path が含まれる
+has() {
+  local d
+  while IFS= read -r d; do [[ "$d" == "$2" ]] && return 0; done < <(git_target_dirs "$1")
+  echo "missing $2 in: $(git_target_dirs "$1" | tr '\n' ' ')"
+  return 1
 }
 
-@test "an env assignment before git -C ... commit still resolves to that repo" {
-  # 取りこぼすとカレント repo を検査し、代入を 1 つ前に付けるだけで -C 先のゲートを避けられた (ADR-0094)
+@test "bare git -C ... commit resolves to that repo" {
   load_extractor
-  run git_target_dir 'SECRET_SCAN_BYPASS=1 FOO=bar git -C /tmp/repo commit -m ok'
-  [ "$output" = "/tmp/repo" ]
+  has 'git -C /tmp/repo commit -m ok' /tmp/repo
 }
 
 @test "env, command, time, a full git path and global options before git -C still resolve" {
   load_extractor
   local c
-  for c in 'env FOO=1 git -C /tmp/repo commit -m ok' 'command git -C /tmp/repo commit -m ok' \
-           'time git -C /tmp/repo commit -m ok' '/usr/bin/git -C /tmp/repo commit -m ok' \
-           'git -c user.name=x -C /tmp/repo commit -m ok' 'git --no-pager -C /tmp/repo commit -m ok'; do
-    run git_target_dir "$c"
-    [ "$output" = "/tmp/repo" ] || { echo "missed: $c"; return 1; }
+  for c in 'SECRET_SCAN_BYPASS=1 FOO=bar git -C /tmp/repo commit -m ok' 'env FOO=1 git -C /tmp/repo commit -m ok' \
+           'command git -C /tmp/repo commit -m ok' 'time git -C /tmp/repo commit -m ok' \
+           '/usr/bin/git -C /tmp/repo commit -m ok' 'git -c user.name=x -C /tmp/repo commit -m ok' \
+           'git --no-pager -C /tmp/repo commit -m ok'; do
+    has "$c" /tmp/repo || return 1
   done
 }
 
-@test "a GIT_DIR assignment does not let git -C point at a decoy" {
-  # GIT_DIR / GIT_WORK_TREE は commit 先そのものを変える — -C の囮を信じない (ADR-0094)
+@test "git -C add && git -C commit returns the repo once" {
   load_extractor
-  run git_target_dir 'GIT_DIR=/victim/.git GIT_WORK_TREE=/victim git -C /decoy commit -m x'
-  [ "$output" != "/decoy" ]
+  run git_target_dirs 'git -C /tmp/repo add -A && git -C /tmp/repo commit -m ok'
+  [ "$output" = "/tmp/repo
+$PWD" ]
 }
 
-@test "git -C add && git -C commit resolves (the git-workflow spelling)" {
+@test "PWD is always the last candidate" {
   load_extractor
-  run git_target_dir 'git -C /tmp/repo add -A && git -C /tmp/repo commit -m ok'
-  [ "$output" = "/tmp/repo" ]
+  run git_target_dirs 'git commit -m ok'
+  [ "$output" = "$PWD" ]
 }
 
-@test "a git -C hidden inside a double-quoted commit message does not hijack the target" {
+@test "a decoy git -C inside the message does not drop PWD" {
   load_extractor
-  run git_target_dir 'git commit -m "notes; git -C /evil status commit x"'
-  [ -z "$output" ]
+  has 'git commit -m "notes; git -C /evil status commit x"' "$PWD"
+  has "git commit -m 'notes; git -C /evil commit'" "$PWD"
 }
 
-@test "a git -C hidden inside a single-quoted commit message does not hijack the target" {
+@test "a real git -C is kept beside a decoy, in either order" {
   load_extractor
-  run git_target_dir "git commit -m 'notes; git -C /evil status commit x'"
-  [ -z "$output" ]
+  has 'git -C /victim commit -m "x; git -C /decoy commit"' /victim
+  has 'git -C /decoy status; git -C /victim commit -m ok' /victim
+  has 'git -C /victim commit -m ok; git -C /decoy status' /victim
 }
 
-@test "a real git -C wins over a decoy inside the message" {
+@test "quotes inside a heredoc body do not hide a later git -C" {
   load_extractor
-  run git_target_dir 'git -C /tmp/real commit -m "a; git -C /evil status commit x"'
-  [ "$output" = "/tmp/real" ]
+  has "cat > /tmp/msg <<'EOF'
+it's fine
+EOF
+git -C /victim commit -F /tmp/msg" /victim
 }
 
-@test "leading cd is honored when no git -C is present" {
+@test "a quote inside a comment does not hide a later git -C" {
   load_extractor
-  run git_target_dir 'cd /tmp/repo && git commit -m ok'
-  [ "$output" = "/tmp/repo" ]
+  has "# it's a note
+git -C /victim commit -m ok" /victim
+}
+
+@test "a backslash before a closing single quote does not hide git -C" {
+  load_extractor
+  has "echo 'a\\'; git -C /victim commit -m ok" /victim
+}
+
+@test "ANSI-C quoting does not hide git -C" {
+  load_extractor
+  has "echo \$'it\\'s'; git -C /victim commit -m ok" /victim
+}
+
+@test "a double-quoted value spanning a newline does not hide git -C" {
+  load_extractor
+  has 'echo "a
+b"; git -C /victim commit -m ok' /victim
+}
+
+@test "quotes nested in a command substitution do not hide git -C" {
+  load_extractor
+  has 'echo "$(echo "x")"; git -C /victim commit -m ok' /victim
+}
+
+@test "a quoted path with spaces is returned whole" {
+  load_extractor
+  has 'git -C "/tmp/a b" commit -m ok' "/tmp/a b"
 }
 
 @test "a tilde in the extracted path is expanded" {
   load_extractor
-  run git_target_dir 'git -C ~/somerepo commit -m ok'
-  [ "$output" = "$HOME/somerepo" ]
+  has 'git -C ~/proj commit -m ok' "$HOME/proj"
 }
 
-@test "no git -C and no cd yields empty (caller falls back to cwd)" {
+@test "a leading cd target is a candidate" {
   load_extractor
+  has 'cd /tmp/repo && git commit -m ok' /tmp/repo
+}
+
+@test "the verbs argument is accepted and does not narrow the candidates" {
+  load_extractor
+  has 'git -C /tmp/repo revert HEAD' /tmp/repo
+  run git_target_dirs 'git -C /tmp/repo commit -m x' 'bad)(regex'
+  [[ "$output" == /tmp/repo* ]]
+}
+
+# ---- git_target_dir (verify-precommit.sh の実行先): repo として解決できる候補だけを選ぶ ----
+
+make_repos() { # $BATS_TEST_TMPDIR に a / b の 2 repo と、repo でない cwd を作る
+  A="$BATS_TEST_TMPDIR/a"; B="$BATS_TEST_TMPDIR/b"; W="$BATS_TEST_TMPDIR/work"
+  mkdir -p "$A" "$B" "$W/tests"
+  git -C "$A" init -q; git -C "$B" init -q
+}
+
+@test "git_target_dir returns the last repo candidate" {
+  load_extractor; make_repos
+  run git_target_dir "git -C $A commit -m x; git -C $B commit -m y"
+  [ "$output" = "$B" ]
+}
+
+@test "git_target_dir is empty when no candidate is a repo" {
+  load_extractor; make_repos
   run git_target_dir 'git commit -m ok'
   [ -z "$output" ]
 }
 
-# --- verbs 引数 (2026-08-01 追加) -------------------------------------------
-# 呼び出し元 hook の発火条件と抽出条件が二重定義で drift した欠陥の回帰
-# (review-chain-notice は commit|revert|merge で発火するのに抽出は commit のみだった)。
-# 1 test 1 assertion — bats は本体の最後の終了ステータスしか見ない。
-
-@test "verbs defaults to commit (the 5 single-arg callers are unchanged)" {
-  load_extractor
-  run git_target_dir 'git -C /tmp/repo revert HEAD'
-  [ -z "$output" ]
+@test "git_target_dir skips words that are not directories (-C HEAD, message words, cd -)" {
+  load_extractor; make_repos
+  local c
+  for c in "git -C $A commit --amend -C HEAD" "git -C $A commit -m 'fix: -C の囮を拾う'" \
+           "git -C $A commit -m x && cd -"; do
+    run git_target_dir "$c"
+    [ "$output" = "$A" ] || { echo "picked [$output] for: $c"; return 1; }
+  done
 }
 
-@test "a widened verbs list extracts the revert target" {
-  load_extractor
-  run git_target_dir 'git -C /tmp/repo revert HEAD' 'commit|revert|merge'
-  [ "$output" = "/tmp/repo" ]
+@test "git_target_dir prefers an absolute repo over a relative word resolving from the hook cwd" {
+  load_extractor; make_repos
+  git -C "$W" init -q
+  cd "$W"
+  run git_target_dir "git -C $A commit -m 'docs: run cd tests first'"
+  [ "$output" = "$A" ]
 }
 
-@test "a widened verbs list extracts the merge target" {
+@test "GIT_DIR assignments are a stated limit: PWD is still checked" {
   load_extractor
-  run git_target_dir 'git -C /tmp/repo merge topic' 'commit|revert|merge'
-  [ "$output" = "/tmp/repo" ]
-}
-
-@test "a malformed verbs value falls back to commit instead of injecting into the regex" {
-  load_extractor
-  run git_target_dir 'git -C /tmp/repo revert HEAD' '.*'
-  [ -z "$output" ]
-}
-
-@test "the commit fallback still works when verbs is malformed" {
-  load_extractor
-  run git_target_dir 'git -C /tmp/repo commit -m ok' '(((('
-  [ "$output" = "/tmp/repo" ]
-}
-
-# --- バックスラッシュ・エスケープ (2026-08-08 追加) --------------------------
-# 引用符 span の除去だけでは足りなかった: `\"` を残すと sed がそこを span の終端と見なし、
-# 続く `; git -C <decoy> commit` が素のセグメントとして露出する。2026-08-08 の公開前レビューが
-# secret gate の end-to-end バイパスとして実証した。エスケープを先に落とすことで閉じる。
-
-@test "an escaped quote inside the message does not expose a decoy segment" {
-  load_extractor
-  run git_target_dir 'git commit -m "a \" ; git -C /evil commit x"'
-  [ -z "$output" ]
-}
-
-@test "an escaped quote does not steal the target away from a real git -C" {
-  load_extractor
-  run git_target_dir 'git -C /tmp/real commit -m "a \" ; git -C /evil commit x"'
-  [ "$output" = "/tmp/real" ]
-}
-
-# --- 複合コマンドの全ターゲット (2026-08-08 追加) ---------------------------
-# 単一値の抽出では、複合コマンドの片方しか検査できない。左端固定でも右端固定でも、
-# 順序を入れ替えるだけで検査されない側へ commit を寄せられる (同レビューが両方向を実証)。
-# 読み取り専用の 3 hook は git_target_dirs で全件を走査してこの非対称を閉じる。
-# ここが守るのは抽出の全件性。hook 側の走査は各 hook のテストが持つ。
-
-@test "both targets of a compound commit are returned, decoy first" {
-  load_extractor
-  run git_target_dirs 'git -C /decoy commit -m x && git -C /real commit -m y'
-  [ "$output" = "/decoy
-/real" ]
-}
-
-@test "both targets are returned with the order reversed too" {
-  load_extractor
-  run git_target_dirs 'git -C /real commit -m x && git -C /decoy commit -m y'
-  [ "$output" = "/real
-/decoy" ]
-}
-
-@test "the same repo named twice is returned once" {
-  load_extractor
-  run git_target_dirs 'git -C /tmp/repo commit -m x && git -C /tmp/repo commit -m y'
-  [ "$output" = "/tmp/repo" ]
-}
-
-@test "a segment without the verb contributes no target" {
-  load_extractor
-  run git_target_dirs 'git -C /tmp/other add -A && git -C /tmp/repo commit -m x'
-  [ "$output" = "/tmp/repo" ]
-}
-
-@test "git_target_dir returns the rightmost match (the single-value callers)" {
-  load_extractor
-  run git_target_dir 'git -C /decoy commit -m x && git -C /real commit -m y'
-  [ "$output" = "/real" ]
-}
-
-@test "git_target_dirs is silent when nothing matches" {
-  load_extractor
-  run git_target_dirs 'git commit -m ok'
-  [ -z "$output" ]
+  has 'GIT_DIR=/victim/.git git commit -m x' "$PWD"
 }

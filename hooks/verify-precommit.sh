@@ -36,8 +36,8 @@ printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
 # 対象 repo の特定。この hook は抽出結果配下のスクリプトを **実行**するので、誤爆の影響が
 # 読み取り専用の兄弟 hook と違う (2026-07-31 security-reviewer の HIGH)。抽出自体は共有部品と
 # 同じだが、**承認台帳が第 2 の防壁**になる — 乗っ取られた path のゲートは承認されていない。
-# 抽出は共有部品に集約 (7 hook で複製していた正規表現の drift 解消。引用符 span を除去してから
-# セグメント解析する — 詳細と限界は _git-target-common.sh のヘッダ)
+# 抽出は共有部品 (repo として解決できる候補から 1 つ。選び方と限界は _git-target-common.sh。
+# 囮で対象がずれるとゲートは回らない — 台帳が止めるのは未承認コードの実行だけ)
 # shellcheck source=hooks/_git-target-common.sh
 source "${BASH_SOURCE[0]%/*}/_git-target-common.sh"
 repo_dir=$(git_target_dir "$COMMAND")

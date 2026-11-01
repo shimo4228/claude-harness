@@ -72,6 +72,10 @@ details summary { cursor: pointer; color: var(--muted); }
   <main id="list" style="display:grid;gap:24px">
     <div class="empty">ここに棚卸しの項目が並びます。Claude が report を書き込むまでお待ちください。</div>
   </main>
+  <footer class="state" style="border-top:1px solid var(--line);padding-top:12px">
+    <h2>native が見るもの</h2>
+    <p>この report は中身の判定（古い参照・矛盾・持ち主の消えた設定・rule への蒸留）を出す。使用履歴と書き方は Claude Code の native 検査が見る: <code>/doctor</code> は使われていない plugin・MCP・skill と遅い hook を、<code>/doctor prompt-audit</code> は古い model 向けの書き方（固定の数値上限・強い強調・存在しない tool への言及）を出す。二つは重ならないので、両方を回して並べて読む（この run はどちらも実行していない）。</p>
+  </footer>
 </div>
 
 <script>

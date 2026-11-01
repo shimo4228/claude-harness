@@ -321,3 +321,28 @@ sel_id() { printf 'contemplative' | shasum -a 256 | cut -c1-32; }
   run_hook "git -C $REPO commit -m 'chore: conf'"
   blocked
 }
+
+# --- a decoy candidate repo must not get to run its filter driver ------------
+# The extractor over-matches by design (a `cd X` inside the message becomes a
+# candidate). The worktree diff of a candidate would start its .gitattributes
+# filter=<x> clean command; the hook overrides every filter driver to empty.
+
+@test "a decoy repo named in the message does not run its clean filter" {
+  local evil="$TMP/evil"
+  mkdir -p "$evil" && git -C "$evil" init -q
+  printf 'a\n' > "$evil/f" && git -C "$evil" add f
+  git -C "$evil" -c user.name=x -c user.email=x@x commit -qm i
+  printf '* filter=x\n' > "$evil/.gitattributes"
+  git -C "$evil" config filter.x.clean "touch $TMP/PWNED; cat"
+  printf 'b\n' >> "$evil/f"
+  run_hook "git -C $REPO commit -am 'repro: cd $evil'"
+  [ ! -e "$TMP/PWNED" ]
+}
+
+@test "a tracked secret is still found when the repo defines a filter driver" {
+  git -C "$REPO" config filter.x.clean cat
+  printf '* filter=x\n' > "$REPO/.gitattributes"
+  plant_tracked_secret
+  run_hook "git -C $REPO commit -am 'chore: sync'"
+  blocked
+}

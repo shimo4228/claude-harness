@@ -104,8 +104,8 @@ Stop conditions — a candidate is ruled out when it:
 
 In Quick mode the report carries the Verdict. For a plan, the lead writes it in the plan (§4).
 
-Every Adopt and Adopt-part — packages, MCP servers, plugins and skills alike — goes through the
-dependency intake of skill: `implementation-chain` before it lands.
+Every Adopt and Adopt-part — packages, MCP servers, plugins and skills alike — goes through your
+dependency-intake step (the author's harness uses skill `implementation-chain`) before it lands.
 
 ## 4. Quick vs Full
 

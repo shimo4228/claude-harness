@@ -20,8 +20,10 @@ from scripts.scenario_generator import Scenario
 
 # A duplicate of this value lives in ~/.claude/hooks/log-skill-usage.sh (it decides whether to
 # tag a child session's skill-usage lines with `sandbox: true`). If you move it, move that one too —
-# tests/log-skill-usage.bats reads both and asserts they match.
-SANDBOX_BASE = Path("/tmp/skill-comply-sandbox")
+# tests/log-skill-usage.bats reads both and asserts they match. The literal is that contract:
+# skill-stocktake's usage_stats.py keys on it too, and `tempfile.gettempdir()` would follow
+# a per-session TMPDIR, so the base would move between runs and the tag would stop matching.
+SANDBOX_BASE = Path("/tmp/skill-comply-sandbox")  # nosec B108 - fixed rendezvous path shared with log-skill-usage.sh
 ALLOWED_MODELS = frozenset({"haiku", "sonnet", "opus", "fable"})
 DEFAULT_TIMEOUT_SECONDS = 3600
 
@@ -54,7 +56,7 @@ class ScenarioExecutionError(RuntimeError):
     fabricated.
 
     Rate limiting is the common cause and is NOT retried here — per
-    rules/common/boundary.md ("止まって報告する") a burst of rate limits is a policy signal to
+    rules/common/boundary.md (its stop-and-report section) a burst of rate limits is a policy signal to
     surface to a human, not something to back off through.
     """
 

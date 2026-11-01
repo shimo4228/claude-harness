@@ -10,6 +10,8 @@ origin: shimo4228
 
 Detect and fix documentation role overlaps, stale content, and missing context files across your project. Ensures every piece of project knowledge lives in exactly one place with a clear purpose.
 
+**Roots.** As a harness-stocktake source, `<repo>` below is the repository the run covers: `~/.claude`, or the `--project` path (skill `harness-stocktake`, Roots). Called alone, it is the current repository.
+
 ## Why This Matters
 
 In LLM-driven development, organizing concepts _is_ implementation. Markdown carries the same weight as executable code — a stale number in CLAUDE.md or a misplaced design rationale silently degrades every AI-assisted session that reads it. Context consistency is not housekeeping; it is a prerequisite for core concepts to reach the system without noise.
@@ -50,11 +52,11 @@ Every project document should serve exactly one of these four roles. Overlap cau
 
 Run all five phases in order. **Confirmation policy: apply edits to existing files automatically** — git diff is the audit trail, and `git checkout -- <file>` is the undo. Creating new files and directories is batch-confirmed once at the start of Phase 3 (Phase 2 and Phase 4 collect the candidates). List every created and edited file in the Phase 5 report so the user can revert any they did not want.
 
-**The project README is owned elsewhere — flag, do not edit.** For the top-level `README.md` / `README.*.md` (not index files such as `docs/adr/README.md`), README content (sections to remove, rewrite or create, including a missing README) goes to your README skill (the author's harness uses `readme-writer`); version, DOI and other release numbers in README go to your release skill (the author's harness uses `release-doi`). context-sync reports each README finding with its line and the owning skill, because those skills hold the owner of each fact and the judge that checks the README.
+**The project README is owned elsewhere — flag, do not edit.** For the top-level `README.md` / `README.*.md` (not index files such as `docs/adr/README.md`), README content (sections to remove, rewrite or create, including a missing README) goes to your README skill (the author's harness uses `readme-writer`); version, DOI and other release numbers in README go to your release skill (the author's harness uses `release-doi`). In project mode the owner is the repo's own: the finding names the README line and the fix, and names a skill only when the repo itself has one for READMEs. context-sync reports each README finding with its line and the owning skill, because those skills hold the owner of each fact and the judge that checks the README.
 
 The skill runs end-to-end; it pauses only for the Phase 3 creation batch and for ADR inputs it cannot find in the source. Phase 5 (Report) summarizes what was done.
 
-**Run as a harness-stocktake source** (source `docs`, from `/harness-stocktake` over `~/.claude`): run Phases 1, 2 and 4 to find the edits and creations, and emit each one as an item of the report contract in skill `harness-stocktake` (`change` = the edit as a diff, or the new file's path and content) instead of applying it. The report's one approval replaces the Phase 3 creation batch, and the edits apply on the stocktake's task branch. A missing ADR input becomes a pending item.
+**Run as a harness-stocktake source** (source `docs`, from `/harness-stocktake` over `<repo>`): run Phases 1, 2 and 4 to find the edits and creations, and emit each one as an item of the report contract in skill `harness-stocktake` (`change` = the edit as a diff, or the new file's path and content) instead of applying it. The report's one approval replaces the Phase 3 creation batch, and the edits apply on the stocktake's task branch. A missing ADR input becomes a pending item.
 
 ### Phase 1: Discover
 
@@ -181,7 +183,7 @@ Verify that documentation claims match the current codebase.
 ```bash
 EV=$(mktemp -t context-evidence)   # per-run file: a fixed /tmp path lets two
                                    # concurrent runs read each other's JSON
-python3 "${CLAUDE_SKILL_DIR}/scripts/context_evidence.py" --root . > "$EV"
+python3 "${CLAUDE_SKILL_DIR}/scripts/context_evidence.py" --root <repo> > "$EV"
 ```
 
 It emits JSON and always exits 0 — evidence, not a verdict. Read the JSON, transcribe

@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 # agent-stocktake — Agent Definition Quality Audit
 
-Evaluate every agent definition under `~/.claude/agents/*.md` and assign each a verdict:
+Evaluate every agent definition under `<harness>/agents/*.md` and assign each a verdict:
 `Keep / Improve / Update / Merge / Demote to skill / Dissolve / Retire`. The audit unit
 is the file, but the cost unit is **split across two layers** — that split is the reason
 this skill exists as a third sibling next to skill-stocktake and rules-stocktake.
@@ -31,6 +31,8 @@ this skill exists as a third sibling next to skill-stocktake and rules-stocktake
 > read in one context — delegation would be overengineering. The handoff exception is Demote to skill
 > (creating a skill is skill-creator's job).
 
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+
 ## Modes (`$ARGUMENTS`)
 
 | Argument | Behavior |
@@ -42,7 +44,7 @@ this skill exists as a third sibling next to skill-stocktake and rules-stocktake
 > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
 
 ```bash
-find ~/.claude/agents -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
+find <harness>/agents -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
 ```
 
 As in rules-stocktake, the Phase 1 integrity checks **always run over the full set** —
@@ -59,7 +61,7 @@ would give wrong numbers rather than fewer ones.
 ```bash
 uv run --frozen --project "${CLAUDE_SKILL_DIR}" \
        --directory "${CLAUDE_SKILL_DIR}" \
-       python scripts/agent_evidence.py --root ~/.claude
+       python scripts/agent_evidence.py --root <harness>
 ```
 
 Evidence mode: JSON on stdout, exit 0 however many findings (exit 2 only when the
@@ -112,7 +114,7 @@ corpus for them and `ls` each one.
 
 ### Step 4 — Inventory
 
-Enumerate with Glob: `~/.claude/agents/*.md`. Read every file into one context (the
+Enumerate with Glob: `<harness>/agents/*.md`. Read every file into one context (the
 corpus is small). The residency and body columns come from the Step 1 JSON —
 never trust figures written in docs, including this one.
 

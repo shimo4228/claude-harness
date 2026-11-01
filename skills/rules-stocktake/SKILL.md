@@ -11,7 +11,7 @@ origin: shimo4228
 
 # rules-stocktake — Rules Quality Audit
 
-Evaluate every rule file under `~/.claude/rules/` **holistically, all in one context**,
+Evaluate every rule file under `<harness>/rules/` **holistically, all in one context**,
 and assign each a verdict: `Keep / Improve / Update / Merge / Demote to skill /
 Dissolve / Retire`. The audit unit is the file; the cost unit is the **line** — rules
 load into every session unconditionally, so each line is a per-session token tax plus
@@ -31,6 +31,8 @@ instruction dilution.
 > would be overengineering. The handoff exception is Demote (creating a new skill is
 > skill-creator's job).
 
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+
 ## Modes (`$ARGUMENTS`)
 
 | Argument | Behavior |
@@ -42,7 +44,7 @@ instruction dilution.
 > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
 
 ```bash
-find ~/.claude/rules -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
+find <harness>/rules -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
 ```
 
 **The Phase 1 integrity checks always run over the full set, including in `changed`
@@ -53,16 +55,16 @@ re-evaluation set even if its mtime is old.
 
 ## Phase 1 — Inventory + mechanical integrity checks
 
-Enumerate with Glob (no script): `~/.claude/rules/**/*.md`. The corpus is small enough
+Enumerate with Glob (no script): `<harness>/rules/**/*.md`. The corpus is small enough
 to read every file into one context — no batching, no grep pre-filter. Measure the
-corpus size live (`find ~/.claude/rules -name '*.md' | xargs wc -l`) rather than
+corpus size live (`find <harness>/rules -name '*.md' | xargs wc -l`) rather than
 trusting a figure written here; per-file line counts become the residency-cost column
 in Phase 3 and the `lines` field in the ledger.
 
 Run the mechanical checks with throwaway bash/grep (detection is structural → code;
 judgment on what the findings mean → LLM, per the enumerate/decide split):
 
-- [ ] Every ``skill: `name` `` pointer in a rule resolves to `~/.claude/skills/<name>/`
+- [ ] Every ``skill: `name` `` pointer in a rule resolves to `<harness>/skills/<name>/`
 - [ ] Every relative link between rule files resolves
 - [ ] Every rule file's line 1 carries `<!-- origin: X -->`
 - [ ] Every `rules/common/` file carries `<!-- rationale: ... -->` and
