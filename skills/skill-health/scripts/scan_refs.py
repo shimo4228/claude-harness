@@ -7,8 +7,8 @@ Markdown link to a sibling skill / reference doc — that does not exist on disk
 Such references dangle silently when a refactor renames or deletes the target.
 
 This is a **structural** property, decidable from the literal shape of the
-Markdown plus a filesystem `exists()` check. Per the Agent Knowledge Cycle
-ADR-0008 "Code-LLM Layering", code owns structural determinism and 100%
+Markdown plus a filesystem `exists()` check. Per the Code-LLM layering
+principle (MAINTENANCE.md), code owns structural determinism and 100%
 accuracy here; the semantic debt patterns (over-specialized scope,
 trigger↔body drift), the risk dimension, and the validation dimension are
 delegated to a holistic LLM pass / the claude-security plugin / skill-comply and are
@@ -124,7 +124,7 @@ _DELEGATION_NOTE = (
     "Structural 'missing artifacts' check only. Over-specialized scope and "
     "trigger↔body drift are judged by the skill's own procedure (LLM), not by "
     "this scanner; the risk dimension is delegated to the claude-security plugin "
-    "and the validation dimension to skill-comply / skill-creator. "
+    "and the validation dimension to skill-comply / skill-writer. "
     "Nothing here is reduced to a number."
 )
 

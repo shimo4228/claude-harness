@@ -1,5 +1,5 @@
 ---
-name: skill-creator
+name: skill-writer
 description: "Draft gate for writing or substantially revising a skill or agent definition. Use when making or revising a skill (skill 作って), writing an agent definition, or when learn-eval promotes a pattern."
 user-invocable: true
 origin: shimo4228
@@ -169,8 +169,9 @@ is bad.
 
 - Your harness's frontmatter linter, if any (the author's harness runs
   `python3 scripts/hooks/harness_lint.py`), and
-  `uv run --frozen --directory ~/.claude/skills/skill-health python -m scripts.scan_refs ~/.claude/skills --json`
-  (0 dangling)
+  the reference scan of skill `skill-health` when it is installed next to this skill (0 dangling;
+  `${CLAUDE_SKILL_DIR}` is the directory holding this SKILL.md):
+  `uv run --frozen --directory "${CLAUDE_SKILL_DIR}/../skill-health" python -m scripts.scan_refs <your skills directory> --json`
 - Whether rule wiring is needed (one line in an always-loaded rule, such as a planning or skills
   rule). It is needed only when reliability is required
 - Publish through your publish/sync step

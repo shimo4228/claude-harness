@@ -23,7 +23,7 @@ log_updates: []
 ## 設計
 
 - 問い: native の ablation（skill を load する with arm と、plugin 無しの without arm）が、skill の有無による出力の差を score の delta として出すか。置換の可否は判断しない（計測のみ）
-- 計器の使われ方: [skill-creator §5](../../skills/skill-creator/SKILL.md) は、検証可能な出力を持つ skill の「差の有無」を native eval で screening すると定めている（`--runs 3`、arm 別 score と delta を読み、delta が無ければ Drop）。この測定はその screening の手順と費用の実測元
+- 計器の使われ方: [skill-creator §5](../../skills/skill-writer/SKILL.md) は、検証可能な出力を持つ skill の「差の有無」を native eval で screening すると定めている（`--runs 3`、arm 別 score と delta を読み、delta が無ければ Drop）。この測定はその screening の手順と費用の実測元
 - 対象: `headline-craft`（`~/.claude/skills/headline-craft/SKILL.md`、79 行、SKILL.md 1 枚）。選んだ理由は、出力が構造で検証できる（候補 5 本以上・技法ラベル・検索/フィードの 2 軸ラベル・core claim 1 文・優劣を付けない）、script も agent 依存も無い、read-only の 3 点
 - 実体: scratchpad に copy した `headline-craft/`（frontmatter 無改変）を target にした。`~/.claude` 配下は変更していない
 - case: `evals/titles/` を `claude plugin eval init --bare titles` で作り、中身を差し替えた（雛形は `max_turns: 10` / `allowed_tools: [Read, Glob, Grep, Skill]` / `type: llm, weight: 1` の 2 ファイル）。case は 1 本

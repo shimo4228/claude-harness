@@ -630,3 +630,17 @@ def test_readme_links_cover_images_and_html_attributes(repo: Path):
         (1, "docs/badge.svg"),
         (2, "skills/gone/SKILL.md"),
     ]
+
+
+def test_script_runs_under_isolated_mode(repo: Path):
+    """`python3 -I` (no script dir on sys.path) must still import the sibling modules."""
+    script = Path(__file__).resolve().parent.parent / "scripts" / "context_evidence.py"
+    out = subprocess.run(
+        [sys.executable, "-I", str(script), "--root", str(repo)],
+        capture_output=True,
+        text=True,
+        cwd=repo,
+        check=False,
+    )
+    assert out.returncode == 0, out.stderr
+    assert isinstance(json.loads(out.stdout), dict)

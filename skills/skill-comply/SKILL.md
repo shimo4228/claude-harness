@@ -18,7 +18,7 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 6. Generating self-contained reports with spec, prompts, and timelines
 
 It measures runtime adherence only. A static quality audit is skill `skill-stocktake` / `rules-stocktake`, a reference-integrity
-check is skill `skill-health`, and a with/without ablation of a skill's effect is skill `skill-creator` §5.
+check is skill `skill-health`, and a with/without ablation of a skill's effect is skill `skill-writer` §5.
 
 ## Supported Targets
 

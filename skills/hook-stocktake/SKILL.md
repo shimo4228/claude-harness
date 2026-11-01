@@ -14,7 +14,7 @@ matching event, it can block, and it reads repo-controlled data (paths, commit m
 input). So the questions are wiring, evidence that it still earns its place, test coverage, and
 its share of the harness threat surface (rule `security.md`).
 
-**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths, names the evidence that is `n/a` there, and says which convention checks apply). The ledger `<ledger>` belongs to that harness: `${CLAUDE_SKILL_DIR}/results.json` when this skill's directory is inside `<harness>` (the harness carries its own copy of the skill), else `<harness>/stocktake/hook-stocktake.json` (an installed plugin, or project mode). Either way it is committed with the harness's other changes on the apply branch.
 
 The paths and conventions below are the author's harness layout. In another
 setup, map each target to where that setup keeps its hooks, and record a check whose input the
@@ -30,14 +30,15 @@ Build the inventory with throwaway `python3` / `jq` over the files, and state th
 - **Wiring**: from `<harness>/settings.json` `hooks`, one row per (event, matcher, command).
   Mark every target no command references (orphan) and every command that carries logic beyond
   invoking a script (CLAUDE.md: hook logic lives in scripts). Commands whose script is missing
-  (dangling) come from `python3 ~/.claude/scripts/hooks/harness_lint.py`, which checks them
-  (in project mode, or without Bash, check that each called script exists with Glob).
+  (dangling) come from the harness's lint script when it has one
+  (`<harness>/scripts/hooks/harness_lint.py`); otherwise — and in project mode, or without Bash —
+  check that each called script exists with Glob.
   `scripts/hooks/*.py` are called from hooks or from other scripts; resolve their callers with grep
 - **Documentation**: `hooks/README.md` — the Active Hooks tables against the wiring rows, and its
   Shared list against `hooks/_*-common.sh` (missing and phantom rows)
 - **Tests**: the `tests/*.bats` files that exercise each hook (`grep -l <script name> tests/*.bats`)
 - **Fire evidence**: only the logging hooks leave a count — `log-skill-usage.sh` and
-  `log-agent-usage.sh` append to `~/.claude/metrics/skill-usage.jsonl` / `agent-usage.jsonl`, which
+  `log-agent-usage.sh` append to `<harness>/metrics/skill-usage.jsonl` / `agent-usage.jsonl`, which
   count logged skill and agent events (`log-skill-usage.sh` is wired on two events), not every run
   of a hook. Every other hook gets `—`, which is not zero. A `metrics/*.jsonl` that no hook or script
   writes any more is an integrity finding
@@ -105,7 +106,7 @@ contract's Phases 2–5 with its own items.
 Every `reason` is self-contained and cites the No answers (question + one-line evidence), as in
 skill-stocktake's Reason quality section.
 
-**Ledger** `${CLAUDE_SKILL_DIR}/results.json`, updated on the apply branch in the same commit:
+**Ledger** `<ledger>`, updated on the apply branch in the same commit:
 
 ```json
 {
@@ -116,8 +117,8 @@ skill-stocktake's Reason quality section.
 }
 ```
 
-Keys are paths from the ~/.claude root (`hooks/x.sh`, `scripts/hooks/x.py`), dotfiles and
-`__pycache__` excluded — the set harness_lint.py `lint_stocktake_ledgers` compares against disk;
+Keys are paths from the `<harness>` root (`hooks/x.sh`, `scripts/hooks/x.py`), dotfiles and
+`__pycache__` excluded — the set a ledger lint (harness_lint.py `lint_stocktake_ledgers`, where present) compares against disk;
 `evaluated_at` is real UTC
 from `date -u +%Y-%m-%dT%H:%M:%SZ`. An item the author skipped keeps its verdict with
 `"skipped": true`.

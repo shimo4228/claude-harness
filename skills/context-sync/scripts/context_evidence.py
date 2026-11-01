@@ -50,6 +50,8 @@ from pathlib import Path
 if __package__:
     from . import context_checks as _c
 else:  # Support the documented direct script invocation.
+    # `python3 -I` leaves the script's directory off sys.path; the sibling modules live there.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     import context_checks as _c
 
 # Re-exported so `from scripts import context_evidence as ce` keeps reaching the

@@ -1,6 +1,6 @@
 ---
 name: agent-stocktake
-description: "Audit the ~/.claude/agents definitions and give each a verdict."
+description: "Audit the agent definitions in a Claude Code harness (~/.claude/agents or a repo's .claude/agents) and give each a verdict."
 license: MIT
 metadata:
   author: shimo4228
@@ -29,22 +29,22 @@ this skill exists as a third sibling next to skill-stocktake and rules-stocktake
 > Design note 2 — approved edits are applied by this skill itself, on the apply branch. Same reasoning as rules-stocktake: no
 > improvement engine exists for agent definitions, and the corpus is small enough to
 > read in one context — delegation would be overengineering. The handoff exception is Demote to skill
-> (creating a skill is skill-creator's job).
+> (creating a skill is skill-writer's job).
 
-**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths, names the evidence that is `n/a` there, and says which convention checks apply). The ledger `<ledger>` belongs to that harness: `${CLAUDE_SKILL_DIR}/results.json` when this skill's directory is inside `<harness>` (the harness carries its own copy of the skill), else `<harness>/stocktake/agent-stocktake.json` (an installed plugin, or project mode). Either way it is committed with the harness's other changes on the apply branch.
 
 ## Modes (`$ARGUMENTS`)
 
 | Argument | Behavior |
 |----------|----------|
 | none / `full` | Read and evaluate every agent definition (default) |
-| `changed` | Re-evaluate only files whose mtime is newer than `results.json`'s `evaluated_at`; carry the rest forward from the ledger |
+| `changed` | Re-evaluate only files whose mtime is newer than `<ledger>`'s `evaluated_at`; carry the rest forward from the ledger |
 
 `changed` detects changes inline (no script):
 > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
 
 ```bash
-find <harness>/agents -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
+find <harness>/agents -name "*.md" -newermt "$(jq -r .evaluated_at "<ledger>")"
 ```
 
 As in rules-stocktake, the Phase 1 integrity checks **always run over the full set** —
@@ -85,20 +85,20 @@ census**: it holds five phrasings drawn from one corpus, so a suppression writte
 some other way ("skip anything you're unsure about", "avoid findings that would just be noise")
 appears in no JSON field. Keep reading for those; an empty list is not a clean bill.
 
-For the measured false-positive ratios and which lines produced them, see
-[ADR-0054](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0054-extract-agent-stocktake-and-learn-eval-mechanical-checks.md)
-— they are recorded once, there, so this step does not carry numbers that go stale.
+The measured false-positive ratios live outside this file, so this step carries no numbers that
+go stale.
 
 ### Step 2 — Read the gates that already own the rest
 
-Three checks stay outside the script because another gate owns them. Read their
-output; do not re-implement:
+Three checks stay outside the script because, in a harness that has a lint gate
+(`<harness>/scripts/hooks/harness_lint.py`), that gate owns them. Read its output when it
+exists; without it, make the three checks with Read / Grep:
 
 - [ ] Frontmatter parses and carries `name`, `description`, `origin`, `model`, and
-  `model` is an alias → `scripts/hooks/harness_lint.py` `lint_agents`, which runs
-  in `.claude/verify.sh` and the pre-commit hook. A missing origin is still an
-  integrity finding per rules/common/skills.md, feeding Improve.
-- [ ] `name` equals the filename stem → the same `lint_agents` (RFC-0014). It admits no judgment and the delegation
+  `model` is an alias → the lint script's `lint_agents` (in the author's harness it runs in
+  `.claude/verify.sh` and the pre-commit hook). A missing origin, where the harness states the
+  origin convention, is still an integrity finding, feeding Improve.
+- [ ] `name` equals the filename stem → the same `lint_agents`. It admits no judgment and the delegation
   registry keys on it, so it belongs to a gate that stops a commit — not to
   evidence a reader may or may not transcribe. A finding here is a **blocked
   commit**, not a stocktake verdict.
@@ -109,7 +109,7 @@ output; do not re-implement:
 
 `lint_markdown_links` sees only link syntax, and `skill-health`'s `scan_refs.py`
 scans the *skills* tree. A path written as prose inside an agent body
-(`~/.claude/hooks/foo.sh`, `skills/foo/SKILL.md`) is covered by neither. Grep the
+(`<harness>/hooks/foo.sh`, `skills/foo/SKILL.md`) is covered by neither. Grep the
 corpus for them and `ls` each one.
 
 ### Step 4 — Inventory
@@ -120,8 +120,9 @@ never trust figures written in docs, including this one.
 
 ### Step 5 — Usage counts
 
-Evidence input, never a verdict trigger. Read `~/.claude/metrics/agent-usage.jsonl`
-inline (the hook `log-agent-usage.sh` appends one `invoke` event per Agent-tool launch,
+Evidence input, never a verdict trigger. When the setup keeps an agent usage log
+(`<harness>/metrics/agent-usage.jsonl`; absent = usage `n/a`), read it
+inline (a usage-logging hook such as `log-agent-usage.sh` appends one `invoke` event per Agent-tool launch,
 keyed by its `agent` field, whose value is the `subagent_type`) and count per-agent events over 7 / 30 / 90 days. Aggregate with a throwaway `python3`/`jq` one-liner.
 
 - If the log is **missing or its first event is younger than 90 days**, render usage as
@@ -162,7 +163,7 @@ rest the **body layer** (invocation):
   source version named in the body's leading comment matches the installed tool
   (`claude --version`); a mismatch is an Update (diff against the bundle and re-copy).
   The suppression and over-constraint questions are skipped for such copies — the body is the vendor's,
-  not ours (ADR-0070)
+  not ours
 - [ ] *Body free of previous-generation over-constraint?* — exhaustive step-by-step
   procedures for judgment the current model holds natively, repeated emphasis,
   ALWAYS/NEVER pairs that the surrounding-context judgment should own. Phase 1's
@@ -171,13 +172,13 @@ rest the **body layer** (invocation):
 - [ ] *Not absorbed by the substrate?* — does the harness now cover this agent's job
   natively (native review machinery, plan mode, built-in slash commands)? Absorption →
   Dissolve candidate; the claim must name its absorber concretely. Judge with the
-  **fresh/rich context axis** ([ADR-0023](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0023-dissolve-planner-narrow-architect-to-essence-evaluation.md)):
+  **fresh/rich context axis**:
   roles that gain from *fresh* context (review, adversarial verification, essence
   evaluation — decorrelation from the proposer's sunk cost) legitimately live in a
   subagent; roles that gain from *rich* context (planning, generation, implementation —
   user intent, in-conversation constraints) are main-loop work, so for them the main
   loop itself counts as an absorber. Two auxiliary rationales legitimately override
-  the rich-context pull (ADR-0024): a **frozen-input render contract** — the caller
+  the rich-context pull: a **frozen-input render contract** — the caller
   freezes a self-contained packet before invocation, so conversation context is not
   needed by design (prompt-forager, which gets one line on purpose) —
   and **bulk context isolation** — the work reads or produces volume that would
@@ -204,11 +205,12 @@ counter-question is mandatory before accepting the refutation: *"Is the subagent
 right place to use that capability — or does the main loop hold it anyway?"* Capability
 existence is necessary but not sufficient; the fresh/rich context axis decides where the
 capability belongs (precedent: the planner refutation collapsed because the main loop
-holds the full Agent tool, ADR-0023). Keep-bound agents get no dynamic questions.
+holds the full Agent tool). Keep-bound agents get no dynamic questions.
 
 Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence,
-never aggregated into a score. Evaluation is **origin-blind** (ECC / shimo4228 /
-customized all get the same checklist); a *missing* origin header is itself a finding.
+never aggregated into a score. Evaluation is **origin-blind** (vendored, self-written and
+customized agents all get the same checklist); where the harness states the origin convention, a
+*missing* origin header is itself a finding.
 
 **Aggregate residency cost (set-level):** every description loads into every session,
 and the longer the listing, the weaker each entry's selection signal. The Keep bar
@@ -222,7 +224,7 @@ never a quota.
 | Improve | Worth keeping, needs tightening — includes **inversion** of suppression instructions (rewrite direction, don't delete) |
 | Update | Referenced technology/tool/model is outdated (verified, with evidence) |
 | Merge into [X] | Substantial overlap with another agent; name the target |
-| Demote to skill | The value is the instructions, not the separate context/process — move to the skill layer via skill-creator |
+| Demote to skill | The value is the instructions, not the separate context/process — move to the skill layer via skill-writer |
 | Dissolve | Absorbed by the substrate. Retirement by *success* — delete before the stale body overrides newer defaults; record the why in an ADR |
 | Retire | Defect-based removal: low quality, stale, broken beyond repair |
 
@@ -247,8 +249,8 @@ contract's Phases 2–5 with its own items. Each item carries, by verdict:
 - **Improve / Update / Merge**: `change` = the concrete edit as a diff; inversion edits show old
   and new direction side by side. Application edits the agent file directly on the branch
   (Design note 2)
-- **Demote to skill**: `change` = the skill-creator intent packet and whether the agent file is
-  deleted or reduced. Application creates the skill through skill-creator's report path
+- **Demote to skill**: `change` = the skill-writer intent packet and whether the agent file is
+  deleted or reduced. Application creates the skill through skill-writer's report path
 - **Dissolve / Retire**: `reason` = the absorption evidence or defect and what covers the need
   instead; `impact` = skills and rules that name this agent (grep the harness) and the public
   repo copy. Application records a Dissolve's why via `adr-writer`
@@ -259,12 +261,12 @@ Dissolve / Retire → Merge / Demote → Improve / Update → Keep, take one app
 overrides, then apply.
 
 - **Update the ledger** on the apply branch, in the same commit as the changes: Read
-  `results.json` → merge verdicts (an item the author skipped keeps its verdict with
+  `<ledger>` → merge verdicts (an item the author skipped keeps its verdict with
   `"skipped": true`) → Write back (`evaluated_at` = real UTC from
   `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode, preserve prior verdicts of files not
   re-evaluated.
-- **Public-repo note**: editing or retiring an `origin: shimo4228` agent leaves the
-  public repo stale — point the user at their publish step (the author's harness uses `harness-sync`).
+- **Public-copy note**: when the setup publishes copies of its agents elsewhere, editing or
+  retiring one leaves that copy stale — point the user at their publish step.
 
 ## Reason quality (required)
 
@@ -280,7 +282,7 @@ cite the No answers (question + one-line evidence):
 - **Merge**: name the target + what to integrate.
 - **Keep** (carry-forward in `changed` mode): restate the rationale.
 
-## results.json (lean ledger)
+## Ledger (`<ledger>`, lean)
 
 ```json
 {
@@ -288,7 +290,7 @@ cite the No answers (question + one-line evidence):
   "total_desc_words": 0,
   "agents": {
     "security-reviewer": {
-      "path": "~/.claude/agents/security-reviewer.md",
+      "path": "<harness>/agents/security-reviewer.md",
       "desc_words": 38,
       "body_lines": 120,
       "verdict": "Keep",
@@ -308,14 +310,12 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
 - `generation-audit` — the cross-asset orchestrator; on a model-generation change it
   collects runtime-layer evidence (conflict / redundancy) and `/claude-api prompt-audit`
   findings, and hands the agents slice to this skill as Stage 2 evidence.
-- `skill-creator` — handoff target for the skill-creation half of Demote.
-- `adr-writer` — records the why of a Dissolve.
-- Your publish step (the author's harness uses `harness-sync`) — syncs surviving `origin: shimo4228` agents to the public repo.
+- `skill-writer` (when installed) — handoff target for the skill-creation half of Demote.
+- `adr-writer` (when installed) — records the why of a Dissolve.
 - `harness-boundary` — design-time lens (layer / portability / obsolescence) for proposed
   mechanisms; applied to an installed agent, its Delete / Move are Stage 2 evidence only.
-- Usage measurement: `~/.claude/hooks/log-agent-usage.sh` →
-  `~/.claude/metrics/agent-usage.jsonl` (a measurement layer independent of stocktake,
-  mirroring skill-stocktake's `log-skill-usage.sh`).
+- Usage measurement: a usage-logging hook writing `<harness>/metrics/agent-usage.jsonl`, when
+  the setup has one (a measurement layer independent of stocktake).
 
 ## References
 
@@ -326,5 +326,5 @@ the checklist-decomposition evaluation line: BinEval "Ask, Don't Judge"
 TICK (arXiv:2410.03608) — over-decomposition degrades correlation on holistic quality,
 hence eight questions and no score. The suppression-instruction question implements the
 current-generation prompting guidance (report everything, filter in a separate pass);
-the absorption question and Dissolve verdict implement `rules/common/akc-cycle.md`'s
-Scaffold Dissolution (inward / downward vectors + model-generation trigger, ADR-0018).
+the absorption question and Dissolve verdict implement Scaffold Dissolution from the Agent
+Knowledge Cycle (inward / downward vectors + model-generation trigger).

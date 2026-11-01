@@ -1,6 +1,6 @@
 ---
 name: rules-stocktake
-description: "Audit ~/.claude/rules for residency cost, staleness, redundancy and substrate absorption, and give each rule a verdict. Use when the rules may have bloated."
+description: "Audit the rules in a Claude Code harness (~/.claude/rules or a repo's .claude/rules) for residency cost, staleness, redundancy and substrate absorption, and give each rule a verdict. Use when the rules may have bloated."
 license: MIT
 metadata:
   author: shimo4228
@@ -27,24 +27,24 @@ instruction dilution.
 
 > Design note 2: unlike skill-stocktake, this skill **does** apply approved Improve/Update/
 > Merge edits itself instead of handing off. There is no improvement-engine skill for rules
-> (skill-creator's counterpart doesn't exist), and rule files are short — delegation
+> (skill-writer's counterpart doesn't exist), and rule files are short — delegation
 > would be overengineering. The handoff exception is Demote (creating a new skill is
-> skill-creator's job).
+> skill-writer's job).
 
-**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths, names the evidence that is `n/a` there, and says which convention checks apply). The ledger `<ledger>` belongs to that harness: `${CLAUDE_SKILL_DIR}/results.json` when this skill's directory is inside `<harness>` (the harness carries its own copy of the skill), else `<harness>/stocktake/rules-stocktake.json` (an installed plugin, or project mode). Either way it is committed with the harness's other changes on the apply branch.
 
 ## Modes (`$ARGUMENTS`)
 
 | Argument | Behavior |
 |----------|----------|
 | none / `full` | Read and evaluate every rule (default) |
-| `changed` | Re-evaluate only rules whose mtime is newer than `results.json`'s `evaluated_at`; carry the rest forward from the ledger |
+| `changed` | Re-evaluate only rules whose mtime is newer than `<ledger>`'s `evaluated_at`; carry the rest forward from the ledger |
 
 `changed` detects changes inline (no script):
 > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
 
 ```bash
-find <harness>/rules -name "*.md" -newermt "$(jq -r .evaluated_at "${CLAUDE_SKILL_DIR}/results.json")"
+find <harness>/rules -name "*.md" -newermt "$(jq -r .evaluated_at "<ledger>")"
 ```
 
 **The Phase 1 integrity checks always run over the full set, including in `changed`
@@ -66,10 +66,10 @@ judgment on what the findings mean → LLM, per the enumerate/decide split):
 
 - [ ] Every ``skill: `name` `` pointer in a rule resolves to `<harness>/skills/<name>/`
 - [ ] Every relative link between rule files resolves
-- [ ] Every rule file's line 1 carries `<!-- origin: X -->`
+- [ ] Every rule file's line 1 carries `<!-- origin: X -->` (where the harness states this convention)
 - [ ] Every `rules/common/` file carries `<!-- rationale: ... -->` and
-  `<!-- review-when: ... -->` within its first 10 lines (run
-  `python3 ~/.claude/scripts/hooks/harness_lint.py` and read its output instead of re-grepping)
+  `<!-- review-when: ... -->` within its first 10 lines (when the harness has a lint script for
+  this — `<harness>/scripts/hooks/harness_lint.py` — run it and read its output instead of re-grepping)
 - [ ] `rules/README.md`'s table matches the actual file list (no missing, no phantom entries)
 
 A `skill-health` dangling-reference scan, when one has run, is ready-made evidence for the
@@ -131,8 +131,9 @@ on an installed rule.
 
 Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence
 feeding the verdict, never aggregated into a score. Evaluation is **origin-blind** (do not
-branch on ECC / shimo4228 / customized) — though a *missing* origin header is itself an
-integrity finding (common/skills.md requires it) and feeds Improve.
+branch on vendored / self-written / customized) — though, where the harness states the origin
+convention (the author's does, in `common/skills.md`), a *missing* origin header is itself an
+integrity finding and feeds Improve.
 
 **Aggregate residency cost (set-level, not per-rule):** holding a rule is not free even
 when the rule is individually fine. Every line loads into every session — the tax is
@@ -178,8 +179,8 @@ shows the exact edit, not a summary. Each item carries, by verdict:
   directly on the branch (Design note 2). If the edit changes the rule's reason-to-exist or expiry
   conditions, the same diff refreshes its `rationale:` / `review-when:` comments
 - **Demote to skill**: `change` = the 1–3 line principle + ``skill: `name` `` pointer that stays,
-  and the skill-creator intent packet for what moves. Application creates the skill through
-  skill-creator's report path
+  and the skill-writer intent packet for what moves. Application creates the skill through
+  skill-writer's report path
 - **Dissolve / Retire**: `reason` = the absorption evidence or defect and what covers the need
   instead (Dissolve: the named harness feature; Retire: the replacement rule/skill); `impact` =
   other rules referencing it and the public repo copy. Application records a Dissolve's why via
@@ -194,12 +195,12 @@ On the apply branch, in the same commit as the changes:
 
 - **Sync README.md**: any file added/renamed/removed → update the table row and its one-line
   description (pairs with the Phase 1 consistency check).
-- **Update the ledger**: Read `results.json` → merge this run's verdicts (an item the author
+- **Update the ledger**: Read `<ledger>` → merge this run's verdicts (an item the author
   skipped keeps its verdict with `"skipped": true`) → Write it back (`evaluated_at` = real UTC
   from `date -u +%Y-%m-%dT%H:%M:%SZ`). In `changed` mode, preserve prior verdicts of rules not
   re-evaluated.
-- **Public-repo note**: retiring or editing an `origin: shimo4228` rule leaves the public
-  repo stale — point the user at their publish step (the author's harness uses `harness-sync`) for the follow-up.
+- **Public-copy note**: when the setup publishes copies of its rules elsewhere, retiring or editing
+  one leaves that copy stale — point the user at their publish step for the follow-up.
 
 ## Reason quality (required)
 
@@ -211,7 +212,7 @@ alone is banned. For non-Keep verdicts, cite the No answers (question + one-line
 - **Merge**: name the target + what to integrate. Bad: `"Overlaps"` / Good: `"§Commit gate duplicates security.md's repo gate line; only the bypass note is unique — fold it into security.md's repo gate line."`
 - **Keep** (carry-forward in `changed` mode): restate the rationale. Bad: `"Unchanged"` / Good: `"Content unchanged. 42-line fix-chain gate referenced by planning.md's 2-intervention model; no absorber in current harness."`
 
-## results.json (lean ledger)
+## Ledger (`<ledger>`, lean)
 
 ```json
 {
@@ -219,7 +220,7 @@ alone is banned. For non-Keep verdicts, cite the No answers (question + one-line
   "total_lines": 1144,
   "rules": {
     "common/planning": {
-      "path": "~/.claude/rules/common/planning.md",
+      "path": "<harness>/rules/common/planning.md",
       "lines": 209,
       "verdict": "Keep",
       "reason": "...",
@@ -237,5 +238,5 @@ not a script. Created on the first run — do not pre-seed an empty file.
 
 ## Related
 
-- `agent-stocktake` — the same audit for `~/.claude/agents/`.
+- `agent-stocktake` — the same audit for `<harness>/agents/`.
 - `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code assets (configs / workflows / runbooks).

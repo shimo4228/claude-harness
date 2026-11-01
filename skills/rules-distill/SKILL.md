@@ -13,7 +13,7 @@ Scan installed skills, find principles that belong in the **always-loaded rules 
 them into rules — appending to, revising, or creating rule files. The skill produces
 candidates and verdicts; it **never edits rules without your approval**.
 
-**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths and names the evidence that is `n/a` there).
+**Roots.** `<harness>` below is the harness this audit covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode (its Roots section maps the paths, names the evidence that is `n/a` there, and says which convention checks apply). The ledger `<ledger>` belongs to that harness: `${CLAUDE_SKILL_DIR}/results.json` when this skill's directory is inside `<harness>` (the harness carries its own copy of the skill), else `<harness>/stocktake/rules-distill.json` (an installed plugin, or project mode). Either way it is committed with the harness's other changes on the apply branch.
 
 ## When to Use
 
@@ -53,16 +53,14 @@ recurrence count exact and the "not already in rules" test reliable.
 5. **Clear violation risk** — what goes wrong if ignored, in one sentence
 6. **Not already in rules** — check the full rules text, including the same idea in different words
 
-> Tests 1–3 are `rules/README.md`'s admission criterion ("facts, wiring, and traps specific to this environment.
-> Procedures for thinking and work belong to skills, checks that need a firing time belong to hooks, and general judgment belongs to the substrate"),
-> established by
-> [ADR-0018](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0018-rules-rightsize-for-claude5.md) and
-> [ADR-0035](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0035-commit-review-hook-and-rules-rightsize.md).
+> Tests 1–3 are the admission criterion for a resident rule ("facts, wiring, and traps specific to this environment.
+> Procedures for thinking and work belong to skills, checks that need a firing time belong to hooks, and general judgment belongs to the substrate").
+> A harness that states its own criterion (in `rules/README.md` or CLAUDE.md) is judged by that one.
 >
 > **Recurrence is evidence, not a gate** — report the count, do not filter on it.
 > Frequency and residency-worthiness diverge often enough to matter: a general principle
-> repeated in ten skills fails tests 1–3 (substrate has it — ADR-0018 cut residency 60%
-> removing exactly that class), while a one-off environment trap passes them.
+> repeated in ten skills fails tests 1–3 (substrate has it — removing exactly that class once cut a
+> harness's rule residency by 60%), while a one-off environment trap passes them.
 
 For each candidate, compare against the full rules text and assign a verdict:
 
@@ -130,7 +128,7 @@ the author's overrides and edits, then apply. Skipped candidates go to the ledge
 
 > Paths below start at `${CLAUDE_SKILL_DIR}`, the directory holding this SKILL.md; an agent that does not substitute the variable reads it as that directory.
 
-Then update the ledger `${CLAUDE_SKILL_DIR}/results.json` inline (Read → merge → Write):
+Then update the ledger `<ledger>` inline (Read → merge → Write):
 
 ```json
 {

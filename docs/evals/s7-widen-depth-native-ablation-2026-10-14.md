@@ -22,7 +22,7 @@ log_updates: []
 ## 設計
 
 - 問い: skill を load した arm が、四点（一流がやること・生の素材・方法と道具・外部の判定）を依頼に即して具体的に出し、作業を始めずに人間へ返すか。without arm との差を delta で見る。**問うのは形の再現性で、広げた依頼が良い結果を生むかは問わない**
-- 計器の使われ方: [skill-creator §5](../../skills/skill-creator/SKILL.md) の behavior gate（with/without screening）
+- 計器の使われ方: [skill-creator §5](../../skills/skill-writer/SKILL.md) の behavior gate（with/without screening）
 - 対象: `~/.claude/skills/widen-depth/SKILL.md` を scratchpad に copy し、`disable-model-invocation: true` の 1 行だけ外した（本番は slash 専用で、eval の run から Skill tool で呼べるようにするため）。本文は無改変
 - case: 6 本。harness の著者がしそうな依頼 1〜2 文に、共通の 2 文「プランに入る前に、この依頼をもっと深い版にしたい。手伝って。」を足した。without arm にも「深くしたい」意図は届くので、意図だけとの差を測る
   - `hook-latency` / `research-summary` / `quiz-typos` / `mix-track` / `article-reach` / `flaky-tests`（本文は suite/evals/*/prompt.md）

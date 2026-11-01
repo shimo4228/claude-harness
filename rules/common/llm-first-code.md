@@ -31,4 +31,4 @@ LLM 読者はしばしば人間より容赦ない — 曖昧・巧妙・肥大�
   1 句添える。文体・内部過程への禁止は肯定形に言い換える。外部由来の未改変 prompt と、
   ADR の Context / Alternatives（事実と却下の記録）は写しのまま置く。既存の文書は触れた
   ときと棚卸し（skill: `context-sync` / `rules-stocktake`）で直す。正本は
-  skill: `skill-creator` §3（ADR-0070）
+  skill: `skill-writer` §3（ADR-0070）

@@ -40,6 +40,8 @@ The scanner (`--help` lists flags, `--json` the keys) reports three lists:
   survive?" — it would not, since the owning tree overwrites it on upgrade. Route
   these upstream (issue / PR). References inside them are still scanned.
 
+**Roots.** `<harness>` below is the harness this scan covers: `~/.claude` by default, or a repository's `.claude/` when skill `harness-stocktake` runs in project mode. The ledger `<ledger>` belongs to that harness: `${CLAUDE_SKILL_DIR}/results.json` when this skill's directory is inside `<harness>` (the harness carries its own copy of the skill), else `<harness>/stocktake/skill-health.json` (an installed plugin, or project mode).
+
 ## Boundary (read first — this skill does not overlap its neighbours)
 
 SkillOps frames library health as four dimensions. This harness already covers
@@ -50,11 +52,11 @@ three; `skill-health` adds the missing structural one and federates the rest:
 | **Compatibility** (refs resolve) | **`skill-health`** ← here | the deterministic scan (Phase 2) |
 | **Utility** (frequency, value) | `skill-stocktake` (holistic Keep/Improve/Retire/Merge) | read its signal; flag over-specialized (LLM) |
 | **Risk** (security, side effects) | `/claude-security` plugin | delegate; prompt to run if stale |
-| **Validation** (tests/consistency) | `skill-comply` / `skill-creator` | note which skills lack a validator |
+| **Validation** (tests/consistency) | `skill-comply` / `skill-writer`, when the setup has them | note which skills lack a validator |
 
 ## Phase 1 — Inventory
 
-Enumerate skill definitions with Glob (`~/.claude/skills/*/SKILL.md`; plus
+Enumerate skill definitions with Glob (`<harness>/skills/*/SKILL.md`; plus
 `{cwd}/.claude/skills/*/SKILL.md` if the project has local skills). State up
 front how many skills will be scanned.
 
@@ -69,7 +71,7 @@ reports those whose target does not exist:
 
 ```bash
 uv run --frozen --project "${CLAUDE_SKILL_DIR}" \
-  python -m scripts.scan_refs ~/.claude/skills --json
+  python -m scripts.scan_refs <harness>/skills --json
 ```
 
 `--external-urls` on the same scanner lists the external URLs the corpus names,
@@ -93,7 +95,7 @@ Present each dangling reference with: skill, ref type, the raw reference, the
 resolved path, and the line. Do not auto-fix — a dangling reference may mean the
 artifact was deleted (remove the reference) **or** renamed (repoint it) **or**,
 for a `../`-escaping link, that the skill was authored in a repo and vendored
-into the harness (a portability issue per the `skill-creator` skill's
+into the harness (a portability issue per the `skill-writer` skill's
 `references/portability.md`). The
 repair is a human judgment; surface the fact, let the user decide.
 
@@ -102,7 +104,7 @@ repair is a human judgment; surface the fact, let the user decide.
 For the scanned skills, surface the existing signals so the report is a single
 health view — **labelling each value's source**:
 
-- **Utility** — do not read `~/.claude/metrics/skill-usage.jsonl` by hand. The corrections
+- **Utility** — do not read `<harness>/metrics/skill-usage.jsonl` by hand. The corrections
   that decide whether its numbers mean anything
   live in `usage_stats` (in the sibling `skill-stocktake` skill, when it is installed
   next to this one); run the script once per window:
@@ -130,7 +132,7 @@ health view — **labelling each value's source**:
   This is an enumeration, not a verdict — folding is the author's call.
 
 - **Size** — enumerate SKILL.md bodies over the 500-line limit
-  (`wc -l ~/.claude/skills/*/SKILL.md | sort -rn`; limit per skill-creator §3, sourced
+  (`wc -l <harness>/skills/*/SKILL.md | sort -rn`; limit per skill-writer §3, sourced
   from Anthropic's official best practices as of 2026-08-29 — re-check on doc updates).
   Growth after creation is the case the creation-time gate cannot catch. The verdict on
   whether an oversized body is bloat or load-bearing belongs to skill-stocktake's
@@ -139,7 +141,7 @@ health view — **labelling each value's source**:
   if present; if none/stale, recommend running `/claude-security`. Do not
   re-scan for vulnerabilities here.
 - **Validation** — note (**missing validators** debt) which scanned skills have
-  no `skill-comply` spec and no record of passing `skill-creator`'s gates — the
+  no `skill-comply` spec and no record of passing `skill-writer`'s gates — the
   fresh-context draft verdict (its §4) and, for a skill with verifiable output, the
   native ablation screen `claude plugin eval <skill dir> --ablation with-without --runs 3`
   (its §5) — i.e. no way to verify their behaviour. Judge **[LLM]** trigger↔body
@@ -156,7 +158,7 @@ Validation`, where Compatibility shows the dangling-reference count (the only
 hard number), the others show the federated signal or `unmeasured`. List each
 dangling reference with its repair options (remove / repoint / portability).
 
-Persist the scan to `${CLAUDE_SKILL_DIR}/results.json` (the `--json`
+Persist the scan to `<ledger>` (the `--json`
 output) with a real UTC `scanned_at` (`date -u +%Y-%m-%dT%H:%M:%SZ`), so the
 next run can diff. Update it inline with Read/Write.
 

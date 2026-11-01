@@ -9,6 +9,8 @@ Claims:
     - an unreadable item file is named in the header instead of failing the run
     - report.md ends with the native-check paragraph; --assembled marks the header
     - a section's item lines are left out of report.md (each finding appears once, in the tables)
+    - --lang ja and --lang en write the same report structure in their own words (the tests below
+      assert the Japanese text; test_lang_en_* the English)
 """
 
 from __future__ import annotations
@@ -48,7 +50,8 @@ def _run(tmp_path: Path, files: dict[str, object], crosscheck: object = None) ->
 
 
 def _render(run: Path, *extra: str) -> tuple[str, list[dict]]:
-    assert render_report.main([str(run), "--target", "demo", *extra]) == 0
+    lang = [] if "--lang" in extra else ["--lang", "ja"]
+    assert render_report.main([str(run), "--target", "demo", *lang, *extra]) == 0
     out = run / ("report.assembled.md" if "--out" in extra else "report.md")
     return out.read_text(encoding="utf-8"), json.loads((run / "items-all.json").read_text())
 
@@ -183,7 +186,7 @@ def test_empty_item_lists_still_render(tmp_path: Path) -> None:
 
 
 def test_native_note_matches_artifact_template() -> None:
-    body = render_report.NATIVE_NOTE.split("\n\n", 1)[1].strip()
+    body = render_report.MESSAGES["ja"]["native"].split("\n\n", 1)[1].strip()
     html = re.sub(r"`([^`]+)`", r"<code>\1</code>", body)
     template = (SKILL.parent / "templates" / "report.html").read_text(encoding="utf-8")
     assert f"<p>{html}</p>" in template
@@ -243,7 +246,7 @@ def test_symlinked_inputs_are_skipped_and_outputs_refused(tmp_path: Path) -> Non
 def test_untrusted_frame_precedes_copied_text(tmp_path: Path) -> None:
     run = _run(tmp_path, {"hooks": []})
     report, _ = _render(run, "--untrusted")
-    assert report.index(render_report.UNTRUSTED_FRAME) < report.index("## Sources")
+    assert report.index(render_report.MESSAGES["ja"]["untrusted"]) < report.index("## Sources")
 
 
 def test_skills_batch_keep_collides_with_probe_merge(tmp_path: Path) -> None:
@@ -296,3 +299,23 @@ def test_section_item_lines_appear_once(tmp_path: Path) -> None:
     assert "### Source: hooks — Retire 1 · Keep 0" in report
     assert "Scope: 1 hook." in report and "Keep: 0" in report
     assert report.count("reason of hooks-01.") == 1
+
+
+def test_lang_en_writes_english_labels(tmp_path: Path) -> None:
+    run = _run(
+        tmp_path,
+        {"hooks": [_item("hooks-01", "Retire", "h.sh"), _item("hooks-02", "Keep", "k.sh")]},
+    )
+    report, _ = _render(run, "--lang", "en")
+    assert report.startswith("# Harness stocktake ")
+    assert "| Retire | 1 |" in report
+    assert "## Keep (1)" in report
+    assert "no crosscheck.json" in report
+    assert "## What the native checks cover" in report
+    assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", report)
+
+
+def test_lang_default_is_english(tmp_path: Path) -> None:
+    run = _run(tmp_path, {"hooks": [_item("hooks-01", "Retire", "h.sh")]})
+    assert render_report.main([str(run), "--target", "demo"]) == 0
+    assert (run / "report.md").read_text(encoding="utf-8").startswith("# Harness stocktake ")

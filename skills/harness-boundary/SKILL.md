@@ -104,7 +104,7 @@ When applied retroactively to **installed assets**, do not execute the conclusio
   in which layer and until when"
 - Validity of loop structure (servo / decidability / damping) → a loop-design review (the author's harness uses `loop-design-check`)
 - Bulk cross-check at a model generation change → skill: `generation-audit`
-- Human portability (whether others can install and use it) → `skill-creator/references/portability.md`
+- Human portability (whether others can install and use it) → `skill-writer/references/portability.md`
 
 ## Expiry conditions
 

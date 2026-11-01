@@ -74,9 +74,9 @@ Step 1 で選んだセッションの抽出結果を**全文通読**し、判断
 
 ## Step 5: 設計 — 二層に分けるか
 
-> **ここから先は `skill-creator` を通す。** 常駐 rule `rules/common/skills.md` の
-> 「skill / agent を新規作成・大幅改修するときは、書く前に skill: `skill-creator` を読む」は
-> 本 skill にも当然かかる。Step 4 までの抽出結果を skill-creator の intent packet に固定し、
+> **ここから先は `skill-writer` を通す。** 常駐 rule `rules/common/skills.md` の
+> 「skill / agent を新規作成・大幅改修するときは、書く前に skill: `skill-writer` を読む」は
+> 本 skill にも当然かかる。Step 4 までの抽出結果を skill-writer の intent packet に固定し、
 > 隣接 skill との境界を library 全体で引き、fresh-context の subagent に集計しない
 > named verdict（Publishable / Fix / Drop）を出させてから著者通読で閉じる。
 > 以下の Step 5–7 はその手順を置き換えるものではなく、**この skill が固有に持ち込む
@@ -100,12 +100,12 @@ Step 1 で選んだセッションの抽出結果を**全文通読**し、判断
 
 ## Step 7: 検証
 
-矛盾チェックと草稿ゲートは `skill-creator` §4 が持つ（fresh-context の判定器）。ここが
-足すのは skill-creator §5 に無い 1 つだけ:
+矛盾チェックと草稿ゲートは `skill-writer` §4 が持つ（fresh-context の判定器）。ここが
+足すのは skill-writer §5 に無い 1 つだけ:
 
 - **ground truth 遡及テスト** — 過去に「ユーザー指摘で直した」実例の**修正前版**を git 履歴から取り、新スキルの判断ゲートだけで既知の欠陥を再発見できるか。正解が既知なので最強の eval。判断・価値観を抽出したこの skill 特有の検証で、抽出元セッションがそのまま正解ラベルになる
 
-（発火率の測定が要るときは skill-comply。skill-creator の草稿ゲートとは別工程）
+（発火率の測定が要るときは skill-comply。skill-writer の草稿ゲートとは別工程）
 
 ---
 
@@ -114,4 +114,4 @@ Step 1 で選んだセッションの抽出結果を**全文通読**し、判断
 - `session-theme-mining`（`~/MyAI_Lab/zenn-content` 常駐）— 過去の Claude / Codex セッションから記事の問いを発見する。判断・価値観の正本化はしない
 - `learn-eval` — 現行セッションからの単発パターン抽出（本スキルの単セッション版・対）
 - `skill-stocktake` / `rules-distill` — 生成後のスキル監査・rule への蒸留
-- `skill-creator` — **書く前に必ず通す入口と草稿ゲート**（`rules/common/skills.md` の配線）。Step 5 以降の起草・境界引き・判定はそちらが持ち、本 skill は Step 1–4 の抽出と、Step 7 の ground truth 遡及テストを足す
+- `skill-writer` — **書く前に必ず通す入口と草稿ゲート**（`rules/common/skills.md` の配線）。Step 5 以降の起草・境界引き・判定はそちらが持ち、本 skill は Step 1–4 の抽出と、Step 7 の ground truth 遡及テストを足す

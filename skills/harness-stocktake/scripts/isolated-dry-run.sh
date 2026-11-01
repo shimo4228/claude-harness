@@ -2,7 +2,7 @@
 # isolated-dry-run.sh — run harness-stocktake --project <repo> --dry-run over a repository you do
 # not trust, and record when each part of the report appears.
 #
-# Usage: isolated-dry-run.sh <repo> <out-dir> [--model <alias>] [--timeout <seconds>]
+# Usage: isolated-dry-run.sh <repo> <out-dir> [--model <alias>] [--timeout <seconds>] [--lang en|ja]
 #
 # Contract:
 #   <repo>     a checked-out repository; read as data, never as configuration
@@ -39,15 +39,17 @@ set -euo pipefail
 
 die() { printf 'isolated-dry-run: %s\n' "$*" >&2; exit 2; }
 
-[[ $# -ge 2 ]] || die "usage: isolated-dry-run.sh <repo> <out-dir> [--model <alias>] [--timeout <seconds>]"
+[[ $# -ge 2 ]] || die "usage: isolated-dry-run.sh <repo> <out-dir> [--model <alias>] [--timeout <seconds>] [--lang en|ja]"
 repo_in=$1 out_in=$2
 shift 2
 model=opus
 limit=1800
+lang=en
 while [[ $# -gt 0 ]]; do
   case $1 in
     --model) [[ $# -ge 2 ]] || die "--model needs a value"; model=$2; shift 2 ;;
     --timeout) [[ $# -ge 2 && $2 =~ ^[0-9]+$ ]] || die "--timeout needs seconds"; limit=$2; shift 2 ;;
+    --lang) [[ $# -ge 2 && $2 =~ ^(en|ja)$ ]] || die "--lang needs en or ja"; lang=$2; shift 2 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -136,11 +138,11 @@ if [[ -n $(find "$out/run" -type l -print -quit) ]]; then
   printf '%s\tNO-RENDER symlink under run/\n' "$(($(date +%s) - start))" >>"$out/timeline.tsv"
 elif [[ ! -f $out/run/report.md && -f $out/run/crosscheck.json ]]; then
   rrc=0
-  "$python_bin" -I "$renderer" "$out/run" --target="$(basename -- "$repo")" --base=- --untrusted 2>>"$out/stderr.txt" || rrc=$?
+  "$python_bin" -I "$renderer" "$out/run" --target="$(basename -- "$repo")" --base=- --untrusted --lang="$lang" 2>>"$out/stderr.txt" || rrc=$?
   printf '%s\tRENDER report.md rc=%s\n' "$(($(date +%s) - start))" "$rrc" >>"$out/timeline.tsv"
 elif [[ ! -f $out/run/report.md ]]; then
   rrc=0
-  "$python_bin" -I "$renderer" "$out/run" --target="$(basename -- "$repo")" --base=- --untrusted --assembled \
+  "$python_bin" -I "$renderer" "$out/run" --target="$(basename -- "$repo")" --base=- --untrusted --lang="$lang" --assembled \
     --out "$out/run/report.assembled.md" 2>>"$out/stderr.txt" || rrc=$?
   printf '%s\tASSEMBLED report.assembled.md rc=%s\n' "$(($(date +%s) - start))" "$rrc" >>"$out/timeline.tsv"
 fi

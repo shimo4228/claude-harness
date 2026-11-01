@@ -44,6 +44,17 @@ Every path this skill and its sources name starts at one of two roots:
 
 The run directory `<run>` is `--out`, else `<repo>/.notes/stocktake/<YYYY-MM-DD>/`.
 
+Phases 1–3 use git on `<repo>` only for `blob`; when `<repo>` is not a git repository (a
+`~/.claude` that was never put under git), `blob` is `-`. Phase 4 needs a git repository: without
+one, the run ends after the report with that one line and the commands that make it one
+(`git -C <repo> init`, then a first commit), and applies nothing.
+
+**Convention checks follow the harness.** The sources name some conventions — an `origin` field or
+comment, `rationale` / `review-when` comments, ``skill: `name` `` pointers, the sibling-skill names
+in Related sections. Each is a check only where the harness states it for itself (in its CLAUDE.md,
+its rules, its README). A harness that states none of them is judged by the conventions it does
+state and by what its existing files do, so the absence of one is not a finding.
+
 ### Project mode
 
 The sources read these places in the repo; the global `~/.claude` stays out of scope.
@@ -58,15 +69,15 @@ The sources read these places in the repo; the global `~/.claude` stays out of s
 | `docs` | `CLAUDE.md`, `docs/adr/`, `README.md` | `CLAUDE.md` or `.claude/CLAUDE.md`, `AGENTS.md`, the ADR directory if any, `README.md` |
 | `assets` | harness configs and scripts | the whole repo |
 
-- Each source runs its full mode. Its ledger (the `results.json` its skill names) and the usage
-  metrics under `~/.claude/metrics/` describe the operator's own harness, so project mode reads
-  neither and writes neither, and records usage evidence as `n/a`. Checks done by a tool that lives
-  only in `~/.claude` (`scripts/hooks/harness_lint.py`) are done with Read / Grep / Glob instead.
+- Each source runs its full mode. Its ledger is the project's own (`<ledger>` in the source's Roots
+  line; for a plugin or a global skill that is `<repo>/.claude/stocktake/<skill>.json`): read it,
+  and update it on the apply branch. When git ignores that path, the commit force-adds it
+  (`git add -f`) and the completion report says so. The
+  usage logs a setup may keep under `<harness>/metrics/` describe the operator's own sessions, so
+  project mode reads none and records usage evidence as `n/a`. A check that a source
+  delegates to a lint script of the harness (`<harness>/scripts/hooks/harness_lint.py`, when the
+  harness has one) is done with Read / Grep / Glob instead.
   repo-asset-stocktake's ledger (`<repo>/.repo-asset-stocktake.json`) is written only on the apply branch
-- The conventions of the operator's own harness — an `origin` field or comment, `rationale` /
-  `review-when` comments, ``skill: `name` `` pointers, the sibling-skill names in Related sections —
-  are checks for `~/.claude` only. In project mode a source judges the repo by the conventions the
-  repo itself states (its CLAUDE.md, README, existing files), so their absence is not a finding
 - A source with no targets (no `.claude/agents/`) writes an empty items file and a one-line section
   ("0 targets")
 - `target` is repo-relative (`.claude/skills/pr/SKILL.md`)
@@ -126,11 +137,11 @@ Agent tool of its own to split with. skill-stocktake's parent steps run as follo
   the script, which pairs a batch verdict and a probe verdict on one skill — a batch Keep against a
   probe Merge included — as a same-file collision for the author to settle
 
-Give each subagent the source id, both roots, `<run>`, the mode flags, the item schema below, and
+Give each subagent the source id, both roots, `<run>`, the mode flags, the report language (`en` or `ja`, Phase 3), the item schema below, and
 the path of its skill — `${CLAUDE_SKILL_DIR}/../<name>/SKILL.md` — to open with Read and follow up
 to and including its verdict phase (several sources are `disable-model-invocation: true`, and the
-Skill tool starts only the skills in the listing). Under `--dry-run` or in project mode the source
-writes no ledger: what its ledger-hygiene step would fix becomes an item instead. Tell every source
+Skill tool starts only the skills in the listing). Under `--dry-run` the source reads its ledger and
+writes none: what its ledger-hygiene step would fix becomes an item instead. Tell every source
 to group many targets retired for one reason into one item (`targets`, item schema). Without the
 Agent tool, run the sources one by one in the table order.
 
@@ -166,8 +177,8 @@ One JSON object per item. Every field is plain text unless noted.
 | `verdict` | the source's verdict word (`Retire`, `Merge into X`, `Improve`, `Append`, …) |
 | `alternatives` | array of other verdict words the author may pick instead (optional) |
 | `reason` | the source's Reason-quality text: self-contained, decision-enabling on its own |
-| `evidence` | array of the No answers, each "question — one-line evidence". A count is the number the Glob / Grep output shows; a `file:line` is read back with Read before it is written; "no reference" or "unused" rests on a search of the whole repo (`docs/plans/`, runbooks and configs included); a claim about Claude Code's own runtime behavior cites its source or says 未確認 |
-| `change` | the concrete change: a diff summary, the draft text, or for a skill Improve the skill-creator intent packet (what to fix, which sections, the No list) |
+| `evidence` | array of the No answers, each "question — one-line evidence". A count is the number the Glob / Grep output shows; a `file:line` is read back with Read before it is written; "no reference" or "unused" rests on a search of the whole repo (`docs/plans/`, runbooks and configs included); a claim about Claude Code's own runtime behavior cites its source or says it is unverified (未確認 in a `ja` report) |
+| `change` | the concrete change: a diff summary, the draft text, or for a skill Improve the skill-writer intent packet (what to fix, which sections, the No list) |
 | `impact` | what depends on the target (pointers in rules, agents, MEMORY, other skills) |
 | `conflicts` | array of item ids this item collides with (`render_report.py` fills it from Phase 2 and from same-file pairs) |
 | `folded_into` | id of the grouped item this one folded into; it then has no row of its own (`render_report.py` fills it) |
@@ -211,13 +222,17 @@ states the truncation.
 The report is assembled by a script, never retyped:
 
 ```bash
-python3 -I "${CLAUDE_SKILL_DIR}/scripts/render_report.py" <run> --target <repo name> --base "$(git -C <repo> rev-parse HEAD)"
+python3 -I "${CLAUDE_SKILL_DIR}/scripts/render_report.py" <run> --target <repo name> --base "$(git -C <repo> rev-parse HEAD)" --lang <en|ja>
 ```
 
-It orders the items by group, then by source table order, then by id: **退役** (Retire, Dissolve,
-Retire-and-absorb) → **統合・降格** (Merge, Demote) → **改善・更新** (Improve, Update, Append,
-Revise, Create) → **その他** (any other verdict word) → **維持** (Keep, Out of scope, Already
-Covered, Too Specific). It writes
+`--lang` is the language the operator writes to you in: `ja` for Japanese, `en` otherwise. It sets
+the words the script writes (headings, group names, the closing paragraph); write `reason`,
+`change` and the sections in the same language.
+
+It orders the items by group, then by source table order, then by id: **Retire** (Retire, Dissolve,
+Retire-and-absorb) → **Merge / demote** (Merge, Demote) → **Improve / update** (Improve, Update,
+Append, Revise, Create) → **Other** (any other verdict word) → **Keep** (Keep, Out of scope, Already
+Covered, Too Specific) — under `--lang ja`, 退役 → 統合・降格 → 改善・更新 → その他 → 維持. It writes
 `<run>/report.md` — a header (target, date, `base`), the counts per group, the `sections/` files in
 table order, the collisions, one row per item in `order` (`id` / `verdict` / `target` / `reason` /
 `change` / `conflicts`, plus a `decision` column the author edits), the Keep items folded into one
@@ -233,7 +248,7 @@ Outside `--dry-run`, write `<repo>/.notes/stocktake/latest.json` = `{report: <pa
 report.md>, date, base}`. Under `--dry-run` the run ends here with the path of `report.md` and the counts per
 group.
 
-**Artifact report** (`~/.claude`, desktop app):
+**Artifact report** (`~/.claude`, desktop app, `--lang ja` — the page's own text is Japanese):
 
 1. Publish `${CLAUDE_SKILL_DIR}/templates/report.html` as a new Artifact (icon `checklist`) with
    `capabilities: {db: {rules: [{path: "", read: "interact", write: "owner"}]}}`.
@@ -256,8 +271,8 @@ neither.
 
 Close with the link, the counts per group, and one line on what to do: change the items to
 override, then press 「この内容で承認」 (Markdown report: edit the `decision` column and approve in chat). In `--unattended` mode, send the same three lines to the
-notifier the setup has (the author's harness runs
-`bash ~/.claude/scripts/notify-slack.sh "<title>" "<body>"`) and end the session's turn.
+notifier the setup names (its CLAUDE.md or the scheduled prompt says which command) and end the
+session's turn; with no notifier named, the run ends with them in its output.
 
 ## Phase 4 — Apply
 
@@ -289,11 +304,14 @@ ends in its own commit. For each item:
 2. **Apply** by target kind:
    - rules, agents, hooks, docs, configs: edit in place following the source skill's own rules
      (rules-stocktake for rules, and so on)
-   - skills (Improve, Update, Merge residue, a Demote's new skill): run skill: `skill-creator` on
-     its **report path** with the item's `change` as the intent packet
+   - skills (Improve, Update, Merge residue, a Demote's new skill): when skill-writer sits next to
+     this skill (`${CLAUDE_SKILL_DIR}/../skill-writer/SKILL.md`, which the plugin ships), open it with
+     Read and run its **report path** with the item's `change` as the intent packet; otherwise edit
+     the SKILL.md from the intent packet directly, keeping its frontmatter
    - Retire / Dissolve: delete the way the source skill says (`git rm` for skills, rules, agents
      and hooks; soft-delete for repo-asset-stocktake), plus the pointer fixes in `change`; for
-     Dissolve, an ADR via skill: `adr-writer`
+     Dissolve, record why the way the repo records decisions (an ADR via skill `adr-writer` when
+     the setup has it, else a Context / Decision paragraph in the commit body)
    - a target git does not track (in `~/.claude`, `settings.json`, which wires the hooks): prepare the exact diff
      now, keep the file unchanged, outcome `pending` with the note "after merge"
 3. **Compare** the applied diff with the approved `change`. When they differ (a rebuilt change, an
@@ -326,24 +344,14 @@ On the author's GO:
    `<run>/<name>.before`, apply the diff the reply showed, and set the item's
    outcome to `applied`.
 
-Pending items carry into the next run's report as ordinary items. Publishing to public repos stays
-with the author (the author's harness does it with skill `harness-sync`).
+Pending items carry into the next run's report as ordinary items. Publishing copies of the harness
+elsewhere stays with the author.
 
 ## Schedule
 
 The monthly unattended run starts a session with `--unattended`; the run publishes the report,
 sends its three closing lines to the notifier, and stops. Each install schedules it with its own
-scheduler (cron, launchd, a scheduled task) and points the closing lines at its own notifier.
-
-In the author's harness the job is `scripts/launchd/com.shimomoto.harness-stocktake.plist` (the
-plist holds the actual day and hour). It calls `scripts/triage-tick.sh --prompt-file
-scripts/launchd/harness-stocktake-prompt.txt`, which finds or spawns the `harness-stocktake`
-session in Herdr and sends the prompt; a failed spawn alerts Slack. The author registers it:
-
-```bash
-cp ~/.claude/scripts/launchd/com.shimomoto.harness-stocktake.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.shimomoto.harness-stocktake.plist
-```
+scheduler (cron, a scheduled task, a CI workflow) and names its own notifier in the prompt it sends.
 
 ## Single-source use
 
@@ -355,7 +363,7 @@ one source; `stocktake/<date>` in Phases 4–5 reads `stocktake/<date>-<source>`
 
 - skill-stocktake / rules-stocktake / agent-stocktake / hook-stocktake / rules-distill /
   context-sync / repo-asset-stocktake — the sources; each owns its verdict rules and ledger
-- skill-creator — its report path applies a skill item without the entry confirmation and the
-  read-through, which this skill's two decisions replace
-- generation-audit — on a model-generation change it feeds evidence into the sources and uses this
-  report for its own line fixes
+- skill-writer (when installed) — its report path applies a skill item without the entry
+  confirmation and the read-through, which this skill's two decisions replace
+- generation-audit (when installed) — on a model-generation change it feeds evidence into the
+  sources and uses this report for its own line fixes

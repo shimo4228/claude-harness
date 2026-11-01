@@ -4,7 +4,7 @@
 same question for a URL, and takes its input from that scanner's `--external-urls`.
 Two checks asked for it and neither had it: `skill-stocktake` (Currency — every URL
 a skill names; wired) and `context-sync` (`EcosystemRepo` URLs resolve; not wired
-yet — deferred, see ADR-0052 Decision 5). DOI / arXiv *validity* is deliberately
+yet — deferred, see MAINTENANCE.md). DOI / arXiv *validity* is deliberately
 **not** a consumer: a DOI can 302 onto a wrong landing page and still answer 200, so
 `citation-formatter` needs identifier resolution, not liveness.
 

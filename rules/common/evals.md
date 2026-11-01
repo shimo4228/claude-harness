@@ -6,7 +6,7 @@
 | 問い | 行き先 |
 |---|---|
 | eval set を作る・eval しながら改善する | `/claude-api build-eval` → `/claude-api hillclimb`（自作 runner より先） |
-| skill に効果があるか（有無だけ） | skill: `skill-creator` §5 の `claude plugin eval` |
+| skill に効果があるか（有無だけ） | skill: `skill-writer` §5 の `claude plugin eval` |
 | 文章の好み・読みやすさ | skill: `author-calibrated-eval`（judge の点数で登らない） |
 | judge prompt の形 | skill: `llm-as-judge` |
 | n・閾値・ノイズ | skill: `measurement-discipline` |

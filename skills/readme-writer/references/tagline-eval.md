@@ -7,11 +7,11 @@ Step 1 で著者が tagline を選ぶとき、候補だけでなく測った結�
 
 ## 入れる候補
 
-- [skill: headline-craft] に tagline の候補を 9 本前後頼む（headline-craft は現行の tagline を比較の基準として
+- [skill: headline-craft] に tagline の候補を頼む（仮説の群ごとの代表で、現行の tagline を比較の基準として
   1 本に含める）
 - 著者の入口の語（Step 1 で聞いた、流入経路で探される語）は、すべての候補に含める。扱いは [skill: persona-read-loop] の
   readme preset「Feature names newer than the reader model」
-- 主張はコードと計測に照らしてから候補に入れる（headline-craft の「誠実さの照合」）。数字は計測の値と一致させる
+- 主張はコードと計測に照らしてから候補に入れる（headline-craft の「約束の監査」）。数字は計測の値と一致させる
 - 途中で候補を足してよいのは、段 1 で出た取り違えを直した案と、入口の語を入れ忘れた案を直した案だけ
 
 ## 読み手

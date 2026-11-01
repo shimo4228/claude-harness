@@ -81,7 +81,7 @@ report まで約 30 分、承認から適用まで約 35 分）。著者はこ�
 | directory 提出 | **Adopt** skill `plugin-directory-submit`（personal-branding） | 初回にしか読まれない欄・validator で落ちた実例・portal の手順を既に持つ |
 | 掲載 PR / issue | **Adopt** routine `listing-pr-daily` + `listing-queue.md` | 動いている。queue に行を足すだけ |
 | 入れずに試す | **Build-small** repo 内の sample harness + sample report + `--dry-run`。server 側の「URL を貼る」版は**作らない** | SDK hosting は API key 課金で運営者負担、"pay on users' behalf" 条項が曖昧、abuse 対策が自前（stop 2・3） |
-| 利用者の観察 | **Build-small** fresh `claude -p` の persona 3 体に README だけ渡して install → 実行させ、詰まる場所と秒数を取る（skill `persona-read-loop` の拡張）+ 公開 harness 20〜50 本の手元 dry-run | 見知らぬ人の募集はしない（著者）。人の観察は issue で来た人に限る |
+| 利用者の観察 | **Build-small** fresh `claude -p` の persona 3 体に README だけ渡して install → 実行させ、詰まる場所と秒数を取る（skill `persona-read-loop` の拡張）+ 公開 harness 20 本の手元 dry-run（Stage 0。Stage 3 はこの 20 本で書く） | 見知らぬ人の募集はしない（著者）。人の観察は issue で来た人に限る |
 | 動画・画像 | **Adopt** Remotion 4.0.539（Free License）+ OpenAI tts-1（45 秒 ≈ $0.01）+ scene 単位の字幕。terminal は charmbracelet/vhs | 1 project で video と still。2 次チャネル（成功した CLI 5 本中 3 本は demo 媒体なし） |
 | 反応の収集 | **Adopt** `gh api`（traffic 14 日、`stargazers/history`、code search）+ HN Algolia + Bluesky `searchPosts` + Buffer MCP + Dev.to API + F5Bot。**Build** 150 行前後の収集 script 1 本 | Reddit API は承認制、X API は従量課金（課金は著者） |
 | 利用の計測 | **Adopt** workflow 参照の code search + dependents + directory Usage tab + 利用者が自分で付ける badge。telemetry は**入れない** | Go は opt-out から opt-in に戻った。設定全体を読む skill の ping は Homebrew より重い依頼 |
@@ -211,23 +211,40 @@ issue で来た人に限り、来たら `rfcs/` に記録する。
 
 **著者**: secret の 1 行 × 4 / Marketplace の publish。
 
-### Stage 3 — 公開 harness の実測と「State of Claude Code Harness Hygiene 2026」
+### Stage 3 — 手元の 20 本の実測と「State of Claude Code Harness Hygiene 2026」
+
+> **改訂（2026-11-01、著者の指示）**: 公開 harness を 50 本に広げる計測はしない。token を新しい計測に使わず、Stage 0 で回した
+> 20 本と、その後の再走・正答率の記録だけで書く。見立ての的中率は Stage 0 の予測（[premise-test-prediction](research/2026-11-01-premise-test-prediction.md)）
+> がすでに見ていない repo で当てているので、それを使う。
+
+**材料（すべて既存。新しい run はしない）**
+
+- 前提の検証 20 本: [research/2026-11-01-premise-test.md](research/2026-11-01-premise-test.md)・予測と的中:
+  [premise-test-prediction](research/2026-11-01-premise-test-prediction.md)
+- `/doctor` との比較表: [research/2026-11-01-doctor-comparison.md](research/2026-11-01-doctor-comparison.md)
+- 正答率（中心の主張 60 件）: [research/2026-11-01-precision.md](research/2026-11-01-precision.md)
+- 品質修正後の再走 14 本: [research/2026-11-01-rerun.md](research/2026-11-01-rerun.md)
+- plugin で最初の指摘まで: [research/2026-11-01-stage1-plugin.md](research/2026-11-01-stage1-plugin.md)
+- 著者の harness の初回実行（192 項目 → 判断 2 回）: [ADR-0097](../adr/0097-batch-stocktake-report-and-two-decisions.md)
 
 **やること**
 
-1. Stage 0 の 20 本を **50 本**に広げる（同じ選定 query。clone は手元、連絡なし）。plugin 版で `--dry-run` を回し、同じ項目を記録
-2. 集計: source 別の非 Keep 率、native（Stage 0 の比較表の分類）に拾われない項目の割合、harness の大きさと非 Keep 件数の関係、
-   見立ての的中率。repo 名なし、n < 10 のセルは伏せる、query・版・日付を添える
-3. 技術記事 1 本（英: Dev.to、日: Zenn。skill `writing-ecosystem` の手順）: 「`/doctor` の後に何が残るか — 公開 harness 50 本の
-   実測」。著者の harness の before / after（192 項目 → 2 回の判断）を 1 本の物語として添える。一つの数字に絞る
-4. 集計のデータ（CSV）と記事の英語版を plugin repo の `docs/state-of-2026/` に置き、GitHub release → Zenodo の DOI（skill
+1. 集計: 上の記録から、source 別の非 Keep 率、native（比較表の分類）に拾われない項目の割合、harness の大きさと非 Keep 件数の
+   関係、見立ての的中率を表にする。repo 名なし、n < 10 のセルは伏せる（20 本なので伏せるセルが増える — 伏せたことを表に書く）、
+   選定 query・版・日付を添える。記録に無い数字は作らない
+2. 技術記事 1 本（英: Dev.to、日: Zenn。skill `writing-ecosystem` の手順）: 「`/doctor` の後に何が残るか — 公開 harness 20 本の
+   実測」。物語の軸は系譜と出所 — 著者が AI コーディングの初期に ECC へ入れた skill-stocktake が、harness 全体を 1 枚の
+   report と 1 回の承認で片付ける harness-stocktake になったこと、その手順が AKC（DOI 10.5281/zenodo.19200727）の Curate phase で
+   あること。著者の harness の before / after（192 項目 → 2 回の判断）を添え、数字は一つに絞る
+3. 集計のデータ（CSV）と記事の英語版を plugin repo の `docs/state-of-2026/` に置き、GitHub release → Zenodo の DOI（skill
    `release-doi`。webhook は Claude が設定、release は著者の OK 1 回）
-5. 反応の収集 script（Stage 5 の 1）をここで動かし始める
+4. 反応の収集（Stage 5 の 1、`scripts/campaign-monitor.py`）は 2026-11-01 に launchd 登録済み。plugin repo の public 化から数字が出る
 
-**成果物**: 50 本の集計 / 記事（英・日）/ DOI 付きのデータ / 画像 1 枚（Remotion still）
+**成果物**: 20 本の集計 / 記事（英・日）/ DOI 付きのデータ / 画像 1 枚（Remotion still）
 
-**判定**: 50 本の集計で Stage 0 の見立てが的中率 70% 以上なら、記事の「対象」を見立てどおりに書く。70% 未満なら対象を書かず
-分布だけを出す。記事は `persona-read-loop` 3 round と `readme-judge`（記事版は writing-ecosystem の reviewer）を通す。
+**判定**: 記事の「対象」（どんな harness で驚きが出るか）は、Stage 0 の見立てが見ていない repo で当たった範囲だけを書き、外れた
+範囲は分布だけを出す。n = 20 であることを本文に書き、一般化の言い方をしない。記事は `persona-read-loop` 3 round と
+writing-ecosystem の reviewer を通す。
 
 **著者**: 記事 2 本の公開の OK（1 回ずつ）/ release の OK。
 
@@ -271,7 +288,7 @@ Usage）。30 日時点で `uses:` 10 本未満なら、経路より「3 分」�
    `.notes/`）。task-triage が拾い、build session が直し、著者が merge する
 3. 月次: 集計を `rfcs/` の campaign エントリに 1 行（`uses:` 本数、directory install / 使用 account、言及数、起票数）。
    personal-branding の scorecard にも同じ数字
-4. 「State of」は半年ごとに同じ query で再集計し、Zenodo の新 version にする
+4. 「State of」は半年ごとに同じ query で再集計し、Zenodo の新 version にする（新しい run を回すかは、その時点で著者が token の残りを見て決める）
 
 **成果物**: monitor script + launchd plist / `rfcs/` の campaign エントリ / 月次の 1 行
 
@@ -288,8 +305,7 @@ Stage 0（今すぐ、手元）────────────────�
                                                            Stage 0 の 20 本 ──► Stage 3 ─┘
 ```
 
-- Stage 0 は修理の決着を待たない。Stage 3 の 50 本の dry-run も plugin 版を待たずに harness 版で始められる（集計は plugin 版で
-  取り直す）
+- Stage 0 は修理の決着を待たない。Stage 3 は新しい run を持たず、Stage 0 の 20 本の記録から書くので、Stage 1・2 を待たずに始められる
 - Stage 4 の表 1（directory 提出）は Stage 1 直後
 
 ## 失効条件（campaign 全体。見つけたら止まって報告）

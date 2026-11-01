@@ -48,6 +48,11 @@ adr-reviewer の照合で誤りと判明した — `git log --diff-filter=A -- '
 
 ## Decision
 
+   > **注記（2026-11-01, commit「refactor(skill-writer): skill-creator を skill-writer に改名する」）**: 名前を
+   > skill-writer に改名した（adr-writer・readme-writer・rfc-writer と揃え、plugin harness-stocktake に同梱するとき
+   > Anthropic 公式の skill-creator と名前で区別するため）。中身と §1〜§7 は変えていない。下の Alternatives で
+   > 棄却した「skill-writer + skill-judge の新設」（書く skill と評価する skill の分割）とは別物で、分割はしていない。
+
 1. skill-creator を名前を維持したままその場で全面書き直す（`b81683e^` 時点 19 ファイル 5,886 行 →
    SKILL.md 96 行 + `references/portability.md` 38 行。`git ls-tree -r b81683e^ -- skills/skill-creator` で再現）。origin を
    `shimo4228` に反転し、`replaces:` で旧版との系譜を残す（`replaces:` は rules/common/skills.md に

@@ -33,7 +33,7 @@ are owned by the stocktake for each asset class (ADR-0022); this skill stands on
 - **Scope**: the prompt surface of `~/.claude` — `rules/common/`, `CLAUDE.md`, `AGENTS.md`,
   `output-styles/`, `skills/*/SKILL.md` and `references/`, `agents/`, and the text hooks return to the model
 - **Not applied to** (audited and recorded in the ledger, but not edited):
-  - unmodified copies of externally originated files and symlinked external skills — keep them as copies (skill `skill-creator` §3)
+  - unmodified copies of externally originated files and symlinked external skills — keep them as copies (skill `skill-writer` §3)
   - files another session is working on — `M` / `??` entries in `git status` that are not your changes. To avoid breaking
     that session's commit, leave the findings in the ledger and carry them to the next run
 
@@ -103,7 +103,7 @@ author's request includes application ("fix it", "finish it"), apply directly; w
 (source `generation`, `change` = the line's diff) of the report contract in skill `harness-stocktake` and apply what the one
 approval accepts, on its task branch. Lines in the resident layer (rules / CLAUDE.md / output style) always go through that report,
 each with its exact diff (rules load every session). When you fix a rule, update its `rationale:` / `review-when:` too (ADR-0021).
-Writing style follows skill `skill-creator` §3 (version-drift markers are blocked by `scripts/hooks/harness_lint.py`). Low and `flag`
+Writing style follows skill `skill-writer` §3 (version-drift markers are blocked by `scripts/hooks/harness_lint.py`). Low and `flag`
 findings go only in the ledger. Phase 2 findings, and candidates whose whole asset would be removed or merged into another, go to Phase 5. After applying, pass `harness_lint.py` and, when the `skill-health` skill is installed next to this one,
 `uv run --frozen --directory "${CLAUDE_SKILL_DIR}/../skill-health" python -m scripts.scan_refs ~/.claude/skills --json`
 (dangling 0).

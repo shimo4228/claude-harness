@@ -35,7 +35,7 @@ Look for:
      lies in its comprehensiveness, so appending improves it — "I don't want to pollute the
      existing skill" routes the pattern to a file nothing reaches.
    - **Promote to a skill** — the pattern has its own independent trigger (a user request
-     that no installed skill answers). Run skill: **skill-creator** (required by
+     that no installed skill answers). Run skill: **skill-writer** (required by
      `rules/common/skills.md` before writing any skill).
 
    If neither fits, the verdict is **Drop**, not "park it somewhere for now". A note that
@@ -45,7 +45,7 @@ Look for:
    Global vs project placement (once a destination type is chosen): the source of truth is
    [`docs/adr/0025-global-vs-project-asset-placement.md`](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0025-global-vs-project-asset-placement.md).
 
-4. Draft the candidate as a scratch note (the final skill shape belongs to `skill-creator`;
+4. Draft the candidate as a scratch note (the final skill shape belongs to `skill-writer`;
    `overlap_candidates.py` reads name / description / Problem / Solution / When to Use):
 
 ```markdown
@@ -211,10 +211,10 @@ description: "Description in 130 characters or less"
 7. Save to the destination chosen in Step 3
 
    - **Absorb**: append to the named asset in place and show the diff. Do not create a file.
-   - **Promote**: hand the draft to skill: **skill-creator** — it fixes the intent packet,
+   - **Promote**: hand the draft to skill: **skill-writer** — it fixes the intent packet,
      draws the boundary against neighbouring skills, structures it as
      `~/.claude/skills/<name>/SKILL.md`, and passes it through a fresh-context draft gate
-     (learn-eval = extraction and Save/Drop judgment / skill-creator = shape, boundary and
+     (learn-eval = extraction and Save/Drop judgment / skill-writer = shape, boundary and
      gate — a deliberate role split).
 
 8. **Reachability check (after a Save only)**

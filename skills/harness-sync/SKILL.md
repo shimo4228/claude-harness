@@ -187,6 +187,13 @@ allowlist の component が harness に無い / origin marker が無いと abort
 plugin.json を repo 側で手動 bump する。plugin は rules を運べない (Claude Code plugin
 仕様) ため、rule file は plugin payload 外の copy-install 経路のまま。
 
+`harness-stocktake` も同型の **skills-only plugin variant**: 固定 allowlist は harness-stocktake と source 7 本
+（skill-stocktake, rules-stocktake, agent-stocktake, hook-stocktake, rules-distill, context-sync, repo-asset-stocktake）と、
+skill-stocktake が URL と参照の検査に使う skill-health と、Apply が skill 項目に使う skill-writer。
+staging の後に**移植性ゲート**を持つ: 写す Markdown に ADR / RFC 番号、Herdr、Slack、launchd、triage-tick、
+`~/.claude/<rules・agents・skills 以外の下位 path>` があれば abort する（直すのは正本の SKILL.md。経緯は各 skill の
+MAINTENANCE.md へ）。tests/ は配らない。root の README・examples/・bench/ と `.claude-plugin/` は repo 側の資産。
+
 `herdr-toolkit` は同型の **skills-only plugin variant**: 固定 allowlist は
 2 skills (spawn-session, agent-send) で rule / agent 収集ブロックを持たない。spawn.sh は兄弟 skill の
 agent-send を呼ぶので、2 つは一緒に publish する。
@@ -216,7 +223,7 @@ skill repo を GitHub 公開する際の規約（正本）:
   は入れない。agent 同梱 repo の README に必ず注記する（`cp agents/*.md
   ~/.claude/agents/` または `install.sh` を実行）。
 - **自分のファイルは skill ディレクトリの変数で指す**: `~/.claude/skills/<name>` を SKILL.md に書かない
-  （install 先が違うと壊れる）。変数名・兄弟と他 skill の書き方・その場で読み替えを書く 1 行は skill-creator の
+  （install 先が違うと壊れる）。変数名・兄弟と他 skill の書き方・その場で読み替えを書く 1 行は skill-writer の
   `references/portability.md` が正本（SKILL.md 本文に変数名を書くと読み込み時に置換されるので、ここには書かない）。
   dangling 検査は skill-health の `scan_refs.py` が変数を展開して行う。
 - **単独 skill repo は `.claude-plugin/` を持たない**: plugin の経路は plugin repo（akc-cycle など）に寄せる。
@@ -242,6 +249,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (固定 allowlist) + repo 所有 rule (自己完結版、sync 対象外) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、agents なし) | 対象 skills のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
+| `~/MyAI_Lab/harness-stocktake`（GitHub `shimo4228/harness-stocktake`、private の間はリンクしない） | plugin (10 skills、移植性ゲート付き) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist) | `~/.claude/skills/harness-stocktake` と source 7 本と skill-health・skill-writer |
 | `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/spawn-session`, `~/.claude/skills/agent-send` |
 | `~/MyAI_Lab/jev-skill-router` ([repo](https://github.com/shimo4228/jev-skill-router)) | plugin (hook + skill) | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |

@@ -25,6 +25,6 @@
 | `practitioner-identity.md` | 著者の自己定義（verbatim）— DOI は手段、研究者ではない |
 | `public-records.md` | 公開 repo の記録で名指すもの・伏せるもの・公開前の検査 |
 | `security.md` | commit hook と trust boundary |
-| `skills.md` | origin schema と skill path、skill-creator への命令形配線 |
+| `skills.md` | origin schema と skill path、skill-writer への命令形配線 |
 | `task-tracking.md` | repo ごとの task ledger path |
 | `testing.md` | coverage と production 境界 |
