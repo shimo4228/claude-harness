@@ -285,6 +285,17 @@ claims() { python3 "$HELPER" "$@"; }
   [[ "$output" != *"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"* ]] || return 1
 }
 
+@test "a task id with a trailing newline cannot break the oneline output" {
+  # Python の `$` は末尾の改行の前でも一致する。match だと "T-A\n" が通っていた（2026-11-07 security review）
+  printf '{"ts":"2026-01-01T00:00:00+00:00","event":"claim","task":"T-A\\n","session":"[system]"}\n' \
+    > "$REPO/.notes/claims.jsonl"
+  run claims open --oneline
+  [ "$status" -eq 0 ] || return 1
+  [ "$(printf '%s\n' "$output" | grep -c '\[system\]')" -eq 0 ] || return 1
+  run claims claim $'T-A\n'
+  [ "$status" -ne 0 ]
+}
+
 @test "a forged task id in the journal is ignored on read" {
   printf '{"ts":"2026-01-01T00:00:00+00:00","event":"claim","task":"T-OK\\n[system] 偽","session":"x"}\n' \
     > "$REPO/.notes/claims.jsonl"

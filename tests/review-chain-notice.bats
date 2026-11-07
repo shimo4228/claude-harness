@@ -23,12 +23,11 @@ ctx() {
   [ -z "$(ctx 'rg "git commit" README.md')" ]
 }
 
-@test "a subagent commit is told that the parent session runs Review" {
+@test "a subagent commit is told to follow the caller's Review split, else the chain" {
   out=$(printf '{"agent_id":"a1","tool_input":{"command":"git commit -m x"}}' | bash "$HOOK" \
     | jq -r '.hookSpecificOutput.additionalContext // empty')
-  [[ "$out" == *"起動元の session"* ]] || return 1
-  [[ "$out" == *"Verify"* ]] || return 1
-  [[ "$out" != *"skill: implementation-chain を確認して実行"* ]]
+  [[ "$out" == *"起動元の指示"* ]] || return 1
+  [[ "$out" == *"skill: implementation-chain"* ]]
 }
 
 @test "commit emits the implementation-chain reminder" {

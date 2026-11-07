@@ -20,10 +20,11 @@ grep -qE '(^|[;|&][[:space:]]*)([A-Za-z_][A-Za-z0-9_]*=[^[:space:];|&]+[[:space:
 source "${BASH_SOURCE[0]%/*}/_advisory-common.sh" || exit 0
 advisory_muted review-chain-notice && exit 0
 
-# subagent は agent を起動できず、Review は起動元の session（triage の判断役・委譲元）が別 process で回す。
+# subagent では、Review を起動元が引き受けていることがある（task-triage の判断役 — packet に書いてある）。
+# 引き受けの有無は起動元の指示が持つので、文面はどちらでも正しい形にする。
 AGENT=$(printf '%s' "$INPUT" | jq -r '.agent_id // empty' 2>/dev/null) || AGENT=""
 if [[ -n "$AGENT" ]]; then
-  msg='Verify は済んでいますか？ subagent の commit なので、Review は起動元の session が別 process で回します。Verify の結果は commit 本文に書いてください。'
+  msg='Review と Verify は済んでいますか？ 起動元の指示（task-triage の packet など）が Review を引き受けていればそれに従い、そうでなければ skill: implementation-chain を確認して実行してください。'
 else
   msg='Review と Verify は済んでいますか？ 未完了なら skill: implementation-chain を確認して実行してください。'
 fi

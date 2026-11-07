@@ -56,7 +56,7 @@ hibernate の空白をコードの遅さと誤診する。
 
 修理・変更の着手時と、原因の診断中に該当原則を 1 つ名指しして通す（「原則 1 — この課題、
 git log で既済照合した？」「原則 4 — kill する前に一次ログを見た？」）。機構を**足す**
-修理はこの skill の外 — implementation-chain の機構ゲート（agent: architect）が正本。
+修理で「そもそも存在すべきか」を別の目で見たいときは agent: architect に聞ける。
 
 ## plan の前の内部調査 report
 

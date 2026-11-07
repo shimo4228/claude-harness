@@ -110,6 +110,7 @@
 | [0099](0099-ci-as-gate-canon-local-as-content-canon.md) | 検査の正本は GitHub の CI、中身の正本はローカルの ~/.claude。cloud の diff は判断役が別 process で review し、merge はローカルの ff-only | 2026-11-01 |
 | [0100](0100-executor-by-model-and-task-context-local-fresh-build.md) | 実行者は model とタスク固有の文脈で決め（Opus は文脈を持つ session が実装、Fable は委譲）、triage は local の fresh build を既定にし、委譲を細かく縛る機構を外す | 2026-11-07 |
 | [0101](0101-decision-history-not-binding.md) | ADR を「従う文書」から「判断の経緯」に変えた — Status と注記手続きを外し、rule の根拠配線を解いた | 2026-11-07 |
+| [0102](0102-remove-change-blocking-mechanisms.md) | 変化を阻む機構を外した — plan mode 既定、research-gate の手順差し込み、fix × 機構ゲート、AKC の Human Approval Gate | 2026-11-07 |
 
 ## Template
 

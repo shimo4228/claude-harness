@@ -16,8 +16,8 @@
 # 同じ文面を毎回出すと無視が既定になり、量も嵩む（14 日で 2,107 回・626K 字 — 2026-11-07 の
 # 内部 report）。そこで固定の注意書きは session と subagent ごと・repo ごとに最初の 1 回だけ、
 # 開いている claim の行は前回出した内容から変わったときだけ出す。印は
-# ~/.claude/state/task-claims-reminder/（TASK_CLAIMS_REMINDER_STATE で上書き、7 日で掃除）。/compact と
-# /clear の後は SessionStart から reset で呼ばれ、その session の印を消す。
+# ~/.claude/state/task-claims-reminder/（TASK_CLAIMS_REMINDER_STATE で上書き、7 日で掃除）。/compact の
+# 後は SessionStart から reset で呼ばれ、その session の印を消す。
 #
 # 入力: stdin から JSON (session_id / agent_id / tool_input)
 # 出力: stdout に数行 (= additional context)。何も言うことが無ければ無音。
@@ -28,9 +28,10 @@ set -uo pipefail
 HELPER="$HOME/.claude/scripts/claims.py"
 STATE="${TASK_CLAIMS_REMINDER_STATE:-$HOME/.claude/state/task-claims-reminder}"
 
-# --- reset: SessionStart(compact | clear) で、その session の印を消す ---
+# --- reset: SessionStart(compact) で、その session の印を消す ---
 # /compact の後も session id は変わらない。印が残ると、要約で消えた作法の行と、変わっていない claim の
-# 行が二度と出ない。settings.json の SessionStart が `… task-claims-reminder.sh reset` で呼ぶ。
+# 行が二度と出ない。settings.json の SessionStart が `… task-claims-reminder.sh reset` で呼ぶ。/clear は
+# 新しい session id で始まる（transcript で確認）ので、印は最初から無い。
 if [ "${1:-}" = reset ]; then
   command -v jq >/dev/null 2>&1 || exit 0
   SID=$(jq -r '.session_id // ""' 2>/dev/null) || exit 0

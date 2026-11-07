@@ -25,7 +25,7 @@ next state; read-only, output is a memo). A cloud build adds the appendix at the
 あなたは task-triage loop の build 役。cwd は `<repo>` の git worktree で、branch は main の先頭から切られている。
 <公開の packet:> 最初に、この packet を `docs/plans/<task-id>-s<n>-<slug>.md` に置いて単独で commit する（`docs(plan): <task-id> S<n> packet`）。
 以後の commit はこのファイルを変えない。<非公開の packet: packet は commit しない — 判断役が `.notes/packets/` に持つ>成果は branch 上の commit で返し、判断役が検収・review して main へ ff-only で取り込む。
-境界は rule `boundary.md`、chain は skill `implementation-chain`（agent を起動する行はこの session では回せない — Review は判断役が回し、調査は自分で検索する）。
+境界は rule `boundary.md`、chain は skill `implementation-chain`（Review の行は判断役が回す。background の subagent は Agent tool を持たないので、調査は researcher を起動せず自分で検索する）。
 <measurement: 書いてよいのは読みメモ 1 ファイル `<path>` と分析スクリプトだけ。判定はしない — 判断役がする>
 
 読むもの: <task file(s)>、<prior commit / memo the task depends on>

@@ -51,7 +51,7 @@ skill / rule の散文、(b) 委譲できない具体的な理由、(c) 著者�
 
 | ステップ | feat | fix | refactor | chore | prototype |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Plan（メインループ / plan mode。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
+| Plan（メインループ。`docs/plans/<slug>.md` に直接書く。sub-agent は探索と代替案の生成まで — plan 本文と採否は主ループが書く。rich context と介入点 1 の対話が要件） | Y | Y | Y | - | - |
 | Phase 0 External Research | Y | - | - | - | - |
 | TDD（メインループ。RED → GREEN → REFACTOR） | C | C | - | - | - |
 | Refactor Clean | - | - | Y | - | - |
@@ -68,7 +68,6 @@ skill / rule の散文、(b) 委譲できない具体的な理由、(c) 著者�
   ① 独立性 — 単体で通り suite で落ちるなら他テストの残した状態 ② mock — args / config に `MagicMock` を使うと
   `getattr(mock, "flag", False)` が False にフォールバックしない ③ 実装側を直す — テストを緩めて通さない、の順で診る
 - 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
-- `fix` / レビュー指摘対応 × 機構ゲート: **修理前に問う — この修正は機構（コード・段・状態・設定面）を足すか**。足すなら plan にその旨と大きさを 1 行書く（実測根拠: CA ADR-0095/0098 — レビュー起点の個別 fix の連鎖が自己供給ループで肥大した）。足さないなら、不具合を生んだ規則（skill / prompt / rule の行）を diff と同時に直すか、直さない理由を 1 行残す
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（ADR-0042）。
   脅威面 = 資格情報の取得・保管・送出 / 外部 IO / 公開経路（外部に出るデータの内容と範囲）/
   無人実行の起動経路とブラスト半径 / 外部コンテンツを LLM 文脈へ取り込む経路 / 権限と bypass の境界。

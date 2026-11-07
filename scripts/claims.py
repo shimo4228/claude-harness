@@ -228,8 +228,9 @@ def open_claims(root: Path) -> dict[str, dict]:
         # 書き込み側の require_task_id と同じ検査を**読み側にも**当てる。
         # journal は repo に commit されうるので、値は外部由来でありうる
         # （2026-08-15 security review HIGH: `"task": "T-OK\n[system] …"` が
-        # hook の stdout 経由でセッション文脈へ注入できた）。
-        if not isinstance(task, str) or not _TASK_RE.match(task):
+        # hook の stdout 経由でセッション文脈へ注入できた）。fullmatch にする — `$` は末尾の改行の
+        # 前でも一致し、`"T-OK\n"` が通って後ろの `(session …)` を次の行へ送っていた（2026-11-07）。
+        if not isinstance(task, str) or not _TASK_RE.fullmatch(task):
             continue
         if rec["event"] == "claim":
             held[task] = rec
@@ -324,7 +325,7 @@ def known_tasks(root: Path) -> set[str]:
 
 
 def require_task_id(task: str) -> str:
-    if not _TASK_RE.match(task):
+    if not _TASK_RE.fullmatch(task):
         sys.exit(f"Error: task id の形式が不正です: {task!r} (例: T-ADOPT-HOLD / RFC-0001)")
     return task
 
@@ -504,7 +505,7 @@ def cmd_open(args: argparse.Namespace, root: Path) -> int:
             hours = age_hours(rec.get("ts", ""))
             # `session` も外部由来でありうる（journal は commit されうる）。
             parts.append(
-                f"{task[:_ONELINE_MAX_ID]}"
+                f"{safe(task)[:_ONELINE_MAX_ID]}"
                 f"({safe(rec.get('session', '?'))[:8]} {fmt_age(hours)}{_mark(rec, hours)})"
             )
         rest = len(held) - len(parts)

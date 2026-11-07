@@ -19,7 +19,7 @@ GOLDEN="${BATS_TEST_DIRNAME}/golden/review-chain-notice"
   printf '%s\n' "$output" | diff - "$GOLDEN/commit.json"
 }
 
-@test "golden: git commit in a subagent -> parent-runs-Review envelope" {
+@test "golden: git commit in a subagent -> caller-or-chain envelope" {
   run bash -c "printf '%s' '{\"agent_id\":\"a1\",\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK'"
   [ "$status" -eq 0 ]
   printf '%s\n' "$output" | diff - "$GOLDEN/commit-subagent.json"
