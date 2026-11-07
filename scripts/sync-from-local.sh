@@ -5,10 +5,10 @@
 # Collects components whose origin marker matches ORIGIN (frontmatter
 # `origin: <value>` or HTML comment `<!-- origin: <value> -->`), stages
 # them, runs a secret scan, then replaces the managed subtrees
-# (skills/ agents/ rules/ docs/adr/ docs/plans/ docs/evals/ rfcs/ hooks/ scripts/hooks/ tests/) wholesale.
+# (skills/ agents/ rules/ docs/decision-history/ docs/plans/ docs/evals/ rfcs/ hooks/ scripts/hooks/ tests/) wholesale.
 #
 # Three subtree groups are NOT origin-filtered:
-#   docs/adr/  — ADRs record this harness's own design decisions and are
+#   docs/decision-history/  — decision-history entries record this harness's own design decisions and are
 #     self-authored by definition, so the whole directory is synced.
 #   rfcs/  — the task-and-proposal ledger (ADR-0049): every entry is a
 #     self-authored judgement record, published wholesale for the same reason
@@ -60,7 +60,7 @@ set -euo pipefail
 SOURCE_DIR="${HARNESS_SYNC_SOURCE:-$HOME/.claude}"
 ORIGIN="${HARNESS_SYNC_ORIGIN:-shimo4228}"
 TARGET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBTREES=(skills agents rules docs/adr docs/plans docs/evals rfcs hooks scripts/hooks tests)
+SUBTREES=(skills agents rules docs/decision-history docs/plans docs/evals rfcs hooks scripts/hooks tests)
 
 # Hooks that are useful in any repo, plus the parts they need to run and be
 # verified: the commit surface (git-commit gates), and — since 2026-08-25 —
@@ -141,7 +141,7 @@ fi
 STAGING="$(mktemp -d)"
 BODY_DRAFT="$(mktemp)"
 trap 'rm -rf "$STAGING" "$BODY_DRAFT"' EXIT
-mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/adr" \
+mkdir -p "$STAGING/skills" "$STAGING/agents" "$STAGING/rules" "$STAGING/docs/decision-history" \
   "$STAGING/rfcs" "$STAGING/hooks" "$STAGING/scripts/hooks" "$STAGING/tests"
 
 has_origin() { head -15 "$1" | grep -q "origin: $ORIGIN"; }
@@ -169,9 +169,9 @@ done < <(grep -rl "origin: $ORIGIN" "$SOURCE_DIR/rules/" 2>/dev/null || true)
 
 # ADRs: the whole directory, no origin filter (self-authored by definition —
 # they document this harness's own decisions; nothing external lands here)
-for adr in "$SOURCE_DIR"/docs/adr/*.md; do
+for adr in "$SOURCE_DIR"/docs/decision-history/*.md; do
   [[ -f "$adr" ]] || continue
-  cp "$adr" "$STAGING/docs/adr/"
+  cp "$adr" "$STAGING/docs/decision-history/"
 done
 
 # rfcs/: the public task-and-proposal ledger (ADR-0049) — same rationale as
