@@ -67,7 +67,6 @@ skill / rule の散文、(b) 委譲できない具体的な理由、(c) 著者�
 - TDD の実行: テストも実装も主ループで書く（仕様は会話にある — sub-agent に委ねない、ADR-0024）。テストが落ちたら
   ① 独立性 — 単体で通り suite で落ちるなら他テストの残した状態 ② mock — args / config に `MagicMock` を使うと
   `getattr(mock, "flag", False)` が False にフォールバックしない ③ 実装側を直す — テストを緩めて通さない、の順で診る
-- 測定・閾値・ガードを含む diff の設計判断は skill: `measurement-discipline`（1 回は証拠でない / ゲートは観測量 / 発火率較正）
 - `feat` × Security Review: **脅威面を動かす feat のみ Y**（ADR-0042）。
   脅威面 = 資格情報の取得・保管・送出 / 外部 IO / 公開経路（外部に出るデータの内容と範囲）/
   無人実行の起動経路とブラスト半径 / 外部コンテンツを LLM 文脈へ取り込む経路 / 権限と bypass の境界。

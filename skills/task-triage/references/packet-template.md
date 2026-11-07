@@ -34,7 +34,7 @@ next state; read-only, output is a memo). A cloud build adds the appendix at the
 1. <machine-checkable outcome — a command and its exit code, a test name, a diff property>
 2. <…>
 <著者だけが答えられる項目の答え（あるときだけ）: UI で使わないスタイル / 性能の指標・目標・目標で止めるか time cap まで
- 続けるか / 本番と比べる測定の正解の定義と、候補と本番の差の表（差が 2 つ以上なら 1 条件ずつの arm — measurement-discipline §8）>
+ 続けるか / 本番と比べる測定の正解の定義と、候補と本番の差の表（差が 2 つ以上なら 1 条件ずつの arm）>
 
 ## Premise（実装の前に再照合）
 - <premise 1 with file:line>

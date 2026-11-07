@@ -1,5 +1,5 @@
 ---
-state: accepted 2026-11-08
+state: withdrawn 2026-11-08
 review-when: claude-harness に CI か repo gate が別の経路で入ったとき
 ---
 ## Summary
@@ -25,6 +25,8 @@ CI まで足して cloud build の経路に乗せるか / gate に shellcheck �
 triage 2026-11-08: 前提は残る — claude-harness に `.claude/` も `.github/workflows/` も無い（`ls`、HEAD c2a1e12）。採否を digest に出した。
 
 **2026-11-08 accepted** — triage digest 2026-11-08 の承認。`.claude/verify.sh` は gate script なので無人では dispatch しない（boundary.md）— 著者が在席する session で verify-bootstrap を回し、`verify_allow.py approve` まで通す。
+
+**2026-11-08 withdrawn** — 著者判断（triage session）: ミラーに gate は要らない。同期元 ~/.claude の `.claude/verify.sh` は `.github/workflows/verify.yml` の CI で回っている（2026-11-07 の run 3 本 success）。判断役注: ミラーにしか無い `scripts/sync-from-local.sh` とそのテスト `scripts/tests/sync-trailers.bats`（12 件）は同期元の CI の対象外で、手で回すまで走らない。
 
 ## Next action
 

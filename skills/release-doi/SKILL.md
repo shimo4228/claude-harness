@@ -398,7 +398,7 @@ GitHub commit は不変 (release commit + DOI 反映 commit は残る)。tag/rel
 ## Release 時の規則
 
 - **`.zenodo.json` の references は新規引用が増えた release で必ず同期する**: citation graph (OpenAIRE / Scholix) に機械可読な辺を張る経路はここだけ。収集コマンド例: `grep -rhoE "arXiv:?[0-9]{4}\.[0-9]{4,5}" docs/ *.txt | sort -u` を既存 `related_identifiers` と突き合わせる
-- **数値キャップを quality filter にしない** — 正本は skill: `measurement-discipline` 原則 4
+- **数値キャップを quality filter にしない** — 上位 N で切るのは量の制御で、N+1 位以下の良いものを黙って捨て、N 位以内の悪いものを黙って通す。質で切るなら質の軸の判定を置く
 - **Single responsibility per artifact**: 1 ファイル = 1 責務。新 concern を既存ファイルに sub-structure で押し込む前に、他層に家があるか問う
 - **schema / storage を変えた release は全消費者を棚卸す** — 正本は skill: `repair-discipline` 原則 2
 - **SWHID は DOI に追記する層**: DOI は extrinsic (registry 依存)、SWHID は intrinsic (content hash 由来) で、各層が他方の failure mode を補う。DOI を置き換えない

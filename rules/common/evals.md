@@ -9,7 +9,6 @@
 | skill に効果があるか（有無だけ） | skill: `skill-writer` §5 の `claude plugin eval` |
 | 文章の好み・読みやすさ | skill: `author-calibrated-eval`（judge の点数で登らない） |
 | judge prompt の形 | skill: `llm-as-judge` |
-| n・閾値・ノイズ | skill: `measurement-discipline` |
 | rule・skill が守られているか | skill: `skill-comply` |
 
 - なじみのない領域、または judge の妥当性が怪しいタスク（安全・翻訳・好み）では、build-eval の

@@ -70,7 +70,7 @@ For every task not in dead-band, in this order — stop at the first that decide
 2. **Condition** — for `blocked`, did the 照合先 fire? "Fired" and "the event source was
    deleted" are different (`obsoleted`). A condition that cannot be observed anymore drops the
    task out of `blocked`. When the 照合先 is an observation count (`blocked` or `in_progress`),
-   also ask measurement-discipline §2: is n larger than the pre-registered question needs, has
+   also ask: is n larger than the pre-registered question needs, has
    the expected date passed, or is the condition calendar-shaped ("next Saturday", "in two
    weeks")? Any yes → re-size n or retire. Such a task is never in dead-band — its expected date
    moves with the measured arrival rate even when the condition text does not.
@@ -200,8 +200,8 @@ Per task or bundle:
    whether a performance task stops at its target or keeps improving to the time cap, and, for a
    measurement that compares a candidate against production, the definition of the ground truth
    (what counts as correct — e.g. what "my domain" means) next to the enumerated differences
-   between the candidate arm and production (measurement-discipline §8: one difference per arm,
-   a ladder when there are more). When the author's request and the task
+   between the candidate arm and production (one difference per arm, a ladder of arms when there
+   are more). When the author's request and the task
    file leave one open, write a proposed default into the packet and make the task a `start` item
    (§2): `question` names the open item, `change` holds the default with its branches
    (「指示に無かったのでこう置いた: A なら…、B なら…。A で進める」). The task starts after the

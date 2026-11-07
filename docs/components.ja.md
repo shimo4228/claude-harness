@@ -41,7 +41,6 @@
 | [task-triage](../skills/task-triage/SKILL.md) | タスク台帳を回す loop の 1 周: 開いている全タスクを判定（前提・着手条件・価値）し、ready を新しい build セッションへ dispatch、成果を独立に検収 — merge の言葉は人間が持つ |
 | [harness-boundary](../skills/harness-boundary/SKILL.md) | mechanism（rule / skill / hook / agent / workflow）を足す前の設計レンズ — 6 層のどこに置くか、モデルに任せられないか、runtime 交換後も残るか。harness を捨てても残るものだけを資産にする |
 | [skill-writer](../skills/skill-writer/SKILL.md) | skill / agent 定義を書く・書き直す入口 — intent packet、library 全体での境界確認、Fable 向けの書き方、fresh-context の草稿ゲート（Publishable / Fix / Drop、集計なし）、著者通読。Anthropic 公式の skill-creator と名前が重ならないよう skill-creator から改名した。公式を置き換えるものではない（ADR-0046） |
-| [measurement-discipline](../skills/measurement-discipline/SKILL.md) | 測定に基づく主張の規律。実験結果で判断する、閾値やガードを決める、観察期間を選ぶ、候補を本番と比べるときに使う |
 | [prose-translation](../skills/prose-translation/SKILL.md) | エッセイ・記事・README・ADR などの人間向けの文章を、日本語と英語の両方向に、著者の声と出力先の文体を保って訳す |
 | [repair-discipline](../skills/repair-discipline/SKILL.md) | 修正の前に、今なにが本当かを一次証拠で確かめる規律。バグ、古いタスク、止まる・不安定な処理、他のコードが読む schema や保存形式の変更に使う |
 | [rfc-writer](../skills/rfc-writer/SKILL.md) | 公開 `rfcs/` 台帳へ 1 エントリを起票する手順（足切り・採番・様式・公開規約・index 行） |
