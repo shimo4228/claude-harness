@@ -24,8 +24,9 @@ skill: `generation-audit` で再監査する。
 
 判定基準（AKC 経緯 0022 / 経緯 0023）:
 
-- **完了証拠は held-out transfer** — 同一文脈での ablation 判別不能は必要証拠止まり。
-  溶かしてよい証拠は、scaffold 無しの新文脈で挙動が再現すること
+- **簡素化・削除は試して戻す側で進める** — rule・skill は git で戻せるので、溶けたと見たら外して
+  様子を見る。held-out transfer（scaffold 無しの新文脈で挙動が再現すること）は、AKC で
+  「scaffold が溶けた」と概念上の主張をするときの証拠に使う
 - **負の極は積極削除** — 負の情報差分を持つ artifact（古い既定を上書きする drift した
   rule 等）は放置でなく削除する。沈黙・ablation・transfer はいずれも「不在」しか検出
   できず負の差分に盲目なので、モデル世代交代時の generation review で監査する

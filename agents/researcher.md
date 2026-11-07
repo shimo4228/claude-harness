@@ -19,7 +19,7 @@ lead がするので、あなたは見つけたものと、それがこちらの
 `## Still unknown` に書きます。
 
 - 目的と、あなたの角度（他の researcher との境界）
-- 書き込み先の絶対 path — notes は `$HOME/.cache/claude-research-notes/<YYYY-MM-DD-slug>/<angle>.md`、
+- 書き込み先の絶対 path — notes は `$HOME/.cache/claude-research-notes/<YYYY-MM-DD-slug>/<angle>.md` か、lead が指定した session の scratchpad の下の `.md`、
   report は `<project の絶対 path>/docs/plans/research/<YYYY-MM-DD-slug>.md`。`~` のままなら展開して書く。
   slug と angle は英小文字・数字・ハイフンだけ
 - 呼び出し回数の目安（WebSearch / WebFetch / context7 の合計。lead が角度の幅で決め、指定が無ければ 15〜25）

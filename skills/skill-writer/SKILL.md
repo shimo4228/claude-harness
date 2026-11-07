@@ -16,13 +16,16 @@ revise an existing skill) and the **boundary**, and judges the result in a fresh
 writing.
 
 **Report path.** When the call comes from an approved item of a harness-stocktake report (skill
-`harness-stocktake`, Phase 4), the author's approval of that report is the confirmation: take the
+`harness-stocktake`, Phase 4), the author's approval of that report already covers the intent: take the
 item's `change` (plus the author's note) as the §1 intent packet, run §2–§6 without stopping, and
 hand the result back to the stocktake's completion report in place of §7. A draft that does not
 reach `Publishable` within §4's two rounds returns as pending with the remaining findings. Every
 other call starts at §1 and ends at §7.
 
-## 1. Entry — fix the intent as one packet ⏸ author confirms
+## 1. Entry — fix the intent as one packet
+
+Fix the packet yourself and continue into §2; the author sees it together with the finished draft
+at §7.
 
 If the conversation holds material, extract it first, then fill in (tools used, steps, the author's
 corrections, inputs and outputs):
@@ -178,7 +181,7 @@ is bad.
 
 ## 7. ⏸ Author read-through GO
 
-After the gate passes, the author's read-through is the top gate. Build a dedicated judge agent with
+After the gate passes, show the author the §1 packet together with the finished draft; the author's read-through is the top gate. Build a dedicated judge agent with
 a checklist **only when the author, during a read-through, feels "an inline subagent is not
 enough."** Do not decide by count — both the body and the judge (the author) change between
 windows, so "N times in a row" cannot be measured.

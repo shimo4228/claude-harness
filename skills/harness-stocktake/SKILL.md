@@ -314,8 +314,8 @@ ends in its own commit. For each item:
      Read and run its **report path** with the item's `change` as the intent packet; otherwise edit
      the SKILL.md from the intent packet directly, keeping its frontmatter
    - Retire / Dissolve: delete the way the source skill says (`git rm` for skills, rules, agents
-     and hooks; soft-delete for repo-asset-stocktake), plus the pointer fixes in `change`; for
-     Dissolve, record why the way the repo records decisions (an ADR via skill `decision-history` when
+     and hooks, and for repo-asset-stocktake assets), plus the pointer fixes in `change`; for
+     Dissolve, record why the way the repo records decisions (an entry via skill `decision-history` when
      the setup has it, else a Context / Decision paragraph in the commit body)
    - a target git does not track (in `~/.claude`, `settings.json`, which wires the hooks): prepare the exact diff
      now, keep the file unchanged, outcome `pending` with the note "after merge"
@@ -341,8 +341,9 @@ author's GO covers exactly what this reply shows.
 
 On the author's GO:
 
-1. When the default branch moved since the branch was cut, rebase onto it, re-run verify, and
-   report again before going on.
+1. When the default branch moved since the branch was cut, rebase onto it and re-run verify. A
+   rebase without conflicts that passes verify goes straight on; one that needed conflicts
+   resolved or fails verify stops here and is reported.
 2. `git -C <repo> merge --ff-only stocktake/<date>` on the default branch.
 3. Remove the worktree.
 4. Apply the "after merge" items: copy each untracked target to

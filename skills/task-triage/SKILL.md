@@ -43,7 +43,7 @@ The verdicts of a triage are the states themselves:
 |---|---|---|
 | `draft` | adoption still undecided → **consult** the human (an `adopt` item in the digest, §2) | human |
 | `accepted` → dispatch | premise verified `file:line`, condition met, acceptance decidable, reversible on a branch, no rule change, fits one session | judge (dispatch, merge after §4) |
-| `blocked` | adopted, and the three lines can be written; if the 照合先 can never fire (structurally unobservable), it is not `blocked` — re-ask | judge writes the lines |
+| `blocked` | adopted, the answer would change as more data arrives, and the three lines can be written; a decision whose dependencies are in, or a switch that config or git can undo, goes to the next digest with a recommended default instead of waiting on a date or an observation window; if the 照合先 can never fire (structurally unobservable), it is not `blocked` — re-ask | judge writes the lines |
 | terminal proposal | premise gone / substrate now native / value < complexity (`architect` lens) / event source deleted (`obsoleted`) | proposed by judge as a `drop` item, **confirmed by human** |
 | 台帳外 | 便乗 → a note at the code site, row closed | judge proposes |
 
@@ -129,7 +129,7 @@ Anything that changes a rule, accepts a risk, spends money, or drops a task is i
 `~/.claude/skills/harness-stocktake/SKILL.md`), using this skill's template and these values:
 `meta/run` = `{title: "<repo> triage <date>", created_at, repo, open_before, open_after, closed,
 spawned, phase: "proposed"}`, and the pointer `~/.claude/.notes/triage/<repo dir name>.json` =
-`{url, date}` (outside the repo, so a repo that tracks `.notes/` gets no stray file). The
+`{url, date}` (outside every target repo except the harness itself, whose `.gitignore` excludes `.notes/triage/`, so no repo gets a stray file). The
 fallback without the Artifact tool is the same contract's Markdown table, at
 `~/.claude/.notes/triage/<repo dir name>-<date>.md`.
 

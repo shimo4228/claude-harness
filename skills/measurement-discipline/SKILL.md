@@ -14,10 +14,11 @@ Contemplative Agent project, `shimo4228/contemplative-agent`; the principles the
 
 ## 1. One success is not evidence
 
-Do not say "it worked" after one smoke run and commit. In a stochastic system (LLMs, external I/O,
-timing-dependent code), one run is one sample from a distribution. **Before making the claim, decide
-how many runs, under which conditions, would let you say it** — if you cannot decide, weaken the
-claim to "it can work".
+When the structure of the cause is known, fix it, check it once on a sample the fix did not use, and
+commit. n sets how strongly you word the result, not when you start or commit a fix. In a stochastic
+system (LLMs, external I/O, timing-dependent code), one run is one sample from a distribution, so
+**before claiming "it is fixed", decide how many runs, under which conditions, would let you say it** —
+if you cannot decide, word the claim as "it can work".
 (Source: the 2026-06 correction, after a single observed run of a follow fix was nearly reported as "fixed")
 
 ## 2. Gate on observations, not the calendar

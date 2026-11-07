@@ -1,5 +1,5 @@
 ---
-state: in_progress 2026-09-28
+state: done 2026-11-08
 review-when: 子 RFC-0028〜0031 がすべて終端になったとき。または 2026-12-27 までに子が 1 本も着手されないとき（方向ごと見直す）
 ---
 ## Summary
@@ -43,6 +43,10 @@ triage 2026-10-18（続き）: 子の RFC-0031（読者役による照合）は�
 triage 2026-10-18（続き）: 2026-10-09 の project thread の session が、この傘の候補 ③（ルール単位の「その後」）と ⑧（事前コミット）の実装として、未マージの branch を残していた（公開 repo の Review-when / Expect を別 repo の追記台帳で週次に答え合わせする案、ADR-0095 草稿と週次 Routine の手順）。著者判断で破棄。branch `task/track-record`（`6a72cfd`）と重複の `claude/project-thread-qzui1v`（`49c7672`）を削除し、Routine `trig_01FkDzdN4KNzRLRFsgGBDWMv` は照会で既に存在しなかった（404）。
 
 triage 2026-10-25: 子は RFC-0028 in_progress（writing-ecosystem への移設待ち）と RFC-0029 accepted（受入条件の既定を著者に確認中）。傘の見直しはその後。
+
+triage 2026-11-08: review-when が成立 — 子 4 本はすべて終端（RFC-0028 done 2026-10-25、RFC-0029 done 2026-10-25、RFC-0030 done 2026-09-28、RFC-0031 withdrawn 2026-10-18）。傘を done にするかを digest の終端の確認に出した。
+
+**2026-11-08 done** — triage digest 2026-11-08 の承認で閉じた。子 4 本（RFC-0028〜0031）が終端になり、方針は RFC-0028 の rule と RFC-0029 の同期 script が持つ。
 
 ## Next action
 

@@ -298,8 +298,8 @@ before deletion.
 Merge Phase 2 verdicts, Phase 3 overlap / contradiction verdicts, and parent-owned usage data:
 
 - **Content owns the verdict; usage is reference evidence only.** Render the 14-day
-  deliberate-use count and last-used date; usage is never a prerequisite, veto,
-  threshold, or automatic candidate trigger.
+  deliberate-use count and last-used date; usage is never a prerequisite or veto. Low
+  deliberate use nominates a Retire candidate, and the content decides its verdict.
 - **Retire content-first.** A skill can be Retire regardless of usage when (a) its
   workflow or underlying premise is obsolete, (b) another asset actually absorbs its
   user job and no standalone residue remains, or (c) it is too thin, non-actionable, or

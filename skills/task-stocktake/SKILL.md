@@ -159,7 +159,8 @@ store 形の家は repo トップレベルの**公開 `rfcs/`**（1 エントリ
 **足切り**: build セッションからの
 即時起票は **loop 自身を壊す欠陥**（放置すると次の build セッションが bounce を食う類 —
 例: verify.sh の盲点で正当な diff が通らない）**のみ**。それ以外は severity 不問で
-commit message に 1 行（producer 付き）残して捨てる。起票する側は「所有者の判断が要る」なら
+commit message に 1 行（producer 付き）残す。ただし前提を検証して答えが一つに決まり git で戻せる指摘は、
+その場で直して依頼と別 commit にする（rule `boundary.md`）。起票する側は「所有者の判断が要る」なら
 `state: draft`。
 
 **probe の例外**: measurement / probe タスクの成果物そのものである起票要求（probe の
@@ -173,7 +174,7 @@ commit message に 1 行（producer 付き）残して捨てる。起票する�
 RFC の書き方と由来の印は skill `rfc-writer` §2。再現しない提案と再現手順の無い指摘は、足切りどおり
 commit message に 1 行。
 
-捨てた指摘を後から拾い直す回収機構（commit body の定期 sweep 等）は**作らない** — durable な
+commit message に残した指摘を後から拾い直す回収機構（commit body の定期 sweep 等）は**作らない** — durable な
 記録は commit body が既に担っており、イベント駆動の起票はレビュー → 修理 → 再レビューの
 補充エンジンになって台帳が収束しないため。即時対応が結果を変えるのは、実測でも loop を壊す
 欠陥にほぼ限られた。

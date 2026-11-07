@@ -1,6 +1,6 @@
 ---
-state: blocked 2026-09-20
-review-when: "影の比率（直近 60 日の transcript で、WebSearch か外部調査 subagent を使ったセッションのうち search-first を通らなかった割合。基準値 2026-09-14: 133 / 142 = 93.7%、手順は `.notes/search-first-shadow-baseline-2026-09-14.md`）を 2026-11 に取り直し、下がっていなければ「発火しない原因は trigger surface」の仮説が崩れたとして本エントリを再読する"
+state: accepted 2026-11-08
+review-when: "影の比率（直近 60 日の transcript で、WebSearch か外部調査 subagent を使ったセッションのうち search-first を通らなかった割合）を本文 timestamp の窓で測った新基準（`.notes/search-first-shadow-baseline-2026-11-08.md`、旧基準 2026-09-14 の 133 / 142 = 93.7% は mtime 窓で、2026-10-30 の mtime 一斉更新以後は再現できない）で、2026-09-14 の時点より下がっていなければ「発火しない原因は trigger surface」の仮説が崩れたとして本エントリを再読する"
 ---
 ## Summary
 
@@ -75,6 +75,14 @@ triage 2026-10-18: `date` = 2026-10-18 < 2026-11-01、未成立（dead-band）�
 
 triage 2026-10-25: `date` = 2026-10-25 < 2026-11-01、未成立（dead-band）。次の cycle（2026-11-01）で成立する。
 
+triage 2026-11-08: `date` = 2026-11-08 ≥ 2026-11-01、再開条件が成立。成立時に従い accepted を digest の記帳に出した（承認後に再測定を dispatch）。基準ファイル `.notes/search-first-shadow-baseline-2026-09-14.md` は在る。注: 2026-11-07 の 61d9859（記録 0102）が search-first の Full の起動条件と research-gate の手順差し込みを外したので、再測定の 60 日窓は 2026-11-07 で切る（0102 前の regime だけを読む）。2026-11-01 の cycle はログイン切れで走っていない。
+
+**2026-11-08 accepted** — triage digest 2026-11-08 の承認。再測定を読み取り専用の Agent build で dispatch する（60 日窓は 2026-09-08〜11-07、記録 0102 の前の regime だけを読む）。
+
+triage 2026-11-08（続き）: 再測定 S1 を merge（ab1368e、読みメモ `.notes/search-first-shadow-2026-11-08.md`）。基準の snippet のまま (A) 237 / 278 = 0.853、0102 前で切った (B) 231 / 271 = 0.852。ただし述語 (iii) の mtime 窓が壊れている — 2026-10-30 に transcript 約 760 本の mtime が一斉に更新され、分母の 141 本が基準集合と重なる（本文の最終 timestamp は 07-08〜10-04）ので、0.937 と独立に比べられる読みではない。参考に、本文の最終 timestamp が 09-08 以降の 126 本では 95 / 126 = 0.754。review-when の判定にどの読みを使うか（壊れた窓のまま / 本文 timestamp で窓を切る新基準 / 保留）は著者の判断待ち。判断役の推しは本文 timestamp の新基準。10-30 に mtime を書き換えた原因は未調査。
+
+triage 2026-11-08（続き 2）: 著者の決定 — 本文 timestamp で窓を切る新基準を立てる。測定 S2 を dispatch（claim 済み）。
+
 ## Next action
 
-影の比率の再測定（2026-11）。手順・述語・基準集合（分母 / 影のセッション一覧）は `.notes/search-first-shadow-baseline-2026-09-14.md` に固定してある — 同じ snippet を実行し、基準値と比べる。
+影の比率を本文 timestamp の窓で測り直す（著者の決定 2026-11-08）。旧基準の述語 (iii)「60 日窓 = ファイル mtime」は 2026-10-30 の mtime 一斉更新で壊れたので、本文の `timestamp` で窓を切る新しい基準を `.notes/search-first-shadow-baseline-2026-11-08.md` に立て、同じ述語で旧基準の時点（2026-09-14）と記録 0102 の前（2026-11-07）を比べる。判定はその読みで行う。

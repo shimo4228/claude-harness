@@ -1,5 +1,5 @@
 ---
-state: blocked 2026-09-28
+state: blocked 2026-11-08
 review-when: RFC-0025 が accepted になり、閾値と反例の置き場が決まったとき。または DSPy が TypeSafe 判定器で生成系 Optimizer を公式に扱えるようになったとき
 ---
 ## Summary
@@ -125,6 +125,14 @@ triage 2026-10-11: grep の集合は 2026-09-28 と同じ（jev-skill-router 3 �
 triage 2026-10-18: grep の集合は 2026-09-28 と同じ（jev-skill-router 3 本・review-when-watch 2 本）、review-when-watch は 20 / 30 run（予定 2026-10-28 頃）。未成立。
 
 triage 2026-10-25: grep の集合は 2026-09-28 と同じ（jev-skill-router 3 本・review-when-watch 2 本）、review-when-watch は 27 / 30 run（予定 2026-10-28 頃）。未成立。
+
+triage 2026-11-08: 照合先の 2 経路のうち review-when-watch は 30 run に届いた（33 run）が 2026-11-01 に退役した（b876e3a）— パイロットに選ぶ対象が消えたのでこの経路は決着。grep の集合は 2026-09-28 の 5 本（jev-skill-router 3・review-when-watch 2）から 0 本に減った。残る経路（Jev 判定の新規配線、または DSPy の対応）だけで照合先を書き直す案を digest の記帳に出した（代案 withdrawn）。
+
+**2026-11-08 照合先の書き直し** — triage digest 2026-11-08 の承認。review-when-watch 経路は退役（b876e3a）で決着したので外す。
+
+再開条件: harness に Jev 判定が新しく配線される、または DSPy が TypeSafe 判定器で生成系 Optimizer を公式に扱う
+照合先:   `grep -rlE 'api\.typesafe\.ai|jev_client' skills/*/scripts hooks scripts` が 1 件以上（2026-11-08 は 0 件）、または DSPy の changelog
+成立時:   draft（その judge をパイロットに選び直す）
 
 ## Next action
 

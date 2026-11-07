@@ -127,8 +127,10 @@ Run it after every revision, whatever the preset. It lists new numbers, added su
 added or removed hedges (Japanese and English terms), and new Latin-script names. Numbers and names
 in the previous round or the evidence file count as already said.
 
-- Exit 1 → show the author the JSON and the sentences behind it, and read the next round only after
-  the author confirms. A word the author has said may stay when the author says so
+- Exit 1 → settle each flagged item and read the next round: take out new numbers and names the
+  sources do not hold, and return added or removed hedges and superlatives to the previous round's
+  wording. A word the author has said stays. The JSON and what you settled go to the author with the
+  final hand-off
 - `new_katakana` does not affect the exit code; read it and pass any proper nouns to the author
 
 Revision driven by critique drifts toward hedging: in a writing loop where a manager sent drafts

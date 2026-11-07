@@ -77,10 +77,10 @@ For each surfaced asset, ask 1–3 refutation questions before committing a verd
 |---|---|---|
 | **Keep** | Consumer live and content meaningful | none |
 | **Update** | Consumer live but content stale or partly broken — refresh it, repair the trigger, fix the dead ref | mechanical fix inline (Phase 4); prose-heavy rewrites → hand to the user / a writing skill |
-| **Retire** | Consumer gone or content vestigial — the asset no longer earns its place | soft-delete (Phase 4) |
+| **Retire** | Consumer gone or content vestigial — the asset no longer earns its place | `git rm` (Phase 4) |
 | **Merge into [X]** | Superseded by / duplicate of another asset | consolidate into X, then retire this |
 
-**Mandatory-surface rule.** Any asset whose tier-1 reachability is **zero** (0 invocation sites / all references dead / 0 inbound links) MUST be surfaced as at least a Retire candidate — reachability zero is never silently a Keep. **This is the opposite of `skill-stocktake`'s stance, deliberately:** there, zero *usage* never creates a candidate, because a skill can be valid and simply unfired. Here the measure is *reachability* — no invocation site, every reference dead — which is a structural fact about the repo, not a behavioural one about the model, so it does create a candidate.
+**Mandatory-surface rule.** Any asset whose tier-1 reachability is **zero** (0 invocation sites / all references dead / 0 inbound links) MUST be surfaced as at least a Retire candidate — reachability zero is never silently a Keep. Reachability — no invocation site, every reference dead — is a structural fact about the repo, not a behavioural one about the model.
 
 Evaluate **origin-blind** — who wrote the asset, or how long it took, does not bear on whether it still earns its place.
 
@@ -102,9 +102,9 @@ a task branch in the audited repo, a completion report, an ff-only merge. Called
 skill runs that contract's Phases 2–5 with its own items. The Reason-quality row text becomes the
 item's `reason`. Application, by verdict:
 
-- **Retire** — soft-delete: rename to `<file>.disabled` or move to a repo-local trash; real deletion is a later, separate human step. Record the decision via `decision-history` when the retirement encodes one worth recording.
+- **Retire** — `git rm` the asset; git history is the backup. An untracked asset has no such backup, so it goes to the completion report for the author. Record the decision via `decision-history` when the retirement encodes one worth recording.
 - **Update** — apply mechanical fixes (repair a broken `on:` trigger, fix a dead `uses:` / `run:` ref, delete a stale config key). A prose-heavy content rewrite (a runbook describing a changed process) goes to the completion report as pending for the user or a writing skill, rather than guessing the new content.
-- **Merge** — consolidate into the surviving asset, then soft-delete the absorbed one.
+- **Merge** — consolidate into the surviving asset, then `git rm` the absorbed one the same way.
 
 Where skill `harness-stocktake` is not installed, show the same items as one table ordered
 Retire → Merge → Update → Keep, take one approval with the author's overrides, then apply.
@@ -134,7 +134,7 @@ Persist verdicts so `changed` mode can carry them forward. Written inline via Re
       "reachability": "0 invocation sites",
       "verdict": "Retire",
       "reason": "textlint absent from package.json/CI/pre-commit; config inert",
-      "action": "pending | soft-deleted | skipped"
+      "action": "pending | removed | skipped"
     }
   ]
 }

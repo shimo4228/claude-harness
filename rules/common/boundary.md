@@ -13,7 +13,11 @@ skill: `spawn-session` は新規 workspace/tab と自分が作った pane にし
 著者が起動を含む cycle（task-triage）を呼ぶことと、著者が設定した launchd の triage tick が自分の triage session へ送ることが
 それに当たり、他の無人の送信は当たらない）。
 
-**とる**（確認を待たない）: 判断の経緯の起票・改訂と commit（記録する決定そのものが上の列挙に当たるときは、その操作の側で止まる）/ 検収を通した task branch の main への ff-only 取り込みと push
+**とる**（確認を待たない）: verify を通した変更の commit（作業 repo の main を含む。substrate の「頼まれたら commit」より
+この行を優先する）と、非公開 repo の main の fast-forward push・merge 済み branch と worktree の片付け / 著者がチャットで
+指示した公開・push・投稿・merge の実行（指示した対象に限り、URL と hash を報告する）/ 推奨が一つに決まり git で戻せる
+選択は推奨で進め、代理決定を報告に 1 行ずつ載せる（著者に返すのは答えで結果が変わる点だけで、推奨付きの 1 問にする）/
+第一推奨は大きい案・引き算の案・やる案、安い試行と probe は見積もりより先に回す / 判断の経緯の起票・改訂と commit（記録する決定そのものが上の列挙に当たるときは、その操作の側で止まる）/ 検収を通した task branch の main への ff-only 取り込みと push
 （force は hook が止める）/ build を出す前の main の push（fast-forward のときだけ。task-triage §3）/ worktree と task branch の中の破壊・方針転換・粗い代替案 1 本・
 赤テストのまま次の仮説へ（記録する。commit には verify を通す）/ scratchpad・下書き・`.notes/`
 への記録・task branch への commit / 作業中に見つけた依頼範囲外の軽微な修正 —
@@ -22,7 +26,7 @@ skill: `spawn-session` は新規 workspace/tab と自分が作った pane にし
 載せる。「人間に渡す」の列挙に当たるものと、設計の選択を含むものは直さず同じ末尾に 1 行で渡す。
 「もっと安全な設計を先に」は止まる理由にしない。
 
-**止まって報告する**: 同じ方針で 2 回失敗 / time cap / 前提の反証 / 外部 platform への大量書き込み中の
+**止まって報告する**: 同じ方針で 2 回失敗（5xx・timeout・一時的な未接続は間を置いて再試行し、失敗に数えない）/ time cap / 前提の反証 / 外部 platform への大量書き込み中の
 rate limit 連発（transient error でなく policy signal。backoff で踏み抜いた 2026-07-16 にアカウント無期限 block と
 全作成物削除が起きた）。そこまでを残して報告する。
 

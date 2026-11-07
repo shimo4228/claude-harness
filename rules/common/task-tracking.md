@@ -23,7 +23,7 @@ lease（既定 24h）が切れた claim は `--force` なしで引き継げる�
 
 ## レビュー指摘の扱い
 
-build セッションからの即時起票は **loop 自身を壊す欠陥**（放置すると次の build が bounce を食う類）だけ。それ以外は
-severity 不問で commit message に 1 行（producer 付き）残す。起票するときは producer→sink の `file:line` 引用を先に
+build セッションからの即時起票は **loop 自身を壊す欠陥**（放置すると次の build が bounce を食う類）だけ。それ以外は、答えが一つに決まり
+git で戻せるものをその場で直して別 commit にし（`boundary.md`）、残りは severity 不問で commit message に 1 行（producer 付き）残す。起票するときは producer→sink の `file:line` 引用を先に
 置く（`spawn --origin review` は `--producer PATH:LINE` が無ければ拒否する）。例外・実測・破棄の基準の正本は
 skill: `task-stocktake`「レビュー指摘の起票規律」。

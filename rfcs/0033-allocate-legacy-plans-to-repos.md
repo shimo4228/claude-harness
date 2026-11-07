@@ -68,6 +68,8 @@ triage 2026-10-25（続き）: 著者の OK で `quizzical-herding-squid.md` を
 照合先:   zenn-content の `articles/<slug>.md` の `published: true`
 成立時:   accepted（該当 plan を `docs/plans/` へ移す）
 
+triage 2026-11-08: 名指しの 3 本（`log-readers-census`・`herdr-zed-review-surface`・`embodiment-ai-feedback-loop`）は zenn-content の `articles/` にファイルが無い。2026-10-25 以降の公開は `harness-stocktake-after-doctor`（8e0dc1d、2026-11-02）だけで、`planning/plans` の 11 本に対応する plan は無い（grep）。未成立。
+
 ## Next action
 
 上の再開条件のどちらかが成立したら、成立した側だけを片付ける。両方終わったら done。

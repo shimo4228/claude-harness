@@ -158,7 +158,7 @@ git status --short
 
 ## Phase 4: Release execution
 
-`git push` および `gh release create` は **user 明示依頼があれば実行**。既定は「user に提案して止まる」だが、user が「push して」「release を切って」と言ったら実行する。**Release object 作成 = Zenodo webhook trigger** なので irreversible (DOI 採番が動き始める)。
+`git push` および `gh release create` は user の明示依頼で実行する。user が「push して」「release を切って」と言ったら、その依頼をこの Phase の承認として最後まで実行し、release URL と tag を報告する。依頼が無いときは提案で止まる。**Release object 作成 = Zenodo webhook trigger** で DOI 採番が動き始める（irreversible）ので、tag・release・DOI は明示依頼があるときだけ行う。
 
 ```bash
 # codemeta.json は CITATION.cff の派生物 — stage 前に再生成 (存在する repo のみ)

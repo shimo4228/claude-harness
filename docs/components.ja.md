@@ -9,7 +9,7 @@
 | --- | --- |
 | [search-first](../skills/search-first/SKILL.md) | 決める前に外を見る — ウェブ・レジストリ・一次ソースを判断時点で検索し、既製品の採用を既定とし、自作には候補ごとに外れた理由を書かせる報告を返却 |
 | [learn-eval](../skills/learn-eval/SKILL.md) | セッションから再利用可能なパターンを抽出し、品質評価を経て保存先を決める |
-| [skill-stocktake](../skills/skill-stocktake/SKILL.md) | Skill の品質監査 — Glob インベントリ + 単一コンテキストでの全体評価、Keep/Improve/Update/Retire/Merge 判定 |
+| [skill-stocktake](../skills/skill-stocktake/SKILL.md) | Skill の品質監査 — 決定論的な構造 pre-pass、fresh-context の小 batch を並列に回す個別精査、集合全体の重複 probe、Keep/Improve/Update/Retire/Merge 判定 |
 | [skill-health](../skills/skill-health/SKILL.md) | Skill ライブラリの構造的な不備のスキャン — "missing artifacts"（SKILL.md が参照する script / agent / sibling skill がディスク上に存在しない）を検出。決定論的で、品質・リスク・検証は skill-stocktake / security-scan / skill-comply に委譲 |
 | [rules-distill](../skills/rules-distill/SKILL.md) | Skill 群から共通原則を抽出し、rule として昇格させる |
 | [rules-stocktake](../skills/rules-stocktake/SKILL.md) | Rules の品質監査 — residency cost（全行が毎セッションの token 税）モデル、古くなった rule や、ハーネス自身が担うようになって不要になった rule の検査、Keep/Improve/Update/Merge/Demote/Dissolve/Retire 判定。rules-distill の逆方向 |
@@ -87,7 +87,7 @@
 | [knowledge-staleness](../rules/common/knowledge-staleness.md) | LLM 分野の外部知識は 1 週間スケールで陳腐化するという世界観を既定にする — 手法・仕様・相場観を記憶から断言せず検索時点で照合し、根拠に as-of 日付を、推奨に失効条件を付ける |
 | [practitioner-identity](../rules/common/practitioner-identity.md) | 著者の自己定義 (verbatim) — AI 時代に何が良い考え・良い手段かを探し続ける。DOI は手段の一つで研究者志向ではない。コードは消えるが考えは消えない |
 | [llm-first-code](../rules/common/llm-first-code.md) | コードを実際の読者 = 次セッションの LLM に最適化する — 可読性でなく検証可能性（型・テスト・golden）を保存し、品質は機械ゲートで執行、人間可読性の予算は README と出力の文面にだけ払う |
-| [boundary](../rules/common/boundary.md) | 境界の正本 — 人間に渡す操作（公開・課金・外部送信・台帳の起票・permissions / hooks / rules / ADR の無人変更）、確認を待たずにとってよいリスク、止まって報告する条件 |
+| [boundary](../rules/common/boundary.md) | 境界の正本 — 人間に渡す操作（公開・課金・外部送信・台帳の起票・permissions / hooks / rules / skills の無人変更）、確認を待たずにとってよいリスク、止まって報告する条件 |
 | [evals](../rules/common/evals.md) | Eval の配線 — eval の問いを持ち主へ振り分ける。eval を作る・eval で改善するは `/claude-api build-eval` → `hillclimb`、なじみのない領域では採点方式を決める前に search-first。harness の skill・agent が対象なら runner は `claude -p` |
 | [public-records](../rules/common/public-records.md) | 公開記録（rfcs・行為ログ・plan・report）で名指すもの、非公開ノートに置くもの、公開前の検査 |
 <!-- END GENERATED: rules-table -->

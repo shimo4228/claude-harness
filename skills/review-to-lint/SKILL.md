@@ -21,9 +21,7 @@ mine the reviewers' history. A checklist-first inventory surfaces only the items
 so it misses findings that actually recur (measured 2026-08-29: a checklist-first sweep covered only the
 document / skill-asset layer and missed 3 recurring classes targeting `hooks/*.sh`).
 
-**Build no mechanism** — create neither an extraction script nor a collection hook; mining is rare enough that a standing
-mechanism costs more than it returns. One manual investigation is enough. If a second one is requested, propose a
-script then, for the author to approve.
+Start with one manual investigation. When mining comes up again, write the extraction script then.
 
 Non-obvious points about the corpus and extraction:
 
@@ -107,7 +105,8 @@ drift, the measured values of the exemption boundary, and the reasons for reject
 
 ## Choosing the next target
 
-Take candidates one at a time in separate sessions. Decide priority by demand — a clear current need on a stable
+Candidates that share a division line (the same thing replaced, the same code/LLM split) go in one session; independent
+candidates go out in parallel. Decide priority by demand — a clear current need on a stable
 canonical source — not by room for mechanization; a lint built ahead of demand hollows out.
 Skip targets that are already done or need no script: the author's README skill and decision-history already have evidence scripts;
 security-reviewer already delegates to existing gates; `scripts/hooks/harness_lint.py` covers rules-stocktake's mechanical

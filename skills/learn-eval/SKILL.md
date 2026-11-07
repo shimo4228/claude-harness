@@ -194,18 +194,17 @@ description: "Description in 130 characters or less"
    regenerate the questions: if the bar moves, you cannot tell whether the fix worked
    or the bar loosened).
 
-6. **Per-verdict confirmation flow (one at a time, `[y/n/skip]`)**
+6. **Confirmation flow (one report, one reply)**
 
-   Even when multiple patterns were extracted from the session, confirm them
-   **one at a time — never ask for batch approval** (a bulk "save them all? [y/n]" is banned).
-   For each candidate, present the evidence first (checklist results + verdict
-   rationale), then ask `[y/n/skip]`.
-   The user can stop at any point. `n` = discard, `skip` = defer for now (leave a
-   one-line reason):
+   Put every candidate in one numbered report, each entry carrying its own evidence
+   (checklist results + verdict rationale) so it reads on its own, then ask once. The
+   author answers per entry in one reply (`all`, `all but 2`, `3 skip`, …). `n` = discard,
+   `skip` = defer for now (leave a one-line reason). A single candidate is the same report
+   with one entry.
 
-   - **Save**: present the save path + checklist results + one-line verdict rationale + the full draft → save after `[y/n/skip]` confirmation
-   - **Absorb into [X]**: present the target path + the content to add (as a diff) + checklist results + verdict rationale → append after `[y/n/skip]` confirmation
-   - **Drop**: show the checklist results + reason only (no confirmation needed; stop)
+   - **Save**: the entry shows the save path + checklist results + one-line verdict rationale + the full draft → save the approved entries
+   - **Absorb into [X]**: the entry shows the target path + the content to add (as a diff) + checklist results + verdict rationale → append the approved entries
+   - **Drop**: the entry shows the checklist results + reason only (no approval needed)
 
 7. Save to the destination chosen in Step 3
 

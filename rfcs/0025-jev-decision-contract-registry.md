@@ -1,5 +1,5 @@
 ---
-state: blocked 2026-09-27
+state: obsoleted 2026-11-01
 review-when: Weekly·Fable 枠が回復し、RFC-0024 とまとめて採否を検討するとき。または Jev を使う判定が 1 つでも本番配線され、較正データの不在が実害になったとき
 ---
 
@@ -105,6 +105,10 @@ triage 2026-10-11: `metrics/review-when-watch.jsonl` = canary 13 run / pair 3,65
 triage 2026-10-18: `metrics/review-when-watch.jsonl` = canary 20 run / pair 5,249 行（2026-09-29〜10-18、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。
 
 triage 2026-10-25: `metrics/review-when-watch.jsonl` = canary 27 run / pair 6,772 行（2026-09-29〜10-25、1 run/日で欠けなし）。30 run 未達、予定日 2026-10-28 頃は据え置き。次の cycle（2026-11-01）で成立する見込み。
+
+triage 2026-11-08: 再開条件（30 run）は 2026-10-28 頃に成立した（`metrics/review-when-watch.jsonl` = canary 33 run、2026-09-29〜11-01、最終行 2026-11-01 06:10）。ただし 2026-11-01 に review-when-watch と jev-skill-router が退役し launchd plist も外れた（b876e3a、harness-stocktake 2026-10-31 の著者承認）。`grep -rlE 'api\.typesafe\.ai|jev_client' skills/*/scripts hooks scripts` は 0 件。成立時に回す「閾値と反例の置き場」の対象（稼働中の Jev 判定）が無いので、obsoleted を digest の終端の確認に出した。
+
+**2026-11-01 obsoleted**（triage digest 2026-11-08 で確認）— b876e3a（harness-stocktake 2026-10-31 の著者承認）で review-when-watch と jev-skill-router が退役し、閾値と反例の置き場を決める対象の Jev 判定が harness から消えた。データ（`metrics/review-when-watch.jsonl` canary 33 run・pair 8,020 行、router log 1,242 行）はファイルとして残る。Jev 判定を再び配線するなら起票し直す。
 
 ## Next action
 

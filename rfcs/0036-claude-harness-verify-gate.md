@@ -1,5 +1,5 @@
 ---
-state: draft 2026-10-25
+state: accepted 2026-11-08
 review-when: claude-harness に CI か repo gate が別の経路で入ったとき
 ---
 ## Summary
@@ -21,6 +21,10 @@ CI まで足して cloud build の経路に乗せるか / gate に shellcheck �
 ## Status
 
 **2026-10-25 draft** — 著者の起票指示（triage digest の回答）。RFC-0029 の build 提案を判断役が再現して出したもの。
+
+triage 2026-11-08: 前提は残る — claude-harness に `.claude/` も `.github/workflows/` も無い（`ls`、HEAD c2a1e12）。採否を digest に出した。
+
+**2026-11-08 accepted** — triage digest 2026-11-08 の承認。`.claude/verify.sh` は gate script なので無人では dispatch しない（boundary.md）— 著者が在席する session で verify-bootstrap を回し、`verify_allow.py approve` まで通す。
 
 ## Next action
 

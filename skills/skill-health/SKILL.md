@@ -139,7 +139,7 @@ health view — **labelling each value's source**:
   Hygiene question, not here.
 - **Risk** — point to the latest `CLAUDE-SECURITY-*/CLAUDE-SECURITY-RESULTS.md`
   if present; if none/stale, recommend running `/claude-security` (the plugin is disabled
-  until enabled for the scan — ADR-0100). Do not
+  until enabled for the scan). Do not
   re-scan for vulnerabilities here.
 - **Validation** — note (**missing validators** debt) which scanned skills have
   no `skill-comply` spec and no record of passing `skill-writer`'s gates — the

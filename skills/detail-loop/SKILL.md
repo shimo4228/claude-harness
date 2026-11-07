@@ -69,9 +69,9 @@ itself and keeps going, so the author meets one finished product instead of a qu
 2. Run the units phase (`references/units.md`) with the adopted findings. On the first round the author approves the
    field list (⏸); later rounds add to it.
 3. Work the units one at a time (step 2).
-4. Start the next round. Without delegation, hand the author the round (step 5) first; the next
-   round works the `machine` units while `hybrid` ranges and `author call` lines wait for the author's
-   answers. Under delegation, those are already decided and the hand-off waits for the end.
+4. Start the next round. It works the `machine` units while `hybrid` ranges and `author call` lines
+   wait for the author's answers (under delegation, those are already decided). The hand-off (step 5)
+   comes at done or stuck (step 4).
 
 ## 2. One unit
 
@@ -117,7 +117,7 @@ Stop and hand to the author when:
 - a unit's expectation could not be written as one check after two tries — propose making it an
   `author` unit; the author decides
 - a unit's ledger lines show more expectation changes than detections — propose retiring the unit
-- three review rounds have run in this session
+- the session's time or token budget is spent
 
 ## 5. Hand to the author
 
