@@ -70,7 +70,7 @@ For each detected ecosystem, fill in the **6 categories**. When a category canno
 | **type check** | Contracts expressible as types. For an untyped language: "is there a way to introduce type annotations incrementally?" |
 | **security** | Dangerous constructs and leaked secrets (if a pre-commit hook or CI already runs a secret scan, check for duplication) |
 | **dependency** | Known vulnerabilities, unused dependencies, licenses |
-| **test** | Test runner and coverage measurement |
+| **test** | Test runner and coverage measurement, with a coverage floor of 80% (`--cov-fail-under=80` or the stack's equivalent) unless the repo already holds a higher one |
 
 **Do not rely on defaults for budget rules (rules that need a threshold: complexity, function/file length, bundle size, etc.).**
 Major linters usually ship budget rules OFF by default (because the thresholds are opinionated) —

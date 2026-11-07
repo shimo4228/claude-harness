@@ -27,4 +27,3 @@
 | `security.md` | commit hook と trust boundary |
 | `skills.md` | origin schema と skill path、skill-writer への命令形配線 |
 | `task-tracking.md` | repo ごとの task ledger path |
-| `testing.md` | coverage と production 境界 |

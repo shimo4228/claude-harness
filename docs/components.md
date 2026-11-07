@@ -99,7 +99,7 @@ The live harness also runs components from external upstreams. Their content —
 
 | Upstream | Skills | Agents | Rules |
 |---|---|---|---|
-| ECC + local modifications | loop-design-check, refactor-clean | architect, security-reviewer | common/coding-style, common/security, common/testing |
+| ECC + local modifications | loop-design-check, refactor-clean | architect, security-reviewer | common/coding-style, common/security |
 | [anthropics/claude-code](https://github.com/anthropics/claude-code) | — | Explore | — |
 | [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins) + local modifications | mondo | — | — |
 | [herdrdev/herdr](https://github.com/herdrdev/herdr) | herdr | — | — |

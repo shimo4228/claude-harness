@@ -1,6 +1,6 @@
 id: tdd-workflow
 name: TDD Workflow Compliance
-source_rule: rules/common/testing.md
+source_rule: skills/implementation-chain/SKILL.md
 version: "2.0"
 
 steps:

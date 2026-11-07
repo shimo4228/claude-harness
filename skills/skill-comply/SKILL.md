@@ -23,7 +23,7 @@ check is skill `skill-health`, and a with/without ablation of a skill's effect i
 ## Supported Targets
 
 - **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first
-- **Rules** (`rules/common/*.md`): Mandatory rules like testing.md, security.md, boundary.md
+- **Rules** (`rules/common/*.md`): Mandatory rules like security.md, boundary.md
 - **Agent definitions** (`agents/*.md`): accepted as a target, but invocation is **not observable** today — every child
   runs with `Agent` denied (`scripts/child_settings.py` `DENIED_TOOLS`), so a step that expects an agent call cannot be seen
 
@@ -33,7 +33,7 @@ check is skill `skill-health`, and a with/without ablation of a skill's effect i
 
 ```bash
 # Full run
-uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run ~/.claude/rules/common/testing.md
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run ~/.claude/rules/common/boundary.md
 
 # Dry run (spec + scenarios only: the two generation `claude -p` calls run, no agent runs)
 uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
