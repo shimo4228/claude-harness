@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # secret-scan-precommit.sh — PreToolUse hook (Bash): git commit 前の secret scan
-# rules/common/security.md「No hardcoded secrets before ANY commit」+
-# planning.md Verify ステップ 5 (secret scan) の決定論的実装。
+# rules/common/security.md の「secret scan」行が指す決定論的実装。
 #
 # 入力: stdin から JSON (tool_input.command)
 # 出力: staged diff の追加行に secret 検出時 { "decision": "block", ... }、それ以外は無出力 (= allow)
@@ -30,7 +29,7 @@ bypass_re="^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*SECRET_SCAN_BY
 # の方が over-match (無関係コマンドで余計に 1 回スキャンが走る) より危険なので、
 # \b アンカーで広めに取る。パイプ区切り (;|&) は跨がない — "git log | grep commit" 除外。
 # "--grep=commit" は commit 直前が空白でないため除外。
-printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
+grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' <<<"$COMMAND" || exit 0
 
 # 対象 repo: 共有部品 _git-target-common.sh の候補（-C / cd の行き先と $PWD）。引用符を解釈せず余分に拾い、
 # 読み落とさない側に倒す — 方針と限界は同ファイルのヘッダ
@@ -83,8 +82,8 @@ DIFF_SAFE=(--no-ext-diff --no-textconv)
 stages_in_call=0
 # `-a` / `-am` / `-ma` (combined short flags)。`--amend` は `-` の直後が `a` でないので
 # 誤検知しない。`--all` は別途。
-printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b[^;|&]*[[:space:]]-[a-zA-Z]*a' && stages_in_call=1
-printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b[^;|&]*[[:space:]]--all\b' && stages_in_call=1
+grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b[^;|&]*[[:space:]]-[a-zA-Z]*a' <<<"$COMMAND" && stages_in_call=1
+grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b[^;|&]*[[:space:]]--all\b' <<<"$COMMAND" && stages_in_call=1
 add_re='(^|[;&|])[[:space:]]*git[[:space:]]+([^;&|]*[[:space:]])?add[[:space:]]+([^;&|]*)'
 [[ "$COMMAND" =~ $add_re ]] && stages_in_call=1
 
@@ -94,7 +93,7 @@ add_re='(^|[;&|])[[:space:]]*git[[:space:]]+([^;&|]*[[:space:]])?add[[:space:]]+
 # パス指定の `git add <paths>` はそのパスだけを見る。いずれもコマンド文字列だけで決まるので
 # repo ループの外で 1 度だけ判定する。
 sweep_all=0
-printf '%s' "$COMMAND" | grep -qE '\bgit[^;&|]*[[:space:]]add[[:space:]]+(-A\b|--all\b|\.([[:space:]]|$))' && sweep_all=1
+grep -qE '\bgit[^;&|]*[[:space:]]add[[:space:]]+(-A\b|--all\b|\.([[:space:]]|$))' <<<"$COMMAND" && sweep_all=1
 
 added=""
 for repo_dir in "${repos[@]}"; do
@@ -146,7 +145,7 @@ done
 # `commit --amend --no-edit`)。allow してよい。
 # NOTE: bash の ${var//[[:space:]]/} はマルチバイト長文で O(n²)（CJK 22K 字の diff で
 # 数分 CPU を焼いた実測 2026-07-27）。grep 判定で等価・定数時間にする。
-printf '%s' "$added" | grep -q '[^[:space:]]' || exit 0
+grep -q '[^[:space:]]' <<<"$added" || exit 0
 
 block() {
   # python3 が失敗しても block を握りつぶさない (検出済みで落ちると fail-open になる)

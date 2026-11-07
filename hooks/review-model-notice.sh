@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# review-model-notice.sh — judge-tier (Fable) セッションでの review 起動を実行前に扱う。
+# review-model-notice.sh — Fable の session での review 起動を実行前に扱う。
 # 経路で応答を分ける:
 #   Skill 直呼び (code-review / simplify) → **block**。判定が完全に機械的（skill 名 ×
 #     セッションモデル）で誤検知の余地が無く、advisory だと skill が同 turn で走って
-#     judge-tier トークンを消費してから助言が読まれる（2026-08-24 実測 — 中断 + Opus
+#     Fable のトークンを消費してから助言が読まれる（2026-08-24 実測 — 中断 + Opus
 #     再レビューで二重払いになった）。効くのは実行前の block だけ。理由文で model が
 #     Agent(model:"opus") に自己修正するので、人間の介入は要らない。
 #   Agent/Task 起動で model pin 欠落 → advisory に留める。prompt 部分一致の
@@ -46,7 +46,7 @@ case "$tool" in
     mode=block
     ;;
   Task|Agent)
-    # model 引数で build-tier に pin 済みなら正しい経路 — 黙る。
+    # model 引数で Fable 以外に pin 済みなら正しい経路 — 黙る。
     # 空 = セッションモデル継承なので Skill 直呼びと同じ問題を持つ。
     m=$(printf '%s' "$INPUT" | jq -r '.tool_input.model // empty' 2>/dev/null) || exit 0
     [[ -z "$m" || "$m" == "fable" ]] || exit 0
@@ -75,7 +75,7 @@ case "$model" in
   *) exit 0 ;;
 esac
 
-msg='このセッションは judge-tier (Fable) です。built-in /code-review・/simplify はセッションモデルを継いで judge-tier トークンを消費します。Agent(subagent_type: "general-purpose", model: "opus") のサブエージェント内で起動してください（正本: skill implementation-chain「Review の実行モデル pin」）。'
+msg='このセッションは Fable で動いている。built-in /code-review・/simplify はセッションの model を継ぐので、Agent(subagent_type: "general-purpose", model: "opus") の subagent の中で起動すると Fable のトークンを使わない（正本: skill implementation-chain「Review の実行モデル pin」）。'
 
 if [[ "$mode" == "block" ]]; then
   # 実行前に止める。advisory では skill が同 turn で走ってから助言が読まれる（ヘッダ参照）。

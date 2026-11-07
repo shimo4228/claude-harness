@@ -106,7 +106,7 @@ frontmatter の書式例（verbatim、boundary.md 冒頭）:
 9. hooks の advisory envelope literal 存在（`harness_lint.py:459` `lint_advisory_envelope`）
 10. hooks の共有部品 source パスが `${BASH_SOURCE[0]%/*}` 相対（`harness_lint.py:504` `lint_hook_source_paths`）
 11. tests/*.bats の失敗握り潰し assertion 無し（`harness_lint.py:552` `lint_bats_assertions`）
-12. `docs/adr/NNNN>=0044` に `## Review-when` 節必須（`harness_lint.py:410` `lint_adr_review_when`、ADR-0044）
+12. `docs/decision-history/NNNN>=0044` に `## Review-when` 節必須（`harness_lint.py:410` `lint_adr_review_when`、ADR-0044）
 13. 版差 marker 検査（`harness_lint.py:378` `lint_version_diff_markers`、ADR-0061）— 同一括弧内の日付 + 編集動詞（追加|追記|移設|移管|再編|明文化|更新済み|移行済み）を exit 3 で止める
 
 **docstring 明記（`harness_lint.py:50-51`）**: 「description の良し悪し等の意味的品質は検査しない — それは skill-creator / stocktake 系の領分」。**「肯定形か禁止形か」を機械判定する lint は存在しない**——ADR-0070:124-127 が明言：「3 条件を機械 lint にする」は却下済み（「観測済み」「ゲート無し」は意味的条件で skill-creator §4 の草稿ゲートが検査、lint 化しない）。

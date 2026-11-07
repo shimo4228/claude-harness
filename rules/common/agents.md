@@ -1,13 +1,9 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0015 + ADR-0035 — catalog 複製を避け、review 分離と Herdr skill の入口だけ常駐（境界は boundary.md、ADR-0069） -->
+<!-- rationale: agent catalog は frontmatter が正本で、ここに複製すると drift する。常駐するのは review を実装者と別 process で走らせる規約と、Herdr / Codex への入口だけ（境界は boundary.md）。Herdr / agent-send / spawn-session / codex:rescue の入口は各 skill の description が持つ -->
+<!-- history: docs/decision-history/0015, 0035, 0069 -->
 <!-- review-when: native agent catalog / cross-agent attach point / Herdr の運用を変えた時 -->
+
 # Agent Orchestration
 
-agent catalog の正本は `~/.claude/agents/*.md` の frontmatter。Review は実装者と別の
-agent process で走らせる。必要な chain は skill: `implementation-chain` が持つ。
-
-Claude Code 外との rules 共有は [ADR-0015](../../docs/adr/0015-cross-agent-rules-sharing-reference-first.md)。
-Herdr の pane / agent の操作は skill: `herdr`、agent への指示の送信と完了待ちは skill: `agent-send`
-（vendor の `agent prompt --wait` は turn の完了まで待つので、着弾確認に使わない）、新規 session の
-作成は skill: `spawn-session`。Codex への依頼（実装の委譲、plan や設計への意見）は
-plugin `codex:rescue` から行う。委譲と pane 操作の境界は `boundary.md`。
+agent catalog の正本は `~/.claude/agents/*.md` の frontmatter。Review は実装者と別の agent process で走らせ、
+必要な chain は skill: `implementation-chain` が持つ。pane・session・Codex への委譲の境界は `boundary.md`。

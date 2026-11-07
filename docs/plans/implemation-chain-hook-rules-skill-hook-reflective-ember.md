@@ -207,7 +207,7 @@ Consequences に**受け入れたコスト**を明記する — 名簿の正本�
 | 0034（Stop 配線） | superseded — Stop 分岐をスクリプトごと削除 |
 | 0018（rightsize） | 追記 — 本 ADR が第 2 波。**基準が変わった**ことを明記 |
 
-**`docs/adr/README.md` のインデックスも同じ diff で更新する。** 現在 0019 / 0027 / 0030 / 0034 の
+**`docs/decision-history/README.md` のインデックスも同じ diff で更新する。** 現在 0019 / 0027 / 0030 / 0034 の
 4 行が `accepted` のままで、要約文も削除済みの rule / hook を現存として記述している。
 
 ### 台帳 `.notes/TASKS.md`

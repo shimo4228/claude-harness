@@ -37,7 +37,7 @@ rule 固有の実質内容はゼロ（純粋な凝縮重複）で、唯一の固
 - `gc_log.md` L80 / `skills/rules-stocktake/results.json` L89–90 — 過去時点の記録なので現状のまま。
 
 ### 4. ADR 記録（推奨・分離可）
-- `~/.claude/docs/adr/0017-retire-authorship-strategy-rule-absorbed-by-skill.md` を新規作成。
+- `~/.claude/docs/decision-history/0017-retire-authorship-strategy-rule-absorbed-by-skill.md` を新規作成。
   Scaffold Dissolution / rules-stocktake Dissolve verdict の「why は ADR に」規律 + ADR-0011/0014 の先例に沿う。
   内容: rule は skill の凝縮重複だった / 常時注入コスト削減 / トリガーは skill description + slash + repo-level guardrail に委譲 / 禁止事項の常時ロード撤去のトレードオフを著者が受容。
   adr-writer agent で 6 セクション（Status/Date/Context/Decision/Alternatives/Consequences）を render。
@@ -50,7 +50,7 @@ rule 固有の実質内容はゼロ（純粋な凝縮重複）で、唯一の固
 2. `grep -rn "common/authorship-strategy" ~/.claude` で rule パス参照が消えたことを確認。
 3. skill `authorship-strategy` が単体で完結していることを再確認（description + 本文で trigger/禁止事項/framework 全カバー）。
 4. `git -C ~/.claude status` で意図したファイルのみ変更（削除1 + 編集3 [+ADR新規1]）であることを確認。
-5. ADR を作った場合、`docs/adr/README.md` index に 0017 行を追加。
+5. ADR を作った場合、`docs/decision-history/README.md` index に 0017 行を追加。
 
 ## Commit（Verify 全 PASS 後・著者確認点）
 

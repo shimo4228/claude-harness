@@ -107,7 +107,7 @@ Eval 層（commit gate の機械検査）。runtime 固有部分は verify.sh �
 
 - Goal（決定可能）: (1) `scripts/hooklint/` に Cargo project、`cargo fmt --check && cargo clippy --release -- -D warnings && cargo test --release` exit 0 (2) `target/release/hooklint --root <worktree>` が **現行 hooks/ で exit 0、findings 0、FAIL_OPEN report-only N 件を出力** (3) fixture（`tests/fixtures/hooklint/*.sh`）で GIT_SAFE / HEAD_SIGPIPE 各 ≥ 2 陽性 + 偽陽性トラップ（文字列内 `git`、コメント内、heredoc 内、regex リテラル）各 0 (4) `.claude/verify.sh` に staged / full の配線（上の仕様どおり）、`bash .claude/verify.sh` 引数なし exit 0 (5) golden `tests/golden/hooklint/` + `tests/golden-hooklint.bats`（出力の全形）(6) `src/` ≤ 400 行
 - Phase 0: RFC-0005 `:34-35` の #13/#15 記述と現行 hooks/ の突合（GIT_SAFE 未 guard が 0 件であることの再確認。1 件でもあれば**直さず報告** — 台帳の外の修正になる）。search-first 1 回（shell lexer crate / 既存 linter）— Adopt が出たら止めて報告
-- Must-not: `hooks/*.sh` を編集しない / `rules/` `docs/adr/` `rfcs/` `settings.json` を触らない / 外部 crate を足さない / テストを弱めない / `git add -A` 禁止 / main へ merge・push しない / 台帳の状態を書かない / 時間上限 3 時間
+- Must-not: `hooks/*.sh` を編集しない / `rules/` `docs/decision-history/` `rfcs/` `settings.json` を触らない / 外部 crate を足さない / テストを弱めない / `git add -A` 禁止 / main へ merge・push しない / 台帳の状態を書かない / 時間上限 3 時間
 - Report（commit body）: Packet / Premise / Fix / Regression / Verify / Review / Deviations / Out-of-diff findings に加え **Measurements**: M1（cold・warm 秒、binary bytes、full run 増分）、M2（自己申告: cargo/clippy 赤の回数、所要時間）、M3（5 回の壁時計）、M4（HEAD の findings 数、FAIL_OPEN 件数、fixture 陽性数）、M5（行数）
 - Doc Sync（同 diff）: `.claude/verify.md` に cargo / clippy / rustfmt の選定と再調査トリガー節（as-of 日付）、`tests/golden/README.md` の凍結一覧に hooklint 出力を追加、`scripts/hooklint/README.md` は書かない（読者は次セッションの LLM。`src/main.rs` 冒頭コメントに契約 — 3 rule / exit code / 対象 — を置く。llm-first-code）
 

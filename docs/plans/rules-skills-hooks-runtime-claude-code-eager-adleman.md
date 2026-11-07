@@ -75,7 +75,7 @@ origin: shimo4228
    Delete / Simplify = 成功、と明記
 2. `## 6 層` — 表 1 枚（層 / 例 / この harness での対応物 / 置き場）。対応物列で既存語彙に接続:
    model capability = substrate、skills = `skills/`、values = `rules/common/`（identity / values 層, ADR-0018 D7）・
-   `settings.json` permissions、evals = `verify.sh` / `skill-comply` / `llm-as-judge` / tests、data = `docs/adr/` / memory /
+   `settings.json` permissions、evals = `verify.sh` / `skill-comply` / `llm-as-judge` / tests、data = `docs/decision-history/` / memory /
    `.notes/` / metrics、runtime = Claude Code 本体 / hooks / MCP / agent loop
 3. `## 6 問`（A–F、各 1–2 行）— 層 / なぜモデル外 / 次世代で不要か / runtime 交換で残すか /
    インフラか差別化か / より単純な層へ移せないか（移送例 5 行: agent loop → model、workflow → skill、

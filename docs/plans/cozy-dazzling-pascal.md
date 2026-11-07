@@ -134,7 +134,7 @@ Code Review 単独で見逃した 1 回目。
 2. agent / skill 整理（§3）
 3. task-tracking rule + task-stocktake 節（§4）
 4. hook 退役 + settings.json + hooks/README.md + review-chain-notice 文言（§2）
-5. 新 ADR + 旧 ADR 注記 + docs/adr/README.md index（§5）
+5. 新 ADR + 旧 ADR 注記 + docs/decision-history/README.md index（§5）
 6. Verify
 
 ## Verify

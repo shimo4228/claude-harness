@@ -33,7 +33,7 @@ Every project document should serve exactly one of these four roles. Overlap cau
 |------|---------|-------------------|---------|
 | **Context** | How to work in this project | Conventions, build/test commands, policies | CLAUDE.md, .cursorrules, AGENTS.md |
 | **Architecture** | What concepts the code defines and how they relate (concept-level) | Domain entities / relationships (concept-level triples); at most a short hand-written overview | graph.jsonld, docs/architecture/ |
-| **Decisions** | Why the code is this way | Trade-offs, rejected alternatives, rationale | docs/adr/ |
+| **Decisions** | Why the code is this way | Trade-offs, rejected alternatives, rationale | docs/decision-history/ |
 | **External** | What this project is | Purpose, quickstart, API overview | README.md |
 
 **Do not store file-level structure**: "which file X lives in / who calls whom" is derived from the code every time (Claude Code's LSP tool / an import graph from `grimp` etc.). Store only the concept layer (graph.jsonld — "what X is / how X and Y relate"), design rationale (ADRs), and a pipeline's stage layout (the header comment of the script that runs it). A hand-written module map is a mirror of derivable structure; it pays a sync cost on every source commit while nobody reads it. Your knowledge-graph skill (the author's harness uses `jsonld-knowledge-graph`) holds the canonical details of the role boundaries.
@@ -42,17 +42,17 @@ Every project document should serve exactly one of these four roles. Overlap cau
 
 | Symptom | Problem | Fix |
 |---------|---------|-----|
-| CLAUDE.md is 200+ lines | Architecture detail in context file | Delete module lists (derivable from code); move concepts to graph.jsonld, rationale to ADR |
-| CLAUDE.md has "we chose X because Y" | Decision record in context file | Extract to ADR |
+| CLAUDE.md is 200+ lines | Architecture detail in context file | Delete module lists (derivable from code); move concepts to graph.jsonld, rationale to decision history |
+| CLAUDE.md has "we chose X because Y" | Decision record in context file | Extract to decision history |
 | README explains internal implementation | Internal detail in external doc | Point at the source layout and ADRs; do not create a module map |
 | Multiple files describe the same structure | Contradictory duplication | Single source of truth + pointers |
-| No ADR directory | Decisions live nowhere or in context file | Create docs/adr/ and migrate |
+| No ADR directory | Decisions live nowhere or in context file | Create docs/decision-history/ and migrate |
 
 ## Workflow
 
 Run all five phases in order. **Confirmation policy: apply edits to existing files automatically** — git diff is the audit trail, and `git checkout -- <file>` is the undo. Creating new files and directories is batch-confirmed once at the start of Phase 3 (Phase 2 and Phase 4 collect the candidates). List every created and edited file in the Phase 5 report so the user can revert any they did not want.
 
-**The project README is owned elsewhere — flag, do not edit.** For the top-level `README.md` / `README.*.md` (not index files such as `docs/adr/README.md`), README content (sections to remove, rewrite or create, including a missing README) goes to your README skill (the author's harness uses `readme-writer`); version, DOI and other release numbers in README go to your release skill (the author's harness uses `release-doi`). In project mode the owner is the repo's own: the finding names the README line and the fix, and names a skill only when the repo itself has one for READMEs. context-sync reports each README finding with its line and the owning skill, because those skills hold the owner of each fact and the judge that checks the README.
+**The project README is owned elsewhere — flag, do not edit.** For the top-level `README.md` / `README.*.md` (not index files such as `docs/decision-history/README.md`), README content (sections to remove, rewrite or create, including a missing README) goes to your README skill (the author's harness uses `readme-writer`); version, DOI and other release numbers in README go to your release skill (the author's harness uses `release-doi`). In project mode the owner is the repo's own: the finding names the README line and the fix, and names a skill only when the repo itself has one for READMEs. context-sync reports each README finding with its line and the owning skill, because those skills hold the owner of each fact and the judge that checks the README.
 
 The skill runs end-to-end; it pauses only for the Phase 3 creation batch and for ADR inputs it cannot find in the source. Phase 5 (Report) summarizes what was done.
 
@@ -74,7 +74,7 @@ Architecture docs:
 - A hand-maintained file-level module map (`docs/CODEMAPS/` or similar) is a **finding, not a role**: flag it in Phase 5 as derivable-and-stored (see Phase 2)
 
 Decision records:
-- docs/adr/, docs/decisions/
+- docs/decision-history/, docs/decisions/
 
 External docs (human-facing):
 - README.md, README.*.md
@@ -93,7 +93,7 @@ Package metadata (for freshness comparison):
 2. Identify missing roles and surface them:
    - No graph.jsonld → "Concept definitions and relationships live only in prose"
    - No Decision records → "Design decisions may be buried in context files or lost entirely"
-3. Display the classification table as info — **no confirmation prompt**. Phase 2 onward will act on this classification; if Phase 3 needs to create new directories (e.g., `docs/adr/`), that confirmation lives there.
+3. Display the classification table as info — **no confirmation prompt**. Phase 2 onward will act on this classification; if Phase 3 needs to create new directories (e.g., `docs/decision-history/`), that confirmation lives there.
 
 ### Phase 2: Overlap Detection
 
@@ -146,7 +146,7 @@ Also check for contradictions between files (e.g., a module count in a context f
 **Actions:**
 1. List each overlap with: source file, line range, target role, reason
 2. **Auto-apply migrations whose target is an existing file** (e.g., moving a buried rationale paragraph from CLAUDE.md into the ADR that owns it). These are edits — git diff is the audit trail. A migration whose source is README is the exception: copy the content to its target, and flag the README side for the README skill
-3. **Defer migrations whose target is a new file or new directory** to Phase 3, which will batch-confirm them. Examples: extracting a buried decision into a new ADR (creates `docs/adr/NNNN-*.md`), splitting architecture content into a new `docs/architecture/data.md` that doesn't exist yet.
+3. **Defer migrations whose target is a new file or new directory** to Phase 3, which will batch-confirm them. Examples: extracting a buried decision into a new ADR (creates `docs/decision-history/NNNN-*.md`), splitting architecture content into a new `docs/architecture/data.md` that doesn't exist yet.
 
 ### Phase 3: Create / Migrate
 
@@ -154,21 +154,21 @@ Execute the approved migrations from Phase 2.
 
 **Creating new documentation:**
 
-If ADR records need to be created (either a missing `docs/adr/` directory, or buried decisions found in CLAUDE.md / README that should be extracted into ADR form):
+If ADR records need to be created (either a missing `docs/decision-history/` directory, or buried decisions found in CLAUDE.md / README that should be extracted into ADR form):
 
-Delegate to the `adr-writer` skill. Do not inline an ADR template here — duplicating the template invites drift between context-sync's version and the canonical adr-writer version. Instead:
+Delegate to the `decision-history` skill. Do not inline the entry template here — duplicating the template invites drift between context-sync's version and the canonical decision-history version. Instead:
 
-1. For each decision to extract, gather the 7 inputs (Title / Status / Context / Decision / Review-when / Alternatives / Consequences) from the source file — Review-when (expiry conditions) is rarely written down in a CLAUDE.md; ask the user rather than inventing it
-2. Invoke `/adr-writer` once per decision with those inputs
-3. `adr-writer` handles: directory creation, sequence numbering, README index update, body generation in the main loop
-4. If the user runs context-sync in non-interactive mode where invoking another skill is impractical, surface the list of decisions to extract and ask the user to run `/adr-writer` for each later — do not write partial ADRs from context-sync directly
+1. For each decision to extract, gather the 6 inputs (Title / Context / Decision / Review-when / Alternatives / Consequences) from the source file — Review-when (expiry conditions) is rarely written down in a CLAUDE.md; ask the user rather than inventing it
+2. Invoke `/decision-history` once per decision with those inputs
+3. `decision-history` handles: directory creation, sequence numbering, README index update, body generation in the main loop
+4. If the user runs context-sync in non-interactive mode where invoking another skill is impractical, surface the list of decisions to extract and ask the user to run `/decision-history` for each later — do not write partial ADRs from context-sync directly
 
 If Architecture docs are needed:
 1. Concept-level: create / extend graph.jsonld via your knowledge-graph skill (the author's harness uses `jsonld-knowledge-graph`)
 2. Do not create a file-level module map — delete structural lists from context files instead; the code plus the LSP tool is the source
 
 **For all migrations:**
-- Replace moved content in the source file with a brief pointer (e.g., "See docs/adr/ for design decisions") — this is an edit, no confirmation. When the source is the project README, flag the README side for the README skill instead
+- Replace moved content in the source file with a brief pointer (e.g., "See docs/decision-history/ for design decisions") — this is an edit, no confirmation. When the source is the project README, flag the README side for the README skill instead
 - **Batch-confirm new file / new directory creation once at the start of Phase 3** (single Y/n covering all creations identified by Phase 2). If the user says no to a specific creation, skip that migration but keep the others.
 - Update any index files (e.g., ADR README.md table) — these are edits, no confirmation
 
@@ -235,18 +235,17 @@ duplicating the rule:
 
 - [ ] No generic advice that is not specific to this project (template copy-paste
       without customization)
-- [ ] Directives in context files (CLAUDE.md / AGENTS.md / guideline docs) and in ADR
-      Decision / Review-when / Consequences say what to do by default. A prohibition stays
-      only when it targets a grep-able concrete action, the default behavior was observed to
-      go the other way, no machine gate covers it, and a one-clause reason is attached;
-      reword the rest in the affirmative (a named "don't" is recalled as an option). ADR
-      Context / Alternatives are records and stay as written
+- [ ] Directives in context files (CLAUDE.md / AGENTS.md / guideline docs) say what to do
+      by default. A prohibition stays only when it targets a grep-able concrete action, the
+      default behavior was observed to go the other way, no machine gate covers it, and a
+      one-clause reason is attached; reword the rest in the affirmative (a named "don't" is
+      recalled as an option). Decision-history entries are past-tense records and stay as written
 - [ ] `ResearchLine` `@id` uses the concept DOI (parent record), not the latest
       versioned DOI — the script lists every DOI in `graph_jsonld.dois`; which one is
       the concept record is not decidable from the string
-- [ ] If ADRs carry `## Review-when`: any ADR whose trigger has **fired** carries a
-      dated `> **Note (…)**` under the affected section, or is superseded — not left
-      reading as current
+- [ ] A context file that states the current design as "see entry NNNN" points at a thing
+      (rule / skill / script / README) instead — entries are history, the current design
+      lives in the thing itself
 - [ ] `llms.txt` does not duplicate README — `llms_txt.readme_h2_overlap.ratio` is the
       measured first-5-H2 overlap; above ~60% it is a README copy and should be
       regenerated AI-first via your llms.txt skill (the author's harness uses `llms-txt-writer`)
@@ -270,8 +269,8 @@ Context Sync Report
 ═══════════════════
 
 Roles:      4 roles, N files discovered (incl. llms.txt, llms-full.txt at repo root)
-Created:    3 ADRs via /adr-writer (extracted from CLAUDE.md decisions)
-Moved:      2 sections (buried rationale → docs/adr/); 1 module list deleted (derivable)
+Created:    3 ADRs via /decision-history (extracted from CLAUDE.md decisions)
+Moved:      2 sections (buried rationale → docs/decision-history/); 1 module list deleted (derivable)
 Updated:    context file module count
 Deferred:   README.md version → release skill; README internal module section → README skill
 Stale:      1 file flagged (docs/architecture.md, 120 days)
@@ -284,7 +283,7 @@ Status: All documentation roles covered (Context / Architecture / Decisions / Ex
 ## Best Practices
 
 - **Context file should be short** — if it exceeds ~200 lines, content is likely misplaced
-- **Decisions follow adr-writer's filing bar** — `/adr-writer` decides whether a decision gets an ADR or the commit body's Context / Decision / Review-when lines
+- **Decisions follow decision-history's filing bar** — `/decision-history` decides whether a decision gets an entry or the commit body's Context / Decision / Review-when lines
 
 ## What This Skill Does NOT Do
 

@@ -144,8 +144,8 @@ If any dominant No ({domain-specific fatal condition}) is present, choose
 {failing verdict} even when everything else is Yes.
 
 ## Output format
-Return JSON matching the schema below. On the API, pass the schema as structured outputs
-(`output_config.format`) rather than asking for JSON in prose.
+Return JSON matching the schema below. Where the runtime supports structured outputs,
+hand it the schema there rather than asking for JSON in prose.
 ```
 
 Output schema:
@@ -169,7 +169,7 @@ in `evidence` are the improvement list handed to the next stage.
 
 ## Related
 
-- **Code-LLM layering** ([AKC ADR-0008](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0008-code-and-llm-collaboration.md))
+- **Code-LLM layering** ([AKC ADR-0008](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/decision-history/0008-code-and-llm-collaboration.md))
   — the architecture-level "LLM judge + Code enforce" pattern (judgment never
   mutates state directly); this skill designs the judge's inside. Not an
   installed skill: it lives in the AKC repo (and as a public skill repo that

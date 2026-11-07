@@ -34,7 +34,7 @@ rfcs/ は**提案と作業項目の公開台帳**。この skill はそこへ 1 
 1. **state**: 提案は `draft`、採用済みの作業項目は `accepted`。語彙 9 語の定義・
    使い分け・`blocked` の 3 行は skill: `task-stocktake` が正本（ここに複製しない）
 2. **採番**: `rfcs/` の `[0-9][0-9][0-9][0-9]-*.md` の最大番号 +1 を 4 桁 zero-pad。
-   欠番は再利用しない（docs/adr と同じ）。ファイル名 `NNNN-<kebab-slug>.md`、
+   欠番は再利用しない（docs/decision-history と同じ）。ファイル名 `NNNN-<kebab-slug>.md`、
    ID は `RFC-NNNN`
 3. **本文**（Rust RFC 0000-template 準拠 + 独自 2 節。推奨であって強制ではない —
    小さな作業項目は該当なし節を省き Summary / Motivation 中心でよい）:
@@ -93,7 +93,7 @@ README を丸コピせず、規約本文は README に書かない — 複製し
 ## 境界
 
 - 終端エントリの残置（archive しない）・終端語の使い分け・棚卸しは task-stocktake
-- 採用判断が出たら ADR が Rationale and alternatives を引き取る（→ adr-writer）。
+- 採用判断が出たら判断の経緯が Rationale and alternatives を引き取る（→ skill decision-history）。
   rfcs 側は state を進めて Status を更新するだけ
 - スケジュール実行の pipeline が自分で起票する無人 filing は、採番・draft 正規化を pipeline 側が
   持つ — この skill は人間・対話セッションの起票手順

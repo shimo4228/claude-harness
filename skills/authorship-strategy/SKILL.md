@@ -38,6 +38,6 @@ user-invocable: true
 
 ## 参照と適用範囲
 
-本 skill の ADR 番号は [authorship-strategy の ADR](https://github.com/shimo4228/authorship-strategy/tree/main/docs/adr)
+本 skill の ADR 番号は [authorship-strategy の ADR](https://github.com/shimo4228/authorship-strategy/tree/main/docs/decision-history)
 を指す。ハーネス自身の ADR は別の名前空間。各 project の事例と実施状況は各 project の資料が持つ。
 他者の project では、その著者の目的と方針を優先する。

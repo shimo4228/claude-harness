@@ -18,7 +18,7 @@ log_updates: []
 # s2 — skill-comply の測定不成立（2026-08-01）
 
 skill-comply が project skill の遵守率を 75% / 50% / 25% と出したが、対象の skill は一度も読み込まれておらず、数字は skill を読んでいない
-エージェントの素の挙動だった、という事例の記録。原因の整理と対策は [ADR-0032](../adr/0032-skill-comply-measurement-validity.md)（2026-08-02）が持つ。
+エージェントの素の挙動だった、という事例の記録。原因の整理と対策は [ADR-0032](../decision-history/0032-skill-comply-measurement-validity.md)（2026-08-02）が持つ。
 `evaluation_timestamp` はレポートの `Generated:` 行（UTC）から取った。JST では 2026-08-01 20:28:56。
 
 ## 設計
@@ -45,7 +45,7 @@ skill-comply が project skill の遵守率を 75% / 50% / 25% と出したが�
 - Claude Code の版: 未記録（翌日の ADR-0031 の実測は 2.1.220）
 - 子に渡した tool: 未記録（レポートに tool の欄が無かった。これが欠陥 C）。時系列には supportive と neutral で `Bash` の呼び出しがあり、
   子は Bash を実行できる状態だった。当時の設計は「Bash は既定 off、`--allow-bash` で opt-in」だったが、翌日の実測で `--allowedTools` は
-  Bash を止めていなかったと分かった（[ADR-0031](../adr/0031-child-permission-envelope-via-permissions-deny.md)）。`--allow-bash` を付けたかは未記録
+  Bash を止めていなかったと分かった（[ADR-0031](../decision-history/0031-child-permission-envelope-via-permissions-deny.md)）。`--allow-bash` を付けたかは未記録
 - sandbox: シナリオごとに `/tmp` 配下の sandbox ディレクトリを cwd にして走った（レポートの時系列の path から）
 - 並列度: 未記録
 

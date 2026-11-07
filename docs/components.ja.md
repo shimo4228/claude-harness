@@ -20,7 +20,6 @@
 | [collect-context](../skills/collect-context/SKILL.md) | セッション内外のコンテキストを集めて記事執筆用の素材を作る |
 | [authorship-strategy](../skills/authorship-strategy/SKILL.md) | DOI 登録された研究 repo 向けの 4 層 framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) |
 | [release-doi](../skills/release-doi/SKILL.md) | DOI 登録された研究 repo のバージョン release を切る (Zenodo の concept DOI の扱い、CHANGELOG / tag / asset packaging) |
-| [adr-writer](../skills/adr-writer/SKILL.md) | 設計判断を連番 ADR として記録 — ディレクトリ検出・採番・index 更新。本文は確定した decision packet から主ループが執筆、evidence script と adr-reviewer agent が検査 |
 | [readme-writer](../skills/readme-writer/SKILL.md) | 人間向け README を書く — 決定論的な構造 lint + スコアなしのホリスティック LLM review |
 | [hf-sync](../skills/hf-sync/SKILL.md) | graph.jsonld を持つ研究 repo の Hugging Face Datasets ミラー同期 |
 | [spawn-session](../skills/spawn-session/SKILL.md) | Herdr の pane に detached な Claude Code Remote Control セッションを起動し、モバイルアプリの一覧に出す |
@@ -57,6 +56,8 @@
 | [detail-loop](../skills/detail-loop/SKILL.md) | 骨組みのできた製品を細部の単位ごとに仕上げ、直した細部を検査として凍結する。レビューで新しい指摘が出なくなるまで回す |
 | [harness-stocktake](../skills/harness-stocktake/SKILL.md) | Take stock of the whole harness in one report and one approval, then apply on a branch (ハーネスの棚卸し) |
 | [hook-stocktake](../skills/hook-stocktake/SKILL.md) | Audit the harness hooks (hooks/*.sh, scripts/hooks/*) and their settings.json wiring, and give each a verdict (hook の棚卸し) |
+| [decision-history](../skills/decision-history/SKILL.md) | Record a design decision as a dated, past-tense entry in the repo's docs/decision-history/, or decide whether it clears the filing bar or be |
+| [plugin-directory-submit](../skills/plugin-directory-submit/SKILL.md) | Anthropic の plugin directory に plugin を提出し、掲載後の listing を保つ手順 |
 <!-- END GENERATED: skills-table -->
 
 ## Agents
@@ -64,10 +65,10 @@
 <!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
 | --- | --- |
-| [adr-reviewer](../agents/adr-reviewer.md) | ADR の「決定」ではなく「記録」を検査する — Context が検証可能な根拠を持つか、`Review-when` が観測可能な失効条件か、Alternatives が藁人形でないか（「未決 — 再訪条件」付きの対抗案は可）、Consequences が両面あるか、先行 ADR との関係（部分弱化は日付つき注記）が明示されているか |
 | [prompt-forager](../agents/prompt-forager.md) | prompt-perturb の、文脈を持たない側。目的の一行だけを受け取り他は意図的に渡さないので、見つかるものが依頼元のセッションに引きずられない |
 | [readme-judge](../agents/readme-judge.md) | README の fresh-context 判定器。証拠 JSON と README を 1 回読み、固定チェックリストに引用付きで答えて named verdict（Publishable / Fix / Rewrite）を返す |
 | [researcher](../agents/researcher.md) | search-first の並列 Full で 1 角度を担う調査 worker。web・registry・一次資料を調べ、日付付きの notes 1 本か、plan の research gate を開ける統合 report 1 本を書く |
+| [decision-history-reviewer](../agents/decision-history-reviewer.md) | Strict reviewer of decision-history entries (docs/decision-history/) |
 <!-- END GENERATED: agents-table -->
 
 ## Rules

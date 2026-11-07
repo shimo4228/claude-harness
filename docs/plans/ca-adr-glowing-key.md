@@ -39,7 +39,7 @@ readme-writer の `skills/readme-writer/scripts/readme_evidence.py` パターン
 - 既定 = **evidence モード**: JSON を stdout に出す。判定しない・exit 0（"evidence, not a verdict"）
 - `--gate` = **blocking モード**: 違反を stderr + 非ゼロ exit（harness の verify.sh 用）
 
-**テンプレ適応**: 対象 repo の `docs/adr/README.md` の `## Template` fenced block から期待節セットを読む。無ければ harness 7 節（Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences）を既定に。CA は References 節テンプレのまま正しく検査される。
+**テンプレ適応**: 対象 repo の `docs/decision-history/README.md` の `## Template` fenced block から期待節セットを読む。無ければ harness 7 節（Status / Date / Context / Decision / Review-when / Alternatives Considered / Consequences）を既定に。CA は References 節テンプレのまま正しく検査される。
 
 **検査項目**（調査で実在を確認した逸脱パターンに対応）:
 | 検査 | 実測根拠 |
@@ -90,7 +90,7 @@ CA の git 履歴 + harness ADR-0044 事例から蒸留した**日付・commit �
 
 - **§1 Section Completeness の機械項目を削除**し、冒頭に Post-script Interpretation 指示を追加: 「まず `python3 ~/.claude/skills/adr-writer/scripts/adr_lint.py --root <repo>` を実行し、JSON の機械的逸脱は結果に転記、レビューの注意は意味的チェックに集中する」（feedback: deterministic_semantic_layering の SKILL.md 様式）
 - §1 のうち意味的な項目（Review-when が**観測可能**か、カウント条件の固定対象、Title が決定を述べるか）は残す
-- 新規追加: 「対象 repo の `docs/adr/README.md` のローカル規約（テンプレ・supersede half 規約等）を読んで適用する」— CA のような harness 外 repo での運用を明示
+- 新規追加: 「対象 repo の `docs/decision-history/README.md` のローカル規約（テンプレ・supersede half 規約等）を読んで適用する」— CA のような harness 外 repo での運用を明示
 - 意味的チェックリストに review-findings.md への参照を 1 行追加（事例は重複記載しない）
 
 ### Step 6: ADR-0051 起票（skill: adr-writer 使用）
@@ -100,7 +100,7 @@ CA の git 履歴 + harness ADR-0044 事例から蒸留した**日付・commit �
 ### Step 7: 締め
 
 - `.claude/verify.sh` full 実行（bats + pytest + 両 lint が通ること）
-- git status 確認、doc sync（docs/adr/README.md の Template 前文に adr_lint.py への言及を追加するか確認）
+- git status 確認、doc sync（docs/decision-history/README.md の Template 前文に adr_lint.py への言及を追加するか確認）
 - commit はユーザー承認後。verify.sh 変更の承認台帳更新を依頼
 - 公開 repo への同期は skill: `harness-sync`（ユーザー起動、範囲外）
 
@@ -154,7 +154,7 @@ Part 1 で踏んだ手続き — 「reviewer のチェックリストから機�
 | `skills/adr-writer/SKILL.md` | 改修 |
 | `agents/adr-reviewer.md` | 薄化 |
 | `.claude/verify.sh` | 1 行追加（要承認台帳更新） |
-| `docs/adr/0051-*.md` + `docs/adr/README.md` index | 新規 ADR |
+| `docs/decision-history/0051-*.md` + `docs/decision-history/README.md` index | 新規 ADR |
 | `skills/review-to-lint/SKILL.md` | 新規 skill（Part 2、skill-creator ゲート経由） |
 
 ## 検証方法

@@ -1,5 +1,6 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: 学術インフラ系 skill 群 (paper-deposit / release-doi 等) から「研究者」と誤読される構造を毎セッション先回りで塞ぐ。2026-08-15 著者指示で一般化 — 研究者に限らず、既存カテゴリへの回収フレーミング全般を避ける。ADR-0018 §7 の identity/values 層として著者の言葉を verbatim 常駐。2026-08-21 著者指示でオーセンティシティを戦略的価値として追記 — 定義・基準・禁止は置かず（置けば ADR-0017 で退役した rule と同じゲートになる）、自問自答を誘う形だけ常駐 -->
+<!-- rationale: 学術インフラ系 skill 群 (paper-deposit / release-doi 等) から「研究者」と誤読される構造を毎セッション先回りで塞ぐ。2026-08-15 著者指示で一般化 — 研究者に限らず、既存カテゴリへの回収フレーミング全般を避ける。identity / values 層として著者の言葉を verbatim 常駐。2026-08-21 著者指示でオーセンティシティを戦略的価値として追記 — 定義・基準・禁止は置かず（置けば退役した authorship-strategy rule と同じゲートになる）、自問自答を誘う形だけ常駐 -->
+<!-- history: docs/decision-history/0017, 0018 §7 -->
 <!-- review-when: 結論が変わったとき（DOI 戦略を降りる、Practitioner の自己定義が変わる、オーセンティシティを中心価値から外す等）。著者の明示判断のみ -->
 # Practitioner Identity
 

@@ -21,6 +21,9 @@ and the request.
 - **`skeptic`, skeptic who knows the alternative** — someone who has used what this replaces (an existing
   tool, a home-made agent, manual work) and checks evidence and cost
 
+Give each reader a model by how deeply the role reads (SKILL.md step 1): a skimming visitor on a
+light model, a reader who checks evidence and cost on a strong one.
+
 **The author confirms the three before r0.** Show them with the other decisions made before writing
 and wait.
 

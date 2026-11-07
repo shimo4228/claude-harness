@@ -97,7 +97,7 @@ git tag --sort=-creatordate | head -5
 | `llms-full.txt` | Project Facts (Version / Tests / ADRs)、Q&A の数値、新 ADR の Q&A 追加 |
 | `docs/glossary.md` | 新出語 (ADR slogan / 唯名 / 新 module 名) を多言語で追加。sunset 用語 (BM25 のような) を削除 |
 | `CLAUDE.md` | sunset 機能の言及を削除。新規 doc 場所/conventions を追加 |
-| `docs/adr/` cross-ref | supersede / sunset / withdraw 関係の双方向リンク確認 (新→旧、旧→新) |
+| `docs/decision-history/` links | 記録間のリンク切れ確認 |
 
 **多言語 README 同期範囲は default で「中間」**: version + 統計 + sunset sentence の削除。全文再翻訳は別の commit で行う (cost が大きい)。最小 (badge のみ) は drift を残すので避ける。
 

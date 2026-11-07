@@ -20,7 +20,6 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 | [collect-context](../skills/collect-context/SKILL.md) | Gathers in-session and external context into source material for article writing |
 | [authorship-strategy](../skills/authorship-strategy/SKILL.md) | 4-layer framework (Authenticity / Attribution diffusion / Idea-vs-scaffold / Tactics) for DOI-registered research repos |
 | [release-doi](../skills/release-doi/SKILL.md) | Cuts a versioned release of a DOI-registered research repo (Zenodo concept DOI semantics, CHANGELOG / tag / asset packaging) |
-| [adr-writer](../skills/adr-writer/SKILL.md) | Records design decisions as numbered ADRs — directory detection, sequence numbering, index update; the main loop writes the body from a settled decision packet, checked by an evidence script and the adr-reviewer agent |
 | [readme-writer](../skills/readme-writer/SKILL.md) | Writes human-facing READMEs — deterministic structural lint plus holistic LLM review (no scores) |
 | [hf-sync](../skills/hf-sync/SKILL.md) | Mirrors graph.jsonld-bearing research repos to Hugging Face Datasets |
 | [spawn-session](../skills/spawn-session/SKILL.md) | Launches a new detached Claude Code Remote Control session in a Herdr pane, visible in the mobile app session list |
@@ -57,6 +56,8 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 | [detail-loop](../skills/detail-loop/SKILL.md) | Refines a product whose skeleton is done, one detail unit at a time, freezing each fix as a check, until a review round finds nothing new |
 | [harness-stocktake](../skills/harness-stocktake/SKILL.md) | Take stock of the whole harness in one report and one approval, then apply on a branch (ハーネスの棚卸し) |
 | [hook-stocktake](../skills/hook-stocktake/SKILL.md) | Audit the harness hooks (hooks/*.sh, scripts/hooks/*) and their settings.json wiring, and give each a verdict (hook の棚卸し) |
+| [decision-history](../skills/decision-history/SKILL.md) | Record a design decision as a dated, past-tense entry in the repo's docs/decision-history/, or decide whether it clears the filing bar or be |
+| [plugin-directory-submit](../skills/plugin-directory-submit/SKILL.md) | Anthropic の plugin directory に plugin を提出し、掲載後の listing を保つ手順 |
 <!-- END GENERATED: skills-table -->
 
 ## Agents
@@ -64,10 +65,10 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 <!-- BEGIN GENERATED: agents-table -->
 | Agent | Purpose |
 | --- | --- |
-| [adr-reviewer](../agents/adr-reviewer.md) | Checks an ADR's record, not its decision — whether Context carries verifiable evidence, `Review-when` names an observable expiry trigger, Alternatives are real rather than straw men (a live rival marked undecided, with conditions for revisiting it, is allowed), Consequences show both sides, and override relations with prior ADRs are stated (a dated note when a prior ADR is partly weakened) |
 | [prompt-forager](../agents/prompt-forager.md) | The context-starved half of prompt-perturb. Receives one line of purpose and deliberately nothing else, so what it finds is not shaped by the session that asked |
 | [readme-judge](../agents/readme-judge.md) | Fresh-context README judge: reads evidence JSON + the README once, answers a fixed checklist with quoted evidence, returns a named verdict (Publishable / Fix / Rewrite) |
 | [researcher](../agents/researcher.md) | One research angle per run for search-first's parallel Full mode: searches the web, registries and primary sources, writes one dated notes file or the merged report that opens the plan research gate |
+| [decision-history-reviewer](../agents/decision-history-reviewer.md) | Strict reviewer of decision-history entries (docs/decision-history/) |
 <!-- END GENERATED: agents-table -->
 
 ## Rules

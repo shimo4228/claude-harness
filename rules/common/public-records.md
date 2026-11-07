@@ -1,5 +1,5 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: 2026-10-12 著者決定。公開 repo の記録（rfcs/、行為ログ、plan、report）が増え、各 repo で「何を名指し何を伏せるか」がばらついた。公開の場の行為は既に公開済みの事実で、伏せていたのは周辺の文脈と、vendor 中立の書き方の慣習だった。authorship-strategy ADR-0025 / ADR-0026、gpt-6-astra のレビュー -->
+<!-- rationale: 2026-10-12 著者決定。公開 repo の記録（rfcs/、行為ログ、plan、report）が増え、各 repo で「何を名指し何を伏せるか」がばらついた。公開の場の行為は既に公開済みの事実で、伏せていたのは周辺の文脈と、vendor 中立の書き方の慣習だった。経緯は authorship-strategy の判断記録 0025 / 0026 と gpt-6-astra のレビュー -->
 <!-- review-when: 公開記録が原因の機微の事故が起きた時、platform が著者のアカウントについての判断で公開記録を引いた時、verify-public-detail の検査が形だけ通すようになった時 -->
 # Public Records
 

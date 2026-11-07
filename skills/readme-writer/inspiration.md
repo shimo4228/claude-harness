@@ -27,7 +27,7 @@ Grounded in:
 
 - **AKC ADR-0008 "Code-LLM Layering"** — code owns structural determinism; LLM
   owns meaning; LLM scoring is justified only as input to a code-owned decision.
-  https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0008-code-and-llm-collaboration.md
+  https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/decision-history/0008-code-and-llm-collaboration.md
 - **signal-first / scaffold-dissolution** (AKC) — emit only what changes the
   next action; a quality score nothing consumes is scaffolding that constrains a
   high-capability model.

@@ -1,8 +1,9 @@
-<title>Harness 棚卸し</title>
+<title>Harness stocktake</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: 上に判定の集計と承認バー、下に影響の大きい順の項目リスト。1 段組、項目は左端の帯で判定を示す */
+/* Layout: verdict counts and the approve bar on top, items below in impact order. One column; a left stripe marks each item's verdict.
+   Language: every visible string lives in L below; meta/run.lang picks one (before it arrives, the browser language does). */
 :root {
   --bg: #f6f7f5; --surface: #ffffff; --fg: #1d2421; --muted: #5d6963; --line: #d9dfdb;
   --accent: #2f6b5a; --accent-fg: #ffffff;
@@ -60,34 +61,82 @@ details summary { cursor: pointer; color: var(--muted); }
 
 <div class="wrap">
   <header style="display:grid;gap:4px">
-    <h1 id="title">Harness 棚卸し</h1>
-    <div class="sub" id="subtitle">report を読み込んでいます</div>
+    <h1 id="title"></h1>
+    <div class="sub" id="subtitle"></div>
   </header>
   <div class="bar">
     <div class="counts" id="counts"></div>
     <div class="filters" id="filters"></div>
-    <button class="approve" id="approve" type="button" disabled>この内容で承認</button>
+    <button class="approve" id="approve" type="button" disabled></button>
   </div>
-  <div class="state" id="state">判定を変えたい項目だけ選び直してください。変えなかった項目は推奨どおりに適用します。</div>
-  <main id="list" style="display:grid;gap:24px">
-    <div class="empty">ここに棚卸しの項目が並びます。Claude が report を書き込むまでお待ちください。</div>
-  </main>
+  <div class="state" id="state"></div>
+  <main id="list" style="display:grid;gap:24px"></main>
   <footer class="state" style="border-top:1px solid var(--line);padding-top:12px">
-    <h2>native が見るもの</h2>
-    <p>この report は中身の判定（古い参照・矛盾・持ち主の消えた設定・rule への蒸留）を出す。使用履歴と書き方は Claude Code の native 検査が見る: <code>/doctor</code> は使われていない plugin・MCP・skill と遅い hook を、<code>/doctor prompt-audit</code> は古い model 向けの書き方（固定の数値上限・強い強調・存在しない tool への言及）を出す。二つは重ならないので、両方を回して並べて読む（この run はどちらも実行していない）。</p>
+    <h2 id="native-h"></h2>
+    <p id="native"></p>
   </footer>
 </div>
 
 <script>
+// Every visible string, per language. The group labels and the native paragraph match
+// scripts/render_report.py (GROUPS / GROUP_LABEL_EN / MESSAGES[lang]["native"]); tests/test_render_report.py checks it.
+const L = {
+  ja: {
+    title: "Harness 棚卸し", loading: "report を読み込んでいます",
+    groups: { retire: "退役", merge: "統合・降格", improve: "改善・更新", keep: "維持" },
+    outcome: { applied: "適用済み", pending: "未決", skipped: "見送り", reevaluated: "評価し直して適用" },
+    approve: "この内容で承認", approved: "承認済み", overrides: "書き換え", all: "すべて",
+    hint: "判定を変えたい項目だけ選び直してください。変えなかった項目は推奨どおりに適用します。",
+    received: "承認を受け取りました。Claude が適用します。",
+    applied: "適用が終わりました。各項目の結果と未決を確かめ、問題なければ branch を取り込んでください。",
+    empty: "ここに棚卸しの項目が並びます。Claude が report を書き込むまでお待ちください。",
+    count: (label, n) => `${label}（${n}）`, keep_show: "維持する項目を表示",
+    impact: "影響: ", conflicts: "衝突: ", meta_sep: " ／ ",
+    applied_diff: "承認した内容から変わった適用 diff:",
+    accept: v => `推奨どおり（${v}）`, to_keep: "Keep にする", skip: "今回は見送る", alt: a => `${a} にする`,
+    decision_of: t => `${t} の判定`, note_ph: "直してほしい点があれば（任意）", note_of: t => `${t} へのコメント`,
+    save_fail: c => `保存できませんでした（${c}）。このページの編集権限を確かめてください。`,
+    approve_fail: c => `承認を保存できませんでした（${c}）。`,
+    slow: "report のデータにまだ届きません。少し待って開き直してください。",
+    no_db: "このビューでは report のデータを読めません。claude.ai でサインインして開いてください。",
+    load_fail: c => `report のデータを読めませんでした（${c}）。開き直してください。`,
+    native_h: "native が見るもの",
+    native: "この report は中身の判定（古い参照・矛盾・持ち主の消えた設定・rule への蒸留）を出す。使用履歴と書き方は Claude Code の native 検査が見る: `/doctor` は使われていない plugin・MCP・skill と遅い hook を、`/doctor prompt-audit` は古い model 向けの書き方（固定の数値上限・強い強調・存在しない tool への言及）を出す。二つは重ならないので、両方を回して並べて読む（この run はどちらも実行していない）。",
+  },
+  en: {
+    title: "Harness stocktake", loading: "Loading the report",
+    groups: { retire: "Retire", merge: "Merge / demote", improve: "Improve / update", keep: "Keep" },
+    outcome: { applied: "Applied", pending: "Pending", skipped: "Skipped", reevaluated: "Re-evaluated and applied" },
+    approve: "Approve as shown", approved: "Approved", overrides: "Overridden", all: "All",
+    hint: "Change only the items you disagree with. Items you leave as they are are applied as recommended.",
+    received: "Approval received. Claude is applying it.",
+    applied: "The apply is done. Check each item's outcome and the pending ones, then merge the branch if all is well.",
+    empty: "The stocktake items appear here once Claude writes the report.",
+    count: (label, n) => `${label} (${n})`, keep_show: "Show the items to keep",
+    impact: "Impact: ", conflicts: "Conflicts: ", meta_sep: " / ",
+    applied_diff: "Applied diff (it differs from what was approved):",
+    accept: v => `As recommended (${v})`, to_keep: "Change to Keep", skip: "Skip this time", alt: a => `Change to ${a}`,
+    decision_of: t => `Decision for ${t}`, note_ph: "Anything to change (optional)", note_of: t => `Comment on ${t}`,
+    save_fail: c => `Could not save (${c}). Check that you can edit this page.`,
+    approve_fail: c => `Could not save the approval (${c}).`,
+    slow: "The report data has not arrived yet. Wait a moment and reopen the page.",
+    no_db: "This view cannot read the report data. Sign in to claude.ai and open it there.",
+    load_fail: c => `Could not read the report data (${c}). Reopen the page.`,
+    native_h: "What the native checks cover",
+    native: "This report judges content (stale references, contradictions, configuration whose owner is gone, distillation into rules). Usage history and writing style are what Claude Code's native checks see: `/doctor` lists unused plugins, MCP servers and skills and slow hooks; `/doctor prompt-audit` flags writing aimed at older models (fixed numeric caps, heavy emphasis, mentions of tools that do not exist). The two do not overlap, so run both and read them side by side (this run ran neither).",
+  },
+};
+const browserLang = (navigator.language || "").toLowerCase().startsWith("ja") ? "ja" : "en";
+let lang = null, t = L[browserLang];
+
 const ORDER = [
-  ["retire", "退役", ["Retire", "Dissolve", "Retire-and-absorb"]],
-  ["merge", "統合・降格", ["Merge", "Demote"]],
-  ["improve", "改善・更新", ["Improve", "Update", "Append", "Revise", "Create"]],
-  ["keep", "維持", ["Keep", "Out of scope", "Already Covered", "Too Specific"]],
+  ["retire", ["Retire", "Dissolve", "Retire-and-absorb"]],
+  ["merge", ["Merge", "Demote"]],
+  ["improve", ["Improve", "Update", "Append", "Revise", "Create"]],
+  ["keep", ["Keep", "Out of scope", "Already Covered", "Too Specific"]],
 ];
 const COLOR = { retire: "--retire", merge: "--merge", improve: "--improve", keep: "--keep" };
-const groupOf = v => (ORDER.find(([, , vs]) => vs.some(x => String(v).startsWith(x))) || ORDER[2])[0];
-const OUTCOME = { applied: "適用済み", pending: "未決", skipped: "見送り", reevaluated: "評価し直して適用" };
+const groupOf = v => (ORDER.find(([, vs]) => vs.some(x => String(v).startsWith(x))) || ORDER[2])[0];
 
 let db = null, items = [], decisions = {}, run = {}, approval = null, filter = "all";
 const pendingNotes = new Map();
@@ -102,12 +151,27 @@ function el(tag, attrs = {}, ...kids) {
   return e;
 }
 
+// `code` spans in a string become <code> elements; the rest stays text.
+const withCode = s => s.split("`").map((part, n) => n % 2 ? el("code", { text: part }) : document.createTextNode(part));
+
+// Static text, redrawn when the language changes (meta/run.lang arriving after the browser-language guess).
+function applyLang() {
+  const next = L[run.lang] ? run.lang : browserLang;
+  if (next === lang) return;
+  lang = next; t = L[lang];
+  document.documentElement.lang = lang;
+  document.title = t.title;
+  $("native-h").textContent = t.native_h;
+  $("native").replaceChildren(...withCode(t.native));
+}
+
 function isOverride(id) { const d = decisions[id]; return d && (d.decision !== "accept" || (d.note || "").trim()); }
 
 const editing = () => $("list").contains(document.activeElement);
 
 let stale = false, loadError = "";
 function refresh() {
+  applyLang();
   if (!editing()) { stale = false; return render(); }
   stale = true;
   renderBar();
@@ -121,40 +185,40 @@ function render() {
 
 function renderBar() {
   const locked = !!approval || (run.phase && run.phase !== "proposed");
-  $("title").textContent = run.title || "Harness 棚卸し";
-  $("subtitle").textContent = [run.created_at, run.scope, run.branch && ("branch " + run.branch)].filter(Boolean).join(" · ") || "report を読み込んでいます";
+  $("title").textContent = run.title || t.title;
+  $("subtitle").textContent = [run.created_at, run.scope, run.branch && ("branch " + run.branch)].filter(Boolean).join(" · ") || t.loading;
   const sources = [...new Set(items.map(i => i.source))];
   const counts = $("counts"); counts.replaceChildren();
-  for (const [g, label] of ORDER) {
+  for (const [g] of ORDER) {
     const n = items.filter(i => groupOf(i.verdict) === g).length;
-    if (n) counts.append(el("span", { class: "chip", style: `color:var(${COLOR[g]})`, text: `${label} ${n}` }));
+    if (n) counts.append(el("span", { class: "chip", style: `color:var(${COLOR[g]})`, text: `${t.groups[g]} ${n}` }));
   }
   const ov = items.filter(i => isOverride(i.id)).length;
-  if (items.length) counts.append(el("span", { class: "chip", text: `書き換え ${ov}` }));
+  if (items.length) counts.append(el("span", { class: "chip", text: `${t.overrides} ${ov}` }));
   const f = $("filters"); f.replaceChildren();
   for (const s of ["all", ...sources]) {
-    const b = el("button", { type: "button", "aria-pressed": String(filter === s), text: s === "all" ? "すべて" : s });
+    const b = el("button", { type: "button", "aria-pressed": String(filter === s), text: s === "all" ? t.all : s });
     b.onclick = () => { filter = s; render(); };
     f.append(b);
   }
   const ap = $("approve");
   ap.disabled = locked || !items.length || !db;
-  ap.textContent = approval ? "承認済み" : "この内容で承認";
+  ap.textContent = approval ? t.approved : t.approve;
   $("state").textContent = loadError ? loadError : approval
-    ? (run.phase === "applied" ? "適用が終わりました。各項目の結果と未決を確かめ、問題なければ branch を取り込んでください。" : "承認を受け取りました。Claude が適用します。")
-    : "判定を変えたい項目だけ選び直してください。変えなかった項目は推奨どおりに適用します。";
+    ? (run.phase === "applied" ? t.applied : t.received)
+    : t.hint;
 }
 
 function renderList() {
   const locked = !!approval || (run.phase && run.phase !== "proposed");
   const list = $("list"); list.replaceChildren();
-  if (!items.length) { list.append(el("div", { class: "empty", text: "ここに棚卸しの項目が並びます。Claude が report を書き込むまでお待ちください。" })); return; }
-  for (const [g, label] of ORDER) {
+  if (!items.length) { list.append(el("div", { class: "empty", text: t.empty })); return; }
+  for (const [g] of ORDER) {
     const its = items.filter(i => groupOf(i.verdict) === g && (filter === "all" || i.source === filter));
     if (!its.length) continue;
-    const box = el("section", { class: "group" }, el("h2", { text: `${label}（${its.length}）` }));
+    const box = el("section", { class: "group" }, el("h2", { text: t.count(t.groups[g], its.length) }));
     const cards = its.map(i => card(i, g, locked));
-    if (g === "keep") box.append(el("details", {}, el("summary", { text: "維持する項目を表示" }), el("div", { class: "group", style: "margin-top:10px" }, cards)));
+    if (g === "keep") box.append(el("details", {}, el("summary", { text: t.keep_show }), el("div", { class: "group", style: "margin-top:10px" }, cards)));
     else box.append(...cards);
     list.append(box);
   }
@@ -170,14 +234,14 @@ function card(i, g, locked) {
   c.append(el("p", { class: "reason", text: i.reason || "" }));
   if (i.evidence && i.evidence.length) c.append(el("ul", { class: "ev" }, i.evidence.map(e => el("li", { text: e }))));
   if (i.change) c.append(el("pre", { class: "change", text: i.change }));
-  const meta = [i.impact && ("影響: " + i.impact), i.conflicts && i.conflicts.length && ("衝突: " + i.conflicts.join(", "))].filter(Boolean).join(" ／ ");
+  const meta = [i.impact && (t.impact + i.impact), i.conflicts && i.conflicts.length && (t.conflicts + i.conflicts.join(", "))].filter(Boolean).join(t.meta_sep);
   if (meta) c.append(el("div", { class: "meta", text: meta }));
-  if (i.outcome) c.append(el("div", { class: "outcome", text: (OUTCOME[i.outcome] || i.outcome) + (i.outcome_note ? " — " + i.outcome_note : "") + (i.commit ? " (" + i.commit + ")" : "") }));
-  if (i.applied_diff) c.append(el("div", { class: "meta", text: "承認した内容から変わった適用 diff:" }), el("pre", { class: "change", text: i.applied_diff }));
-  const sel = el("select", { id: "d-" + i.id, "aria-label": i.target + " の判定" });
-  const opts = [["accept", "推奨どおり（" + i.verdict + "）"], ["Keep", "Keep にする"], ["skip", "今回は見送る"], ...(i.alternatives || []).map(a => [a, a + " にする"])];
-  for (const [v, t] of opts) { const o = el("option", { value: v, text: t }); if (d.decision === v) o.selected = true; sel.append(o); }
-  const note = el("textarea", { id: "n-" + i.id, placeholder: "直してほしい点があれば（任意）", "aria-label": i.target + " へのコメント" });
+  if (i.outcome) c.append(el("div", { class: "outcome", text: (t.outcome[i.outcome] || i.outcome) + (i.outcome_note ? " — " + i.outcome_note : "") + (i.commit ? " (" + i.commit + ")" : "") }));
+  if (i.applied_diff) c.append(el("div", { class: "meta", text: t.applied_diff }), el("pre", { class: "change", text: i.applied_diff }));
+  const sel = el("select", { id: "d-" + i.id, "aria-label": t.decision_of(i.target) });
+  const opts = [["accept", t.accept(i.verdict)], ["Keep", t.to_keep], ["skip", t.skip], ...[...new Set(i.alternatives || [])].filter(a => !["accept", "Keep", "skip", i.verdict].includes(a)).map(a => [a, t.alt(a)])];
+  for (const [v, label] of opts) { const o = el("option", { value: v, text: label }); if (d.decision === v) o.selected = true; sel.append(o); }
+  const note = el("textarea", { id: "n-" + i.id, placeholder: t.note_ph, "aria-label": t.note_of(i.target) });
   note.value = d.note || "";
   sel.disabled = note.disabled = locked;
   sel.onchange = () => save(i.id, { decision: sel.value, note: note.value });
@@ -194,7 +258,7 @@ async function save(id, body) {
   decisions[id] = body;
   refresh();
   try { await db.doc("decisions/" + id).set({ ...body, updated_at: new Date().toISOString() }); }
-  catch (e) { $("state").textContent = "保存できませんでした（" + (e && e.code) + "）。このページの編集権限を確かめてください。"; }
+  catch (e) { $("state").textContent = t.save_fail(e && e.code); }
 }
 
 $("approve").onclick = async () => {
@@ -202,14 +266,15 @@ $("approve").onclick = async () => {
   for (const p of [...pendingNotes.values()]) { clearTimeout(p.t); await p.flush(); }
   const overrides = items.filter(i => isOverride(i.id)).map(i => i.id);
   try { await db.doc("meta/approval").set({ approved: true, at: new Date().toISOString(), overrides }); }
-  catch (e) { ap.disabled = false; $("state").textContent = "承認を保存できませんでした（" + (e && e.code) + "）。"; }
+  catch (e) { ap.disabled = false; $("state").textContent = t.approve_fail(e && e.code); }
 };
 
+refresh();
 (async () => {
-  const timer = setTimeout(() => { if (!items.length) $("subtitle").textContent = "report のデータにまだ届きません。少し待って開き直してください。"; }, 10000);
+  const timer = setTimeout(() => { if (!items.length) $("subtitle").textContent = t.slow; }, 10000);
   db = window.claude ? await window.claude.use("db") : null;
-  if (!db) { clearTimeout(timer); $("subtitle").textContent = "このビューでは report のデータを読めません。claude.ai でサインインして開いてください。"; return; }
-  const fail = e => { clearTimeout(timer); loadError = "report のデータを読めませんでした（" + ((e && e.code) || "error") + "）。開き直してください。"; renderBar(); };
+  if (!db) { clearTimeout(timer); $("subtitle").textContent = t.no_db; return; }
+  const fail = e => { clearTimeout(timer); loadError = t.load_fail((e && e.code) || "error"); renderBar(); };
   $("list").addEventListener("focusout", () => setTimeout(() => { if (stale && !editing()) refresh(); }, 0));
   db.collection("items").orderBy("order").onSnapshot(s => { clearTimeout(timer); items = s.docs.map(d => ({ id: d.id, ...d.data() })); refresh(); }, fail);
   db.collection("decisions").onSnapshot(s => { decisions = Object.fromEntries(s.docs.map(d => [d.id, d.data()])); refresh(); }, fail);

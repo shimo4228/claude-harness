@@ -43,7 +43,7 @@ transcript（`~/.claude/projects/*/*/subagents/agent-*.jsonl`）から `**Verdic
 assistant message を抽出した **24 報告 / 4 repo / 約 200 指摘**。repo 別内訳・クラス別の出現
 報告数は ADR-0071 Context が正本（ここには複製しない）。閾値は 2026-08-29 と同じ
 （3 回以上・2 セッション以上・採用実績あり）。免除境界の sweep も使い捨てで、再現は
-`for f in docs/adr/[0-9]*.md; do python3 ~/.claude/skills/adr-writer/scripts/adr_review_evidence.py --root . --adr "$f"; done`
+`for f in docs/decision-history/[0-9]*.md; do python3 ~/.claude/skills/adr-writer/scripts/adr_review_evidence.py --root . --adr "$f"; done`
 を各 repo で回して key ごとに件数を足す（`.ja.md` twin は除く）。
 
 結果: 上の #17。#14（同一の値の複数箇所

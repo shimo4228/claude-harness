@@ -106,7 +106,7 @@ repo 固有の運用語彙は書かない）/ evals の operator-scale 限界を
 `docs/CODEMAPS/architecture.md`（doc 追加 + :148 言語ポリシー行）/ `README.md` +
 `README.ja.md`（`## Positioning` に 1–2 文 + リンク、H2/H3 parity）。coinage 最小限。
 
-### 2. ハーネス ADR ×2 — `docs/adr/0048-*.md` / `0049-*.md`（skill: adr-writer で描画）
+### 2. ハーネス ADR ×2 — `docs/decision-history/0048-*.md` / `0049-*.md`（skill: adr-writer で描画）
 
 **0048**（翻訳戦略と RFC 準拠）:
 

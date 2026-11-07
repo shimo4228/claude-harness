@@ -155,7 +155,7 @@ Step 3 追記の骨子:
 1. `skills/verify-bootstrap/SKILL.md` を編集（上記 3 箇所。skill-creator は読了済み —
    改修規模は小、境界の重なりは review-to-lint への参照で解消済み）
 2. skill `adr-writer` で ADR を採番・生成（decision packet は本 plan の §採用案 + 失効条件）
-3. `docs/adr/0055-*.md` の Alternatives に日付つき注記を追加
+3. `docs/decision-history/0055-*.md` の Alternatives に日付つき注記を追加
 4. 検証: `python3 scripts/hooks/harness_lint.py` + skill-health の scan_refs（dangling 0）+
    `.claude/verify.sh`（harness 自身のゲート）
 5. commit（chore、Chain Matrix: chore × Code Review = C に該当しない設定文書編集。

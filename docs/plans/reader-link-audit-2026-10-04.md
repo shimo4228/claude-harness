@@ -96,8 +96,8 @@
 [6] https://api.github.com/repos/shimo4228/claude-harness/commits/258ca6c
 [7] https://raw.githubusercontent.com/shimo4228/claude-harness/main/README.md
 [8] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/rfcs/0021-verify-full-red-growth-fable-ty.md
-[9] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/docs/adr/0056-budget-lints-as-verify-bootstrap-annotation.md
-[10] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/docs/adr/0063-rfc-0020-rust-pilot-hooklint.md
+[9] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/docs/decision-history/0056-budget-lints-as-verify-bootstrap-annotation.md
+[10] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/docs/decision-history/0063-rfc-0020-rust-pilot-hooklint.md
 [11] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/rules/common/llm-first-code.md
 [12] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/skills/growth-fable/tests/test_collect_snapshot.py
 [13] https://raw.githubusercontent.com/shimo4228/claude-harness/69a33e46890b66af5363836cfb3e8ab944206809/skills/growth-fable/scripts/collect_snapshot.py

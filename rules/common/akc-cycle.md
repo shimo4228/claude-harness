@@ -1,18 +1,16 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0018 + ADR-0035 + 二版化（2026-09-01）— skill 導入済み環境向けのポインター版。全機構を所有者へのポインターとして登載し、本 rule 自身が所有するのは Scaffold Dissolution（判定基準含む）と ADR の扱いのみ。skill 未導入環境向けの自己完結版は akc-cycle repo が別内容で持つ -->
-<!-- review-when: ポインター先の skill / rule が改廃された時 / substrate が knowledge cycle を native 化した時 / モデル世代交代時 / substrate が決定記録の鮮度管理を native に持った時（ADR の扱い節を溶かす） -->
+<!-- rationale: skill 導入済み環境向けのポインター版。全機構を所有者へのポインターとして登載し、本 rule 自身が所有するのは Scaffold Dissolution（判定基準含む）と判断の経緯の扱いのみ。skill 未導入環境向けの自己完結版は akc-cycle repo が別内容で持つ -->
+<!-- review-when: ポインター先の skill / rule が改廃された時 / substrate が knowledge cycle を native 化した時 / モデル世代交代時 / substrate が決定記録の鮮度管理を native に持った時（判断の経緯の節を溶かす） -->
+<!-- history: docs/decision-history/0018, 0035, 0065, 0101 -->
 # AKC Rules (pointer edition)
 
 AKC の全機構と所有者。手順・本文は所有者側が正本で、ここには複製しない。
 
 | 機構 | 所有者 |
 |---|---|
-| 6 phase 手順 | Research→skill: `search-first` / Extract→`learn-eval` / Curate→`skill-health`+`skill-stocktake`+`rules-stocktake`+`agent-stocktake` / Promote→`rules-distill` / Measure→`skill-comply` / Maintain→`context-sync`+`repo-asset-stocktake`（mutable snapshot — AKC ADR-0019） |
-| 三役ループ judge/build/human（AKC ADR-0024） | skill: `task-triage`、rule: `planning.md` |
-| LLM-first artifact readability（AKC ADR-0025） | rule: `llm-first-code.md` |
-| expiry-conditioned knowledge（AKC ADR-0026） | rule: `knowledge-staleness.md` + 本 rule の「ADR の扱い」節 + skill: `adr-writer`（Review-when）|
-| mental model / instance の区別（AKC ADR-0027） | AKC repo の CLAUDE.md（harness rule の対象外） |
-| 自己完結版（skill 未導入環境向け） | akc-cycle repo `rules/common/akc-cycle.md`（本ファイルとは別内容） |
+| 6 phase 手順 | Research→skill: `search-first` / Extract→`learn-eval` / Curate→`skill-health`・`*-stocktake` / Promote→`rules-distill` / Measure→`skill-comply` / Maintain→`context-sync`・`repo-asset-stocktake` |
+| 三役ループ・LLM-first・expiry-conditioned knowledge（AKC 経緯 0024〜0026） | skill: `task-triage`、rule: `llm-first-code.md`・`knowledge-staleness.md`、skill: `decision-history` |
+| 自己完結版（skill 未導入環境向け） | akc-cycle repo の `rules/common/akc-cycle.md`（本ファイルとは別内容） |
 
 ## Scaffold Dissolution
 
@@ -24,7 +22,7 @@ rule は足場であり、実践が自然に回るようになれば簡素化・
 モデル世代交代も downward のトリガー。旧世代向けの禁止・網羅的手順・反復強調は
 skill: `generation-audit` で再監査する。
 
-判定基準（AKC ADR-0022 / ADR-0023）:
+判定基準（AKC 経緯 0022 / 経緯 0023）:
 
 - **完了証拠は held-out transfer** — 同一文脈での ablation 判別不能は必要証拠止まり。
   溶かしてよい証拠は、scaffold 無しの新文脈で挙動が再現すること
@@ -32,9 +30,8 @@ skill: `generation-audit` で再監査する。
   rule 等）は放置でなく削除する。沈黙・ablation・transfer はいずれも「不在」しか検出
   できず負の差分に盲目なので、モデル世代交代時の generation review で監査する
 
-## ADR の扱い
+## 判断の経緯
 
-ADR は日付つきの経緯記録。既存機構を変更するとき経緯を読む。新しい判断が旧 ADR と衝突したら
-supersede し、旧 ADR の該当節に `> **注記（YYYY-MM-DD, ADR-NNNN または commit「<subject>」）**` を残す（ADR-0044）。
-新しい ADR を書くか、旧 ADR への注記と commit 本文で済ませるかの条件は skill: `adr-writer` の When to Use が
-持つ（ADR-0089）。
+`docs/decision-history/` は起きたことの記録で、過去形で書く。現行の設計は実物（rule / skill / hook / test /
+code）と著者の今の指示が決め、記録は理由と当時の事実を持つ。新しい判断は旧記録と衝突してよく、旧記録は
+そのまま置く。記録を書くか commit 本文で済ませるかの条件は skill: `decision-history` が持つ。

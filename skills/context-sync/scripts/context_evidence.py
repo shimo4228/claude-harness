@@ -32,7 +32,7 @@ Two deliberate non-capabilities:
 
 Reuse instead of re-implementation:
 
-  * ADR index drift / naming — delegated to `skills/adr-writer/scripts/adr_lint.py`
+  * ADR index drift / naming — delegated to `skills/decision-history/scripts/adr_lint.py`
     (imported by path; stdlib-only, so no cross-project dependency edge).
   * graph.jsonld volatile state and JSON-LD expansion pitfalls — delegated to
     `skills/jsonld-knowledge-graph/scripts/graph_lint.py`, which needs `pyld`
@@ -114,10 +114,16 @@ UNTRUSTED_KEYS = (
 )
 
 
+def resolve_record_dir(root: Path, adr_rel: str | None) -> str:
+    """Explicit --adr-dir, else the first of RECORD_DIRS (context_checks) that exists."""
+    return adr_rel or next((d for d in _c.RECORD_DIRS if (root / d).is_dir()), _c.RECORD_DIRS[0])
+
+
 def collect_evidence(
-    root: Path, stale_days: int = 90, adr_rel: str = "docs/adr", now: int | None = None
+    root: Path, stale_days: int = 90, adr_rel: str | None = None, now: int | None = None
 ) -> dict:
     now = int(time.time()) if now is None else now
+    adr_rel = resolve_record_dir(root, adr_rel)
     cx = Corpus(root)
     context_files = _context_files(root)
     docs = _doc_files(root)
@@ -225,7 +231,7 @@ def _gate_adr_index(checks: dict) -> list[str]:
         return []
     out = []
     if not adr["index_present"]:
-        out.append("docs/adr/README.md index not found")
+        out.append(f"{adr['adr_dir']}/README.md index not found")
     for num in adr["in_index_not_files"]:
         out.append(f"ADR index lists {num} but no such file exists")
     for num in adr["in_files_not_index"]:
@@ -299,7 +305,11 @@ def gate_violations(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", default=".", help="repo root (default: cwd)")
-    parser.add_argument("--adr-dir", default="docs/adr", help="ADR dir relative to root")
+    parser.add_argument(
+        "--adr-dir",
+        default=None,
+        help="record dir relative to root (default: docs/decision-history, else docs/adr)",
+    )
     parser.add_argument("--stale-days", type=int, default=90, help="staleness threshold in days")
     parser.add_argument("--gate", action="store_true", help="blocking mode (exit 3 on violations)")
     parser.add_argument(

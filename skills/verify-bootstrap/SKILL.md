@@ -212,10 +212,10 @@ compared against the re-measured distribution at audit time).
 With only a local gate, a bypassed commit slips through. If CI has a job that runs `.claude/verify.sh`
 with no argument, local and CI cannot diverge structurally
 (**call the same entrypoint from both**. Writing a separate command sequence for CI always drifts).
-In a repo where the implementing agent runs in a cloud session, CI is the only verify judge — the reviewer does not
-re-run it locally but reads the conclusion of the run on the branch tip. Trust that conclusion only when the diff does not
+A build that runs locally is judged by running `.claude/verify.sh` in its worktree. A build that runs in a cloud
+session is judged by CI — the reviewer reads the conclusion of the run on the branch tip instead of re-running it. Trust that conclusion only when the diff does not
 touch `.claude/verify.sh`, `.github/` or `.claude/settings.json`: CI runs the branch's own copies, so send such a diff back. A repo without CI
-cannot be handed to cloud sessions, so for a repo with a remote on github.com, include this Step in bootstrap.
+cannot hand builds to cloud sessions, so for a repo with a remote on github.com, include this Step in bootstrap.
 
 The template is `references/ci-verify.yml`. Fixed parts: triggers on push to `main` and `claude/**` /
 actions pinned by commit SHA (resolve from the tag with `gh api repos/<o>/<r>/git/ref/tags/<tag>`) /

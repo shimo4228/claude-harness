@@ -211,7 +211,7 @@ as-of: 2026-11-01、Claude Code 2.1.316。plan [enumerated-petting-beaver](../en
 | 156 | distill-02 | distill | `skills/review-when-watch/SKILL.md` | Too Specific | 部分 | 拾われない | 退役した skill 3 本（`jev-skill-router` / `review-when-watch` / `wait-what`）…ここでは生きている |
 | 157 | distill-03 | distill | `skills/repair-discipline/SKILL.md` | Too Specific | 部分 | 拾われない | 未使用 skill 25 個 … repair-discipline … remove（`skillOverrides` で off） |
 | 158 | docs-04 | docs | `rules/README.md` | Keep | 部分 | 拾われない | `~/.claude/rules/README.md`（2,074 chars、~0.5k）は…毎 session 常駐しています |
-| 159 | docs-05 | docs | `docs/adr/README.md` | Keep | 拾われない | 拾われない | - |
+| 159 | docs-05 | docs | `docs/decision-history/README.md` | Keep | 拾われない | 拾われない | - |
 | 160 | assets-17 | assets | `scheduled-tasks/weekly-aeon-shopping/SKILL.md` | Keep | 拾われない | 拾われない | - |
 | 161 | assets-25 | assets | `tests/` | Keep | 拾われない | 拾われない | - |
 | 162 | assets-26 | assets | `scripts/replay/` | Keep | 拾われない | 拾われない | - |

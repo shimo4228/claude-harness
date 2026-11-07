@@ -2,17 +2,17 @@
 # read.sh — run one isolated reader, or check that the isolation holds.
 #
 # usage:
-#   read.sh <persona.txt> <prompt.md> <draft.reader.md> > out.json
+#   read.sh <persona.txt> <prompt.md> <draft.reader.md> [model] > out.json
 #       One reader. persona.txt becomes the system prompt; prompt.md and the draft are
 #       concatenated into the user prompt. Prints the reader's raw answer.
-#   read.sh --probe
+#   read.sh --probe [model]
 #       Starts a reader with the same flags and checks, from the init event and one question,
 #       that it sees no tools, no MCP servers, no user or plugin skills, and no memory or
 #       CLAUDE.md. Exit 0 when isolated, 1 when anything leaks, 2 when the check cannot run.
 #
 # env:
 #   PERSONA_READ_CMD    the CLI to start (default: claude). Only Claude Code is tested.
-#   PERSONA_READ_MODEL  reader model (default: sonnet)
+#   PERSONA_READ_MODEL  reader model when no model argument is given (default: sonnet)
 #
 # Isolation is `--setting-sources "" --strict-mcp-config --tools ""`, a replaced system prompt,
 # auto memory off, and an empty working directory. Measured on Claude Code 2.1.302 (2026-10-18):
@@ -24,6 +24,14 @@ set -euo pipefail
 
 CMD="${PERSONA_READ_CMD:-claude}"
 MODEL="${PERSONA_READ_MODEL:-sonnet}"
+if [[ "${1:-}" == "--probe" ]]; then
+  MODEL="${2:-$MODEL}"
+elif [[ $# -eq 4 ]]; then
+  MODEL="$4"
+fi
+case "$MODEL" in
+  '' | *[!A-Za-z0-9._-]*) echo "read.sh: bad model name" >&2; exit 2 ;;
+esac
 ISOLATION=(-p --setting-sources "" --strict-mcp-config --tools "" --model "$MODEL")
 
 # Run the CLI from a fresh empty directory with auto memory off.
@@ -98,8 +106,8 @@ if [[ "${1:-}" == "--probe" ]]; then
   exit $?
 fi
 
-if [[ $# -ne 3 ]]; then
-  echo "usage: read.sh <persona.txt> <prompt.md> <draft.reader.md> | read.sh --probe" >&2
+if [[ $# -ne 3 && $# -ne 4 ]]; then
+  echo "usage: read.sh <persona.txt> <prompt.md> <draft.reader.md> [model] | read.sh --probe [model]" >&2
   exit 2
 fi
 for f in "$1" "$2" "$3"; do

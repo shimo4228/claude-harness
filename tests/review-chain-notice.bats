@@ -23,6 +23,14 @@ ctx() {
   [ -z "$(ctx 'rg "git commit" README.md')" ]
 }
 
+@test "a subagent commit is told that the parent session runs Review" {
+  out=$(printf '{"agent_id":"a1","tool_input":{"command":"git commit -m x"}}' | bash "$HOOK" \
+    | jq -r '.hookSpecificOutput.additionalContext // empty')
+  [[ "$out" == *"起動元の session"* ]] || return 1
+  [[ "$out" == *"Verify"* ]] || return 1
+  [[ "$out" != *"skill: implementation-chain を確認して実行"* ]]
+}
+
 @test "commit emits the implementation-chain reminder" {
   [[ "$(ctx "git commit -m x")" == *"Review と Verify"* ]] || return 1
   [[ "$(ctx "git commit -m x")" == *"skill: implementation-chain"* ]]
@@ -45,6 +53,14 @@ ctx() {
   [[ "$(ctx "VERIFY_BYPASS=1 git commit -m x")" == *"implementation-chain"* ]]
 }
 
+@test "plumbing that starts with commit or merge is silent" {
+  for c in "git merge-base main HEAD" "git commit-tree HEAD^{tree} -m x" "git -C /r merge-base --is-ancestor a b"; do
+    run bash -c "jq -nc --arg c '$c' '{tool_input:{command:\$c}}' | bash '$HOOK'"
+    [ "$status" -eq 0 ] || return 1
+    [ -z "$output" ] || return 1
+  done
+}
+
 @test "reminder contains no duplicated reviewer roster or repository data" {
   local out
   out="$(ctx "git commit -m x")"
@@ -62,4 +78,12 @@ ctx() {
   out="$(fire "git commit -m x")"
   [ "$(printf '%s' "$out" | jq -r '.hookSpecificOutput.hookEventName')" = "PreToolUse" ] || return 1
   [ "$(printf '%s' "$out" | wc -c | tr -d ' ')" -le 250 ]
+}
+
+@test "a repo that lists review-chain-notice in hook-notices-off gets no reminder" {
+  d="$(mktemp -d)"
+  mkdir -p "$d/.claude" && printf 'review-chain-notice\n' > "$d/.claude/hook-notices-off"
+  out=$(printf '{"tool_input":{"command":"git commit -m x"}}' | CLAUDE_PROJECT_DIR="$d" bash "$HOOK")
+  rm -rf "$d"
+  [ -z "$out" ]
 }

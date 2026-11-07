@@ -14,7 +14,7 @@ trigger↔body drift), the risk dimension, and the validation dimension are
 delegated to a holistic LLM pass / the claude-security plugin / skill-comply and are
 **never scored** in this module.
 
-  https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/adr/0008-code-and-llm-collaboration.md
+  https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/decision-history/0008-code-and-llm-collaboration.md
 
 The CLI exit code is the code-owned gate: 0 = no dangling references,
 1 = dangling references found, 2 = scan root not found. Reference extraction is

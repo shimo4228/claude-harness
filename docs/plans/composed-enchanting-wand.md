@@ -15,7 +15,7 @@
 
 ## 決めたこと（変えたいならここ）
 
-1. **置き場所は `docs/plans/`**。ADR（`docs/adr/`）の隣で、root の legacy `plans/`（global 既定と同じ場所）と衝突しない
+1. **置き場所は `docs/plans/`**。ADR（`docs/decision-history/`）の隣で、root の legacy `plans/`（global 既定と同じ場所）と衝突しない
 2. **既定は user-level** の `plansDirectory: "docs/plans"`（`~/.claude/settings.json`）。除外（私的な場所に置く）は各 `.claude/settings.local.json`（`**/.claude/settings.local.json` は global ignore 済み）で上書きする:
    - contemplative-agent → `.notes/plans`（第三者の投稿本文が混ざりうる。`.notes/` は既に非公開）
    - zenn-content → `planning/plans`（下書き・企画は非公開の方針、`.gitignore:25`）
@@ -57,7 +57,7 @@ skill `adr-writer` で ADR-0085（番号は Step 2 の採番で確定）を起�
 `./.claude/verify.sh`（full）exit 0、`adr_lint.py --gate`、`git status` clean。commit は分ける: (a) `.gitignore` と plan の記録（`docs(plan): …`）、(b) rules / skills、(c) ADR-0085 と index・注記。各本文に `Plan: docs/plans/composed-enchanting-wand.md`
 
 **Step 8 — 公開（著者の GO を得てから）**
-claude-harness: `scripts/sync-from-local.sh` の `SUBTREES` に `docs/plans` を追加、README.md / README.ja.md の `docs/adr/`・`rfcs/` の段落の後に `docs/plans/` を 1 段落（skill `readme-writer` の Incremental モード）。skill `harness-sync` の dry-run → 著者 GO → apply → claude-harness を push
+claude-harness: `scripts/sync-from-local.sh` の `SUBTREES` に `docs/plans` を追加、README.md / README.ja.md の `docs/decision-history/`・`rfcs/` の段落の後に `docs/plans/` を 1 段落（skill `readme-writer` の Incremental モード）。skill `harness-sync` の dry-run → 著者 GO → apply → claude-harness を push
 
 ## Chain（implementation-chain）
 

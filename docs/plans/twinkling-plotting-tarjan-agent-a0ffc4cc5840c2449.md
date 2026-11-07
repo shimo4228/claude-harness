@@ -24,8 +24,8 @@
 | skills/skill-creator/SKILL.md:99 | (d) | "各問 Yes/No + 1行証拠、非Keepなら反証1–3問" — Verdict pressure-test節の"1–3"に数値まで依存 |
 | agents/readme-judge.md:18 | (c)+(d) | "判定形式の正本" として SKILL.md を明示引用、二値チェック→反証PT→集計しない、の順序に依存 |
 | skills/readme-writer/references/readme-judge-checklist.md:9 | (d) | 同上の言い換え反復 |
-| docs/adr/0046-...md:79 | (c) | "llm-as-judge の Related を更新する" — "Related" 見出し名を名指し（過去のアクション項目、実行済み） |
-| docs/adr/0068-...md:41 | (a) | 利用実績の引用例、構造依存なし |
+| docs/decision-history/0046-...md:79 | (c) | "llm-as-judge の Related を更新する" — "Related" 見出し名を名指し（過去のアクション項目、実行済み） |
+| docs/decision-history/0068-...md:41 | (a) | 利用実績の引用例、構造依存なし |
 | rfcs/0005-review-to-lint-rollout-ledger.md:81 | (a) | "理論的正本" として skill名のみ |
 | rfcs/0017-skill-description-residency-optimization.md:94 | (a) | disable-model-invocation 対象リスト、skill名のみ |
 | **rfcs/0024-typesafe-jev-as-offload-for-max-quota.md:40** | (d) | "binary Yes/Noを証拠に集め、集計せずnamed verdict" — 契約の直接引用 |

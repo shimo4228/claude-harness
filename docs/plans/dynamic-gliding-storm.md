@@ -121,7 +121,7 @@ L87-101 の Verify ステップに、8 項目が機械/エージェントの担�
 ### G. 付随
 
 - `rules/README.md` のツリーに 1 行追加（14 → 15 ファイル）、語数の記述を更新
-- `docs/adr/0019-*.md` — なぜ rightsize 直後に rule を 1 本増やすのか、および
+- `docs/decision-history/0019-*.md` — なぜ rightsize 直後に rule を 1 本増やすのか、および
   **論文 §2.1(b) との整合をどう取ったか**を記録（将来の読者が必ず問う点）
 - `.notes/TASKS.md` に AKC 昇格タスクを 1 行
 

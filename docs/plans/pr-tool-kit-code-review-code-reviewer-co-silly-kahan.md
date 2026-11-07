@@ -70,7 +70,7 @@ Security Review -（permissions / hook / 無人経路に触れない）。実行
 
 ### 4. Doc Sync
 
-`docs/adr/README.md` index は ADR 新設なしのため不変。golden 対象なし。公開 copy は commit 後に
+`docs/decision-history/README.md` index は ADR 新設なしのため不変。golden 対象なし。公開 copy は commit 後に
 skill: `harness-sync`（本 plan の外、著者指示待ち）。
 
 ### 5. モデル別 effort（著者追加依頼、2026-09-12）

@@ -18,7 +18,7 @@ log_updates: []
 # s4 — jev-skill-router の判定ログ（2026-09-21〜28、shadow 7 日）
 
 skill 選択を外部の判定 API（TypeSafe の Jev）に送る hook を shadow（判定をログに書くだけで、model の文脈へは何も足さない）で 7 日回した
-判定ログの schema と読み値の記録。hook の設計は [ADR-0074](../adr/0074-jev-skill-router-prompt-to-external-judge-shadow-first.md)、
+判定ログの schema と読み値の記録。hook の設計は [ADR-0074](../decision-history/0074-jev-skill-router-prompt-to-external-judge-shadow-first.md)、
 ログを判定の registry の最小形とする位置づけは [RFC-0025](../../rfcs/0025-jev-decision-contract-registry.md) が持つ。
 2026-09-28 に著者判断で plugin をローカルで無効化した（`enabledPlugins` を false。RFC-0025 の Status）。
 `evaluation_timestamp` はログの先頭行と、判断役が読んだ時点の 1,242 行目の `ts` を ISO 8601 の区間で書いた。

@@ -102,7 +102,7 @@ a task branch in the audited repo, a completion report, an ff-only merge. Called
 skill runs that contract's Phases 2–5 with its own items. The Reason-quality row text becomes the
 item's `reason`. Application, by verdict:
 
-- **Retire** — soft-delete: rename to `<file>.disabled` or move to a repo-local trash; real deletion is a later, separate human step. Record the decision via `adr-writer` when the retirement encodes one worth recording.
+- **Retire** — soft-delete: rename to `<file>.disabled` or move to a repo-local trash; real deletion is a later, separate human step. Record the decision via `decision-history` when the retirement encodes one worth recording.
 - **Update** — apply mechanical fixes (repair a broken `on:` trigger, fix a dead `uses:` / `run:` ref, delete a stale config key). A prose-heavy content rewrite (a runbook describing a changed process) goes to the completion report as pending for the user or a writing skill, rather than guessing the new content.
 - **Merge** — consolidate into the surviving asset, then soft-delete the absorbed one.
 

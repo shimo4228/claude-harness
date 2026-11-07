@@ -43,7 +43,7 @@
 
 Rule 3（explore codebase before asking）を拡張 + 新ルールを追加。趣旨:
 
-- **Fact 源に docs を含める**: 質問する前に `docs/adr/`・`docs/CODEMAPS/`・glossary・`graph.jsonld`・`CLAUDE.md` があれば参照する。既に決定済みの事項（既存 ADR）を再度ユーザーに問わない — 代わりに「ADR-000X はこう決めているが、この計画はそれと矛盾する。上書きするか？」と衝突として提示する
+- **Fact 源に docs を含める**: 質問する前に `docs/decision-history/`・`docs/CODEMAPS/`・glossary・`graph.jsonld`・`CLAUDE.md` があれば参照する。既に決定済みの事項（既存 ADR）を再度ユーザーに問わない — 代わりに「ADR-000X はこう決めているが、この計画はそれと矛盾する。上書きするか？」と衝突として提示する
 - **用語チャレンジ**: ユーザーの用語が repo の glossary / 既存 docs の定義と食い違ったら即座に指摘し、正準用語を提案する（domain-modeling の Challenge / Sharpen を移植）
 - **コード照合**: ユーザーの「〜のはず」発言はコードと照合し、矛盾があればその場で提示（domain-modeling の Cross-reference を移植）
 

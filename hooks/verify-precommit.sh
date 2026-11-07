@@ -31,7 +31,7 @@ COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/nul
 [[ -z "$COMMAND" ]] && exit 0
 # git commit を含むコマンドのみ対象 (secret-scan-precommit.sh と同一のマッチ規則)。
 # パイプ区切り (;|&) は跨がない — "git log | grep commit" 除外
-printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
+grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' <<<"$COMMAND" || exit 0
 
 # 対象 repo の特定。この hook は抽出結果配下のスクリプトを **実行**するので、誤爆の影響が
 # 読み取り専用の兄弟 hook と違う (2026-07-31 security-reviewer の HIGH)。抽出自体は共有部品と

@@ -42,7 +42,7 @@ overlay が持つ。入っていれば使い、無ければ本 skill の手順�
 
 | 出元 | 表記例 |
 |------|--------|
-| コード・ドキュメント | `src/core/llm.py:49`, `docs/adr/0066-....md` |
+| コード・ドキュメント | `src/core/llm.py:49`, `docs/decision-history/0066-....md` |
 | コミット | `abc1234` (repo 名も、対象 repo 外なら) |
 | Claude セッションログ | `~/.claude/projects/<slug>/<session-id>.jsonl` + 時刻 |
 | Codex セッションログ | `~/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-<id>.jsonl` + 時刻 |
@@ -54,6 +54,7 @@ overlay が持つ。入っていれば使い、無ければ本 skill の手順�
 
 - **一次** — コード・ADR・コミット・セッションログ・計測コマンド出力・外部一次文献。そのまま記事に書ける
 - **要検証** — 会話・記憶・要約由来でまだ一次ソースに当たっていないもの。**`⚠ 未検証` を必ず付けて出力**し、執筆前に一次ソースで確認するか「推測」と明示して書く
+- **著者の発言（いま）** — 収集の後に受け側 repo のインタビューで著者が語ったこと（考え・解釈・方向）。末尾の `## インタビュー` 節にだけ現れる。記録の事実を裏付ける tier ではなく、確度と語の照合に使う
 
 **数値の再計測規律**: Before/After 等の数値は「どのコマンドで・いつ計測したか」を併記する。既存ドキュメントからの引き写しは禁止（docs は drift する。live コマンド出力が正）。再計測できない過去の数値は出典のセッションログ/コミットを指す。
 
@@ -143,7 +144,7 @@ PY
 git log --all --oneline --grep="<スコープのキーワード>" | head -20
 
 # repo の一次ソース（ADR がスコープに触れていれば必ず本文まで読む）
-grep -rli "<スコープのキーワード>" docs/adr/ docs/evidence/ 2>/dev/null | head -20
+grep -rli "<スコープのキーワード>" docs/decision-history/ docs/evidence/ 2>/dev/null | head -20
 grep -rli "<スコープのキーワード>" .notes/ 2>/dev/null | head -10
 ```
 
@@ -245,6 +246,11 @@ grep -rli "<スコープのキーワード>" .notes/ 2>/dev/null | head -10
 ## 参考リンク
 
 - ...
+
+## インタビュー
+
+（受け側 repo のインタビュー skill が書く節。collect-context は見出しだけ置き、中身を書かない。
+受け側に無ければ空のまま）
 ```
 
 ## Quality Gate

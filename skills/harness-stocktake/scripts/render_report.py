@@ -75,8 +75,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "no_crosscheck": "- **Phase 2:** crosscheck.json が無い — 衝突は同じ file の重なりだけ",
         "truncated": "- **Phase 2:** time cap で打ち切り — 見た範囲の衝突だけ載せた",
         "missing_input": "- **入力の欠け:** {p}",
-        "override": "To override an item, edit its `decision` cell (blank = accept; or `skip`, `Keep`, another "
-        "verdict word, or a note). Then approve in chat.",
+        "override": "判定を変える項目だけ `decision` 欄を書き換える（空欄 = 推奨どおり。`skip`・`Keep`・別の判定語・"
+        "コメントも書ける）。そのうえで chat で承認する。",
         "bundled": " （{count} file・{n} 項目を束ねた: {shown}）",
         "collisions": "## 衝突",
         "winner": " — 勝つのは {winner}",

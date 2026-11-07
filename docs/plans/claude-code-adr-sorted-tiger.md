@@ -24,11 +24,11 @@
 
 | ファイル | 変更 |
 |---|---|
-| `AGENTS.md:9` | 行全体を「設計判断の記録は `[docs/adr/](docs/adr/README.md)`。既存機構を変更するとき経緯を読む」に置換 |
+| `AGENTS.md:9` | 行全体を「設計判断の記録は `[docs/decision-history/](docs/decision-history/README.md)`。既存機構を変更するとき経緯を読む」に置換 |
 | `rules/common/akc-cycle.md:35-57` | 「ADR も足場である」「却下記録の読み方」の 2 節（約 24 行）を削除し、「ADR の扱い」1 節 3 行以内に置換: ADR は日付つきの経緯記録 / 既存機構を変更するとき経緯を読む / 新しい判断が旧 ADR と衝突したら supersede し、旧 ADR に `> **注記（日付, ADR-NNNN）**` を残す。memory への言及は書かない（B で却下ガード自体を消す）。frontmatter の `rationale` / `review-when` と 13 行目の表セル（AKC ADR-0026 の受け側）を新節名に合わせる |
 | `skills/grill-me/SKILL.md:60-67` | rule 3 の ADR 読み方 protocol（Date / Review-when を先に見る、前提 Z を問う、veto ではない）を丸ごと削除。残るのは「docs first: 読んで分かることは読む。settled な決定は文書から取る」まで |
 | `agents/architect.md` | 26-32 行の ADR / memory ガードの 2 箇条を削除（zero-base test が既に覆う。代替文は書かない）。6-9 行のヘッダコメントを「判定は常に最強モデルで。fable が引けない場合のみ opus」だけに。20-21 行「When delegated from the feature-challenge step in planning.md」を「When invoked」に |
-| `docs/adr/README.md` | template 前文の読み方 protocol 参照句を削除し、注記の書き方（既存の末尾 3 行）だけ残す |
+| `docs/decision-history/README.md` | template 前文の読み方 protocol 参照句を削除し、注記の書き方（既存の末尾 3 行）だけ残す |
 | `rules/README.md:17` | akc-cycle の説明を「Scaffold Dissolution / ADR の扱い（経緯記録・supersede・注記）」に |
 | `skills/adr-writer/references/review-findings.md:10` | 「（akc-cycle の却下記録の読み方と同じ）」の括弧を削除 |
 | `scripts/hooks/harness_lint.py:405` | コメントが旧節名を引いていれば新節名に（ロジック変更なし） |
@@ -83,7 +83,7 @@
    - Review-when: 4 週間後も「拒む」観測が続く → ADR-0044 未決 Alternative「ADR 廃止・仮説台帳化」を実行する / 無人 chain の肥大（CA ADR-0095 型）が再発 → 機構ゲートを build-tier chain 限定で戻す
    - Alternatives: `--safe-mode` の frontier セッション（著者判断: 普段のセッションのままで乗れる形が要件）/ 読み方 protocol の命令形化（ADR-0044 Review-when の第 1 案。宣言を足す方向で、本日の観測と逆）/ ADR 廃止（未決のまま次段）
 2. **ADR-0044** に注記: Alternatives「ADR を廃止し…」節と Review-when 節の下に `> **注記（2026-09-14, ADR-0065）**: 再訪条件が発火。照合配線を撤去する段を先に取る`
-3. `docs/adr/README.md` の index に 0065 行
+3. `docs/decision-history/README.md` の index に 0065 行
 
 ## Verify
 

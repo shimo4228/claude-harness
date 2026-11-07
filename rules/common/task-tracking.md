@@ -1,6 +1,6 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0035 で手順を task-stocktake へ移し path だけ常駐。CA ADR-0095 (2026-08-16) で 3 層機構を退役し、store 形式と claims.py だけを残した。同日、起票の条件を severity から前提の検証へ移した (T-PACKET-FLOOR-BYPASS)。同日の棚卸しで状態語彙を 6→4 に縮約 (deferred / observing 廃止) し、語彙の正本を skill 一箇所に定めた — 4 文書に分散した語彙は所有者が不在で誰も刈らなかった -->
-<!-- review-when: harness native task store が出た時、repo の台帳 path を変えた時、台帳の読み書きに再びコードが要ると感じた時（要件を先に疑う）、--producer を満たす引用が「形だけ通す」ようになった時（次の 20 発火の処分内訳で測る）、rfcs/ への流入が 3 ヶ月 0 の時（ADR-0049 の Review-when） -->
+<!-- rationale: 手順は task-stocktake が持ち、path だけ常駐。3 層機構を退役し、store 形式と claims.py だけを残した (2026-08-16)。同日、起票の条件を severity から前提の検証へ移した (T-PACKET-FLOOR-BYPASS)。同日の棚卸しで状態語彙を 6→4 に縮約 (deferred / observing 廃止) し、語彙の正本を skill 一箇所に定めた — 4 文書に分散した語彙は所有者が不在で誰も刈らなかった -->
+<!-- review-when: harness native task store が出た時、repo の台帳 path を変えた時、台帳の読み書きに再びコードが要ると感じた時（要件を先に疑う）、--producer を満たす引用が「形だけ通す」ようになった時（次の 20 発火の処分内訳で測る）、rfcs/ への流入が 3 ヶ月 0 の時（経緯 0049 の Review-when） -->
 # Task Tracking
 
 Pending task の正本は repo ごとに 1 つ。新設・統合・archive の手順は skill: `task-stocktake` が持つ。形は 2 つ:
@@ -16,10 +16,7 @@ store の repo では全件を読まず、`python3 ~/.claude/scripts/claims.py r
 
 ## 並行セッション
 
-着手前に `claims.py claim T-XXX --label "…"`、手放すとき
-`release --outcome done|abandoned|handoff`。起票したら
-`spawn --origin review|gate|instrument|idea|incident [--producer PATH:LINE] [--parent T-YYY]`
-（`--origin review` では `--producer` が必須 — 下の「レビュー指摘の扱い」）。
+着手前に `claims.py claim`、手放すときに `release`、起票したら `spawn`（flag は `claims.py <sub> -h`）。
 
 lease（既定 24h）が切れた claim は `--force` なしで引き継げる。**期限切れ（STEALABLE）と
 期限の宣言が無い古い claim（STALE）は別物** — 後者を奪う根拠にしない。

@@ -96,7 +96,7 @@ Step 1 で選んだセッションの抽出結果を**全文通読**し、判断
 1. **既存スキルとの矛盾解消** — 新スキルの判断（例: タイプ別の装置免除）が既存スキルの無条件チェックリストと形式矛盾しないか通し読みし、既存側に**免除条項**を追記する。矛盾を残すと運用時にスキル同士が衝突する
 2. **発見経路の敷設** — 既存スキルの Related・CLAUDE.md の一覧表に追記（新規ファイルは発見されないリスクがある）
 3. **memory の昇格マーク** — 昇格元の memory は**削除しない**。originSessionId と生事例を持つ一次資料なので、先頭に「昇格済 → <skill 名>」1 行を付けて残す。auto-memory の索引 `~/.claude/projects/<slug>/memory/MEMORY.md`（slug は Step 1 と同じ規則）の該当節冒頭にも正本ポインタを 1 行。スキル = 蒸留された規則、memory = 生事例、の役割分担
-4. **判断の記録** — 分割判断・残置ポリシー・非統合判断は skill: `adr-writer` の When to Use（起票の 3 条件）に掛ける。3 条件をすべて満たすときだけ ADR を書き、それ以外は commit 本文の `Context:` / `Decision:` / `Review-when:` 3 行に残す（起票の基準は adr-writer だけが持ち、ここで複製すると drift する）
+4. **判断の記録** — 分割判断・残置ポリシー・非統合判断は skill: `decision-history` の When to Use（起票の 3 条件）に掛ける。3 条件をすべて満たすときだけ ADR を書き、それ以外は commit 本文の `Context:` / `Decision:` / `Review-when:` 3 行に残す（起票の基準は decision-history だけが持ち、ここで複製すると drift する）
 
 ## Step 7: 検証
 

@@ -120,7 +120,7 @@ findings go only in the ledger. Phase 2 findings, and candidates whose whole ass
 - Propose the stocktake runs to the author before launching them; `/harness-stocktake` runs them all into one report (the audit may also be run in parts)
 - **Recording**: for applied lines, leave in the commit body the three lines `Context:` / `Decision:` / `Review-when:`, the per-group
   counts, and one line `runtime 照合: 編集 N 件` ("runtime cross-check: N edits"; ADR-0078's expiry condition counts this exact Japanese marker, so keep it verbatim). Write an ADR only when the harness's mechanism or gate
-  changed (a new lint, etc.) or when it comes with an annotation to an old ADR (skill `adr-writer`'s filing conditions)
+  changed (a new lint, etc.) or when it comes with an annotation to an old ADR (skill `decision-history`'s filing conditions)
 - Output the ledger in chat. If it is large enough to keep in a file, propose `.notes/` (do not make it the source of truth for task rows —
   rule `task-tracking.md`)
 

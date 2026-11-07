@@ -58,7 +58,7 @@
   - origin は shimo4228（自作）なので `-customized` サフィックス不要。frontmatter の description に「rendering only／supplied input のみ」を明確化。
 - `skills/adr-writer/SKILL.md`（orchestrator 側）:
   - agent 起動前に「メインループが decision packet（Context / Decision / Alternatives+reject 理由 / Consequences）を確定・承認する」規律を明文化。起動後にメインループが fidelity check を行う。
-- 新規 ADR `docs/adr/0016-writer-agents-render-not-decide.md`:
+- 新規 ADR `docs/decision-history/0016-writer-agents-render-not-decide.md`:
   - ADR-0010 の "agent = subjective body generation" 境界を **semantic-authority 基準** で ref定義（observation/transformation は委譲可、semantic commitment はメインループ）。ADR-0010 に本 ADR への参照追記（両面更新）。
   - `adr-writer` skill 経由で採番（collision 回避）。
 

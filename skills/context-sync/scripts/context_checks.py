@@ -60,7 +60,7 @@ _URL_RE = _p._URL_RE
 # --- delegation to sibling evidence scripts ---------------------------------- #
 
 _HARNESS_SKILLS = Path(__file__).resolve().parents[2]
-_ADR_LINT_PATH = _HARNESS_SKILLS / "adr-writer" / "scripts" / "adr_lint.py"
+_ADR_LINT_PATH = _HARNESS_SKILLS / "decision-history" / "scripts" / "adr_lint.py"
 _GRAPH_LINT_PATH = _HARNESS_SKILLS / "jsonld-knowledge-graph" / "scripts" / "graph_lint.py"
 _ADR_LINT_API = ("analyze_naming", "parse_index_numbers")
 
@@ -424,7 +424,11 @@ def check_stale_docs(cx: Corpus, docs: list[Path], threshold_days: int, now: int
     }
 
 
-def check_adr_index(cx: Corpus, adr_rel: str = "docs/adr") -> dict:
+RECORD_DIRS = ("docs/decision-history", "docs/adr")  # resolution order when --adr-dir is omitted
+
+
+def check_adr_index(cx: Corpus, adr_rel: str | None = None) -> dict:
+    adr_rel = adr_rel or next((d for d in RECORD_DIRS if (cx.root / d).is_dir()), RECORD_DIRS[0])
     adr_dir = cx.root / adr_rel
     if not adr_dir.is_dir():
         return {"status": "absent", "adr_dir": adr_rel}

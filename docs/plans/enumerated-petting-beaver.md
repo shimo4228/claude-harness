@@ -2,7 +2,7 @@
 
 調査: [research/2026-11-01-stocktake-campaign.md](research/2026-11-01-stocktake-campaign.md)（外部 8 角度 + 手元の実測）。
 出発点: [research/2026-11-01-stocktake-campaign-frame.md](research/2026-11-01-stocktake-campaign-frame.md)（widen-the-ask の出力、2026-11-01）。
-前段の設計: [sunny-splashing-scroll.md](sunny-splashing-scroll.md)、[ADR-0097](../adr/0097-batch-stocktake-report-and-two-decisions.md)。
+前段の設計: [sunny-splashing-scroll.md](sunny-splashing-scroll.md)、[ADR-0097](../decision-history/0097-batch-stocktake-report-and-two-decisions.md)。
 再利用する手順: personal-branding の skill `plugin-directory-submit`（directory 提出。初回にしか読まれない欄の一覧を持つ）、
 routine `listing-pr-daily`（掲載 PR / issue を queue から 1 日 3 件、`~/.claude/scheduled-tasks/listing-pr-daily/SKILL.md`）、
 `docs/research/listing-queue.md`（掲載 queue の正本）。
@@ -225,7 +225,7 @@ issue で来た人に限り、来たら `rfcs/` に記録する。
 - 正答率（中心の主張 60 件）: [research/2026-11-01-precision.md](research/2026-11-01-precision.md)
 - 品質修正後の再走 14 本: [research/2026-11-01-rerun.md](research/2026-11-01-rerun.md)
 - plugin で最初の指摘まで: [research/2026-11-01-stage1-plugin.md](research/2026-11-01-stage1-plugin.md)
-- 著者の harness の初回実行（192 項目 → 判断 2 回）: [ADR-0097](../adr/0097-batch-stocktake-report-and-two-decisions.md)
+- 著者の harness の初回実行（192 項目 → 判断 2 回）: [ADR-0097](../decision-history/0097-batch-stocktake-report-and-two-decisions.md)
 
 **やること**
 
@@ -234,7 +234,7 @@ issue で来た人に限り、来たら `rfcs/` に記録する。
    選定 query・版・日付を添える。記録に無い数字は作らない
 2. 技術記事 1 本（英: Dev.to、日: Zenn。skill `writing-ecosystem` の手順）: 「`/doctor` の後に何が残るか — 公開 harness 20 本の
    実測」。物語の軸は系譜と出所 — 著者が AI コーディングの初期に ECC へ入れた skill-stocktake が、harness 全体を 1 枚の
-   report と 1 回の承認で片付ける harness-stocktake になったこと、その手順が AKC（DOI 10.5281/zenodo.19200727）の Curate phase で
+   report と 1 回の承認で片付ける harness-stocktake になったこと、その手順が AKC（concept DOI 10.5281/zenodo.19200726）の Curate phase で
    あること。著者の harness の before / after（192 項目 → 2 回の判断）を添え、数字は一つに絞る
 3. 集計のデータ（CSV）と記事の英語版を plugin repo の `docs/state-of-2026/` に置き、GitHub release → Zenodo の DOI（skill
    `release-doi`。webhook は Claude が設定、release は著者の OK 1 回）

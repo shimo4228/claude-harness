@@ -29,7 +29,7 @@ VAULT="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Vaul
 
 - **wiki は read-only**。この skill から vault 内のいかなるファイルにも書き込まない。wiki の更新（ingest / index / log）は vault セッションの `/ingest` の領域。一方向ループ（source → wiki → repo）を保全する。
 - **書き込みは repo 内の ledger（+ 初回の `.gitignore` 1 行）のみ**。`.notes/wiki-harvest/ledger.md`（working/non-citable・gitignore 対象）だけを生成・更新する。
-- **durable/citable な成果物（`docs/adr/` / `graph.jsonld` / `glossary.md` / `manifesto.md`）には書かない**。それらへの昇格は人間承認の別ステップで、昇格するかは repo author が判断する（durable 成果物は戻しにくい — reversibility gate）。
+- **durable/citable な成果物（`docs/decision-history/` / `graph.jsonld` / `glossary.md` / `manifesto.md`）には書かない**。それらへの昇格は人間承認の別ステップで、昇格するかは repo author が判断する（durable 成果物は戻しにくい — reversibility gate）。
 - **prototype 系候補（`response-type: prototype`）のコード・計器も自動で実装しない**。この skill は候補の抽出と triage までで、計器/spike の実行は人間承認の別ステップ。harvest がやるのは「何を測るべきか」を ledger に書くところまで。
 - iCloud dataless プレースホルダに注意: 読んだ concept ページ本文が空なら未ダウンロードの可能性。その旨を報告する。
 
@@ -72,7 +72,7 @@ signal フィルタを生き残った ①②⑤ の各候補に **response-type*
 
 | response-type | 判定基準 | 第一アクション | ADR の位置（ADR は下した決定の記録で、デフォルトの着地点ではない。終端になるのは `framing` だけ） | 昇格/実行に使うツール（人間承認後・手動） |
 |---|---|---|---|---|
-| `framing` | 実装コードを伴わない stance/定義の決定（公理の運用定義、主体性の姿勢、接地系統の選択）。「文書化された姿勢そのもの」が成果物 | author が stance を確定 | **終端**（成果物そのもの） | `/adr-writer` skill（主ループが書く。+ 公理なら `contemplative-axioms.md` 脚注） |
+| `framing` | 実装コードを伴わない stance/定義の決定（公理の運用定義、主体性の姿勢、接地系統の選択）。「文書化された姿勢そのもの」が成果物 | author が stance を確定 | **終端**（成果物そのもの） | `/decision-history` skill（主ループが書く。+ 公理なら `contemplative-axioms.md` 脚注） |
 | `prototype` | **対象 repo の振る舞いを変える**設計変更（gate / test / verification の追加）。問題が repo 固有に実在するか未測定 | 計器/spike で実在性を先に測る（read-only 計器が第一手） → build 判断 | 判断が出た後に従属記録 | `read-only-instruments` / `replayable-audit-logs`（`~/MyAI_Lab/agent-observability-patterns/skills/`、`~/MyAI_Lab/contemplative-agent/.claude/skills/` にも同梱）、`chaos-tdd-fault-injection`（`~/MyAI_Lab/chaos-tdd-fault-injection/skills/`）— いずれも global library には無い project skill で、`--add-dir` で開いた当該 repo のセッションから使う |
 | `defer` | 論点は真だが repo で今 live でない（解のある問題の先取り／repo が採らない外部系との対立） | 再訪トリガーを記録して保留（廃止でなく＝再生成時の重複排除） | 書かない | （ツールなし。ledger に残すだけ） |
 | `citation` | ③（機械的） | 一次照合 → citation-sync | 対象外 | `citation-sync` skill（`~/MyAI_Lab/paper-lab` 常駐） |

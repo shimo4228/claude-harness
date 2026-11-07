@@ -20,7 +20,7 @@ log_updates: []
 build 役の Opus session の effort を medium に下げても bounce（判断役の検収での差し戻し）が増えないかを運用で見た試行の記録。
 2026-09-24 に cloud session が build の既定になった時点で「cloud = high / local = medium」を対照として読む前提ができたが、2026-09-26 の probe で
 cloud の実 effort も medium だったと分かり、対照は成り立っていなかった。試行は 2026-09-26 に閉じ、effort は packet ごとに判断役が選ぶ形
-（[ADR-0081](../adr/0081-per-packet-effort-and-bounce-classification.md)）に置き換わった。
+（[ADR-0081](../decision-history/0081-per-packet-effort-and-bounce-classification.md)）に置き換わった。
 
 ## 設計
 
@@ -29,7 +29,7 @@ cloud の実 effort も medium だったと分かり、対照は成り立って�
   `modelSettings.claude-opus-5.effortLevel` を `high` から `medium` へ変えた（著者の決定。「コスト約半減の試行」）。判断役の Fable は `high` のまま。
   検証の手順は「次の Opus build session の成果物を Fable の triage 検収で観察し、bounce 率が上がるなら high へ戻す」。
   plan が根拠を調べた範囲では、「Opus 5 は medium で coding bench が near-peak」は二次資料だけで、長時間の agentic session への転写は未検証とされていた
-- 意図した対照（2026-09-24、[ADR-0075](../adr/0075-cloud-session-as-default-build-executor.md)）: build の既定を cloud session に移した ADR-0075 は、cloud の effort を
+- 意図した対照（2026-09-24、[ADR-0075](../decision-history/0075-cloud-session-as-default-build-executor.md)）: build の既定を cloud session に移した ADR-0075 は、cloud の effort を
   「claude.ai 側の既定（Opus 5.5 / high、2026-09-24 実測）」、local の medium 試行を「local 限定」と書いた。Review-when は、cloud build 10 本の bounce 率を
   直前の local build 10 本の digest 記録と比べ、高ければ「packet の形・review・effort（high 固定）のどれが効いたかを分けて再訪する。差を effort 単独に帰さない」とする。
   これで cloud = high / local = medium の 2 群が並ぶ形になった

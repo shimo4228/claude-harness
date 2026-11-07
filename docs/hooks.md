@@ -3,7 +3,7 @@
 Five PreToolUse hooks that run at the `git commit` boundary, plus the two parts
 they need to work — and, since 2026-08-25, two session-surface hooks published
 alongside the `rfcs/` ledger (see below). Several ADRs in
-[docs/adr/](adr/README.md) argue about the internals of these scripts —
+[docs/decision-history/](decision-history/README.md) argue about the internals of these scripts —
 ADR-0027, 0028, 0034, 0035, 0049 — so the code is published here rather than
 leaving those decisions pointing at nothing.
 

@@ -1,5 +1,5 @@
 <!-- origin: shimo4228 -->
-<!-- rationale: ADR-0069 — 境界が packet / task-triage / tick prompt / growth-* / agents.md の 6 箇所に文面違いで散っていた。substrate の一般則（hard to reverse or outward-facing → confirm first）は再宣言せず、このハーネスで何がそれに当たるかと、確認なしで取ってよいリスクだけを置く -->
+<!-- rationale: 境界が packet / task-triage / tick prompt / growth-* / agents.md の 6 箇所に文面違いで散っていた。substrate の一般則（hard to reverse or outward-facing → confirm first）は再宣言せず、このハーネスで何がそれに当たるかと、確認なしで取ってよいリスクだけを置く -->
 <!-- review-when: 人間に渡す操作の列挙を足す / 減らす時。判断役の取り込みで main が壊れ人間が revert した回数が 3 か月で 2 回を超えた時（取り込みを人間へ戻す）。聞かずに直した範囲外修正を人間が revert した回数が 1 か月で 2 回を超えた時（軽微の定義を狭める）。substrate が台帳・gate script・scheduled task を outward-facing として自ら扱うようになった時。platform が rate-limit と policy enforcement を明確に分離した時（rate limit の行を外す） -->
 # 境界 — 人間に渡す操作と、とってよいリスク
 
@@ -7,17 +7,16 @@
 公開（投稿・第三者 repo への PR・release / DOI・評判に関わる公開物の更新）/ 課金 /
 Slack digest 以外の外部送信 / 台帳の起票・drop（判断役は提案まで）/ permissions・hooks・scheduled task・
 `.claude/verify.sh`（承認 hash）・rules・skills の無人変更（その diff を含む取り込みも）/
-自分が spawn していない pane・session / Herdr 委譲（`HERDR_ENV=1` と明示指示の両方。例外は
-create-only の skill: `spawn-session` — 新規 workspace/tab と自分が作った pane にしか触れないので
-server 稼働だけを前提に実行してよい。spawn-session で自分（この session かその script）が起こした pane への
-skill: `agent-send` も同じ扱いで、`HERDR_ENV=1` は要らない。明示指示は要る — 著者が起動を含む cycle
-（task-triage）を呼ぶことが明示指示に当たる。launchd の triage tick が自分の triage session へ送るのは、
-著者が tick を設定したことが明示指示に当たる。それ以外の無人の送信は当たらない）。
+自分が spawn していない pane・session / Herdr 委譲（`HERDR_ENV=1` と明示指示の両方。例外: create-only の
+skill: `spawn-session` は新規 workspace/tab と自分が作った pane にしか触れないので、server 稼働だけを前提に実行してよい。
+それで自分（この session かその script）が起こした pane への skill: `agent-send` は `HERDR_ENV=1` が要らず、明示指示は要る —
+著者が起動を含む cycle（task-triage）を呼ぶことと、著者が設定した launchd の triage tick が自分の triage session へ送ることが
+それに当たり、他の無人の送信は当たらない）。
 
-**とる**（確認を待たない）: ADR の起票・改訂・旧 ADR への注記と commit（記録する決定そのものが上の列挙に当たるときは、その操作の側で止まる）/ 検収を通した task branch の main への ff-only 取り込みと push
-（force は hook が止める）/ worktree と task branch の中の破壊・方針転換・粗い代替案 1 本・
+**とる**（確認を待たない）: 判断の経緯の起票・改訂と commit（記録する決定そのものが上の列挙に当たるときは、その操作の側で止まる）/ 検収を通した task branch の main への ff-only 取り込みと push
+（force は hook が止める）/ build を出す前の main の push（fast-forward のときだけ。task-triage §3）/ worktree と task branch の中の破壊・方針転換・粗い代替案 1 本・
 赤テストのまま次の仮説へ（記録する。commit には verify を通す）/ scratchpad・下書き・`.notes/`
-`.growth/` への記録・task branch への commit / 作業中に見つけた依頼範囲外の軽微な修正 —
+への記録・task branch への commit / 作業中に見つけた依頼範囲外の軽微な修正 —
 答えが一つに決まり git で戻せるもの（typo・リンク切れ・実物とずれた記述（`knowledge-staleness.md`）・明白な
 小 bug・lint 赤）は聞かずに直し、依頼の diff と別 commit に分け、完了報告の末尾に 1 行ずつ
 載せる。「人間に渡す」の列挙に当たるものと、設計の選択を含むものは直さず同じ末尾に 1 行で渡す。

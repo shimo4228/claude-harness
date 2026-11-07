@@ -105,3 +105,13 @@ emit_permission_decision() {
   jq -nc --arg d "${1:-ask}" --arg r "${2:-}" \
     '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: $d, permissionDecisionReason: $r}}'
 }
+
+# advisory_muted <hook-name> — repo が自分の notice を止めているか。<project>/.claude/hook-notices-off に
+# hook 名（拡張子なし）が 1 行で書かれていれば真。<project> は $CLAUDE_PROJECT_DIR で、未設定なら偽。
+# 止められるのは advisory の文面だけ — block・権限判定・書き込み制限の経路はこの関数を呼ばない。
+# 用途は促しが既定と逆に働く repo（記事の repo で plan 系の促しを止める等）。
+advisory_muted() {
+  local f="${CLAUDE_PROJECT_DIR:-}/.claude/hook-notices-off"
+  [[ -n "${CLAUDE_PROJECT_DIR:-}" && -f "$f" && -n "${1:-}" ]] || return 1
+  grep -Fxq -- "$1" "$f" 2>/dev/null
+}

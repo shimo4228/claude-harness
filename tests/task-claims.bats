@@ -18,6 +18,8 @@ setup() {
   printf '| ID | 状態 |\n| T-FOO | accepted |\n| T-BAR | accepted |\n' > "$REPO/.notes/TASKS.md"
   export CLAUDE_PROJECT_DIR="$REPO"
   export CLAUDE_CODE_SESSION_ID="aaaaaaaa-1111-2222-3333-444444444444"
+  # hook の「1 回だけ」の印はテストごとに分ける（既定の ~/.claude/state を汚さない）
+  export TASK_CLAIMS_REMINDER_STATE="$BATS_TEST_TMPDIR/state"
 }
 
 claims() { python3 "$HELPER" "$@"; }
@@ -321,7 +323,7 @@ claims() { python3 "$HELPER" "$@"; }
 @test "hook still states the convention with zero claims" {
   run bash -c "printf '{\"tool_input\":{\"command\":\"cat .notes/TASKS.md\"}}' | bash '$HOOK'"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"claim を積む"* ]] || return 1
+  [[ "$output" == *"claims.py claim"* ]] || return 1
   [[ "$output" != *"着手中"* ]] || return 1
 }
 
@@ -355,6 +357,114 @@ claims() { python3 "$HELPER" "$@"; }
   # repo 相対のパスを名指ししない。~/.claude/ の絶対パスは harness 所有なので別。
   [[ "$ctx" != *"scripts/tasks.py"* ]] || return 1
   [[ "$ctx" != *"python3 scripts/"* ]] || return 1
+}
+
+@test "hook states the fixed lines once per session and repo" {
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"claims.py claim"* ]] || return 1
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "hook repeats the open claims only when they change" {
+  claims claim T-FOO
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"T-FOO"* ]] || return 1
+  # 経過時間だけが変わっても出さない（行は fmt_age を含む。0m → 2h にずらして確かめる）
+  python3 - "$REPO/.notes/claims.jsonl" <<'EOF'
+import json, sys
+from datetime import datetime, timedelta, timezone
+p = sys.argv[1]
+rows = [json.loads(line) for line in open(p, encoding="utf-8")]
+for r in rows:
+    r["ts"] = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+open(p, "w", encoding="utf-8").write("".join(json.dumps(r) + "\n" for r in rows))
+EOF
+  [[ "$(claims open --oneline)" == *"2h"* ]] || return 1
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [ -z "$output" ] || return 1
+  claims claim T-BAR
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"T-BAR"* ]] || return 1
+  [[ "$output" != *"claims.py claim"* ]]
+}
+
+@test "a subagent gets the fixed lines on its own first touch" {
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"claims.py claim"* ]] || return 1
+  run bash -c "printf '{\"agent_id\":\"a123\",\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"claims.py claim"* ]]
+}
+
+@test "without a session id the hook speaks every time" {
+  unset CLAUDE_CODE_SESSION_ID
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"claims.py claim"* ]] || return 1
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [[ "$output" == *"claims.py claim"* ]]
+}
+
+@test "a failed emit does not count the conventions as said" {
+  # 印を出力より先に書くと、1 回の失敗でその session の残りが黙る（2026-11-07 security review）
+  H="$BATS_TEST_TMPDIR/h"; mkdir -p "$H"
+  cp "$HOOK" "${BATS_TEST_DIRNAME}/../hooks/_session-common.sh" "$H/"
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$H/task-claims-reminder.sh'"
+  [ "$status" -eq 0 ] || return 1
+  [[ "$output" != *"claims.py claim"* ]] || return 1
+  cp "${BATS_TEST_DIRNAME}/../hooks/_advisory-common.sh" "$H/"
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$H/task-claims-reminder.sh'"
+  [[ "$output" == *"claims.py claim"* ]]
+}
+
+@test "without the session helper the hook speaks every time" {
+  H="$BATS_TEST_TMPDIR/h"; mkdir -p "$H"
+  cp "$HOOK" "${BATS_TEST_DIRNAME}/../hooks/_advisory-common.sh" "$H/"
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$H/task-claims-reminder.sh'"
+  [[ "$output" == *"claims.py claim"* ]] || return 1
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$H/task-claims-reminder.sh'"
+  [[ "$output" == *"claims.py claim"* ]]
+}
+
+@test "the cleanup removes only the hook's own old marks" {
+  mkdir -p "$TASK_CLAIMS_REMINDER_STATE"
+  touch -t 202601010000 "$TASK_CLAIMS_REMINDER_STATE/old--x.fixed" "$TASK_CLAIMS_REMINDER_STATE/notes.txt"
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  [ ! -e "$TASK_CLAIMS_REMINDER_STATE/old--x.fixed" ] || return 1
+  [ -e "$TASK_CLAIMS_REMINDER_STATE/notes.txt" ]
+}
+
+@test "the claims line carries the untrusted-data frame" {
+  claims claim T-FOO
+  run bash -c "printf '{\"tool_input\":{\"file_path\":\"$REPO/.notes/TASKS.md\"}}' | bash '$HOOK'"
+  ctx=$(printf '%s' "$output" | jq -r '.hookSpecificOutput.additionalContext')
+  [[ "$ctx" == *"未検証データ"*"T-FOO"* ]]
+}
+
+@test "reset after compaction makes the session speak again" {
+  touch_ledger() {
+    jq -nc --arg s "$1" --arg a "${2:-}" --arg f "$REPO/.notes/TASKS.md" \
+      '{session_id: $s, tool_input: {file_path: $f}} + (if $a == "" then {} else {agent_id: $a} end)' \
+      | bash "$HOOK"
+  }
+  claims claim T-FOO
+  touch_ledger s1 >/dev/null; touch_ledger s1 a1 >/dev/null; touch_ledger s2 >/dev/null
+  [ -z "$(touch_ledger s1)" ] || return 1
+  printf '{"session_id":"s1","source":"compact"}' | bash "$HOOK" reset
+  out=$(touch_ledger s1)
+  [[ "$out" == *"claims.py claim"* ]] || return 1
+  [[ "$out" == *"T-FOO"* ]] || return 1
+  # 子の印も同じ session のものなので消える。別 session の印は残る
+  [[ "$(touch_ledger s1 a1)" == *"claims.py claim"* ]] || return 1
+  [ -z "$(touch_ledger s2)" ]
+}
+
+@test "reset without a session id removes nothing" {
+  unset CLAUDE_CODE_SESSION_ID
+  mkdir -p "$TASK_CLAIMS_REMINDER_STATE"
+  touch "$TASK_CLAIMS_REMINDER_STATE/s1--0.fixed"
+  printf '{"source":"compact"}' | bash "$HOOK" reset
+  [ -e "$TASK_CLAIMS_REMINDER_STATE/s1--0.fixed" ]
 }
 
 @test "hook never stops the session on malformed input" {

@@ -6,8 +6,8 @@ Ox Alpha（2026-08-20 公開、1M context、期間限定無料の stealth model�
 opencode で試したい。opencode は未インストール。
 
 同時に、`~/.claude` ハーネスを opencode からも使えるようにする。既存のクロスエージェント共有は
-[ADR-0012](../adr/0012-cross-tool-skill-sharing-via-agents-skills.md)（skills 層）と
-[ADR-0015](../adr/0015-cross-agent-rules-sharing-reference-first.md)（rules 層、Codex CLI /
+[ADR-0012](../decision-history/0012-cross-tool-skill-sharing-via-agents-skills.md)（skills 層）と
+[ADR-0015](../decision-history/0015-cross-agent-rules-sharing-reference-first.md)（rules 層、Codex CLI /
 Antigravity CLI の 2 ツール）で構築済み。opencode は 3 ツール目になる。
 
 調査で判明した「既に効くもの / 穴が空くもの」:
@@ -105,7 +105,7 @@ TUI で以下を確認:
 
 ### 5. 記録
 
-- **`docs/adr/0015-cross-agent-rules-sharing-reference-first.md`** — 日付つき追記:
+- **`docs/decision-history/0015-cross-agent-rules-sharing-reference-first.md`** — 日付つき追記:
   - Decision に 4 番目として opencode を追加（`~/.config/opencode/opencode.json` の `instructions`
     + `AGENTS.md` マーカーブロック）
   - Consequences / Negative の「rules ロードは確率的」に注記: opencode は `instructions` が

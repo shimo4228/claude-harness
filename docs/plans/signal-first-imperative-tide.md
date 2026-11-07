@@ -71,7 +71,7 @@ coding 指示を保持する設定を必ず付ける）:
   product の style 仕様変更
 - 注記を 2 箇所: ADR-0026 Context 第三（downward 判定の部分反証、原則の正本が消費 skill 側にある
   点は不変）、ADR-0061 の Concise follow-up（本 ADR で解消）
-- `docs/adr/README.md` の index、`CLAUDE.md` Layout に `output-styles/` を 1 行
+- `docs/decision-history/README.md` の index、`CLAUDE.md` Layout に `output-styles/` を 1 行
 
 ## 実装手順
 

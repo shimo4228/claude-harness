@@ -3,8 +3,8 @@
 
 毎セッション自動ロードされる常駐層。採用基準は「この環境固有の事実・配線・罠」。
 思考や作業の手順は skill、発火時刻を要する検査は hook、一般的な判断は substrate が持つ。
-経緯は [ADR-0018](../docs/adr/0018-rules-rightsize-for-claude5.md) と
-[ADR-0035](../docs/adr/0035-commit-review-hook-and-rules-rightsize.md)。
+経緯は [経緯 0018](../docs/decision-history/0018-rules-rightsize-for-claude5.md) と
+[経緯 0035](../docs/decision-history/0035-commit-review-hook-and-rules-rightsize.md)。
 
 各 rule は `origin`、`rationale`、`review-when` を持つ。存在は `harness_lint.py`、
 意味と失効条件は skill: `rules-stocktake` が検査する。
@@ -13,8 +13,8 @@
 
 | Rule | 常駐する情報 |
 |---|---|
-| `agents.md` | agent catalog と Herdr skill の入口 |
-| `akc-cycle.md` | Scaffold Dissolution / ADR の扱い（経緯記録・supersede・注記） |
+| `agents.md` | agent catalog の正本と、Review を別 process で走らせること |
+| `akc-cycle.md` | AKC の機構の所有者 / Scaffold Dissolution / 判断の経緯の扱い（skill decision-history への pointer） |
 | `boundary.md` | 人間に渡す操作 / とってよいリスク / 止まって報告する条件（rate limit の policy signal を含む。境界の正本） |
 | `coding-style.md` | global harness の変更対象 |
 | `contemplative-axioms.md` | identity / values（verbatim） |

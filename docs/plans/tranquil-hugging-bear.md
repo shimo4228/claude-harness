@@ -36,7 +36,7 @@ PENDING_ARTICLE として扱う。
 
 1. **振り分け表を固める**: `all.tsv` から最終表 `route.tsv`（plan / 行き先 repo / 置き場 / FIX 内容）を作る
    - WRONG_REPO の行き先は、理由の列から手で転記する
-   - 既存のリンク元があるものは残す: `~/.claude/docs/adr/0009`・`0012`・`0085` と RFC-0033
+   - 既存のリンク元があるものは残す: `~/.claude/docs/decision-history/0009`・`0012`・`0085` と RFC-0033
 2. **コピーと伏せ字**: 各 plan を置き場へコピーする（legacy の元ファイルは消さない）
    - FIX の置換を適用する
    - ファイル名に `users-shimomoto-tatsuya-` を含む 6 本は、その部分を外して改名する
@@ -65,7 +65,7 @@ legacy の `~/.claude/plans/` の元ファイルは、この plan では消さ�
 
 - `<scratchpad>/all.tsv`、`plan-map.tsv`（振り分けの入力）
 - `~/MyAI_Lab/claude-harness/scripts/sync-from-local.sh:157-169, 232-249`（docs/plans の収集と home path scan。変更しない）
-- `~/.claude/skills/harness-sync/SKILL.md:52`、`~/.claude/docs/adr/0085-plans-as-records-in-docs-plans.md`
+- `~/.claude/skills/harness-sync/SKILL.md:52`、`~/.claude/docs/decision-history/0085-plans-as-records-in-docs-plans.md`
 - `~/.claude/rfcs/0033-allocate-legacy-plans-to-repos.md`
 
 ## 検証

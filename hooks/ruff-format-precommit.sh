@@ -32,7 +32,7 @@ bypass_re="^([A-Za-z_][A-Za-z0-9_]*=[^[:space:]\"']*[[:blank:]]+)*RUFF_FORMAT_BY
 
 # git commit を含むコマンドのみ対象 (secret-scan-precommit.sh と同一のマッチ規則)。
 # パイプ区切り (;|&) は跨がない — "git log | grep commit" 除外
-printf '%s' "$COMMAND" | grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' || exit 0
+grep -qE '\bgit\b[^;|&]*[[:space:]]commit\b' <<<"$COMMAND" || exit 0
 
 # 対象 repo: 共有部品 _git-target-common.sh の候補（-C / cd の行き先と $PWD）。引用符を解釈せず余分に拾い、
 # 読み落とさない側に倒す — 方針と限界は同ファイルのヘッダ

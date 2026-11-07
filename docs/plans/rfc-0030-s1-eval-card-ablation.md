@@ -7,7 +7,7 @@ cwd は `~/.claude` の git worktree（branch は Agent tool が作ったもの�
 
 最初に読む: `rfcs/0030-eval-cards-for-ready-instruments.md`、`.notes/s1-eval-native-reading-2026-09-13.md`
 （main の作業ツリーにある gitignore 下のファイル — worktree に無ければ `~/.claude/.notes/` から読む）、
-`skills/skill-creator/SKILL.md` §5、`docs/adr/0085-plans-as-records-in-docs-plans.md` Decision 4（公開可能な書き方）。
+`skills/skill-creator/SKILL.md` §5、`docs/decision-history/0085-plans-as-records-in-docs-plans.md` Decision 4（公開可能な書き方）。
 
 Effort: low — docs のみ、仕様（下の Goal）が細かい
 

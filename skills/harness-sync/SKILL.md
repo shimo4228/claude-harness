@@ -42,12 +42,12 @@ bash <公開repo>/scripts/sync-from-local.sh
 
 script は staging 収集 → runtime artifact と保守用 file の除去 (results.json, __pycache__, MAINTENANCE.md 等) →
 frontmatter YAML 検証 (GitHub 等の厳密パーサ基準。invalid なら abort) →
-secret scan (検出時 abort) → skills/ agents/ rules/ docs/adr/ docs/plans/ rfcs/ hooks/
+secret scan (検出時 abort) → skills/ agents/ rules/ docs/decision-history/ docs/plans/ rfcs/ hooks/
 scripts/hooks/ tests/ subtree の置換、まで行う。origin filter が効くのは skills/ agents/ rules/ だけで、
 残りは別の規則で決まる (いずれも集約 repo のみ):
 
-- `docs/adr/` — ADR はハーネス自身の設計判断の記録で定義上すべて自作のため、origin filter を
-  掛けずディレクトリ丸ごとが対象。以後の ADR は公開される前提で書く。
+- `docs/decision-history/` — 判断の経緯はハーネス自身の記録で定義上すべて自作のため、origin filter を
+  掛けずディレクトリ丸ごとが対象。以後の記録は公開される前提で書く。
 - `rfcs/` — 台帳エントリも自作の判断記録なので ADR と同じく丸ごと (ADR-0049)。起票は公開可能な書き方が既定 — 機微はリンク先へ (task-stocktake の公開規約)。
 - `docs/plans/` — 承認して commit した plan。ADR / RFC から相対リンクされる原本 (ADR-0085)。集めるのは git が追跡している plan だけで、untracked・未 commit の変更があれば abort する。公開可能な書き方が既定で、`$HOME` の実値を含む行があると script の home-directory path scan が abort する — `~/` に書き直す。
 - `hooks/` `scripts/hooks/` `tests/` — script 内の `HOOK_ALLOWLIST` に列挙したファイルだけ。
@@ -90,7 +90,7 @@ python3 ~/.claude/skills/harness-sync/scripts/public_links.py --root <公開repo
 
 | 検査 | 見るもの |
 |---|---|
-| `context_evidence.py --gate` | `adr_index` / `graph_jsonld` / `llms_txt`（llms.txt と llms-full.txt の repo 内相対リンク）。集約 repo は `docs/adr/` を丸ごと持つので ADR index drift でも鳴る |
+| `context_evidence.py --gate` | `adr_index` / `graph_jsonld` / `llms_txt`（llms.txt と llms-full.txt の repo 内相対リンク）。集約 repo は `docs/decision-history/` を丸ごと持つので ADR index drift でも鳴る |
 | `--gate-readme` | README.md・README.*.md・CHANGELOG.md の repo 内相対リンク（suffix でなく root からの完全一致） |
 | `public_links.py` | root docs の `github.com/shimo4228/<repo>[/(blob\|tree)/<ref>/<path>]` と raw リンク: repo が public の現名か、path がその ref に在るか（clone が無い・古いときは `gh api`。確かめられなかった path も違反） |
 | `claude plugin validate` | marketplace manifest の形（`name`・`owner`・`plugins` 必須） |

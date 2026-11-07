@@ -8,7 +8,7 @@ as-of: 2026-11-01。著者と skill `widen-the-ask` を高度 → 範囲 → 深
 
 - harness-stocktake は 2026-10-31 に初回の全体実行を終えた（7 source・192 項目、うち退役 24。report:
   https://claude.ai/artifact/H8515RDi7MpdHXgJYpoAPj）。apply は `stocktake/2026-10-31` を ff で main に取り込み済み
-- 経緯と設計: [ADR-0097](../../adr/0097-batch-stocktake-report-and-two-decisions.md)、plan [sunny-splashing-scroll](../sunny-splashing-scroll.md)
+- 経緯と設計: [ADR-0097](../../decision-history/0097-batch-stocktake-report-and-two-decisions.md)、plan [sunny-splashing-scroll](../sunny-splashing-scroll.md)
 - 未了: git-target 抽出の修理 session（heredoc・コメント対応）が Review 待ちで止まっている。公開 repo への
   `harness-sync` と akc-cycle のリリースはまだ回していない
 

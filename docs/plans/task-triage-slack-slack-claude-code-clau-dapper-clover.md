@@ -44,7 +44,7 @@ harness / CA 両方の plist が同じ tick script を呼ぶため、変更は�
 - :196-198 の cycle-end digest 内容（open before→after 等）は発話側に残す
 - Cadence 節等に旧フォーマットへの言及があれば追随
 
-### 3. `docs/adr/0045-triage-loop-launchd-tick-and-slack-digest.md` — 日付つき注記
+### 3. `docs/decision-history/0045-triage-loop-launchd-tick-and-slack-digest.md` — 日付つき注記
 
 新 ADR は立てない（可逆・アーキテクチャ不変。timer 外 / answers-in-session の
 Decision 1 はそのまま）。akc-cycle の規約どおり削除でなく日付つき注記:

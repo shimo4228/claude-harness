@@ -22,7 +22,7 @@ kind: internal
 | PROTOCOL 手順 5 | `:176` `5. plan は report にリンクし、構造や流れは Mermaid 図で示す` | 一致 | 置換先: 「plan は skill: `html-plan` で `docs/plans/<slug>.html` に書き、report にリンクする。構造は claim tree の exhibit（doc-flow / doc-seq / doc-machine / doc-calls）で示す」。PROTOCOL の冒頭 `:171`「（plan mode、または plan を頼むプロンプト）」は据え置き可 |
 | 先頭コメント | `:2-4`, `:8`, `:16-17` に plan mode・`docs/plans/<name>.md` の記述 | 一致 | `.html` を足す。`:4` の「docs/plans/research-plan-mode.md」参照は残る |
 | PreToolUse の mode 依存 | `:255` `if [[ "$MODE" != plan && ! -e "$PLANNING" ]]` | 一致 | PLAN_ASK が html-plan 起動を拾えば PLANNING が立ち、gate は効く。拾えなければ html の Write は unguarded 計測だけで通る — **調査なしで plan が書ける穴**になる |
-| ADR-0086 の窓 | `docs/adr/0086-research-gate-before-plan.md:123-124` 「窓の間は差し込む文面・plan を頼む言い方と skip の正規表現・plan ファイルの path の集合を変えない」。窓は 2026-10-04 から 30 日 | 引き継ぎの `:123-124` は一致 | PLAN_ASK・PROTOCOL・path 集合の 3 つとも変える。窓の切り直しを ADR に注記（2026-10-06 から再計測か、旧窓の打ち切りか） |
+| ADR-0086 の窓 | `docs/decision-history/0086-research-gate-before-plan.md:123-124` 「窓の間は差し込む文面・plan を頼む言い方と skip の正規表現・plan ファイルの path の集合を変えない」。窓は 2026-10-04 から 30 日 | 引き継ぎの `:123-124` は一致 | PLAN_ASK・PROTOCOL・path 集合の 3 つとも変える。窓の切り直しを ADR に注記（2026-10-06 から再計測か、旧窓の打ち切りか） |
 
 ### 2. tests/research-gate.bats — 変更要
 
@@ -47,7 +47,7 @@ marketplace 版（`~/.claude/plugins/marketplaces/claude-community/html-plan/`�
 ### 4. plan-executor-notice.sh と ADR-0057
 
 - `settings.json:171` `"matcher": "ExitPlanMode",` → `:175` `bash ~/.claude/hooks/plan-executor-notice.sh`（引き継ぎの `:171-179` は一致）。hook 本体 `hooks/plan-executor-notice.sh:51` `[[ "$tool" == "ExitPlanMode" ]] || exit 0`。plan mode を使わなければ**鳴らなくなる**（落ちるのは「実行者の決定」の想起 — 実装の Edit の前に dispatch を思い出させる唯一の hook）。
-- `docs/adr/0057-judge-tier-default-dispatch-and-plan-boundary-advisory.md:83-` の注記（2026-09-25、plan mode 廃止案）が、発火点を「mod 化した plan mode の承認イベントへ移す / rules の 1 行だけに縮退」と既に決めている（`:88-90` 付近）。本件は第 3 の事象。
+- `docs/decision-history/0057-judge-tier-default-dispatch-and-plan-boundary-advisory.md:83-` の注記（2026-09-25、plan mode 廃止案）が、発火点を「mod 化した plan mode の承認イベントへ移す / rules の 1 行だけに縮退」と既に決めている（`:88-90` 付近）。本件は第 3 の事象。
 - 選択肢: (a) html の `doc-ask` に「実行者」を置く（plan 本文に `実行者の決定` が入れば、hook の抑制 `:57-59` と同じ語を使える。Respond の貼り戻しに残る）/ (b) UserPromptSubmit で Respond 貼り戻し（`# Re:` 見出し、SKILL.md `:139` の形）を検出して advisory — 新規 hook で、payload の `.prompt` 先頭が `# Re:` で始まることに依存する（実機未確認）/ (c) ADR-0057 注記どおり rules の 1 行に縮退。judge-tier 判定（transcript 末尾の `"model"`）は (b) でも流用できる。
 
 ### 5. 公開 repo への同期
@@ -61,7 +61,7 @@ marketplace 版（`~/.claude/plugins/marketplaces/claude-community/html-plan/`�
 
 ### 6. 注記が要る箇所（Read 済み）
 
-- ADR-0085（`docs/adr/0085-plans-as-records-in-docs-plans.md`）: `:41-43` Decision 3「承認した plan は実装の最初の commit に単独で入れる（件名 `docs(plan): <slug>`）」— html でも同じ運用にできるが、承認の確定が Respond 貼り戻しになる。`:48-50` Decision 5（`docs/plans/` を同期対象、tracked の plan のみ）— 上の 5。`:59-60` Review-when「2026-10-11 に ExitPlanMode 承認数を分母に…」— plan mode を外すと分母が 0（または減少）になり、判定が成立しない。分母を「Respond 貼り戻し数」か「docs/plans の新規 plan 数」に替える注記が要る。
+- ADR-0085（`docs/decision-history/0085-plans-as-records-in-docs-plans.md`）: `:41-43` Decision 3「承認した plan は実装の最初の commit に単独で入れる（件名 `docs(plan): <slug>`）」— html でも同じ運用にできるが、承認の確定が Respond 貼り戻しになる。`:48-50` Decision 5（`docs/plans/` を同期対象、tracked の plan のみ）— 上の 5。`:59-60` Review-when「2026-10-11 に ExitPlanMode 承認数を分母に…」— plan mode を外すと分母が 0（または減少）になり、判定が成立しない。分母を「Respond 貼り戻し数」か「docs/plans の新規 plan 数」に替える注記が要る。
 - ADR-0086: `:94` Decision 5（Mermaid）、`:123-135` Review-when（窓の切り直し。上の 1 参照）、`:156-158`「純正 plan mode を使わず、通常モードで plan ファイルを書く独自 workflow」を**却下**した節 — 理由は「plan mode の承認 UI と、plan 中に本体が書き込まない性質を失う」。今回の決定はこの却下理由を、実測（plan mode は plan ファイル以外への Write を拒否する）で覆す形になる。supersede 注記を残す。`:167-168` plannotator の Open「Mermaid 入りの plan ファイルでもレビューしにくいと著者が言った」— html-plan の Respond が同じ穴を埋めるので、Open を閉じる注記。
 - ADR-0057: 上の 4。
 - `rules/common/planning.md:13-18`（`:13` 「plan mode は repo の root で起動する」、`:16-18` 「plan は report にリンクし構造を Mermaid で示す（ADR-0086）」）。`:3` の review-when コメントは「plan mode か plansDirectory の挙動が変わった時」。

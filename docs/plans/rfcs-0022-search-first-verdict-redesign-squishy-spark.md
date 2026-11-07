@@ -128,13 +128,13 @@ Step 0 の articulation（問いと制約を text で先に書く）は 1 行に
    報告は比較の材料で判断は呼び出し側）、**review-when を影の比率に置換**（走査手順を 1 段落:
    transcript の tool_use から WebSearch / 外部調査 Agent の有無と Skill(search-first) の有無を
    数える。基準値 130 / 154 = 84%、2026-09-14）、`state: accepted 2026-09-14`
-5. `docs/adr/0065-search-first-report-not-verdict.md`（adr-writer）— Decision: verdict 廃止と
+5. `docs/decision-history/0065-search-first-report-not-verdict.md`（adr-writer）— Decision: verdict 廃止と
    報告契約、6 種 + 総称句、scout 退役、残余規則は skill に置き rule には置かない、計器は影の比率。
    Review-when: 影の比率が 2 ヶ月後（2026-11）も下がらない / 報告を受けた呼び出し側が「使える
    ところ無し」で捨てる例が続く。Alternatives: (a) verdict 維持 + 学び欄追加 (b) search-first 退役
    + 残余 3 行を rule へ（常駐で不自然、rule が skill を名指ししている — 却下）(c) scout を opus
    に上げて残す（呼び出し側が雛形を無視している実測 — 却下）(d) 何もしない。index 行
-6. `docs/adr/0026` に日付つき注記は不要（search-first Step 2 = 数値スコア禁止の正本は残る）
+6. `docs/decision-history/0026` に日付つき注記は不要（search-first Step 2 = 数値スコア禁止の正本は残る）
 
 ## 手順（skill-creator を通す — rule: skills.md の命令形）
 

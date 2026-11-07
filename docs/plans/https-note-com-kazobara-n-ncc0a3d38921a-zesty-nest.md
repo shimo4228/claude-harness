@@ -68,7 +68,7 @@ commit gate（verify / secret scan / harness lint）、episode log の読み込�
 | `task-triage/SKILL.md:207-209` | 「files nothing / drops nothing alone / 計測中に起票規則を変えない」（loop 固有）だけ残し、merge / publish / rules-hooks の句を削除 |
 | `task-triage/SKILL.md:192` | 削除（boundary が持つ） |
 | `scripts/triage-tick.sh:86` | 「Do not merge, publish, or touch rules / ADR / hooks / security gates;」を削除し「file nothing and drop nothing on your own」（無人 judge 固有）と Slack one-way を残す。digest の「a merge word」を「what was merged / left」に。rules は無人 session にも自動ロードされる |
-| `docs/adr/0043` | `> **注記（2026-09-15, ADR-0067）**`: 最後のスイッチは人間から判断役へ。人間は方向決めと digest 回答。ADR-0045（Slack digest）の merge word 記述にも同じ注記 |
+| `docs/decision-history/0043` | `> **注記（2026-09-15, ADR-0067）**`: 最後のスイッチは人間から判断役へ。人間は方向決めと digest 回答。ADR-0045（Slack digest）の merge word 記述にも同じ注記 |
 | `growth-astra:15` / `growth-fable:15-16` | 「公開・評判に関わる action は草稿で止めて著者へ（境界は rule `boundary.md`）」の 1 文に統一 |
 | `x-draft` / `public-comment` / `herdr-delegate` / `codex-review` | 触らない（skill 固有の手順。境界の適用例であって定義ではない） |
 | `implementation-chain` | 触らない（dirty。dispatch 条件「rule 変更なし」は境界でなく実行者の判断条件） |
@@ -81,7 +81,7 @@ commit gate（verify / secret scan / harness lint）、episode log の読み込�
 ### 4. 付随
 
 - `rules/README.md` の表に `boundary.md` 行を足し、`debugging.md` 行を消す
-- `docs/adr/README.md` index に 0067
+- `docs/decision-history/README.md` index に 0067
 - harness-sync は別セッション（ADR-0065 と同じ）
 
 ## 実行者
@@ -91,7 +91,7 @@ prose のみ（rule / skill 参照 / tick prompt の文字列 / ADR）。impleme
 ## Verification
 
 1. `python3 scripts/hooks/harness_lint.py` green（新 rule の origin / rationale / review-when、README リンク、退役語の不在）
-2. `grep -rn "merge, publish\|merges, publishes\|merge word\|草稿で止めて" skills/ scripts/ rules/ docs/adr/README.md` — 残るのは boundary.md、各 skill の pointer 1 文、ADR 本文の履歴だけ
+2. `grep -rn "merge, publish\|merges, publishes\|merge word\|草稿で止めて" skills/ scripts/ rules/ docs/decision-history/README.md` — 残るのは boundary.md、各 skill の pointer 1 文、ADR 本文の履歴だけ
 3. `bats tests/` green（tick prompt を凍結する golden は無いことを確認済み）
 4. adr-writer の `adr_lint.py` + agent `adr-reviewer`（ADR-0067）
 5. 次の build packet 1 本で、Report に Risk 行が出ることを検収で見る

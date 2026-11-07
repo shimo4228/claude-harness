@@ -84,12 +84,12 @@ Chain 詳細は `See skill: implementation-chain` の 1 行ポインタに置換
 
 - `rules/README.md` — 2 層構造 → common 単層へ。ファイル一覧の説明文を実体に合わせる
 - `CLAUDE.md` — 「`rules/` は common + python/ の2層構造」の記述を修正
-- **`docs/adr/0018-rules-rightsize-for-claude5.md` 新設** — 記事を出典に、退役した各項目とその根拠（inward / downward のどちらか）を記録。`akc-cycle.md` から本文を減らす判断の正本をここに置く
+- **`docs/decision-history/0018-rules-rightsize-for-claude5.md` 新設** — 記事を出典に、退役した各項目とその根拠（inward / downward のどちらか）を記録。`akc-cycle.md` から本文を減らす判断の正本をここに置く
 - リンク切れ検査 — `grep -rn "rules/python" ~/.claude` で参照元を洗い、`python-patterns` へ repoint
 
 ## 変更するファイル
 
-- 新規: `skills/implementation-chain/SKILL.md`, `docs/adr/0018-rules-rightsize-for-claude5.md`
+- 新規: `skills/implementation-chain/SKILL.md`, `docs/decision-history/0018-rules-rightsize-for-claude5.md`
 - 全面改稿: `rules/common/planning.md`, `rules/common/akc-cycle.md`, `rules/README.md`
 - 部分改稿: `rules/common/{coding-style,skills,testing,patterns,agents,security,debugging,hooks,task-tracking,git-workflow}.md`, `skills/python-patterns/SKILL.md`, `skills/skill-creator/SKILL.md`, `CLAUDE.md`
 - 削除: `rules/python/` 6 ファイル（`git rm`）

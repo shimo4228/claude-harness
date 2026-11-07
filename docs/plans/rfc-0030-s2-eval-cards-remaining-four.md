@@ -29,7 +29,7 @@ Effort: low — docs のみ、形式は README が固定済み
 4 枚を `docs/evals/` に作り、`docs/evals/README.md` の index に 1 行ずつ足す（状態は各カードの `validity`）。各カードは README の
 frontmatter キーを持ち、6 見出しが順に並び、末尾に `## 欄の対応表` を置く。
 
-1. **s2 — skill-comply の測定不成立**（`s2-skill-comply-measurement-validity-<測定日>.md`）: `docs/adr/0032-skill-comply-measurement-validity.md`
+1. **s2 — skill-comply の測定不成立**（`s2-skill-comply-measurement-validity-<測定日>.md`）: `docs/decision-history/0032-skill-comply-measurement-validity.md`
    が記録する「測定が成立していなかった」事例。何を測ろうとしたか / 不成立の原因（ADR の表 A〜）/ 生レポートの所在（`.notes/skill-comply-evidence/`
    ほか。見つからなければ既知の故障に書く）/ ADR が足した「成立していたか」の記録欄。想定の状態は `不成立`
 2. **s3 — search-first の shadow baseline**（`s3-search-first-shadow-baseline-2026-09-14.md`）: `.notes/search-first-shadow-baseline-2026-09-14.md`
@@ -41,7 +41,7 @@ frontmatter キーを持ち、6 見出しが順に並び、末尾に `## 欄の�
    539（43%）、提案した skill が同 session で 30 分以内に `invoke` されたのは 28 / 539、`invoke` 122 回のうち直前の提案と一致 23、
    入力 約 18,500 tokens/行、`elapsed_ms` 中央値 約 690。計算に使った script を「生の読み値」に載せる。2026-09-28 にローカルで無効化
    した事実と理由は `rfcs/0025-jev-decision-contract-registry.md` の Status にある。想定の状態は `単発`
-4. **s5 — Opus build 層 effort 試行の対照崩れ**（`s5-opus-effort-trial-control-broken-2026-08-29.md`）: `docs/adr/0081-per-packet-effort-and-bounce-classification.md`
+4. **s5 — Opus build 層 effort 試行の対照崩れ**（`s5-opus-effort-trial-control-broken-2026-08-29.md`）: `docs/decision-history/0081-per-packet-effort-and-bounce-classification.md`
    と ADR-0075 が記録する試行（2026-08-29〜09-26）。意図した対照（cloud = high / local = medium）と、2026-09-26 の probe で cloud の
    実 effort が medium だった（作成時の `--effort` が転送されない）ために対照が崩れた経緯。`logs/cloud-dispatch.jsonl`・
    `logs/effort-outcomes.jsonl` の件数。想定の状態は `不成立`

@@ -4,7 +4,7 @@ Language: [English](README.md) | 日本語
 
 shimo4228 が日常的に使っている Claude Code ハーネス (skills / agents / rules / hooks) の公開版です。ハーネスとは、著者のマシンで Claude Code の動きを決めている `~/.claude/` 配下のファイル群のことです。skill・subagent・rule・hook を 1 つずつ自分の環境へ持ち帰りたい Claude Code のユーザーと、実際に動いているエージェントのハーネスがどう組まれているかを、各部品の背後にある日付付きの判断ごと調べたい開発者に向けています。
 
-部品のフォルダ（`skills/`、`agents/`、`rules/`、`hooks/`）と判断の記録（`docs/adr/`、`rfcs/`、`docs/plans/`、`docs/evals/`）は、著者の実働環境 `~/.claude/` から [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) で一方向に書き出したもので、このスクリプトは secret scan をかけたうえで同期のたびにそれらのフォルダを上書きします。skills / agents / rules は origin タグが著者自身のものを示すものだけを公開し（[origin タグ](#origin-タグ)）、hooks は著者がこのマシンの外でも再利用できると判断したものだけを公開しています。ハーネスを扱った記事と関連 repo は [著者のほかの仕事](#著者のほかの仕事) にあります。
+部品のフォルダ（`skills/`、`agents/`、`rules/`、`hooks/`）と判断の記録（`docs/decision-history/`、`rfcs/`、`docs/plans/`、`docs/evals/`）は、著者の実働環境 `~/.claude/` から [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh) で一方向に書き出したもので、このスクリプトは secret scan をかけたうえで同期のたびにそれらのフォルダを上書きします。skills / agents / rules は origin タグが著者自身のものを示すものだけを公開し（[origin タグ](#origin-タグ)）、hooks は著者がこのマシンの外でも再利用できると判断したものだけを公開しています。ハーネスを扱った記事と関連 repo は [著者のほかの仕事](#著者のほかの仕事) にあります。
 
 ## 使い方
 
@@ -49,7 +49,7 @@ cp -r ~/.claude-harness/skills/search-first ~/.claude/skills/
 
 ### 設計判断 (ADR) と提案 (RFC)
 
-`docs/adr/` は部品の「なぜ」です。採用・退役・方針転換を、失敗も含めて日付付きの Architecture Decision Record に残しています（[ADR index](docs/adr/README.md)）。`rfcs/` は公開のタスク・提案台帳で、閉じたエントリも理由ごと残します（[ADR-0049](docs/adr/0049-unify-task-ledger-into-public-rfcs.md)、[index](rfcs/README.md)）。`docs/plans/` は承認済みの plan（plan mode の計画）です（[ADR-0085](docs/adr/0085-plans-as-records-in-docs-plans.md)）。`docs/evals/` は ハーネスが自分を測る計器の Eval カードです（[RFC-0030](rfcs/0030-eval-cards-for-ready-instruments.md)、[index](docs/evals/README.md)）。ADR、`rfcs/`、`docs/plans/`、`docs/evals/` は日本語で書いています。それぞれの運用は llms-full.txt（英語）の同名の節にあります。
+`docs/decision-history/` は部品の「なぜ」です。採用・退役・方針転換を、失敗も含めて日付付きの過去形の記録（判断の経緯）に残しています（[index](docs/decision-history/README.md)）。記録は書かれた日の判断で、現行の設計は部品そのものが持ちます。`rfcs/` は公開のタスク・提案台帳で、閉じたエントリも理由ごと残します（[ADR-0049](docs/decision-history/0049-unify-task-ledger-into-public-rfcs.md)、[index](rfcs/README.md)）。`docs/plans/` は承認済みの plan（plan mode の計画）です（[ADR-0085](docs/decision-history/0085-plans-as-records-in-docs-plans.md)）。`docs/evals/` は ハーネスが自分を測る計器の Eval カードです（[RFC-0030](rfcs/0030-eval-cards-for-ready-instruments.md)、[index](docs/evals/README.md)）。判断の経緯、`rfcs/`、`docs/plans/`、`docs/evals/` は日本語で書いています。それぞれの運用は llms-full.txt（英語）の同名の節にあります。
 
 ## origin タグ
 

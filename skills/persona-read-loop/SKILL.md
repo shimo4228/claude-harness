@@ -46,7 +46,11 @@ their time or budget. Make them plausible real readers, not straw men. Give each
 preset's, or one of your own) and save it as `<work>/persona-<ID>.txt` in the form "You are <description>. Answer honestly as that person." —
 it becomes the reader's system prompt.
 
-Keep the same three for every round: changing readers makes rounds incomparable.
+Give each reader a model by how deeply the role reads: the preset's `model` column, or for a role
+the preset does not list, a light model for a skimming reader and a strong one for a reader who
+judges how far the author thought. Note which reader, if any, runs on the writer's model.
+
+Keep the same three, on the same models, for every round: changing them makes rounds incomparable.
 
 ### 2. Freeze round r<N>
 
@@ -65,10 +69,10 @@ preset may add handling on top of this rule.
 
 ### 3. Read
 
-Once per target, before the first round, check the isolation:
+Once per target, before the first round, check the isolation once for each distinct reader model:
 
 ```bash
-"${CLAUDE_SKILL_DIR}/scripts/read.sh" --probe
+"${CLAUDE_SKILL_DIR}/scripts/read.sh" --probe [model]
 ```
 
 Exit 0 (tools 0, MCP servers 0, user skills 0, context `NONE`) → read. Any other exit → stop and
@@ -77,17 +81,18 @@ hand the output to the author; CLI updates can change what reaches the reader.
 Save the preset's prompt as `<work>/prompt.md`, then run the three readers in parallel:
 
 ```bash
-for id in <ID1> <ID2> <ID3>; do
+for pair in <ID1>:<model1> <ID2>:<model2> <ID3>:<model3>; do
+  id=${pair%%:*}; model=${pair#*:}
   "${CLAUDE_SKILL_DIR}/scripts/read.sh" "<work>/persona-$id.txt" "<work>/prompt.md" \
-    "<work>/r<N>.reader.md" > "<work>/r<N>-$id.json" &
+    "<work>/r<N>.reader.md" "$model" > "<work>/r<N>-$id.json" &
 done; wait
 ```
 
 Each reader is a new process with no tools, none of the author's settings, memory or skills, and
 none of the writing context (brief, thesis, intended reading). A reader who already holds the
-answer cannot show that it failed to get across. The reader model defaults to sonnet
-(`PERSONA_READ_MODEL`) so that it differs from the writer; self-preference between Claude models
-remains, so revisions rest on what readers missed or misread, not on their praise.
+answer cannot show that it failed to get across. Revisions rest on what readers missed or misread,
+not on their praise: self-preference between Claude models remains, strongest for a reader on the
+writer's model. Without a model argument, `read.sh` uses `PERSONA_READ_MODEL`, else sonnet.
 `PERSONA_READ_CMD` swaps the CLI; isolation is verified for Claude Code only.
 
 If an answer has a code fence or prose around the JSON, strip it. If it still does not parse, run
@@ -95,7 +100,9 @@ that reader once more.
 
 ### 4. Sort the reasons
 
-Read the answers as the preset says, then put each reason in one of two bins:
+Read the answers as the preset says, then put each reason in one of two bins. When the preset
+makes only the judgment match a ground for revision, take reasons from shift and missing readers
+only:
 
 - **Fixable in the text** — where readers stopped, order, the entry, where a decision sits, a
   missing one-sentence reason, a coined term, no example of the output. You fix these. You change
@@ -144,12 +151,13 @@ read-through decides.
 ## Records
 
 Keep in `<work>`: both copies of each round, each reader's JSON, the drift outputs, and `log.md`
-with one section per round (the sorted reasons with quoted reader sentences, the preset's matching
-result, and the stop reason).
+with the writer's model and each reader's model at the top, then one section per round (the sorted
+reasons with quoted reader sentences, the preset's matching result, and the stop reason).
 
 ## Limits
 
-- The three readers are one model, so they are not independent samples and can converge
+- The three readers are one model family (Claude), so they are not independent samples and can
+  converge
 - Whether simulated readers stall where real readers stall has not been measured (no study found
   as-of 2026-10-18)
 - The isolation rests on observed CLI behavior (`--setting-sources ""` is undocumented); the probe

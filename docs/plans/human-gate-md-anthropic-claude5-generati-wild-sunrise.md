@@ -103,7 +103,7 @@ drift = 静的コピーが古い → 更新か削除。
 
 1. `rules/common/human-gate.md` を承認版に書き換え（global 版のみ、Change Target 規約）。
    ファイル先頭の `rationale:` / `review-when:` メタデータコメントは保持・必要なら更新 (ADR-0021)
-2. 移設する根拠 prose があれば `docs/adr/0019-human-gate-layer.md` に追記
+2. 移設する根拠 prose があれば `docs/decision-history/0019-human-gate-layer.md` に追記
    （ADR-0018 の「削減分は消さず吸収」パターン）
 3. 被参照リンクの整合を確認
 4. コミット: 未コミットの「1 作業 1 ゲート」節 + 今回の最適化を **1 コミット**に束ねる。
@@ -113,7 +113,7 @@ drift = 静的コピーが古い → 更新か削除。
 ## Verification
 
 - `wc -w rules/common/human-gate.md` と strip 後語数の before/after
-- `grep -rn "human-gate" rules/ docs/adr/` でリンク切れなし
+- `grep -rn "human-gate" rules/ docs/decision-history/` でリンク切れなし
 - `git -C ~/.claude status` で human-gate.md（+ ADR-0019 追記時は同ファイル）のみが
   コミット対象になっていること
 - harness_lint 相当のメタデータ検査（`rationale:` / `review-when:` コメントの存在）

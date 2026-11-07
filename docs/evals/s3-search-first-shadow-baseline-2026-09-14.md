@@ -18,7 +18,7 @@ log_updates: []
 # s3 — search-first の影の比率 基準値（2026-09-14）
 
 外部調査をしたセッションのうち skill `search-first` を通らなかった割合（影の比率）を、述語を固定して 1 回測った基準値の記録。
-値は 133 / 142 = 93.7%。この値は [ADR-0066](../adr/0066-search-first-report-contract-and-scout-retirement.md) Decision 6 と
+値は 133 / 142 = 93.7%。この値は [ADR-0066](../decision-history/0066-search-first-report-contract-and-scout-retirement.md) Decision 6 と
 [RFC-0022](../../rfcs/0022-search-first-verdict-redesign.md) の再測定（2026-11-01 以降）が比べる基準になる。
 
 ## 設計

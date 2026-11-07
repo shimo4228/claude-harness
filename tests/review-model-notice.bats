@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# review-model-notice.sh — judge-tier (Fable) セッションでの review 直呼びに advisory を出す
+# review-model-notice.sh — Fable の session での review 直呼びに advisory を出す
 
 # hook 本体は BATS_TEST_DIRNAME から引く — 理由は verify-toolchain-trust.bats の
 # ヘッダに 1 回だけ書いてある（worktree ごとに内容が違う検査対象を、$HOME 固定だと

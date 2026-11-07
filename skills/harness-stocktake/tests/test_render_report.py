@@ -19,6 +19,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from scripts import render_report
 
 SKILL = Path(__file__).resolve().parents[1] / "SKILL.md"
@@ -185,11 +187,21 @@ def test_empty_item_lists_still_render(tmp_path: Path) -> None:
     assert "| **Total** | **0** |" in report
 
 
-def test_native_note_matches_artifact_template() -> None:
-    body = render_report.MESSAGES["ja"]["native"].split("\n\n", 1)[1].strip()
-    html = re.sub(r"`([^`]+)`", r"<code>\1</code>", body)
+@pytest.mark.parametrize("lang", render_report.LANGS)
+def test_artifact_template_matches_report_text(lang: str) -> None:
+    """The page's L[lang] holds the same native note and group labels as report.md in that language."""
     template = (SKILL.parent / "templates" / "report.html").read_text(encoding="utf-8")
-    assert f"<p>{html}</p>" in template
+    block = re.search(rf"\n  {lang}: \{{\n(.*?)\n  \}},", template, re.S)
+    assert block, f"L.{lang} not found"
+    heading, body = render_report.MESSAGES[lang]["native"].split("\n\n", 1)
+    assert f'native_h: "{heading.removeprefix("## ")}"' in block[1]
+    assert f'native: "{body.strip()}"' in block[1]
+    labels = [g for g in render_report.GROUPS if g != "その他"]
+    if lang == "en":
+        labels = [render_report.GROUP_LABEL_EN[g] for g in labels]
+    keys = ["retire", "merge", "improve", "keep"]
+    groups = ", ".join(f'{k}: "{v}"' for k, v in zip(keys, labels, strict=True))
+    assert "groups: { " + groups + " }" in block[1]
 
 
 def test_collision_on_folded_item_moves_to_its_group(tmp_path: Path) -> None:

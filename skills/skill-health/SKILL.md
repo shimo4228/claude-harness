@@ -51,7 +51,7 @@ three; `skill-health` adds the missing structural one and federates the rest:
 |---|---|---|
 | **Compatibility** (refs resolve) | **`skill-health`** ← here | the deterministic scan (Phase 2) |
 | **Utility** (frequency, value) | `skill-stocktake` (holistic Keep/Improve/Retire/Merge) | read its signal; flag over-specialized (LLM) |
-| **Risk** (security, side effects) | `/claude-security` plugin | delegate; prompt to run if stale |
+| **Risk** (security, side effects) | `/claude-security` plugin (disabled by default; `/plugin enable` it for a scan) | delegate; prompt to run if stale |
 | **Validation** (tests/consistency) | `skill-comply` / `skill-writer`, when the setup has them | note which skills lack a validator |
 
 ## Phase 1 — Inventory
@@ -138,7 +138,8 @@ health view — **labelling each value's source**:
   whether an oversized body is bloat or load-bearing belongs to skill-stocktake's
   Hygiene question, not here.
 - **Risk** — point to the latest `CLAUDE-SECURITY-*/CLAUDE-SECURITY-RESULTS.md`
-  if present; if none/stale, recommend running `/claude-security`. Do not
+  if present; if none/stale, recommend running `/claude-security` (the plugin is disabled
+  until enabled for the scan — ADR-0100). Do not
   re-scan for vulnerabilities here.
 - **Validation** — note (**missing validators** debt) which scanned skills have
   no `skill-comply` spec and no record of passing `skill-writer`'s gates — the

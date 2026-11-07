@@ -253,7 +253,7 @@ contract's Phases 2–5 with its own items. Each item carries, by verdict:
   deleted or reduced. Application creates the skill through skill-writer's report path
 - **Dissolve / Retire**: `reason` = the absorption evidence or defect and what covers the need
   instead; `impact` = skills and rules that name this agent (grep the harness) and the public
-  repo copy. Application records a Dissolve's why via `adr-writer`
+  repo copy. Application records a Dissolve's why via `decision-history`
 - **Keep**: `reason` only
 
 Where skill `harness-stocktake` is not installed, show the same items as one table ordered
@@ -311,7 +311,7 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
   collects runtime-layer evidence (conflict / redundancy) and `/claude-api prompt-audit`
   findings, and hands the agents slice to this skill as Stage 2 evidence.
 - `skill-writer` (when installed) — handoff target for the skill-creation half of Demote.
-- `adr-writer` (when installed) — records the why of a Dissolve.
+- `decision-history` (when installed) — records the why of a Dissolve.
 - `harness-boundary` — design-time lens (layer / portability / obsolescence) for proposed
   mechanisms; applied to an installed agent, its Delete / Move are Stage 2 evidence only.
 - Usage measurement: a usage-logging hook writing `<harness>/metrics/agent-usage.jsonl`, when

@@ -43,7 +43,7 @@ Look for:
    content exists (measurement: ADR-0047).
 
    Global vs project placement (once a destination type is chosen): the source of truth is
-   [`docs/adr/0025-global-vs-project-asset-placement.md`](https://github.com/shimo4228/claude-harness/blob/main/docs/adr/0025-global-vs-project-asset-placement.md).
+   [`docs/decision-history/0025-global-vs-project-asset-placement.md`](https://github.com/shimo4228/claude-harness/blob/main/docs/decision-history/0025-global-vs-project-asset-placement.md).
 
 4. Draft the candidate as a scratch note (the final skill shape belongs to `skill-writer`;
    `overlap_candidates.py` reads name / description / Problem / Solution / When to Use):
@@ -76,12 +76,11 @@ description: "Description in 130 characters or less"
 
    ```bash
    uv run --frozen --project "${CLAUDE_SKILL_DIR}" \
-          --directory "${CLAUDE_SKILL_DIR}" \
-          python scripts/overlap_candidates.py \
-          --draft /path/to/scratch/learn-eval-draft.md --project "$PWD"
+          python "${CLAUDE_SKILL_DIR}/scripts/overlap_candidates.py" \
+          --draft /path/to/scratch/learn-eval-draft.md
    ```
 
-   Both arguments are load-bearing:
+   Two points in this command are load-bearing:
 
    - **Write the draft to a file; never inline it into the command.** A
      heredoc terminates on a line that matches its delimiter, and a draft is
@@ -90,11 +89,11 @@ description: "Description in 130 characters or less"
      `rules/common/security.md` treats a SKILL.md as a control program for
      exactly this reason: a step that builds shell source out of untrusted text
      is an injection path, not a formatting choice.
-   - **`--project "$PWD"` is required whenever `--directory` is.** `--directory`
-     makes the skill directory the process cwd, so the script's default
-     `--project .` would resolve to the skill's own directory and silently drop
-     the invoking repo's `MEMORY.md`. `$PWD` expands before uv changes
-     directory, so it still names the repo you are working in.
+   - **Run it from the repo you are working in, and name the script by its full
+     path.** `--project` only picks the uv environment; the process cwd stays the
+     invoking repo, so the script's default `--project .` finds that repo's
+     `MEMORY.md`. Adding uv's `--directory` would move the cwd into the skill
+     directory and silently drop it.
 
    Evidence mode: JSON on stdout, exit 0 however many candidates (exit 2 only when
    an input is unreadable). It enumerates; it never says "this is a duplicate".

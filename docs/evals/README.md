@@ -2,7 +2,7 @@
 
 harness の計器（ablation・shadow baseline・判定ログ等）を 1 回測った記録を、1 測定 1 枚のカードで公開する置き場。
 カードは設計・環境・生の読み値・測らなかったもの・既知の故障・有効性の状態を必ず持ち、読み値だけが独り歩きしないようにする。
-提案と作業の台帳は [rfcs/](../../rfcs/README.md)、決定は [docs/adr/](../adr/README.md) が持つ。ここは測定の記録だけを持つ。
+提案と作業の台帳は [rfcs/](../../rfcs/README.md)、決定は [docs/decision-history/](../decision-history/README.md) が持つ。ここは測定の記録だけを持つ。
 
 ## カードの形
 

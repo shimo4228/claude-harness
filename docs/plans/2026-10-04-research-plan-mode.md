@@ -3,7 +3,7 @@ kind: external
 
 as-of 2026-10-04。general-purpose subagent 4 本を並列（角度: 公式仕様 / Claude Code 向け先行実装 / 他エージェントの
 plan・custom mode / 深い調査と図付き plan の手法）。各 20 calls 前後。WebFetch は要約を返すので、「全文」は要約経由の
-全文を指す。plan: [../research-plan-mode.md](../research-plan-mode.md)、ADR: [ADR-0086](../../adr/0086-research-gate-before-plan.md)。
+全文を指す。plan: [../research-plan-mode.md](../research-plan-mode.md)、ADR: [ADR-0086](../../decision-history/0086-research-gate-before-plan.md)。
 
 ## Scope searched
 

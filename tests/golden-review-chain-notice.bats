@@ -6,6 +6,7 @@
 #
 # 再生成:
 #   printf '%s' '{"tool_input":{"command":"git commit -m x"}}' | bash hooks/review-chain-notice.sh > tests/golden/review-chain-notice/commit.json
+#   printf '%s' '{"agent_id":"a1","tool_input":{"command":"git commit -m x"}}' | bash hooks/review-chain-notice.sh > tests/golden/review-chain-notice/commit-subagent.json
 #
 # Run: bats ~/.claude/tests/golden-review-chain-notice.bats
 
@@ -16,4 +17,10 @@ GOLDEN="${BATS_TEST_DIRNAME}/golden/review-chain-notice"
   run bash -c "printf '%s' '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK'"
   [ "$status" -eq 0 ]
   printf '%s\n' "$output" | diff - "$GOLDEN/commit.json"
+}
+
+@test "golden: git commit in a subagent -> parent-runs-Review envelope" {
+  run bash -c "printf '%s' '{\"agent_id\":\"a1\",\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK'"
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" | diff - "$GOLDEN/commit-subagent.json"
 }

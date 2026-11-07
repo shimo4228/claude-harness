@@ -4,7 +4,7 @@ Language: English | [日本語](README.ja.md)
 
 Public snapshot of the Claude Code harness (skills / agents / rules / hooks) that shimo4228 uses day-to-day: the files under `~/.claude/` that shape how Claude Code works on the author's machine. It is for Claude Code users who want to lift one skill, subagent, rule or hook into their own setup, and for developers studying how a working agent harness is put together, including the dated decisions behind each piece (written in Japanese).
 
-The component folders (`skills/`, `agents/`, `rules/`, `hooks/`) and the decision records (`docs/adr/`, `rfcs/`, `docs/plans/`, `docs/evals/`) are exported one way from the author's live `~/.claude/` by [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh), which runs a secret scan and overwrites those folders on every sync. Skills, agents and rules are published only when their origin tag marks them as the author's own ([Origin tags](#origin-tags)); hooks only when the author judged them reusable outside this machine. Articles about the harness and related repos are under [More from the author](#more-from-the-author).
+The component folders (`skills/`, `agents/`, `rules/`, `hooks/`) and the decision records (`docs/decision-history/`, `rfcs/`, `docs/plans/`, `docs/evals/`) are exported one way from the author's live `~/.claude/` by [`scripts/sync-from-local.sh`](scripts/sync-from-local.sh), which runs a secret scan and overwrites those folders on every sync. Skills, agents and rules are published only when their origin tag marks them as the author's own ([Origin tags](#origin-tags)); hooks only when the author judged them reusable outside this machine. Articles about the harness and related repos are under [More from the author](#more-from-the-author).
 
 ## Usage
 
@@ -49,7 +49,7 @@ The repo ships skills (`skills/`), agents (`agents/`) and rules (`rules/common/`
 
 ### Design decisions (ADRs) and proposals (RFCs)
 
-`docs/adr/` is the *why* behind the components: dated Architecture Decision Records of each adoption, retirement and reversal, failures included ([ADR index](docs/adr/README.md)). `rfcs/` is the public task-and-proposal ledger, closed entries kept with their reasons ([ADR-0049](docs/adr/0049-unify-task-ledger-into-public-rfcs.md), [index](rfcs/README.md)); `docs/plans/` holds approved plan-mode plans ([ADR-0085](docs/adr/0085-plans-as-records-in-docs-plans.md)); `docs/evals/` holds eval cards for the harness's own measuring instruments ([RFC-0030](rfcs/0030-eval-cards-for-ready-instruments.md), [index](docs/evals/README.md)). The ADRs and these three folders are written in Japanese; llms-full.txt says how each is kept.
+`docs/decision-history/` is the *why* behind the components: dated, past-tense entries for each adoption, retirement and reversal, failures included ([index](docs/decision-history/README.md)). An entry records what was decided on that day; the current design is the components themselves. `rfcs/` is the public task-and-proposal ledger, closed entries kept with their reasons ([ADR-0049](docs/decision-history/0049-unify-task-ledger-into-public-rfcs.md), [index](rfcs/README.md)); `docs/plans/` holds approved plan-mode plans ([ADR-0085](docs/decision-history/0085-plans-as-records-in-docs-plans.md)); `docs/evals/` holds eval cards for the harness's own measuring instruments ([RFC-0030](rfcs/0030-eval-cards-for-ready-instruments.md), [index](docs/evals/README.md)). The entries and these three folders are written in Japanese; llms-full.txt says how each is kept.
 
 ## Origin tags
 

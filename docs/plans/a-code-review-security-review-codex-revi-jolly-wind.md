@@ -95,7 +95,7 @@ control plane**（本文提示が要る区分なので、変わった本文は�
 - Stop イベント + 変更なし → 無音
 - Stop イベント + `.py` 変更 → code 区分のメッセージが出る
 - Stop イベント + `hooks/` 変更 → behavior-shaping 区分のメッセージが出る
-- Stop イベント + `docs/adr/` 変更 → ADR 区分のメッセージが出る
+- Stop イベント + `docs/decision-history/` 変更 → ADR 区分のメッセージが出る
 - Stop イベントの出力の `hookEventName` が `"Stop"` である
 - Stop イベント + git 管理外の cwd → 無音
 

@@ -33,7 +33,7 @@ security-guidance プラグイン評価を併記。
 
 ## Phase 2: ADR-0019 起票（/adr-writer skill 経由）
 
-`docs/adr/0019-*.md`（次番号 0019 確認済み・欠番なし）+ README.md index に 1 行追加。
+`docs/decision-history/0019-*.md`（次番号 0019 確認済み・欠番なし）+ README.md index に 1 行追加。
 
 決定パケットの要点:
 - **Decision**: `security-scan` を完全削除（ADR-0011 の Keep を override）。

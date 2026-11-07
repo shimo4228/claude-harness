@@ -2,11 +2,11 @@
 
 ## Context
 
-前セッションで docs/adr/ 37 本を claude-harness へ公開した結果、**参照の空白**が生まれた。
+前セッションで docs/decision-history/ 37 本を claude-harness へ公開した結果、**参照の空白**が生まれた。
 公開側の以下 7 ドキュメントが hook のファイル名と内部挙動を名指しで論じているのに、
 コード実体が公開 repo に存在しない:
 
-- `docs/adr/0027` / `0028` / `0033` / `0034` / `0035`
+- `docs/decision-history/0027` / `0028` / `0033` / `0034` / `0035`
 - `rules/common/planning.md`（`hooks/review-chain-notice.sh` を名指し）
 - `skills/verify-bootstrap/SKILL.md`（`.claude/verify.sh` 契約の対向）
 
@@ -89,7 +89,7 @@ README テーブル再生成（skills/agents/rules を glob）には一切影響
 ### 2. `docs/hooks.md` を新規作成（install 手順の正本）
 
 **`hooks/README.md` には置かない** — `hooks/` は wholesale-replace される subtree なので、
-手書きの README は毎回 sync で消える。`docs/adr/` の隣に置く。内容:
+手書きの README は毎回 sync で消える。`docs/decision-history/` の隣に置く。内容:
 
 - 各 hook の発火条件・ブロック条件・bypass 環境変数の表
 - `settings.json` へ貼る `hooks` JSON 断片（curated 5 本ぶんの PreToolUse entry。
@@ -106,7 +106,7 @@ README テーブル再生成（skills/agents/rules を glob）には一切影響
 **外側**に手書きで置く（sync script は hook テーブルを生成しない）。3〜4 行 +
 `docs/hooks.md` へのリンク。`## Usage` の Full install にも hooks のコピー行を追記する。
 
-### 4. ADR-0038 を執筆（`~/.claude/docs/adr/0038-*.md`）
+### 4. ADR-0038 を執筆（`~/.claude/docs/decision-history/0038-*.md`）
 
 skill: `adr-writer` 経由。骨子:
 
@@ -120,7 +120,7 @@ skill: `adr-writer` 経由。骨子:
   verify・bandit・ruff-format は bats 未整備 / 公開コードが非公開 rule（`security.md`）と
   `.notes/` を参照する dangling reference が残る / allowlist は hook 追加時のメンテ対象
 
-`docs/adr/README.md` の索引にも 0038 を追加する。
+`docs/decision-history/README.md` の索引にも 0038 を追加する。
 
 ### 5. 公開前レビュー
 
@@ -137,8 +137,8 @@ push は `dangerouslyDisableSandbox` 必須。
 ## 変更するファイル
 
 **`~/.claude`（正本）**
-- `docs/adr/0038-publish-curated-commit-hooks.md`（新規）
-- `docs/adr/README.md`（索引に 1 行）
+- `docs/decision-history/0038-publish-curated-commit-hooks.md`（新規）
+- `docs/decision-history/README.md`（索引に 1 行）
 
 **`claude-harness`（公開 repo。sync script と手書き doc は直接編集）**
 - `scripts/sync-from-local.sh`（`SUBTREES` 拡張 + `HOOK_ALLOWLIST` staging ループ）

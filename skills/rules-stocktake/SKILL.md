@@ -184,7 +184,7 @@ shows the exact edit, not a summary. Each item carries, by verdict:
 - **Dissolve / Retire**: `reason` = the absorption evidence or defect and what covers the need
   instead (Dissolve: the named harness feature; Retire: the replacement rule/skill); `impact` =
   other rules referencing it and the public repo copy. Application records a Dissolve's why via
-  `adr-writer`
+  `decision-history`
 - **Keep**: `reason` only
 
 Where skill `harness-stocktake` is not installed, show the same items as one table ordered

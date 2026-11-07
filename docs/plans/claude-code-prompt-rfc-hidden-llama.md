@@ -1,6 +1,6 @@
 # RFC 導入の適否評価 — ~/.claude harness
 
-調査日: 2026-08-24。現物（TASKS.md / docs/adr/ 47 件 / task-stocktake / task-triage / adr-writer / memory）を直接読んで判断。ファイル変更なし。
+調査日: 2026-08-24。現物（TASKS.md / docs/decision-history/ 47 件 / task-stocktake / task-triage / adr-writer / memory）を直接読んで判断。ファイル変更なし。
 
 ## 1. Current State
 
@@ -15,7 +15,7 @@
   - 観察の決着 → `done`（読みが出た）vs `retired`（観察対象が消えた）の使い分け規律あり（task-stocktake:122-126）
 - **blocked 3 行は事実上のミニ RFC**: 仮説・証拠・tripwire・再開条件・照合先を 1 行に持ち、launchd の無人 triage cycle（ADR-0045）が照合先を機械照合して日付つき照合ログを追記している（TASKS.md:14-16 に「照合 2026-08-19 / 2026-08-22 … 未発火」が現に 2 世代分）
 
-**ADR**（`docs/adr/`、47 件）:
+**ADR**（`docs/decision-history/`、47 件）:
 
 - Status 分布: accepted 43 / superseded 4（supersede 事象は ADR-0035 の 1 回のみ）
 - **ADR-0044（2026-08-19 — 5 日前）が RFC の中核機能を ADR 内に実装済み**:

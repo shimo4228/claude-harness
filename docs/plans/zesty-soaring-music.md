@@ -148,9 +148,9 @@ Tier 1-3 の後、残る足場を畳む。各ファイルの最重度 1 件の�
 
 ## 経緯の退避先
 
-`~/.claude/docs/adr/0058-writing-harness-scaffold-dissolution.md` を新設（`adr-writer` skill 経由）。畳んだ日付つき経緯（2026-08-20 語りかけ指摘 / 2026-08-27 内容 GO / 2026-07 tech-idea 分岐廃止 / 2026-07-25 F20 / CA 2026-08-20 / 2026-08-19 棚卸し等）と、操作規則・`Review-when` を記録する。
+`~/.claude/docs/decision-history/0058-writing-harness-scaffold-dissolution.md` を新設（`adr-writer` skill 経由）。畳んだ日付つき経緯（2026-08-20 語りかけ指摘 / 2026-08-27 内容 GO / 2026-07 tech-idea 分岐廃止 / 2026-07-25 F20 / CA 2026-08-20 / 2026-08-19 棚卸し等）と、操作規則・`Review-when` を記録する。
 
-注意: `docs/adr/` に既に **0057 が 2 本ある**（`0057-judge-tier-…` と `0057-verify-precommit-…`）。0058 を使い、衝突自体は本 pass のスコープ外として報告のみ。
+注意: `docs/decision-history/` に既に **0057 が 2 本ある**（`0057-judge-tier-…` と `0057-verify-precommit-…`）。0058 を使い、衝突自体は本 pass のスコープ外として報告のみ。
 
 `readme-judge-checklist.md` には既に「改定履歴」節があるので、readme-writer 由来の日付はそちらが受け皿。
 

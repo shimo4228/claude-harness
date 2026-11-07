@@ -7,7 +7,7 @@ frontmatter が唯一の正本**。
 起票の手順と規約（足切り・採番・様式・公開規約）の正本は
 [skill: rfc-writer](../skills/rfc-writer/SKILL.md)、状態語彙は
 [skill: task-stocktake](../skills/task-stocktake/SKILL.md)、判断は
-[ADR-0049](../docs/adr/0049-unify-task-ledger-into-public-rfcs.md)。規約本文をこの
+[ADR-0049](../docs/decision-history/0049-unify-task-ledger-into-public-rfcs.md)。規約本文をこの
 README には書かない（複製は drift する）。
 
 | # | Title |
