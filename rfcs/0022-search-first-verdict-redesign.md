@@ -1,5 +1,5 @@
 ---
-state: accepted 2026-11-08
+state: done 2026-11-08
 review-when: "影の比率（直近 60 日の transcript で、WebSearch か外部調査 subagent を使ったセッションのうち search-first を通らなかった割合）を本文 timestamp の窓で測った新基準（`.notes/search-first-shadow-baseline-2026-11-08.md`、旧基準 2026-09-14 の 133 / 142 = 93.7% は mtime 窓で、2026-10-30 の mtime 一斉更新以後は再現できない）で、2026-09-14 の時点より下がっていなければ「発火しない原因は trigger surface」の仮説が崩れたとして本エントリを再読する"
 ---
 ## Summary
@@ -83,7 +83,9 @@ triage 2026-11-08（続き）: 再測定 S1 を merge（ab1368e、読みメモ `
 
 triage 2026-11-08（続き 2）: 著者の決定 — 本文 timestamp で窓を切る新基準を立てる。測定 S2 を dispatch（claim 済み）。
 
-triage 2026-11-08（続き 3）: 新基準 S2 を merge（`.notes/search-first-shadow-baseline-2026-11-08.md`、efb84f9）。本文 timestamp の窓で (C) 旧基準の時点 2026-09-14 = 122 / 130 = 0.938（旧基準 0.937 をほぼ再現）、(D) 記録 0102 の前 2026-11-07 = 99 / 131 = 0.756、(E) 実行時 = 98 / 130 = 0.754。(C)(D) の窓は 6.99 日重なる（packet の誤り、分母 7 本、すべて両方で影）— 除くと (D) 92 / 124 = 0.742。狭い定義の meta を除くと (C) 0.937 / (D) 0.775。影の比率は 2026-09-14 より下がったので review-when の再読条件は成立せず、「発火しない原因は trigger surface」の仮説は残る。残作業（再測定）は済んだ — done にするかを著者に確認中。
+triage 2026-11-08（続き 3）: 新基準 S2 を merge（`.notes/search-first-shadow-baseline-2026-11-08.md`、efb84f9）。本文 timestamp の窓で (C) 旧基準の時点 2026-09-14 = 122 / 130 = 0.938（旧基準 0.937 をほぼ再現）、(D) 記録 0102 の前 2026-11-07 = 99 / 131 = 0.756、(E) 実行時 = 98 / 130 = 0.754。(C)(D) の窓は 6.99 日重なる（packet の誤り、分母 7 本、すべて両方で影）— 除くと (D) 92 / 124 = 0.742。狭い定義の meta を除くと (C) 0.937 / (D) 0.775。影の比率は 2026-09-14 より下がったので review-when の再読条件は成立せず、「発火しない原因は trigger surface」の仮説は残る。残作業（再測定）は済んだ。
+
+**2026-11-08 done** — 著者の確認（triage session）。再測定は新基準（本文 timestamp の窓）で 0.938 → 0.756 と下がり、review-when の再読条件は成立しなかった。
 
 ## Next action
 

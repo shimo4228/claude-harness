@@ -46,9 +46,10 @@ their time or budget. Make them plausible real readers, not straw men. Give each
 preset's, or one of your own) and save it as `<work>/persona-<ID>.txt` in the form "You are <description>. Answer honestly as that person." —
 it becomes the reader's system prompt.
 
-Give each reader a model by how deeply the role reads: the preset's `model` column, or for a role
-the preset does not list, a light model for a skimming reader and a strong one for a reader who
-judges how far the author thought. Note which reader, if any, runs on the writer's model.
+Give each reader a model by how deeply the role reads (the preset's `depth` column, or your own
+reading of a role the preset does not list): a light model for a skimming reader, a middle one for
+a standard read, and a strong one for a reader who judges how far the author thought. Note which
+reader, if any, runs on the writer's model.
 
 Keep the same three, on the same models, for every round: changing them makes rounds incomparable.
 
@@ -92,7 +93,8 @@ Each reader is a new process with no tools, none of the author's settings, memor
 none of the writing context (brief, thesis, intended reading). A reader who already holds the
 answer cannot show that it failed to get across. Revisions rest on what readers missed or misread,
 not on their praise: self-preference between Claude models remains, strongest for a reader on the
-writer's model. Without a model argument, `read.sh` uses `PERSONA_READ_MODEL`, else sonnet.
+writer's model. Without a model argument, `read.sh` uses `PERSONA_READ_MODEL`, else the script's
+default.
 `PERSONA_READ_CMD` swaps the CLI; isolation is verified for Claude Code only.
 
 If an answer has a code fence or prose around the JSON, strip it. If it still does not parse, run
@@ -158,8 +160,8 @@ reasons with quoted reader sentences, the preset's matching result, and the stop
 
 ## Limits
 
-- The three readers are one model family (Claude), so they are not independent samples and can
-  converge
+- The three readers are one model family (Claude); for what one family leaves in the answers, see
+  skill `eval-foundations`
 - Whether simulated readers stall where real readers stall has not been measured (no study found
   as-of 2026-10-18)
 - The isolation rests on observed CLI behavior (`--setting-sources ""` is undocumented); the probe

@@ -17,11 +17,7 @@ Build the loop on that premise. Split the roles three ways.
 | Faithfulness (things not in the materials, comparison target, qualifiers, substituted subject) | **LLM judge**. A cutoff of binary checks |
 | Format (position of citation marks, presence of markers, character count) | **Code** |
 
-Asking the LLM judge for a holistic readability verdict does not make it a substitute for the author. Measured
-(2026-09-23, jev-research-pipeline): even with a rubric that stated explicitly "having more information is not a reason to win",
-the Opus judge picked the more information-dense version as "easier to understand" in both orderings, while the author called the short
-version "very easy to understand" and the information-dense version "hard to read". On the other hand, the judge caught, in both orderings,
-a substituted comparison target that the author had not noticed while reading.
+Asking the LLM judge for a holistic readability verdict does not make it a substitute for the author.
 
 ## 1. Fix the materials
 
@@ -71,9 +67,8 @@ means fail, no numeric scoring or aggregation). Only the points that worked for 
   as fact lines. If the code check misjudges, the judge's cutoff is dragged along with it, so after fixing a check, re-run it on the
   existing drafts before passing them to the judge
 - **Judge one draft at a time**: the cutoff is pass/fail, so judging each draft individually is enough
-- **Keep the judge light**: define a dedicated agent that holds only Read / Write. A general-purpose subagent loads every tool
-  definition and all always-loaded rules on each launch, so one judgment cost about 85k tokens, versus about 25k tokens with a
-  dedicated agent (measured 2026-09-23). Write output to a location that session can write to (e.g. the scratchpad)
+- **Keep the judge light**: define a dedicated agent that holds only Read / Write. Write output to a location that session can
+  write to (e.g. the scratchpad)
 
 ## 5. Extract writing principles from the author's reading
 
@@ -96,11 +91,13 @@ The following comparisons do not measure improvement.
 
 - **Beating a weak baseline**: compare a list of short paraphrases with a fully explained version and the latter wins. A comparison
   against something any rewrite would beat does not show whether things got better
+- **Comparisons with no difference**: if most axes are ties, little can be learned from that comparison
 - **Compliance with rules you wrote yourself**: a rising pass rate on the cutoff shows the writer can now follow instructions,
   not that the reading value went up
-- **Comparisons with no difference**: if most axes are ties, little can be learned from that comparison
 - **Differences the same size as judgment variance**: if the same draft flips pass/fail by ordering or run, do not read it as a
   difference between versions
+
+The principles behind the last two are in skill `eval-foundations`.
 
 When in doubt, having the author read one case gets you closer to the right answer faster than running the judge dozens of times.
 

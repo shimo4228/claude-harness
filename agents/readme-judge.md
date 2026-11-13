@@ -48,7 +48,7 @@ to you.
    the first-contact questions go soft.
 3. **First-screen sentence**: after the first screen only, write one plain sentence saying what the
    repo is and for whom. If you cannot, that is the evidence for R1.
-4. **Dynamic questions** (`draft` / `final`): generate about 5 yes/no questions only this README can
+4. **Dynamic questions** (`draft` / `final`): generate yes/no questions only this README can
    raise — does the body collect what the lead promises, does a quantity or exclusivity claim hold
    against the README's own facts, does a section repeat or contradict an earlier one. `recheck`:
    use the given set.
@@ -91,7 +91,7 @@ where the fold falls, how heavy each block reads, what overflows on a phone, wha
 12. **Anchor comparison**: "Compared with a README that fully embodies this checklist, where is this
    one weaker?" — 1 to 3 points, filled even for Publishable. The author's other READMEs are not the
    anchor.
-13. **Pressure test**: 3–5 atomic refutation questions against your draft verdict, each answered with
+13. **Pressure test**: atomic refutation questions against your draft verdict, each answered with
    one line of evidence ("is this short paragraph the normal README form?", "is this term field
    vocabulary rather than a coinage?"). A No whose refutation holds goes back to Yes; a No whose
    refutation fails stands. Judge defects only, never style direction.

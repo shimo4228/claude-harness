@@ -186,16 +186,13 @@ rest the **body layer** (invocation):
   pollute the main context (researcher, one web-research angle per run)
 - [ ] *Technical references current?* — **unconditionally verify** every artifact the
   body names: `ls` each referenced path, run `--help` / version checks for named
-  commands, flags, model names and tool lists. "Verify if it looks stale" is banned
-  phrasing — the condition is what dilutes; deterministically checkable claims get
-  deterministic checks, every time
+  commands, flags, model names and tool lists
 - [ ] *Unique within the set?* — no other agent (or skill) owns the same job; a
   documented orchestrator→sub-agent split is NOT overlap
 
-Eight questions and no more — further decomposition degrades holistic judgment
-(see References).
+Eight questions and no more.
 
-**Stage 2 — verdict pressure-test (non-Keep candidates only).** Generate 1–3
+**Stage 2 — verdict pressure-test (non-Keep candidates only).** Generate
 agent-specific atomic yes/no questions that try to **refute** the draft verdict, each
 answered with one line of evidence (file read, path check, `--help`, WebSearch,
 harness-doc check). For **Dissolve** candidates one question is mandatory: *"Can the
@@ -208,8 +205,7 @@ existence is necessary but not sufficient; the fresh/rich context axis decides w
 capability belongs (precedent: the planner refutation collapsed because the main loop
 holds the full Agent tool). Keep-bound agents get no dynamic questions.
 
-Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence,
-never aggregated into a score. Evaluation is **origin-blind** (vendored, self-written and
+Binary answers are evidence, never aggregated into a score. Evaluation is **origin-blind** (vendored, self-written and
 customized agents all get the same checklist); where the harness states the origin convention, a
 *missing* origin header is itself a finding.
 
@@ -320,12 +316,8 @@ Created on the first run — do not pre-seed. Update inline with Read/Write, not
 
 ## References
 
-The two-stage binary-question design (screen → verdict pressure-test, holistic verdict,
-no score aggregation) is inherited from skill-stocktake / rules-stocktake and follows
-the checklist-decomposition evaluation line: BinEval "Ask, Don't Judge"
-([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)), CheckEval (arXiv:2403.18771),
-TICK (arXiv:2410.03608) — over-decomposition degrades correlation on holistic quality,
-hence eight questions and no score. The suppression-instruction question implements the
+The two-stage binary-question design (screen → verdict pressure-test) follows skill
+`llm-as-judge`. The suppression-instruction question implements the
 current-generation prompting guidance (report everything, filter in a separate pass);
 the absorption question and Dissolve verdict implement Scaffold Dissolution from the Agent
 Knowledge Cycle (inward / downward vectors + model-generation trigger).

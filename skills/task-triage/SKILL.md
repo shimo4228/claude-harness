@@ -398,8 +398,8 @@ session resumes from the ledger alone. Cross-repo effects travel only through th
 Opus 5.5 at `high` (the tick spawns it with `--model opus`): most of a cycle is mechanical —
 dead-band checks, counts, branch hygiene, the deterministic half of §4 — and the semantic half of
 §4 (a silent deviation, a forbidden change) is a missed-case kind of error, the kind effort
-reduces most. Independence from the build comes from the fresh context, not from a different
-model. The one judgment routed to Fable is a contested build-or-not, through the `architect`
+reduces most. This loop reviews with the same model family as the build, for cost: independence
+from the build rests on the fresh context, and habits the family shares stay in the review. The one judgment routed to Fable is a contested build-or-not, through the `architect`
 agent; when Fable is out of quota, the session judges it itself and writes "Fable 不在、Opus が判定"
 next to the verdict. The judge does not implement ledger tasks itself: its context is the whole
 ledger rather than one task, and the build's premise re-check is the one independent check of the

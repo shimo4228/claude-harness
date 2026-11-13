@@ -148,7 +148,7 @@ description: "Description in 130 characters or less"
    - [ ] Confirmed the pattern is reusable, not a one-off fix
    - [ ] Checked the pattern against the **session's observational record** (actual tool output, errors, user corrections). Is it grounded in "what actually happened" rather than your own summary or paraphrase?
 
-   Then, **generate and answer 3–5 draft-specific atomic yes/no questions**.
+   Then, **generate and answer draft-specific atomic yes/no questions**.
    The fixed checklist covers harness-invariant checks (duplication, reusability) but
    does not test the draft's own claims (what it states under Problem / Solution /
    When to Use), so this step fills that gap:
@@ -167,7 +167,7 @@ description: "Description in 130 characters or less"
 
    Weigh the checklist results, the binary answers, and the draft together, then choose
    exactly **one** of the following. **Always enumerate the No-answered questions as
-   grounds for the verdict** (hidden Nos breed verdict drift):
+   grounds for the verdict**:
 
    | Verdict | Meaning | Next action |
    |---------|---------|---------------|
@@ -250,9 +250,3 @@ description: "Description in 130 characters or less"
 The generic design canon for this evaluation style (binary checks as evidence →
 holistic named verdict, no aggregation) is the `llm-as-judge` skill; Step 5 is its
 N=1 implementation.
-
-Design rationale for Step 5's two-layer design (binary question decomposition → holistic verdict):
-
-- BinEval — "Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement" ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226)). A framework that decomposes evaluation criteria into atomic yes/no questions and wires failed questions directly into improvement feedback. The dynamic generation of draft-specific questions and the "No questions = improvement items" path are ported from here
-- The same checklist-style evaluation research line: CheckEval (arXiv:2403.18771), TICK (arXiv:2410.03608), FActScore (arXiv:2305.14251), UniEval (arXiv:2210.07197)
-- The decision **not** to adopt numeric scores (satisfaction ratios) also follows BinEval's own limitations: on subjective, holistic quality dimensions, over-decomposition degrades correlation with human judgment, and the proportion of affirmed questions does not map linearly to quality. For an N=1 draft evaluation the only consumed output is the verdict; binary answers serve strictly as its evidence

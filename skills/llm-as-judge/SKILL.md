@@ -14,21 +14,7 @@ Core rule in one line:
 > **Collect evidence with binary Yes/No checks, let the LLM issue one named
 > holistic verdict, and never aggregate the answers into a score.**
 
-## Why not rubric scores
-
-- **Irreproducible.** Numeric scores on the same input drift between runs (3 vs 4
-  out of 5). LLMs are bad at independent per-dimension scoring — they get pulled
-  by the overall impression, and central-tendency bias compresses scores into a
-  narrow band that straddles any threshold you pick.
-- **Dilution.** A sum or satisfaction ratio converts one fatal defect ("the
-  referenced file does not exist") into a small deduction. One dominant No must
-  be able to decide the outcome alone.
-- **Unexplainable.** Nobody can say why something is a 3.5. A No answer to a
-  concrete question explains itself and doubles as the improvement item.
-
-Rubrics were invented to structure *human* evaluation, where assessors can score
-dimensions independently. For an LLM, invert the design: force the checks it
-tends to skip, and leave the judgment holistic — that is what it is good at.
+The principles behind this form are owned by skill `eval-foundations`.
 
 ## The three principles
 
@@ -72,7 +58,7 @@ Two rules replace the score:
 
 Before finalizing a non-passing draft verdict, make the judge attack it:
 
-1. Generate 1–3 **atomic** Yes/No questions that try to **refute** the draft
+1. Generate **atomic** Yes/No questions that try to **refute** the draft
    verdict (e.g. draft = "Update: CLI flag retired" → "does the flag still
    appear in current `--help` output? measure it").
 2. Answer each with one line of evidence.
@@ -85,23 +71,52 @@ questions seek disconfirmation, not affirmation. After a fix, **re-judge with
 the same question set, once only** — regenerating questions makes it impossible
 to tell whether the fix worked or the bar moved.
 
+## Four stages for a single-item judgment (provisional)
+
+This section is provisional: what each stage is shown is a decision expected to be
+replaced, and skill `eval-foundations` indexes it in its `provisional.md`.
+
+1. Have the judge who carries the last stage write the overall verdict and its
+   reason without seeing the criterion results, and save it.
+2. Raise a separate subagent per criterion, each shown that one criterion only.
+   It returns binary checks with the location of the evidence, and gives no score.
+3. Have a judge in a fresh context issue the final verdict, shown the work and the
+   evidence from stage 2 (stage 1 is not shown).
+4. Compare stage 1 and stage 3 in code and record where they disagree. When stage 3
+   reaches a verdict against the criterion evidence, have it name, in one line,
+   the fact the criteria did not cover. Record an overturn that cannot name such a
+   fact as a suspected over-overturn.
+
+How the stages join the rest of this skill:
+
+- Check whatever code can check before stage 1 (Existence before judgment, below),
+  and hand the results to stage 3 as fact lines.
+- Stages 1 and 3 are the same judge role in two separate contexts: stage 3 starts
+  fresh and is not shown what stage 1 wrote.
+- The refutation questions (Verdict pressure-test) run inside stage 3, whatever its
+  draft verdict (a single item gets them unconditionally; see the table below).
+- **A dominant No holds through stage 3.** When the evidence carries one, stage 3
+  issues the failing verdict. Stage 3 may name a fact and reach a verdict against
+  the evidence only on criteria other than a dominant No.
+- The skill that uses the four stages defines its dominant No in a form whose fit
+  can be checked against the artifact itself.
+- The using skill's orchestrator does the stage 4 comparison in code and writes it
+  to its own record.
+
 ## Scale the machinery, not the principles
 
 | | Single-draft gate (N=1) | Library-scale audit (tens of items) |
 |---|---|---|
-| Pressure-test questions | Unconditional, 3–5 per draft | Non-passing candidates only, 1–3 |
+| Procedure | Two stages, or the four stages (above) when the item is worth a subagent per criterion | Two stages: binary screen → refutation questions |
+| Pressure-test questions | Unconditional | Non-passing candidates only |
 | Rationale | Cost is negligible | Generating for every item is mostly waste |
+
+The four stages raise a subagent per criterion plus two for every item judged,
+which pays for one item and not for tens.
 
 ## Don't let deterministic checks ride on judgment
 
-The judge's attention is a diluting resource. A controlled comparison on a
-73-item skill library (2026-07) made this concrete: an everything-in-one-context
-pass returned all-Keep, while fresh-context small batches with **unconditional**
-reference verification surfaced 12/73 non-passing items — half with
-deterministic evidence (404 links, deleted files, retired CLI flags), including
-passing verdicts previously issued for two files that did not exist on disk.
-A dedicated overlap probe reproduced the set-level view (0 genuine duplications
-across 17 candidate clusters) without needing all bodies in one context.
+The judge's attention is a diluting resource.
 
 Design consequences:
 
@@ -126,11 +141,10 @@ You are a quality evaluator for {artifact type}. Evaluate as follows.
 Answer each with Yes/No plus one line of evidence.
 - Q1: {verifiable question, e.g. is there a runnable code example?}
 - Q2: {verifiable question}
-- Q3: {verifiable question}
-- Q4: {verifiable question}
+- …
 
 ## Step 2: Item-specific refutation questions (only if the draft verdict leans failing)
-Pick one draft verdict, generate 1–3 Yes/No questions that try to refute it,
+Pick one draft verdict, generate Yes/No questions that try to refute it,
 and answer each with one line of evidence.
 
 ## Step 3: Verdict
@@ -169,6 +183,7 @@ in `evidence` are the improvement list handed to the next stage.
 
 ## Related
 
+- `eval-foundations` — the principles this skill's judge form rests on.
 - **Code-LLM layering** ([AKC ADR-0008](https://github.com/shimo4228/agent-knowledge-cycle/blob/main/docs/decision-history/0008-code-and-llm-collaboration.md))
   — the architecture-level "LLM judge + Code enforce" pattern (judgment never
   mutates state directly); this skill designs the judge's inside. Not an

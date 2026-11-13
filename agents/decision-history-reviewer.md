@@ -31,7 +31,7 @@ re-litigate the decision itself unless the record contradicts itself.
 
 ## Step 0: Mechanical lint first (deterministic layer)
 
-意味的レビューの前に、機械チェックを script に任せる（「存在 = code、内容 = LLM」の分業 — 経緯 0021、0044、0051）:
+意味的レビューの前に、機械チェックを script に任せる:
 
 ```bash
 python3 ~/.claude/skills/decision-history/scripts/adr_lint.py --root <repo root>

@@ -65,7 +65,7 @@ An asset that answers Yes to all is a **Keep** — do not belabor it. Surface on
 
 ### Stage 2 — verdict pressure-test (non-Keep only)
 
-For each surfaced asset, ask 1–3 refutation questions before committing a verdict:
+For each surfaced asset, ask refutation questions before committing a verdict:
 
 - *Retire candidate* — "Is there a consumer I failed to grep (a dynamic invocation, an external wiki link, a scheduled trigger)? If I delete this, what breaks?"
 - *Update candidate* — "Is the asset itself wrong, or is only my reachability grep incomplete? Is the fix mechanical (repair the trigger, fix the ref) or a content rewrite?"
@@ -147,4 +147,5 @@ Persist verdicts so `changed` mode can carry them forward. Written inline via Re
 - **`refactor-clean`** — its Non-Code Assets sweep covers **code-consumed** data (files a program loads by glob/registry); its test is *structural* — whether any consumption edge exists at all. This skill covers **non-code-consumed** assets (tool / CI / human consumers) and judges *semantic value* — an asset can have a live edge and still be dead (a workflow that fires but no-ops). Structural deadness → refactor-clean; diminished value → here.
 - **`context-sync`** — audits the four documentation *roles* (CLAUDE.md / graph.jsonld / ADR / README) for placement overlap and freshness against code. Runbooks are the overlap zone — context-sync asks "is this doc in the right role and consistent with the code," this skill asks "does this doc still describe something that exists / earn its place at all."
 - **`skill-stocktake` / `rules-stocktake`** — the same stocktake pattern over a different asset class (installed skills / always-loaded rules). This skill is their sibling for a project repo's non-code assets.
+- **`llm-as-judge`** — the judge design Phase 2 follows.
 - **Your publish step** (the author's harness uses `harness-sync`) — syncs this `origin: shimo4228` skill to its public repo after edits.

@@ -23,7 +23,12 @@ origin filter 1 箇所で宣言的に管理される。
 
 ### 1. Dry-run で差分を確認
 
+集約 repo（claude-harness）は、先に同期 script 自身のテストを回す。script とテストは公開 repo にしか無く、
+同期元の CI（`~/.claude` の `verify.yml`）の対象外なので、同期のときがテストの走る唯一の機会になる。
+赤なら同期を止め、公開 repo 側で script を直してから進む。
+
 ```bash
+bats <公開repo>/scripts/tests/
 bash <公開repo>/scripts/sync-from-local.sh --dry-run
 ```
 
@@ -249,7 +254,7 @@ skill repo を GitHub 公開する際の規約（正本）:
 | `~/MyAI_Lab/skill-stocktake` ([repo](https://github.com/shimo4228/skill-stocktake)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-stocktake` |
 | `~/MyAI_Lab/skill-health` ([repo](https://github.com/shimo4228/skill-health)) | 単独 skill | `scripts/sync-from-local.sh` (skill repo 版) | `~/.claude/skills/skill-health` |
 | `~/MyAI_Lab/akc-cycle` ([repo](https://github.com/shimo4228/akc-cycle)) | plugin (固定 allowlist) + repo 所有 rule (自己完結版、sync 対象外) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、agents なし) | 対象 skills のみ (rule の正本は repo 側。harness の `rules/common/akc-cycle.md` はポインター版で別内容) |
-| `~/MyAI_Lab/harness-stocktake`（GitHub `shimo4228/harness-stocktake`、private の間はリンクしない） | plugin (10 skills、移植性ゲート付き) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist) | `~/.claude/skills/harness-stocktake` と source 7 本と skill-health・skill-writer |
+| `~/MyAI_Lab/harness-stocktake`（GitHub `shimo4228/harness-stocktake`、public） | plugin (10 skills、移植性ゲート付き) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist) | `~/.claude/skills/harness-stocktake` と source 7 本と skill-health・skill-writer |
 | `~/MyAI_Lab/herdr-toolkit` ([repo](https://github.com/shimo4228/herdr-toolkit)) | plugin (2 skills) | `scripts/sync-from-local.sh` (plugin 版、固定 allowlist、rules/agents なし) | `~/.claude/skills/spawn-session`, `~/.claude/skills/agent-send` |
 | `~/MyAI_Lab/jev-skill-router` ([repo](https://github.com/shimo4228/jev-skill-router)) | plugin (hook + skill) | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |
 | `~/MyAI_Lab/codex-review` ([repo](https://github.com/shimo4228/codex-review)) | 単独 skill | sync abort（local 正本を退役済み） | なし（公開記録として凍結） |

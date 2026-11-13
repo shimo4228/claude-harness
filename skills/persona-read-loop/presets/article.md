@@ -11,16 +11,16 @@ match the answers and never goes to the readers.
 
 ## Readers
 
-| ID | role | content | model |
+| ID | role | content | depth |
 |---|---|---|---|
-| `primary` | main reader | The reader the channel is written for: someone who uses the article's subject in their own setting | sonnet |
-| `inflow` | reader from the inflow route | Someone arriving through the route this article actually gets (a trend page, topic search, a social post). Give them a skimming time budget | haiku |
-| `practitioner` | practitioner | Someone who does the same work themselves and has read many write-ups on it. Reads hardest for how far the author thought; always included | opus |
+| `primary` | main reader | The reader the channel is written for: someone who uses the article's subject in their own setting | standard |
+| `inflow` | reader from the inflow route | Someone arriving through the route this article actually gets (a trend page, topic search, a social post). Give them a skimming time budget | skimming |
+| `practitioner` | practitioner | Someone who does the same work themselves and has read many write-ups on it. Reads hardest for how far the author thought; always included | judges how far the author thought |
 
-The model follows how deeply the role reads: a stronger model fills gaps between the lines by
-itself, which hides where a skimming reader would lose the thread, while for a reader judging how
-far the author thought, that same strength is the judgment. A reader role outside this table
-(a prize judge, a novelist) gets its model by the same rule.
+The model follows the `depth` column (SKILL.md step 1): a stronger model fills gaps between the
+lines by itself, which hides where a skimming reader would lose the thread, while for a reader
+judging how far the author thought, that same strength is the judgment. A reader role outside this
+table (a prize judge, a novelist) gets its depth, and so its model, by the same rule.
 
 The readers are not waited on for the author's confirmation. Record the three in the brief or
 `log.md`.

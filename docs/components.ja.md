@@ -57,6 +57,7 @@
 | [hook-stocktake](../skills/hook-stocktake/SKILL.md) | Audit the harness hooks (hooks/*.sh, scripts/hooks/*) and their settings.json wiring, and give each a verdict (hook の棚卸し) |
 | [decision-history](../skills/decision-history/SKILL.md) | Record a design decision as a dated, past-tense entry in the repo's docs/decision-history/, or decide whether it clears the filing bar or be |
 | [plugin-directory-submit](../skills/plugin-directory-submit/SKILL.md) | Anthropic の plugin directory に plugin を提出し、掲載後の listing を保つ手順 |
+| [eval-foundations](../skills/eval-foundations/SKILL.md) | The principles behind every LLM judgment and eval, for designing or revising one |
 <!-- END GENERATED: skills-table -->
 
 ## Agents

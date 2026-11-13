@@ -28,6 +28,8 @@ triage 2026-11-08: 前提は残る — claude-harness に `.claude/` も `.githu
 
 **2026-11-08 withdrawn** — 著者判断（triage session）: ミラーに gate は要らない。同期元 ~/.claude の `.claude/verify.sh` は `.github/workflows/verify.yml` の CI で回っている（2026-11-07 の run 3 本 success）。判断役注: ミラーにしか無い `scripts/sync-from-local.sh` とそのテスト `scripts/tests/sync-trailers.bats`（12 件）は同期元の CI の対象外で、手で回すまで走らない。
 
+**2026-11-08（続き）** — 著者と合意: 守られていなかった 12 件は、ミラーに gate を置かず、同期元の skill `harness-sync` の手順 1 で同期の前に `bats <公開repo>/scripts/tests/` を回す形で拾う（同 commit）。追加時点で 12 / 12 ok。state は withdrawn のまま（ミラーの gate はやらない）。
+
 ## Next action
 
 採否を決める。採るなら verify-bootstrap で gate を作る（承認は著者）。

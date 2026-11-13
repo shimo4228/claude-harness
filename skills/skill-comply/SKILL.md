@@ -39,7 +39,7 @@ uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run ~/.claude/
 uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --dry-run ~/.claude/skills/search-first/SKILL.md
 
 # Custom models
-uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --gen-model haiku --model sonnet --classifier-model sonnet <path>
+uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --gen-model <model> --model <model> --classifier-model <model> <path>
 
 # Back to serial (when you hit rate limits)
 uv run --frozen --project "${CLAUDE_SKILL_DIR}" python -m scripts.run --concurrency 1 <path>
@@ -140,11 +140,8 @@ the three fields an attacker may control — `prompt` (handed to the unattended 
 
 ## Models
 
-| Stage | Default | Why |
-|-------|---------|-----|
-| `--gen-model` | `haiku` | Spec / scenario generation. Short prompts, fast. |
-| `--model` | `sonnet` | Scenario execution (the agent under test). Accepts `haiku` / `sonnet` / `opus` / `fable`. |
-| `--classifier-model` | `sonnet` | Trace classification. Haiku times out on long traces (50+ events) and abstract specs (e.g. contemplative-axioms). Sonnet handles the load with a 300s timeout. |
+`--gen-model` (spec and scenario generation), `--model` (the agent under test) and `--classifier-model` (trace
+classification) each take a model name; `--help` shows the defaults.
 
 ## Report Contents
 

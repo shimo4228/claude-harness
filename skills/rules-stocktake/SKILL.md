@@ -61,8 +61,7 @@ corpus size live (`find <harness>/rules -name '*.md' | xargs wc -l`) rather than
 trusting a figure written here; per-file line counts become the residency-cost column
 in Phase 3 and the `lines` field in the ledger.
 
-Run the mechanical checks with throwaway bash/grep (detection is structural → code;
-judgment on what the findings mean → LLM, per the enumerate/decide split):
+Run the mechanical checks with throwaway bash/grep:
 
 - [ ] Every ``skill: `name` `` pointer in a rule resolves to `<harness>/skills/<name>/`
 - [ ] Every relative link between rule files resolves
@@ -93,9 +92,7 @@ rule. Record answers internally; **surface only the No answers**:
 - [ ] All cross-references resolve? (read off the Phase 1 results)
 - [ ] Technical references current? **Unconditionally verify** every artifact the rule
   names — `ls` each referenced path (skills, agents, hooks, scripts) and run `--help` /
-  version checks for named CLI flags. "Verify if it looks stale" is banned phrasing:
-  the condition is what dilutes. Deterministically checkable claims get deterministic
-  checks, every time.
+  version checks for named CLI flags.
 - [ ] Not yet absorbed by the substrate or the conversation? (downward: does the harness —
   system prompt, tool descriptions, native plan/review machinery — now cover this domain
   natively? inward: is the principle so internalized that behavior no longer depends on the
@@ -110,10 +107,10 @@ rule. Record answers internally; **surface only the No answers**:
   is an Improve candidate: reword it as the default to follow)
 
 Seven questions and no more — the two static questions (absorption, density) replace the
-lost usage signal; further decomposition degrades holistic judgment.
+lost usage signal.
 
 **Stage 2 — verdict pressure-test (non-Keep candidates only).** When Stage 1 plus the
-holistic read points away from Keep, generate **1–3 rule-specific atomic yes/no questions**
+holistic read points away from Keep, generate **rule-specific atomic yes/no questions**
 that try to **refute the draft verdict** before finalizing it. **If the rule declares a
 `review-when:` comment, its triggers are the first questions** — they are the expiry
 conditions captured at write time, which ad-hoc generation cannot recover.
@@ -129,8 +126,7 @@ results (a compliance-based verdict needs one; this audit is static), `generatio
 runtime-layer findings on a model-generation change, and `harness-boundary`'s Delete / Move
 on an installed rule.
 
-Evaluation is **holistic judgment, not a numeric rubric** — binary answers are evidence
-feeding the verdict, never aggregated into a score. Evaluation is **origin-blind** (do not
+Binary answers are evidence feeding the verdict, never aggregated into a score. Evaluation is **origin-blind** (do not
 branch on vendored / self-written / customized) — though, where the harness states the origin
 convention (the author's does, in `common/skills.md`), a *missing* origin header is itself an
 integrity finding and feeds Improve.
@@ -239,4 +235,5 @@ not a script. Created on the first run — do not pre-seed an empty file.
 ## Related
 
 - `agent-stocktake` — the same audit for `<harness>/agents/`.
+- `llm-as-judge` — the judge design Phase 2 follows.
 - `repo-asset-stocktake` — the same stocktake pattern for a project repo's non-code assets (configs / workflows / runbooks).

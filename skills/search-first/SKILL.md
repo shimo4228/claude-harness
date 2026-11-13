@@ -68,8 +68,7 @@ The report is the deliverable. Write it so the Verdict can be read off it:
 - For every external finding give its **subject, its premises, and how our situation
   differs**; the Verdict names what transfers.
 - Judgement is **prose backed by facts** — dates, versions, the concrete feature match.
-  Strengths and weaknesses in sentences; the canonical home of "evidence, not scores"
-  (ADR-0026).
+  Strengths and weaknesses in sentences.
 
 ```
 ## Scope searched

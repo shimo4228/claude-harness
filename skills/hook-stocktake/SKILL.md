@@ -66,7 +66,7 @@ Read every hook's header and body while seeing the whole set.
   rule `security.md`)
 - [ ] Its README row matches what it does?
 
-**Stage 2 — pressure-test (non-Keep candidates only).** Generate 1–3 hook-specific yes/no
+**Stage 2 — pressure-test (non-Keep candidates only).** Generate hook-specific yes/no
 questions that try to refute the draft verdict, each answered with one line of evidence (a file
 read, a test run, a docs check). For Dissolve, the mandatory question is "Can the absorbing native
 feature be named and shown in the current docs — Yes/No". Fire counts are evidence, never a
@@ -128,3 +128,4 @@ from `date -u +%Y-%m-%dT%H:%M:%SZ`. An item the author skipped keeps its verdict
 - `harness-stocktake` — runs this audit with the other stocktakes into one report
 - `skill-stocktake` / `rules-stocktake` / `agent-stocktake` — the sibling audits
 - `security-reviewer` — reviews a hook diff that touches the threat surface
+- `llm-as-judge` — the judge design Phase 2 follows

@@ -189,8 +189,8 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
 
 ## Workflow（Rewrite モード）
 
-判定器は fresh context の別 agent process で起動し、執筆セッションの文脈を渡さない（自己批評は
-検出率が落ち、書き手の文脈は未定義語を補完して判定を甘くする）。
+判定器は fresh context の別 agent process で起動し、執筆セッションの文脈を渡さない（書き手の文脈は
+未定義語を補完して判定を甘くする）。
 
 > 以下のパスは `${CLAUDE_SKILL_DIR}`（この SKILL.md のあるディレクトリ）から始まる。変数を置換しないエージェントでは、そのディレクトリと読み替える。
 
@@ -202,7 +202,7 @@ README は最初の着地面で、読者の大半は著者の文脈を何も知�
    - 変わる事実の表: version・数値・日付・status ごとに持ち主を決める（badge / release-doi /
      as-of 日付付きで README）。持ち主の無い数値は README に置かない
    - tagline: 著者の入口の語（流入経路で探される語）を先に聞く。[skill: headline-craft] の候補をその語を含む形で
-     作り、`references/tagline-eval.md` で測り、推奨と結果の表を添えて著者がここで選ぶ
+     作り、`references/tagline-eval.md` で測り、結果の表を添えて著者がここで選ぶ
    - 訪問者役の読みを回すなら、選んだ 3 人と、既存の README があればその版（r0）の読みの結果（[skill: persona-read-loop] の
      readme preset。人選の確認はここで受ける）
 2. 執筆（本体が直接書く）
