@@ -58,6 +58,7 @@ The skills, agents and rules published in [claude-harness](../README.md), with w
 | [decision-history](../skills/decision-history/SKILL.md) | Record a design decision as a dated, past-tense entry in the repo's docs/decision-history/, or decide whether it clears the filing bar or be |
 | [plugin-directory-submit](../skills/plugin-directory-submit/SKILL.md) | Anthropic の plugin directory に plugin を提出し、掲載後の listing を保つ手順 |
 | [eval-foundations](../skills/eval-foundations/SKILL.md) | The principles behind every LLM judgment and eval, for designing or revising one |
+| [verbal-dispute-check](../skills/verbal-dispute-check/SKILL.md) | Tell whether a disagreement is about facts or about words, with Chalmers's method of elimination: bar the key term, restate, and see what is still in dispute |
 <!-- END GENERATED: skills-table -->
 
 ## Agents

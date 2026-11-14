@@ -58,6 +58,7 @@
 | [decision-history](../skills/decision-history/SKILL.md) | Record a design decision as a dated, past-tense entry in the repo's docs/decision-history/, or decide whether it clears the filing bar or be |
 | [plugin-directory-submit](../skills/plugin-directory-submit/SKILL.md) | Anthropic の plugin directory に plugin を提出し、掲載後の listing を保つ手順 |
 | [eval-foundations](../skills/eval-foundations/SKILL.md) | The principles behind every LLM judgment and eval, for designing or revising one |
+| [verbal-dispute-check](../skills/verbal-dispute-check/SKILL.md) | 食い違いが事実をめぐるものか言葉をめぐるものかを、チャーマーズの消去法で見分ける。鍵の語を禁じて言い直し、割れているところが残るかを見る |
 <!-- END GENERATED: skills-table -->
 
 ## Agents
